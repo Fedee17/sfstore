@@ -1,4 +1,5 @@
 import { products as fallbackProducts } from "@/data/products";
+import { MATE_PUBLIC_CATEGORY_SLUGS } from "@/lib/product-taxonomy";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import type { Product } from "@/types/product";
 
@@ -42,6 +43,7 @@ type SupabaseProductRow = {
 export type PublicProduct = Product & {
   categoryId?: string;
   categoryName?: string;
+  categorySlug?: string;
   description?: string | null;
   primaryImageUrl?: string | null;
   primaryImageAlt?: string | null;
@@ -53,10 +55,22 @@ function firstRelation<T>(relation: T | T[] | null | undefined) {
   return Array.isArray(relation) ? relation[0] ?? null : relation ?? null;
 }
 
-function isSupportedCategory(
+function getSupportedPublicCategory(
   categorySlug: string | undefined,
-): categorySlug is SupportedPublicCategory {
-  return categorySlug === "perfumes" || categorySlug === "mates";
+): SupportedPublicCategory | null {
+  if (categorySlug === "perfumes") {
+    return "perfumes";
+  }
+
+  if (
+    MATE_PUBLIC_CATEGORY_SLUGS.includes(
+      categorySlug as (typeof MATE_PUBLIC_CATEGORY_SLUGS)[number],
+    )
+  ) {
+    return "mates";
+  }
+
+  return null;
 }
 
 function createImagePlaceholder(name: string) {
@@ -72,8 +86,9 @@ function createImagePlaceholder(name: string) {
 function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
   const category = firstRelation(row.categories);
   const categorySlug = category?.slug;
+  const publicCategory = getSupportedPublicCategory(categorySlug);
 
-  if (!isSupportedCategory(categorySlug)) {
+  if (!publicCategory) {
     return null;
   }
 
@@ -94,7 +109,7 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
     id: row.id,
     name: row.name,
     slug: row.slug,
-    category: categorySlug,
+    category: publicCategory,
     price: Number(row.price),
     transferPrice:
       row.transfer_price !== null && row.transfer_price !== undefined
@@ -106,6 +121,7 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
     imagePlaceholder: createImagePlaceholder(row.name),
     categoryId: row.category_id,
     categoryName: category?.name,
+    categorySlug: category?.slug,
     description: row.description,
     primaryImageUrl: primaryImage?.url ?? null,
     primaryImageAlt: primaryImage?.alt ?? row.name,
@@ -114,7 +130,7 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
   };
 }
 
-function fallbackByCategory(categorySlug: SupportedPublicCategory) {
+function fallbackByCategory(categorySlug: SupportedPublicCategory): PublicProduct[] {
   return fallbackProducts.filter((product) => product.category === categorySlug);
 }
 
@@ -123,7 +139,7 @@ export async function getProductsByCategorySlug(
 ) {
   try {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from("products")
       .select(
         `
@@ -156,9 +172,16 @@ export async function getProductsByCategorySlug(
       `,
       )
       .eq("status", "active")
-      .eq("categories.slug", categorySlug)
       .order("featured", { ascending: false })
       .order("name", { ascending: true });
+
+    if (categorySlug === "perfumes") {
+      query = query.eq("categories.slug", "perfumes");
+    } else {
+      query = query.in("categories.slug", [...MATE_PUBLIC_CATEGORY_SLUGS]);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return fallbackByCategory(categorySlug);
@@ -173,7 +196,6 @@ export async function getProductsByCategorySlug(
     return fallbackByCategory(categorySlug);
   }
 }
-
 export async function getProductBySlug(slug: string) {
   try {
     const supabase = getSupabaseClient();

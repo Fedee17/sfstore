@@ -13,10 +13,12 @@ Este documento prepara el deploy sin exponer secretos. Completar en Vercel/hosti
 | `MERCADO_PAGO_ACCESS_TOKEN` | Si para Mercado Pago | Privada | crear preferencia y consultar pagos en webhook | `APP_USR-...` o token test | Si, solo server |
 | `ADMIN_ALLOWED_EMAILS` | Si | Privada/config | restringe emails autorizados para `/admin` | `dueño@dominio.com,otro@dominio.com` | Si |
 | `ADMIN_EMAIL` | No | Privada/config | fallback legacy si no existe `ADMIN_ALLOWED_EMAILS` | `dueño@dominio.com` | Mejor usar `ADMIN_ALLOWED_EMAILS` |
+| `GOOGLE_SHEETS_SYNC_SECRET` | Si para sync automática | Privada | autentica `/api/integrations/google-sheets/product-sync` | cadena aleatoria extensa | Si, solo server |
 
 Notas:
 - No usar `NEXT_PUBLIC_` para secrets privados.
 - `SUPABASE_SERVICE_ROLE_KEY` y `MERCADO_PAGO_ACCESS_TOKEN` nunca deben aparecer en codigo cliente.
+- `GOOGLE_SHEETS_SYNC_SECRET` debe coincidir con `SFSTORE_SYNC_SECRET` en Script Properties de Apps Script y nunca usar prefijo `NEXT_PUBLIC_`.
 - `NEXT_PUBLIC_SITE_URL` debe quedar sin slash final, por ejemplo `https://sfstore.com.ar`.
 
 ## NEXT_PUBLIC_SITE_URL

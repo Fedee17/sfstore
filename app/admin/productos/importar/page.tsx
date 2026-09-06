@@ -27,6 +27,10 @@ export default async function AdminProductImportPage({
     created || updated || errors || blocked || duplicates
       ? `Importación completada: ${created || "0"} producto(s) creado(s), ${updated || "0"} actualizado(s), ${errors || "0"} omitido(s) por error y ${blocked || "0"} bloqueado(s) y ${duplicates || "0"} duplicado(s).`
       : null;
+  const automaticSyncConfigured = Boolean(
+    process.env.GOOGLE_SHEETS_SYNC_SECRET &&
+      process.env.NEXT_PUBLIC_SITE_URL?.startsWith("https://"),
+  );
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -71,7 +75,10 @@ export default async function AdminProductImportPage({
             </p>
           </aside>
 
-          <ProductImportTool resultMessage={resultMessage} />
+          <ProductImportTool
+            resultMessage={resultMessage}
+            automaticSyncConfigured={automaticSyncConfigured}
+          />
         </div>
       </section>
     </main>

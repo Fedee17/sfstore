@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import imageCompression from "browser-image-compression";
 import { useState, type ChangeEvent } from "react";
@@ -6,6 +6,13 @@ import {
   deleteProductImage,
   setPrimaryProductImage,
 } from "@/app/admin/productos/actions";
+import {
+  getAttributeFieldsForCategory,
+  getCatalogAttributeInputName,
+  getCatalogAttributeValues,
+  type CatalogAttributeField,
+} from "@/lib/catalog/attribute-config";
+import { MATE_PRODUCT_TYPES, PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
 import type { AdminCategory, AdminProduct } from "@/services/admin";
 
 type ProductFormProps = {
@@ -87,6 +94,84 @@ function getAttribute(product: AdminProduct | undefined, name: string) {
   return (
     product?.product_attributes?.find((attribute) => attribute.name === name)
       ?.value ?? ""
+  );
+}
+
+function CatalogAttributeControl({
+  field,
+  product,
+}: {
+  field: CatalogAttributeField;
+  product?: AdminProduct;
+}) {
+  const inputName = getCatalogAttributeInputName(field.key);
+  const selectedValues = getCatalogAttributeValues(
+    product?.product_attributes,
+    field.key,
+  );
+
+  if (field.input === "boolean") {
+    return (
+      <label className="flex min-h-12 items-center gap-3 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3">
+        <input
+          name={inputName}
+          type="checkbox"
+          value="true"
+          defaultChecked={selectedValues.includes("true")}
+          className="h-4 w-4 accent-[#556B2F]"
+        />
+        <span className="text-sm font-semibold text-[#1F1F1F]/75">
+          {field.label}
+        </span>
+      </label>
+    );
+  }
+
+  if (field.input === "select") {
+    return (
+      <label className="grid gap-2">
+        <span className="text-sm font-semibold text-[#1F1F1F]/75">
+          {field.label}
+        </span>
+        <select
+          name={inputName}
+          defaultValue={selectedValues[0] ?? ""}
+          className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
+        >
+          <option value="">Sin especificar</option>
+          {field.options.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  return (
+    <fieldset className="min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] p-4">
+      <legend className="px-1 text-sm font-semibold text-[#1F1F1F]/75">
+        {field.label}
+      </legend>
+      <div className="mt-2 grid min-w-0 gap-2 sm:grid-cols-2">
+        {field.options.map((item) => (
+          <label
+            key={item.value}
+            className="flex min-w-0 items-start gap-2 rounded-xl bg-white/70 px-3 py-2 text-sm text-[#1F1F1F]/75"
+          >
+            <input
+              name={inputName}
+              type="checkbox"
+              value={item.value}
+              defaultChecked={selectedValues.includes(item.value)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#556B2F]"
+            />
+            <span className="min-w-0 break-words">{item.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
@@ -209,6 +294,15 @@ export function ProductForm({
 }: ProductFormProps) {
   const [imageStatus, setImageStatus] = useState("");
   const [isOptimizingImage, setIsOptimizingImage] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    product?.category_id ?? "",
+  );
+  const selectedCategory = categories.find(
+    (category) => category.id === selectedCategoryId,
+  );
+  const catalogAttributeFields = getAttributeFieldsForCategory(
+    selectedCategory?.slug ?? "",
+  );
 
   async function handleProductImagesChange(
     event: ChangeEvent<HTMLInputElement>,
@@ -282,7 +376,8 @@ export function ProductForm({
             <select
               name="categoryId"
               required
-              defaultValue={product?.category_id ?? ""}
+              value={selectedCategoryId}
+              onChange={(event) => setSelectedCategoryId(event.target.value)}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             >
               <option value="">Seleccionar categoria</option>
@@ -413,7 +508,7 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Marca</span>
             <input
               name="brand"
-              defaultValue={getAttribute(product, "Marca")}
+              defaultValue={getAttribute(product, PRODUCT_ATTRIBUTE_NAMES.brand)}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
           </label>
@@ -422,10 +517,45 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Tipo</span>
             <input
               name="type"
-              defaultValue={getAttribute(product, "Tipo")}
+              list="mate-product-types"
+              defaultValue={getAttribute(product, PRODUCT_ATTRIBUTE_NAMES.type)}
+              placeholder="Ej: Mate, Termo, Bombilla"
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
+            <datalist id="mate-product-types">
+              {MATE_PRODUCT_TYPES.map((type) => (
+                <option key={type} value={type} />
+              ))}
+            </datalist>
           </label>
+
+          {catalogAttributeFields.length > 0 ? (
+            <section
+              key={selectedCategory?.slug}
+              className="grid min-w-0 gap-5 rounded-2xl border border-[#556B2F]/20 bg-white/65 p-5 md:col-span-2 md:grid-cols-2"
+            >
+              <div className="min-w-0 md:col-span-2">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#556B2F]">
+                  Atributos del catálogo
+                </p>
+                <h2 className="mt-1 break-words text-xl font-semibold text-[#1F1F1F]">
+                  {selectedCategory?.slug === "perfumes"
+                    ? "Características del perfume"
+                    : "Características del mate"}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-[#1F1F1F]/60">
+                  Estos datos alimentan los filtros públicos. Podés seleccionar más de una opción cuando corresponda.
+                </p>
+              </div>
+              {catalogAttributeFields.map((field) => (
+                <CatalogAttributeControl
+                  key={field.key}
+                  field={field}
+                  product={product}
+                />
+              ))}
+            </section>
+          ) : null}
 
           <label className="flex items-center gap-3 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3">
             <input

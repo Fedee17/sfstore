@@ -8,6 +8,7 @@ import {
   type ProductImportPreviewRow,
   type ProductImportPreviewState,
 } from "@/app/admin/productos/importar/actions";
+import { getAttributeFieldsForCategory } from "@/lib/catalog/attribute-config";
 
 const supportedSheets = [
   "Producto Perfumes",
@@ -44,6 +45,26 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
 
 function formatMoney(value: number | null) {
   return value !== null ? currencyFormatter.format(value) : "-";
+}
+
+function getAttributeSummary(row: ProductImportPreviewRow) {
+  const updates = Array.isArray(row.catalogAttributeUpdates)
+    ? row.catalogAttributeUpdates
+    : [];
+  const fields = getAttributeFieldsForCategory(row.categorySlug);
+
+  return updates.map((update) => {
+    const field = fields.find((item) => item.key === update.key);
+    const values = update.values.map((value) => {
+      if (field?.input === "boolean") {
+        return value === "true" ? "Sí" : "No";
+      }
+
+      return field?.options.find((item) => item.value === value)?.label ?? value;
+    });
+
+    return `${update.label}: ${values.join(", ")}`;
+  });
 }
 
 function StatusBadge({ row }: { row: ProductImportPreviewRow }) {
@@ -120,8 +141,10 @@ function SheetSelect({
 
 export function ProductImportTool({
   resultMessage,
+  automaticSyncConfigured = false,
 }: {
   resultMessage?: string | null;
+  automaticSyncConfigured?: boolean;
 }) {
   const [filePreviewState, fileFormAction, isFilePending] = useActionState(
     previewProductImport,
@@ -203,6 +226,17 @@ export function ProductImportTool({
         <div className="h-px flex-1 bg-[#8B5E3C]/15" />
       </div>
 
+      <div className="rounded-3xl border border-[#0066CC]/20 bg-white/80 p-5 shadow-sm">
+        <p className="text-sm font-semibold text-[#003B73]">
+          {automaticSyncConfigured
+            ? "Sincronización automática configurada"
+            : "Sincronización automática pendiente de URL pública"}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[#102033]/65">
+          La previsualización desde Google Sheets sigue disponible como respaldo y herramienta de diagnóstico.
+        </p>
+      </div>
+
       <form
         action={googleFormAction}
         className="overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm sm:p-6"
@@ -257,6 +291,29 @@ export function ProductImportTool({
         </div>
       </form>
 
+      <section className="rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
+          Columnas opcionales de atributos
+        </p>
+        <div className="mt-4 grid gap-4 text-sm leading-6 text-[#1F1F1F]/65 lg:grid-cols-2">
+          <div className="rounded-2xl bg-[#F7F4ED] p-4">
+            <p className="font-semibold text-[#1F1F1F]">Perfumes</p>
+            <p className="mt-1 break-words">
+              Categoría comercial, Familia olfativa, Intensidad, Momento, Género y Disponible como decant.
+            </p>
+          </div>
+          <div className="rounded-2xl bg-[#F7F4ED] p-4">
+            <p className="font-semibold text-[#1F1F1F]">Mates</p>
+            <p className="mt-1 break-words">
+              Tipo de mate, Material, Color y Uso.
+            </p>
+          </div>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-[#1F1F1F]/50">
+          Separá valores múltiples con coma o punto y coma. Una columna ausente o una celda vacía no modifica atributos existentes.
+        </p>
+      </section>
+
       {previewState.message ? (
         <div
           className={
@@ -282,7 +339,7 @@ export function ProductImportTool({
 
           <div className="overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 shadow-sm">
             <div className="overflow-x-auto">
-              <table className="min-w-[980px] w-full border-collapse text-left text-sm">
+              <table className="min-w-[1120px] w-full border-collapse text-left text-sm">
                 <thead className="bg-[#F7F4ED] text-xs uppercase tracking-[0.08em] text-[#8B5E3C]">
                   <tr>
                     <th className="px-4 py-4 font-semibold">Estado</th>
@@ -291,6 +348,7 @@ export function ProductImportTool({
                     <th className="px-4 py-4 font-semibold">Precio lista</th>
                     <th className="px-4 py-4 font-semibold">Efectivo/transferencia</th>
                     <th className="px-4 py-4 font-semibold">Costo</th>
+                    <th className="px-4 py-4 font-semibold">Atributos</th>
                     <th className="px-4 py-4 font-semibold">Avisos</th>
                   </tr>
                 </thead>
@@ -327,6 +385,19 @@ export function ProductImportTool({
                         {formatMoney(row.transferPrice)}
                       </td>
                       <td className="px-4 py-4">{formatMoney(row.cost)}</td>
+                      <td className="px-4 py-4">
+                        <div className="grid max-w-xs gap-1.5 text-xs text-[#1F1F1F]/65">
+                          {getAttributeSummary(row).length > 0 ? (
+                            getAttributeSummary(row).map((summary) => (
+                              <p key={summary} className="break-words">
+                                {summary}
+                              </p>
+                            ))
+                          ) : (
+                            <p className="text-[#1F1F1F]/40">Sin cambios</p>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-4 py-4">
                         <div className="grid max-w-sm gap-2">
                           {row.errors.map((error) => (

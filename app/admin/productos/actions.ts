@@ -1,8 +1,16 @@
-﻿"use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
+import {
+  getAllowedValuesForField,
+  getAttributeFieldsForCategory,
+  getCatalogAttributeInputName,
+  LEGACY_COMMERCIAL_CATEGORY_NAME,
+  MANAGED_CATALOG_ATTRIBUTE_KEYS,
+} from "@/lib/catalog/attribute-config";
+import { PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
@@ -223,32 +231,36 @@ async function replaceSimpleAttributes(
     .from("product_attributes")
     .delete()
     .eq("product_id", productId)
-    .in("name", ["Marca", "Tipo"]);
+    .in("name", [
+      PRODUCT_ATTRIBUTE_NAMES.brand,
+      PRODUCT_ATTRIBUTE_NAMES.type,
+    ]);
 
   if (deleteError) {
     throw new Error(deleteError.message);
   }
 
-  const rows: AttributeRow[] = [
-    attributes.brand
-      ? {
-          id: crypto.randomUUID(),
-          product_id: productId,
-          name: "Marca",
-          value: attributes.brand,
-          sort_order: 10,
-        }
-      : null,
-    attributes.type
-      ? {
-          id: crypto.randomUUID(),
-          product_id: productId,
-          name: "Tipo",
-          value: attributes.type,
-          sort_order: 20,
-        }
-      : null,
-  ].filter((row): row is AttributeRow => Boolean(row));
+  const rows: AttributeRow[] = [];
+
+  if (attributes.brand) {
+    rows.push({
+      id: crypto.randomUUID(),
+      product_id: productId,
+      name: PRODUCT_ATTRIBUTE_NAMES.brand,
+      value: attributes.brand,
+      sort_order: 10,
+    });
+  }
+
+  if (attributes.type) {
+    rows.push({
+      id: crypto.randomUUID(),
+      product_id: productId,
+      name: PRODUCT_ATTRIBUTE_NAMES.type,
+      value: attributes.type,
+      sort_order: 20,
+    });
+  }
 
   if (rows.length === 0) {
     return;
@@ -263,6 +275,80 @@ async function replaceSimpleAttributes(
   }
 }
 
+async function replaceCatalogAttributes(
+  productId: string,
+  categorySlug: string,
+  formData: FormData,
+) {
+  const supabase = getSupabaseAdminClient();
+  const fields = getAttributeFieldsForCategory(categorySlug);
+  const rows: {
+    id: string;
+    product_id: string;
+    name: string;
+    value: string;
+    sort_order: number;
+  }[] = [];
+
+  for (const [fieldIndex, field] of fields.entries()) {
+    const inputName = getCatalogAttributeInputName(field.key);
+    const submittedValues = field.input === "boolean"
+      ? [formData.get(inputName) === "true" ? "true" : "false"]
+      : formData
+          .getAll(inputName)
+          .map((value) => String(value).trim())
+          .filter(Boolean);
+    const values = [...new Set(submittedValues)];
+
+    if (!field.multiple && values.length > 1) {
+      throw new Error(`El atributo ${field.label} admite un solo valor.`);
+    }
+
+    if (field.input !== "boolean") {
+      const allowedValues = getAllowedValuesForField(field);
+      const invalidValue = values.find((value) => !allowedValues.has(value));
+
+      if (invalidValue) {
+        throw new Error(`Valor inválido para ${field.label}.`);
+      }
+    }
+
+    values.forEach((value, valueIndex) => {
+      rows.push({
+        id: crypto.randomUUID(),
+        product_id: productId,
+        name: field.key,
+        value,
+        sort_order: 100 + fieldIndex * 10 + valueIndex,
+      });
+    });
+  }
+
+  const { error: deleteError } = await supabase
+    .from("product_attributes")
+    .delete()
+    .eq("product_id", productId)
+    .in("name", [
+      ...MANAGED_CATALOG_ATTRIBUTE_KEYS,
+      LEGACY_COMMERCIAL_CATEGORY_NAME,
+    ]);
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  if (rows.length === 0) {
+    return;
+  }
+
+  const { error: insertError } = await supabase
+    .from("product_attributes")
+    .insert(rows);
+
+  if (insertError) {
+    throw new Error(insertError.message);
+  }
+}
 function revalidateProductPaths(slug: string) {
   revalidatePath("/admin/productos");
   revalidatePath("/perfumes");
@@ -418,6 +504,8 @@ export async function createProduct(formData: FormData) {
     brand: payload.brand,
     type: payload.type,
   });
+  const category = await getProductCategoryInfo(payload.product.category_id);
+  await replaceCatalogAttributes(productId, category?.slug ?? "", formData);
   await uploadProductImages(
     productId,
     product.name,
@@ -451,6 +539,12 @@ export async function updateProduct(formData: FormData) {
     brand: payload.brand,
     type: payload.type,
   });
+  const category = await getProductCategoryInfo(payload.product.category_id);
+  await replaceCatalogAttributes(
+    payload.productId,
+    category?.slug ?? "",
+    formData,
+  );
   await uploadProductImages(
     payload.productId,
     product.name,

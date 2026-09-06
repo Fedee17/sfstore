@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -21,12 +21,11 @@ const AUTOPLAY_INTERVAL_MS = 3000;
 
 export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const activeSlide = slides[activeIndex] ?? slides[0];
 
   useEffect(() => {
-    if (slides.length <= 1 || isPaused) {
+    if (slides.length <= 1) {
       return;
     }
 
@@ -35,7 +34,7 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
     }, AUTOPLAY_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [isPaused, slides.length]);
+  }, [slides.length]);
 
   if (!activeSlide) {
     return null;
@@ -45,11 +44,7 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
 
   return (
     <section className="mx-auto max-w-6xl px-5 pb-8 pt-6 sm:px-8 lg:pb-10 lg:pt-10">
-      <div
-        className="min-w-0"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
+      <div className="min-w-0">
         <a
           href={activeSlide.primaryCtaHref}
           aria-label={activeSlide.primaryCtaLabel}

@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { SiteHeader } from "@/components/site-header";
@@ -7,6 +7,7 @@ import {
   getTransferUnitPrice,
   hasTransferPrice,
 } from "@/lib/pricing";
+import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
 
@@ -216,6 +217,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const isAvailable = product.stock > 0;
+  const productAttributes =
+    "attributes" in product && Array.isArray(product.attributes)
+      ? product.attributes
+      : undefined;
+  const commercialCategory =
+    product.category === "perfumes"
+      ? getPerfumeCommercialCategory(productAttributes)
+      : "";
   const relatedProducts = await getRelatedProducts(
     product.categoryId,
     product.id,
@@ -275,6 +284,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
               >
                 {isAvailable ? "En stock" : "Agotado"}
               </span>
+              {commercialCategory ? (
+                <span className="max-w-full break-words rounded-full bg-[#EEF2F6] px-3 py-1 text-xs font-semibold text-[#003B73]">
+                  Ideal para: {commercialCategory.toLowerCase()}
+                </span>
+              ) : null}
             </div>
 
             <h1 className="mt-6 break-words text-4xl font-semibold leading-tight sm:text-5xl">
