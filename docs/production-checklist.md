@@ -2,6 +2,15 @@
 
 Este documento prepara el deploy sin exponer secretos. Completar en Vercel/hosting antes de publicar.
 
+## Despliegue desde GitHub
+
+- Repositorio: `Fedee17/sfstore`.
+- Proyecto Vercel existente: `sfstore`.
+- Rama de produccion: `main`.
+- Dominio estable: `https://sfstore-ten.vercel.app`.
+- Despues de un push, comprobar el deployment automatico y las respuestas GET: `/` devuelve 200 y `/api/integrations/google-sheets/product-sync` devuelve 405.
+- Mantener `.env.local`, `.vercel` y los logs locales fuera de Git.
+
 ## Variables de entorno
 
 | Variable | Requerida | Publica/privada | Donde se usa | Ejemplo de formato | Configurar en hosting |
