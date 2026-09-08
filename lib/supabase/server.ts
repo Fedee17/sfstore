@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 
 export function getSupabaseAdminClient() {
+  if (process.env.VERCEL_ENV === "preview") {
+    throw new Error("El acceso administrativo a Supabase esta deshabilitado en Preview.");
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
