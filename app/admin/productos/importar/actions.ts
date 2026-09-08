@@ -8,7 +8,6 @@ import {
   normalizeProductImportRows,
 } from "@/lib/product-import/core";
 import type {
-  ImportCatalogAttributeUpdate,
   NormalizedProductImportRow,
   SupportedProductSheet,
 } from "@/lib/product-import/types";
@@ -30,8 +29,6 @@ const IMPORTABLE_MIME_TYPES = new Set([
 type ImportAction = "create" | "update" | "blocked" | "error";
 type ImportSource = "file" | "google";
 type PreviewRowState = "valid" | "warning" | "blocked" | "error";
-
-export type { ImportCatalogAttributeUpdate };
 
 export type ProductImportPreviewRow = NormalizedProductImportRow & {
   key: string;
