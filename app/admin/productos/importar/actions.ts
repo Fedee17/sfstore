@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import * as XLSX from "xlsx";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
@@ -8,6 +7,10 @@ import {
   normalizeProductImportRows,
 } from "@/lib/product-import/core";
 import { parseGoogleVisualizationRows } from "@/lib/product-import/google-visualization";
+import {
+  runProductImportConfirmation,
+  type ProductImportConfirmationState,
+} from "@/lib/product-import/confirmation";
 import {
   classifyPriceImportPreview,
   findDuplicateImportSlugs,
@@ -211,17 +214,6 @@ function buildPreviewState(sheetName: SupportedProductSheet, rows: NormalizedPro
   };
 }
 
-function parseConfirmedRows(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "");
-  if (!raw) throw new Error("No hay una previsualización válida para importar.");
-  const parsed = JSON.parse(raw) as ProductImportPreviewRow[];
-  return {
-    rows: parsed.filter((row) => row.canImport && !row.excludedFromImport && (row.action === "update" || row.action === "create")),
-    skippedErrors: parsed.filter((row) => row.rowState === "error").length,
-    skippedBlocked: parsed.filter((row) => row.rowState === "blocked").length,
-  };
-}
-
 export async function previewProductImport(_previousState: ProductImportPreviewState, formData: FormData): Promise<ProductImportPreviewState> {
   await requireAdminActionSession();
   try {
@@ -256,10 +248,22 @@ export async function previewGoogleSheetImport(_previousState: ProductImportPrev
   }
 }
 
-export async function confirmProductImport(formData: FormData) {
-  await requireAdminActionSession();
-  const { rows, skippedErrors, skippedBlocked } = parseConfirmedRows(formData.get("previewPayload"));
-  if (rows.length === 0) throw new Error("No hay filas válidas para importar.");
-  const result = await applyConfirmedProductImportRows(rows);
-  redirect(`/admin/productos/importar?created=${result.created}&updated=${result.updated}&errors=${result.omittedErrors + skippedErrors}&blocked=${skippedBlocked}&duplicates=${result.omittedDuplicates}`);
+export async function confirmProductImport(
+  _previousState: ProductImportConfirmationState,
+  formData: FormData,
+): Promise<ProductImportConfirmationState> {
+  try {
+    await requireAdminActionSession();
+    const mode = formData.get("confirmationMode") === "google" ? "google" : "file";
+    return await runProductImportConfirmation(
+      formData.get("previewPayload"),
+      mode,
+      applyConfirmedProductImportRows,
+    );
+  } catch (error) {
+    return {
+      status: "error",
+      message: error instanceof Error ? error.message : "No se pudo completar la confirmación.",
+    };
+  }
 }

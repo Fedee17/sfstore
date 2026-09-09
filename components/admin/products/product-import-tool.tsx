@@ -9,6 +9,10 @@ import {
   type ProductImportPreviewState,
 } from "@/app/admin/productos/importar/actions";
 import { getAttributeFieldsForCategory } from "@/lib/catalog/attribute-config";
+import {
+  initialProductImportConfirmationState,
+  type ProductImportConfirmationState,
+} from "@/lib/product-import/confirmation";
 
 const supportedSheets = [
   "Producto Perfumes",
@@ -169,6 +173,73 @@ function SheetSelect({
         ))}
       </select>
     </label>
+  );
+}
+
+function ImportConfirmationForm({
+  previewPayload,
+  mode,
+  confirmLabel,
+  importableRows,
+  omittedRows,
+}: {
+  previewPayload: string;
+  mode: "file" | "google";
+  confirmLabel: string;
+  importableRows: number;
+  omittedRows: number;
+}) {
+  const [confirmState, confirmFormAction, isConfirmPending] = useActionState<
+    ProductImportConfirmationState,
+    FormData
+  >(confirmProductImport, initialProductImportConfirmationState);
+  const completed = confirmState.status === "success";
+
+  return (
+    <form
+      action={confirmFormAction}
+      className="flex flex-col gap-3 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <input type="hidden" name="previewPayload" value={previewPayload} />
+      <input type="hidden" name="confirmationMode" value={mode} />
+      <div className="grid min-w-0 gap-2">
+        <p className="break-words text-sm text-[#1F1F1F]/60">
+          {importableRows === 0
+            ? "No hay actualizaciones seguras para confirmar. Revisá duplicados, filas nuevas y errores."
+            : omittedRows > 0
+              ? "Hay filas omitidas por errores o productos restringidos. Podés importar las filas válidas."
+              : mode === "google"
+                ? "Las filas con advertencias se pueden sincronizar. Revisalas antes de confirmar."
+                : "Las filas con advertencias se pueden importar. Revisalas antes de confirmar."}
+        </p>
+        {confirmState.message ? (
+          <p
+            role={confirmState.status === "error" ? "alert" : "status"}
+            aria-live="polite"
+            className={
+              confirmState.status === "error"
+                ? "break-words text-sm font-semibold text-[#8B5E3C]"
+                : "break-words text-sm font-semibold text-[#556B2F]"
+            }
+          >
+            {confirmState.message}
+          </p>
+        ) : null}
+      </div>
+      <button
+        type="submit"
+        disabled={importableRows === 0 || isConfirmPending || completed}
+        className="rounded-full bg-[#1F1F1F] px-6 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#556B2F] disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isConfirmPending
+          ? "Sincronizando..."
+          : completed
+            ? mode === "google"
+              ? "Sincronización completada"
+              : "Importación completada"
+            : confirmLabel}
+      </button>
+    </form>
   );
 }
 
@@ -470,25 +541,14 @@ export function ProductImportTool({
             </div>
           </div>
 
-          <form action={confirmProductImport} className="flex flex-col gap-3 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <input type="hidden" name="previewPayload" value={previewPayload} />
-            <p className="break-words text-sm text-[#1F1F1F]/60">
-              {importableRows.length === 0
-                ? "No hay actualizaciones seguras para confirmar. Revisá duplicados, filas nuevas y errores."
-                : omittedRows > 0
-                  ? "Hay filas omitidas por errores o productos restringidos. Podés importar las filas válidas."
-                  : previewState.source === "google"
-                    ? "Las filas con advertencias se pueden sincronizar. Revisalas antes de confirmar."
-                    : "Las filas con advertencias se pueden importar. Revisalas antes de confirmar."}
-            </p>
-            <button
-              type="submit"
-              disabled={importableRows.length === 0}
-              className="rounded-full bg-[#1F1F1F] px-6 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#556B2F] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {confirmLabel}
-            </button>
-          </form>
+          <ImportConfirmationForm
+            key={previewPayload}
+            previewPayload={previewPayload}
+            mode={previewState.source}
+            confirmLabel={confirmLabel}
+            importableRows={importableRows.length}
+            omittedRows={omittedRows}
+          />
         </section>
       ) : null}
     </div>
