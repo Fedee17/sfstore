@@ -34,6 +34,17 @@ export type SafePriceImportDecision =
     };
 
 const RESTRICTED_PRODUCT_TERMS = ["vape", "elfbar", "ignite", "ignate"];
+const SUPABASE_MONEY_DECIMALS = 2;
+
+export function normalizePriceImportMoney(value: number | null): number | null {
+  if (value === null || !Number.isFinite(value)) {
+    return null;
+  }
+
+  const shifted = Number(`${value}e${SUPABASE_MONEY_DECIMALS}`);
+  const rounded = Number(`${Math.round(shifted)}e-${SUPABASE_MONEY_DECIMALS}`);
+  return rounded === 0 ? 0 : rounded;
+}
 
 function normalizeSafetyText(value: string) {
   return value
@@ -141,23 +152,31 @@ export function buildSafePriceImportDecision(
   }
 
   const errors: string[] = [];
-  if (source.priceProvided && (source.price === null || source.price <= 0)) {
+  const normalizedPrice = normalizePriceImportMoney(source.price);
+  const normalizedTransferPrice = normalizePriceImportMoney(source.transferPrice);
+  const normalizedCost = normalizePriceImportMoney(source.cost);
+  if (source.priceProvided && (normalizedPrice === null || normalizedPrice <= 0)) {
     errors.push("Precio lista inválido; debe ser mayor que cero.");
   }
   if (
     source.transferPriceProvided &&
-    (source.transferPrice === null || source.transferPrice <= 0)
+    (normalizedTransferPrice === null || normalizedTransferPrice <= 0)
   ) {
     errors.push("Precio efectivo/transferencia inválido; debe ser mayor que cero.");
   }
-  if (source.costProvided && (source.cost === null || source.cost < 0)) {
+  if (
+    source.costProvided &&
+    (normalizedCost === null || source.cost === null || source.cost < 0)
+  ) {
     errors.push("Costo inválido; no puede ser negativo.");
   }
 
-  const effectivePrice = source.priceProvided ? source.price : existing.price;
+  const effectivePrice = source.priceProvided
+    ? normalizedPrice
+    : normalizePriceImportMoney(existing.price);
   const effectiveTransferPrice = source.transferPriceProvided
-    ? source.transferPrice
-    : existing.transfer_price;
+    ? normalizedTransferPrice
+    : normalizePriceImportMoney(existing.transfer_price);
   if (
     effectivePrice !== null &&
     effectiveTransferPrice !== null &&
@@ -176,9 +195,24 @@ export function buildSafePriceImportDecision(
     currentValue: number | null;
     nextValue: number | null;
   }> = [
-    { field: "price", provided: source.priceProvided, currentValue: existing.price, nextValue: source.price },
-    { field: "transfer_price", provided: source.transferPriceProvided, currentValue: existing.transfer_price, nextValue: source.transferPrice },
-    { field: "cost", provided: source.costProvided, currentValue: existing.cost, nextValue: source.cost },
+    {
+      field: "price",
+      provided: source.priceProvided,
+      currentValue: normalizePriceImportMoney(existing.price),
+      nextValue: normalizedPrice,
+    },
+    {
+      field: "transfer_price",
+      provided: source.transferPriceProvided,
+      currentValue: normalizePriceImportMoney(existing.transfer_price),
+      nextValue: normalizedTransferPrice,
+    },
+    {
+      field: "cost",
+      provided: source.costProvided,
+      currentValue: normalizePriceImportMoney(existing.cost),
+      nextValue: normalizedCost,
+    },
   ];
   const diffs = candidates
     .filter((candidate) => candidate.provided && candidate.currentValue !== candidate.nextValue)

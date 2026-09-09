@@ -18,6 +18,7 @@ const {
   classifyPriceImportPreview,
   findDuplicateImportSlugs,
   isRestrictedPriceImportProduct,
+  normalizePriceImportMoney,
 } = await import(`data:text/javascript;base64,${Buffer.from(compiledModule).toString("base64")}`);
 
 const googleModuleSource = readFileSync(
@@ -128,11 +129,65 @@ test("equal commercial values are a real no-op", () => {
   );
 });
 
-test("decimal precision is preserved in the generated patch", () => {
-  const precise = 123.456789;
-  const decision = buildSafePriceImportDecision({ ...source, cost: precise }, existing);
+test("money normalization matches the numeric(12,2) storage precision", () => {
+  assert.equal(normalizePriceImportMoney(45714.285714), 45714.29);
+  assert.equal(normalizePriceImportMoney(48270.12987), 48270.13);
+  assert.equal(normalizePriceImportMoney(26300.004), 26300);
+  assert.equal(normalizePriceImportMoney(26300.006), 26300.01);
+});
+
+test("a Google price equal after normalization is unchanged", () => {
+  const decision = buildSafePriceImportDecision(
+    { ...source, price: 45714.285714 },
+    { ...existing, price: 45714.29 },
+  );
+  assert.deepEqual(decision, { kind: "unchanged", patch: {}, diffs: [], errors: [] });
+});
+
+test("an integer Google transfer price equals its decimal database value", () => {
+  const decision = buildSafePriceImportDecision(
+    { ...source, price: 45714.29, transferPrice: 35200 },
+    { ...existing, price: 45714.29, transfer_price: 35200 },
+  );
+  assert.deepEqual(decision, { kind: "unchanged", patch: {}, diffs: [], errors: [] });
+});
+
+test("a value below half a cent is unchanged", () => {
+  const decision = buildSafePriceImportDecision(
+    { ...source, cost: 26300.004 },
+    { ...existing, cost: 26300 },
+  );
+  assert.deepEqual(decision, { kind: "unchanged", patch: {}, diffs: [], errors: [] });
+});
+
+test("a value above half a cent updates to the normalized amount", () => {
+  const decision = buildSafePriceImportDecision(
+    { ...source, cost: 26300.006 },
+    { ...existing, cost: 26300 },
+  );
   assert.equal(decision.kind, "update");
-  assert.equal(decision.patch.cost, precise);
+  assert.deepEqual(decision.patch, { cost: 26300.01 });
+  assert.deepEqual(decision.diffs, [
+    { field: "cost", currentValue: 26300, nextValue: 26300.01 },
+  ]);
+});
+
+test("real changes in cost and recalculated prices produce three normalized diffs", () => {
+  const decision = buildSafePriceImportDecision(
+    { price: 220.125, transferPrice: 180.126, cost: 120.126, priceProvided: true, transferPriceProvided: true, costProvided: true },
+    existing,
+  );
+  assert.equal(decision.kind, "update");
+  assert.deepEqual(decision.patch, {
+    price: 220.13,
+    transfer_price: 180.13,
+    cost: 120.13,
+  });
+  assert.deepEqual(decision.diffs, [
+    { field: "price", currentValue: 200, nextValue: 220.13 },
+    { field: "transfer_price", currentValue: 150, nextValue: 180.13 },
+    { field: "cost", currentValue: 100, nextValue: 120.13 },
+  ]);
 });
 
 test("Google Visualization uses the raw numeric value instead of its rounded display", () => {
