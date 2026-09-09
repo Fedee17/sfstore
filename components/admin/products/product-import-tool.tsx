@@ -27,6 +27,9 @@ const emptyImportPreviewState: ProductImportPreviewState = {
     errors: 0,
     create: 0,
     update: 0,
+    unchanged: 0,
+    review: 0,
+    duplicate: 0,
     blocked: 0,
   },
   source: "file",
@@ -40,7 +43,8 @@ const emptyGoogleImportPreviewState: ProductImportPreviewState = {
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 function formatMoney(value: number | null) {
@@ -68,10 +72,47 @@ function getAttributeSummary(row: ProductImportPreviewRow) {
 }
 
 function StatusBadge({ row }: { row: ProductImportPreviewRow }) {
+  const labels = {
+    update: "UPDATE",
+    create: "CREATE",
+    unchanged: "SIN CAMBIOS",
+    review: "REVIEW / NEW",
+    duplicate: "DUPLICATE",
+    blocked: "BLOCKED",
+    error: "INVALID",
+  } as const;
+  if (row.rowState === "warning") {
+    return (
+      <span className="rounded-full border border-[#8B5E3C]/25 bg-[#F7F4ED] px-3 py-1 text-xs font-semibold text-[#8B5E3C]">
+        Advertencia
+      </span>
+    );
+  }
+  if (row.action === "update" || row.action === "create") {
+    return (
+      <span className="rounded-full border border-[#556B2F]/25 bg-[#556B2F]/10 px-3 py-1 text-xs font-semibold text-[#556B2F]">
+        {labels[row.action]}
+      </span>
+    );
+  }
+  if (row.action === "unchanged") {
+    return (
+      <span className="rounded-full border border-[#1F1F1F]/15 bg-[#1F1F1F]/5 px-3 py-1 text-xs font-semibold text-[#1F1F1F]/65">
+        {labels.unchanged}
+      </span>
+    );
+  }
+  if (row.action === "review" || row.action === "duplicate") {
+    return (
+      <span className="rounded-full border border-[#B7791F]/30 bg-[#B7791F]/10 px-3 py-1 text-xs font-semibold text-[#8A5A13]">
+        {labels[row.action]}
+      </span>
+    );
+  }
   if (row.rowState === "blocked") {
     return (
       <span className="rounded-full border border-[#8B5E3C]/25 bg-[#8B5E3C]/10 px-3 py-1 text-xs font-semibold text-[#8B5E3C]">
-        Omitido
+        {labels.blocked}
       </span>
     );
   }
@@ -79,15 +120,7 @@ function StatusBadge({ row }: { row: ProductImportPreviewRow }) {
   if (row.rowState === "error") {
     return (
       <span className="rounded-full border border-[#8B5E3C]/25 bg-[#8B5E3C]/10 px-3 py-1 text-xs font-semibold text-[#8B5E3C]">
-        Error
-      </span>
-    );
-  }
-
-  if (row.rowState === "warning") {
-    return (
-      <span className="rounded-full border border-[#8B5E3C]/25 bg-[#F7F4ED] px-3 py-1 text-xs font-semibold text-[#8B5E3C]">
-        Advertencia
+        {labels.error}
       </span>
     );
   }
@@ -159,7 +192,8 @@ export function ProductImportTool({
       ? googlePreviewState
       : filePreviewState;
   const hasRows = previewState.rows.length > 0;
-  const omittedRows = previewState.counts.errors + previewState.counts.blocked;
+  const isPricePreview = previewState.sheetName === "Precios Productos";
+  const omittedRows = previewState.counts.errors + previewState.counts.blocked + previewState.counts.review + previewState.counts.duplicate;
   const importableRows = previewState.rows.filter(
     (row) => row.canImport && !row.excludedFromImport,
   );
@@ -241,7 +275,7 @@ export function ProductImportTool({
         action={googleFormAction}
         className="overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm sm:p-6"
       >
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(160px,0.32fr)_minmax(260px,0.5fr)] lg:items-end">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.5fr)] lg:items-end">
           <label className="grid min-w-0 gap-2">
             <span className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
               Link público del Google Sheet
@@ -254,21 +288,8 @@ export function ProductImportTool({
               className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 text-sm outline-none transition focus:border-[#556B2F]"
             />
             <span className="break-words text-xs text-[#1F1F1F]/50">
-              Abrí la pestaña que querés importar y copiá el link. Si no trae gid, pegalo manualmente.
+              Elegí la hoja lógica a la derecha; se leerán sus valores numéricos sin redondear por formato visual.
             </span>
-          </label>
-
-          <label className="grid min-w-0 gap-2">
-            <span className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
-              gid opcional
-            </span>
-            <input
-              name="gid"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="123456789"
-              className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 text-sm outline-none transition focus:border-[#556B2F]"
-            />
           </label>
 
           <SheetSelect
@@ -329,12 +350,25 @@ export function ProductImportTool({
       {hasRows ? (
         <section className="grid gap-5">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-            <CountCard label="Válidos" value={previewState.counts.valid} />
-            <CountCard label="Advertencias" value={previewState.counts.warnings} />
-            <CountCard label="Errores" value={previewState.counts.errors} />
-            <CountCard label="Crear" value={previewState.counts.create} />
-            <CountCard label="Actualizar" value={previewState.counts.update} />
-            <CountCard label="Omitidos" value={previewState.counts.blocked + previewState.counts.errors} />
+            {isPricePreview ? (
+              <>
+                <CountCard label="Actualizar" value={previewState.counts.update} />
+                <CountCard label="Sin cambios" value={previewState.counts.unchanged} />
+                <CountCard label="Revisión / nuevo" value={previewState.counts.review} />
+                <CountCard label="Duplicados" value={previewState.counts.duplicate} />
+                <CountCard label="Bloqueados" value={previewState.counts.blocked} />
+                <CountCard label="Inválidos" value={previewState.counts.errors} />
+              </>
+            ) : (
+              <>
+                <CountCard label="Válidos" value={previewState.counts.valid} />
+                <CountCard label="Advertencias" value={previewState.counts.warnings} />
+                <CountCard label="Errores" value={previewState.counts.errors} />
+                <CountCard label="Crear" value={previewState.counts.create} />
+                <CountCard label="Actualizar" value={previewState.counts.update} />
+                <CountCard label="Omitidos" value={previewState.counts.blocked + previewState.counts.errors} />
+              </>
+            )}
           </div>
 
           <div className="overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 shadow-sm">
@@ -348,7 +382,7 @@ export function ProductImportTool({
                     <th className="px-4 py-4 font-semibold">Precio lista</th>
                     <th className="px-4 py-4 font-semibold">Efectivo/transferencia</th>
                     <th className="px-4 py-4 font-semibold">Costo</th>
-                    <th className="px-4 py-4 font-semibold">Atributos</th>
+                    <th className="px-4 py-4 font-semibold">Cambios efectivos</th>
                     <th className="px-4 py-4 font-semibold">Avisos</th>
                   </tr>
                 </thead>
@@ -368,9 +402,11 @@ export function ProductImportTool({
                         <p className="mt-1 max-w-xs break-all text-xs text-[#1F1F1F]/45">
                           {row.slug}
                         </p>
-                        <p className="mt-1 text-xs text-[#1F1F1F]/45">
-                          Stock inicial: {row.stock}
-                        </p>
+                        {!isPricePreview ? (
+                          <p className="mt-1 text-xs text-[#1F1F1F]/45">
+                            Stock inicial: {row.stock}
+                          </p>
+                        ) : null}
                       </td>
                       <td className="px-4 py-4">
                         <p className="break-words font-semibold">{row.categoryName}</p>
@@ -387,14 +423,20 @@ export function ProductImportTool({
                       <td className="px-4 py-4">{formatMoney(row.cost)}</td>
                       <td className="px-4 py-4">
                         <div className="grid max-w-xs gap-1.5 text-xs text-[#1F1F1F]/65">
-                          {getAttributeSummary(row).length > 0 ? (
+                          {row.diffs.length > 0 ? (
+                            row.diffs.map((diff) => (
+                              <p key={diff.field} className="break-words">
+                                <strong>{diff.field}</strong>: {formatMoney(diff.currentValue)} → {formatMoney(diff.nextValue)}
+                              </p>
+                            ))
+                          ) : getAttributeSummary(row).length > 0 ? (
                             getAttributeSummary(row).map((summary) => (
                               <p key={summary} className="break-words">
                                 {summary}
                               </p>
                             ))
                           ) : (
-                            <p className="text-[#1F1F1F]/40">Sin cambios</p>
+                            <p className="text-[#1F1F1F]/40">Sin cambios efectivos</p>
                           )}
                         </div>
                       </td>
@@ -432,7 +474,7 @@ export function ProductImportTool({
             <input type="hidden" name="previewPayload" value={previewPayload} />
             <p className="break-words text-sm text-[#1F1F1F]/60">
               {importableRows.length === 0
-                ? "No hay filas válidas para importar. Corregí el Sheet o cambiá la hoja."
+                ? "No hay actualizaciones seguras para confirmar. Revisá duplicados, filas nuevas y errores."
                 : omittedRows > 0
                   ? "Hay filas omitidas por errores o productos restringidos. Podés importar las filas válidas."
                   : previewState.source === "google"

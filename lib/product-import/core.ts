@@ -11,8 +11,7 @@ import {
   type NormalizedProductImportRow,
   type SupportedProductSheet,
 } from "@/lib/product-import/types";
-
-const RESTRICTED_PRODUCT_TERMS = ["vape", "elfbar", "ignite", "ignate"];
+import { isRestrictedPriceImportProduct } from "@/lib/product-import/price-import";
 
 export const RELEVANT_COLUMNS: Record<SupportedProductSheet, readonly string[]> = {
   "Producto Perfumes": [
@@ -100,8 +99,7 @@ export function isRelevantEditedColumn(sheet: SupportedProductSheet, column: str
 }
 
 export function isRestrictedImportedProduct(name: string) {
-  const normalized = normalizeImportText(name);
-  return RESTRICTED_PRODUCT_TERMS.some((term) => normalized.includes(term));
+  return isRestrictedPriceImportProduct(name);
 }
 
 function findCell(row: Record<string, unknown>, aliases: readonly string[]) {
@@ -137,10 +135,6 @@ export function parseImportNumber(value: unknown): number | null {
   }
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function readNumber(row: Record<string, unknown>, aliases: readonly string[]) {
-  return parseImportNumber(findCell(row, aliases)?.[1]);
 }
 
 function normalizeAttributeValue(rawValue: string, field: CatalogAttributeField) {
@@ -199,19 +193,30 @@ function descriptions(name: string, categoryName: string) {
 export function normalizeProductImportRow(sheet: SupportedProductSheet, row: Record<string, unknown>, rowNumber: number): NormalizedProductImportRow | null {
   const name = readString(row, ["Producto"]);
   if (!name) return null;
-  const category = inferCategory(name, sheet);
+  const category = sheet === "Precios Productos"
+    ? { categoryName: "Sin categoría fuente", categorySlug: "", warnings: [] as string[] }
+    : inferCategory(name, sheet);
   const copy = descriptions(name, category.categoryName);
   const catalogAttributes = parseAttributeUpdates(row, category.categorySlug);
+  let priceCell;
+  let transferPriceCell;
+  let costCell;
   let price: number | null;
   let transferPrice: number | null;
   let cost: number | null;
   if (sheet === "Producto Perfumes") {
-    price = readNumber(row, ["Precio de venta"]);
-    transferPrice = readNumber(row, ["Precio final con descuento"]);
-    cost = readNumber(row, ["Costo unitario"]);
+    priceCell = getImportCell(row, ["Precio de venta"]);
+    transferPriceCell = getImportCell(row, ["Precio final con descuento"]);
+    costCell = getImportCell(row, ["Costo unitario"]);
+    price = parseImportNumber(priceCell.value);
+    transferPrice = parseImportNumber(transferPriceCell.value);
+    cost = parseImportNumber(costCell.value);
   } else if (sheet === "Termos y Mates") {
-    const salePrice = readNumber(row, ["Precio de venta"]);
-    const finalPrice = readNumber(row, ["Precio final con descuento"]);
+    priceCell = getImportCell(row, ["Precio de venta"]);
+    transferPriceCell = getImportCell(row, ["Precio final con descuento"]);
+    costCell = { present: false, nonBlank: false, value: null };
+    const salePrice = parseImportNumber(priceCell.value);
+    const finalPrice = parseImportNumber(transferPriceCell.value);
     price = salePrice;
     transferPrice = null;
     if (finalPrice !== null && salePrice !== null && finalPrice > salePrice) {
@@ -220,9 +225,12 @@ export function normalizeProductImportRow(sheet: SupportedProductSheet, row: Rec
     }
     cost = null;
   } else {
-    price = readNumber(row, ["PRECIO LISTA", "Precio lista"]);
-    transferPrice = readNumber(row, ["PRECIO CON DESCUENTO", "Precio con descuento"]);
-    cost = readNumber(row, ["Costo unitario"]);
+    priceCell = getImportCell(row, ["PRECIO LISTA", "Precio lista"]);
+    transferPriceCell = getImportCell(row, ["PRECIO CON DESCUENTO", "Precio con descuento"]);
+    costCell = getImportCell(row, ["Costo unitario"]);
+    price = parseImportNumber(priceCell.value);
+    transferPrice = parseImportNumber(transferPriceCell.value);
+    cost = parseImportNumber(costCell.value);
   }
   const errors: string[] = [];
   const warnings = [...category.warnings, ...catalogAttributes.warnings];
@@ -230,9 +238,11 @@ export function normalizeProductImportRow(sheet: SupportedProductSheet, row: Rec
     warnings.push("La planilla marca este producto como no rentable; revisar margen.");
   }
   if (isRestrictedImportedProduct(name)) errors.push("Producto restringido: revisar manualmente");
-  if (price === null || price <= 0) errors.push("Precio lista inválido o faltante");
+  if (sheet !== "Precios Productos" && (price === null || price <= 0)) errors.push("Precio lista inválido o faltante");
+  if (sheet === "Precios Productos" && priceCell.nonBlank && (price === null || price <= 0)) errors.push("Precio lista inválido");
+  if (sheet === "Precios Productos" && transferPriceCell.nonBlank && (transferPrice === null || transferPrice <= 0)) errors.push("Precio efectivo/transferencia inválido");
   if (transferPrice !== null && price !== null && transferPrice >= price) errors.push("Precio efectivo/transferencia debe ser menor que precio lista");
-  if (cost !== null && cost < 0) errors.push("El costo no puede ser negativo.");
+  if (costCell.nonBlank && (cost === null || cost < 0)) errors.push("El costo no puede ser negativo.");
   return {
     rowNumber,
     sourceSheet: sheet,
@@ -243,12 +253,17 @@ export function normalizeProductImportRow(sheet: SupportedProductSheet, row: Rec
     price,
     transferPrice,
     cost,
+    commercialFields: {
+      priceProvided: priceCell.nonBlank,
+      transferPriceProvided: transferPriceCell.nonBlank,
+      costProvided: costCell.nonBlank,
+    },
     stock: 0,
     status: sheet !== "Precios Productos" && errors.length === 0 ? "active" : "draft",
     sku: null,
     shortDescription: copy.shortDescription,
     description: copy.description,
-    attributes: [
+    attributes: sheet === "Precios Productos" ? [] : [
       sheet === "Producto Perfumes" && readString(row, ["Proveedor"]) ? { name: "Proveedor", value: readString(row, ["Proveedor"]), sortOrder: 10 } : null,
       { name: "Tipo", value: category.categoryName, sortOrder: 20 },
     ].filter((item): item is NonNullable<typeof item> => Boolean(item)),

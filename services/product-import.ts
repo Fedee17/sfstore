@@ -16,6 +16,11 @@ import {
   parseImportNumber,
   slugifyImportedProduct,
 } from "@/lib/product-import/core";
+import {
+  buildSafePriceImportDecision,
+  findDuplicateImportSlugs,
+  getPriceImportSource,
+} from "@/lib/product-import/price-import";
 import type {
   ImportCatalogAttributeUpdate,
   NormalizedProductImportRow,
@@ -37,6 +42,8 @@ type ExistingProduct = {
 export type ProductSyncBatchResult = {
   created: number;
   updated: number;
+  unchanged: number;
+  review: number;
   blocked: number;
   invalid: number;
   errors: number;
@@ -46,6 +53,8 @@ export type ProductSyncBatchResult = {
 export type ConfirmedImportResult = {
   created: number;
   updated: number;
+  unchanged: number;
+  review: number;
   omittedErrors: number;
   omittedDuplicates: number;
 };
@@ -157,8 +166,12 @@ function result(rowNumber: number, slug: string | null, status: ProductSyncRowRe
 }
 
 export async function syncImportedProductRows(sheet: SupportedProductSheet, inputs: ProductSyncInputRow[]): Promise<ProductSyncBatchResult> {
-  const summary: ProductSyncBatchResult = { created: 0, updated: 0, blocked: 0, invalid: 0, errors: 0, results: [] };
-  const processedSlugs = new Set<string>();
+  const summary: ProductSyncBatchResult = { created: 0, updated: 0, unchanged: 0, review: 0, blocked: 0, invalid: 0, errors: 0, results: [] };
+  const inputSlugs = inputs.map((input) => {
+    const name = String(getImportCell(input.row, ["Producto"]).value ?? "").trim();
+    return { slug: name ? slugifyImportedProduct(name) : "" };
+  });
+  const duplicateSlugs = findDuplicateImportSlugs(inputSlugs);
   for (const input of inputs) {
     const productName = String(getImportCell(input.row, ["Producto"]).value ?? "").trim();
     const slug = productName ? slugifyImportedProduct(productName) : null;
@@ -172,12 +185,11 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
       summary.results.push(result(input.rowNumber, slug, "invalid", "Producto faltante o inválido."));
       continue;
     }
-    if (processedSlugs.has(slug)) {
+    if (duplicateSlugs.has(slug)) {
       summary.invalid += 1;
       summary.results.push(result(input.rowNumber, slug, "invalid", "Slug duplicado dentro del batch."));
       continue;
     }
-    processedSlugs.add(slug);
     if (isRestrictedImportedProduct(productName)) {
       summary.blocked += 1;
       summary.results.push(result(input.rowNumber, slug, "blocked", "Producto restringido: revisar manualmente."));
@@ -190,6 +202,34 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
       if (!normalized) {
         summary.invalid += 1;
         summary.results.push(result(input.rowNumber, slug, "invalid", "No se pudo normalizar la fila."));
+        continue;
+      }
+      if (sheet === "Precios Productos") {
+        const decision = buildSafePriceImportDecision(getPriceImportSource(normalized), existing);
+        if (decision.kind === "review") {
+          summary.review += 1;
+          summary.results.push(result(input.rowNumber, slug, "review", "Requiere revisión / posible nuevo producto."));
+          continue;
+        }
+        if (decision.kind === "invalid") {
+          summary.invalid += 1;
+          summary.results.push(result(input.rowNumber, slug, "invalid", decision.errors.join(" ")));
+          continue;
+        }
+        if (decision.kind === "unchanged") {
+          summary.unchanged += 1;
+          summary.results.push(result(input.rowNumber, slug, "unchanged", "Sin cambios comerciales."));
+          continue;
+        }
+        if (!existing) throw new Error("El producto dejó de existir durante la sincronización.");
+        const { error } = await getSupabaseAdminClient()
+          .from("products")
+          .update(decision.patch)
+          .eq("id", existing.id);
+        if (error) throw new Error(error.message);
+        summary.updated += 1;
+        summary.results.push(result(input.rowNumber, existing.slug, "updated", "Datos comerciales actualizados."));
+        revalidatePath(`/producto/${existing.slug}`);
         continue;
       }
       const cells = getPriceCells(sheet, input.row);
@@ -273,20 +313,48 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
 }
 
 export async function applyConfirmedProductImportRows(rows: NormalizedProductImportRow[]): Promise<ConfirmedImportResult> {
-  const result: ConfirmedImportResult = { created: 0, updated: 0, omittedErrors: 0, omittedDuplicates: 0 };
-  const processedSlugs = new Set<string>();
+  const result: ConfirmedImportResult = { created: 0, updated: 0, unchanged: 0, review: 0, omittedErrors: 0, omittedDuplicates: 0 };
+  const duplicateSlugs = findDuplicateImportSlugs(rows);
   for (const row of rows) {
-    if (processedSlugs.has(row.slug)) {
+    if (duplicateSlugs.has(row.slug)) {
       result.omittedDuplicates += 1;
       continue;
     }
-    processedSlugs.add(row.slug);
-    if (isRestrictedImportedProduct(row.name) || !row.slug || row.price === null || row.price <= 0 || (row.transferPrice !== null && row.transferPrice >= row.price)) {
+    if (
+      isRestrictedImportedProduct(row.name) ||
+      !row.slug ||
+      (row.sourceSheet !== "Precios Productos" &&
+        (row.price === null || row.price <= 0 || (row.transferPrice !== null && row.transferPrice >= row.price)))
+    ) {
       result.omittedErrors += 1;
       continue;
     }
     try {
       const existing = await findExistingProduct(row.slug);
+      if (row.sourceSheet === "Precios Productos") {
+        const decision = buildSafePriceImportDecision(getPriceImportSource(row), existing);
+        if (decision.kind === "review") {
+          result.review += 1;
+          continue;
+        }
+        if (decision.kind === "invalid") {
+          result.omittedErrors += 1;
+          continue;
+        }
+        if (decision.kind === "unchanged") {
+          result.unchanged += 1;
+          continue;
+        }
+        if (!existing) throw new Error("El producto dejó de existir durante la importación.");
+        const { error } = await getSupabaseAdminClient()
+          .from("products")
+          .update(decision.patch)
+          .eq("id", existing.id);
+        if (error) throw new Error(error.message);
+        result.updated += 1;
+        revalidatePath(`/producto/${existing.slug}`);
+        continue;
+      }
       const categoryId = await getOrCreateCategory(row.categoryName, row.categorySlug);
       const productId = existing?.id ?? crypto.randomUUID();
       const payload = {

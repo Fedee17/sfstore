@@ -90,15 +90,15 @@ export async function POST(request: Request) {
     console.error("[Google Sheets sync] Batch failed", error instanceof Error ? error.message : "unknown");
     return json({ ok: false, error: "No se pudo procesar la sincronización." }, 500);
   }
-  const successful = result.created + result.updated;
+  const successful = result.created + result.updated + result.unchanged;
   const responseStatus = successful === 0 && result.errors > 0
     ? 500
-    : successful === 0 && result.invalid > 0
+    : successful === 0 && (result.invalid > 0 || result.review > 0)
       ? 422
       : 200;
   return json({
-    ok: successful > 0 && result.errors === 0 && result.invalid === 0,
-    partial: successful > 0 && (result.errors > 0 || result.invalid > 0 || result.blocked > 0),
+    ok: successful > 0 && result.errors === 0 && result.invalid === 0 && result.review === 0,
+    partial: successful > 0 && (result.errors > 0 || result.invalid > 0 || result.review > 0 || result.blocked > 0),
     ...result,
   }, responseStatus);
 }

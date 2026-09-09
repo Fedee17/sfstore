@@ -30,6 +30,11 @@ export type NormalizedProductImportRow = {
   price: number | null;
   transferPrice: number | null;
   cost: number | null;
+  commercialFields: {
+    priceProvided: boolean;
+    transferPriceProvided: boolean;
+    costProvided: boolean;
+  };
   stock: number;
   status: "draft" | "active";
   sku: string | null;
@@ -52,6 +57,6 @@ export type ProductSyncInputRow = {
 export type ProductSyncRowResult = {
   rowNumber: number;
   slug: string | null;
-  status: "created" | "updated" | "blocked" | "invalid" | "error";
+  status: "created" | "updated" | "unchanged" | "review" | "blocked" | "invalid" | "error";
   message: string;
 };

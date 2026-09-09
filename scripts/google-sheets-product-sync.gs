@@ -69,7 +69,8 @@ function handleSfstoreEdit(e) {
       return;
     }
     console.log("[SFSTORE sync] Enviando " + rowCount + " fila(s) de " + sheetName + "; columnas: " + editedHeaders.join(", "));
-    const values = sheet.getRange(startRow, 1, rowCount, lastColumn).getDisplayValues();
+    // Preserve numeric formula results instead of sending rounded display strings.
+    const values = sheet.getRange(startRow, 1, rowCount, lastColumn).getValues();
     const rows = values.map(function (valuesRow, index) {
       const row = {};
       headers.forEach(function (header, columnIndex) {
