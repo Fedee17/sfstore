@@ -17,6 +17,10 @@ import {
   slugifyImportedProduct,
 } from "@/lib/product-import/core";
 import {
+  getProductImportLookupSlugs,
+  selectExistingProductForImport,
+} from "@/lib/product-import/aliases";
+import {
   buildSafePriceImportDecision,
   findDuplicateImportSlugs,
   getPriceImportSource,
@@ -59,17 +63,24 @@ export type ConfirmedImportResult = {
   omittedDuplicates: number;
 };
 
-async function findExistingProduct(slug: string, previousSlug?: string) {
-  const slugs = [...new Set([slug, previousSlug].filter((value): value is string => Boolean(value)))];
+async function findExistingProduct(
+  sourceSheet: SupportedProductSheet,
+  slug: string,
+  previousSlug?: string,
+) {
+  const slugs = getProductImportLookupSlugs(sourceSheet, slug, previousSlug);
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
     .select("id, slug, price, transfer_price, cost, status")
     .in("slug", slugs);
   if (error) throw new Error(error.message);
   const products = (data ?? []) as ExistingProduct[];
-  return products.find((product) => product.slug === slug)
-    ?? products.find((product) => product.slug === previousSlug)
-    ?? null;
+  return selectExistingProductForImport(
+    products,
+    sourceSheet,
+    slug,
+    previousSlug,
+  );
 }
 
 async function getOrCreateCategory(name: string, slug: string) {
@@ -197,7 +208,7 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
     }
     try {
       const previousSlug = input.previousProductName ? slugifyImportedProduct(input.previousProductName) : undefined;
-      const existing = await findExistingProduct(slug, previousSlug);
+      const existing = await findExistingProduct(sheet, slug, previousSlug);
       const normalized = normalizeProductImportRow(sheet, input.row, input.rowNumber);
       if (!normalized) {
         summary.invalid += 1;
@@ -330,7 +341,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
       continue;
     }
     try {
-      const existing = await findExistingProduct(row.slug);
+      const existing = await findExistingProduct(row.sourceSheet, row.slug);
       if (row.sourceSheet === "Precios Productos") {
         const decision = buildSafePriceImportDecision(getPriceImportSource(row), existing);
         if (decision.kind === "review") {

@@ -6,6 +6,10 @@ import {
   isSupportedProductSheet,
   normalizeProductImportRows,
 } from "@/lib/product-import/core";
+import {
+  getProductImportLookupSlugs,
+  selectExistingProductForImport,
+} from "@/lib/product-import/aliases";
 import { parseGoogleVisualizationRows } from "@/lib/product-import/google-visualization";
 import {
   runProductImportConfirmation,
@@ -142,7 +146,13 @@ async function fetchGoogleSheetRows(spreadsheetId: string, sheetName: string) {
 }
 
 async function findExistingProducts(rows: NormalizedProductImportRow[]) {
-  const slugs = [...new Set(rows.map((row) => row.slug).filter(Boolean))];
+  const slugs = [
+    ...new Set(
+      rows.flatMap((row) =>
+        getProductImportLookupSlugs(row.sourceSheet, row.slug),
+      ),
+    ),
+  ];
   if (slugs.length === 0) return [];
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
@@ -153,10 +163,11 @@ async function findExistingProducts(rows: NormalizedProductImportRow[]) {
 }
 
 function buildPreviewState(sheetName: SupportedProductSheet, rows: NormalizedProductImportRow[], existingProducts: ExistingProduct[], source: ImportSource = "file"): ProductImportPreviewState {
-  const existingBySlug = new Map(existingProducts.map((product) => [product.slug, product]));
   const duplicateSlugs = findDuplicateImportSlugs(rows);
   const previewRows = rows.map((row) => {
-    const existing = row.sku ? existingProducts.find((product) => product.sku === row.sku) : existingBySlug.get(row.slug);
+    const existing = row.sku
+      ? existingProducts.find((product) => product.sku === row.sku) ?? null
+      : selectExistingProductForImport(existingProducts, sheetName, row.slug);
     const blocked = row.errors.some((error) => error.toLowerCase().includes("producto restringido"));
     const hasErrors = row.errors.length > 0;
     if (sheetName === "Precios Productos") {
