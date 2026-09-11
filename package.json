@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "export:perfume-attributes": "node --env-file=.env.local scripts/export-perfume-attributes.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
