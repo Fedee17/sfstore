@@ -25,6 +25,10 @@ import {
   findDuplicateImportSlugs,
   getPriceImportSource,
 } from "@/lib/product-import/price-import";
+import {
+  buildPerfumeImportDecision,
+  type ExistingPerfumeImportProduct,
+} from "@/lib/product-import/perfume-import";
 import type {
   ImportCatalogAttributeUpdate,
   NormalizedProductImportRow,
@@ -34,14 +38,7 @@ import type {
 } from "@/lib/product-import/types";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
-type ExistingProduct = {
-  id: string;
-  slug: string;
-  price: number;
-  transfer_price: number | null;
-  cost: number | null;
-  status: "draft" | "active" | "archived";
-};
+type ExistingProduct = ExistingPerfumeImportProduct;
 
 export type ProductSyncBatchResult = {
   created: number;
@@ -71,7 +68,24 @@ async function findExistingProduct(
   const slugs = getProductImportLookupSlugs(sourceSheet, slug, previousSlug);
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, slug, price, transfer_price, cost, status")
+    .select(`
+      id,
+      category_id,
+      name,
+      slug,
+      short_description,
+      description,
+      status,
+      price,
+      transfer_price,
+      compare_at_price,
+      cost,
+      stock,
+      sku,
+      featured,
+      categories(name, slug),
+      product_attributes(name, value, sort_order)
+    `)
     .in("slug", slugs);
   if (error) throw new Error(error.message);
   const products = (data ?? []) as ExistingProduct[];
@@ -276,6 +290,21 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
         summary.results.push(result(input.rowNumber, slug, "invalid", "Costo inválido."));
         continue;
       }
+      const effectiveRow = {
+        ...normalized,
+        price,
+        transferPrice,
+        cost: parsedCost,
+      };
+      if (
+        sheet === "Producto Perfumes" &&
+        existing &&
+        buildPerfumeImportDecision(effectiveRow, existing, "automatic").kind === "unchanged"
+      ) {
+        summary.unchanged += 1;
+        summary.results.push(result(input.rowNumber, existing.slug, "unchanged", "Sin cambios efectivos."));
+        continue;
+      }
       const categoryId = await getOrCreateCategory(normalized.categoryName, normalized.categorySlug);
       const productId = existing?.id ?? crypto.randomUUID();
       const payload = {
@@ -364,6 +393,14 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
         if (error) throw new Error(error.message);
         result.updated += 1;
         revalidatePath(`/producto/${existing.slug}`);
+        continue;
+      }
+      if (
+        row.sourceSheet === "Producto Perfumes" &&
+        existing &&
+        buildPerfumeImportDecision(row, existing).kind === "unchanged"
+      ) {
+        result.unchanged += 1;
         continue;
       }
       const categoryId = await getOrCreateCategory(row.categoryName, row.categorySlug);

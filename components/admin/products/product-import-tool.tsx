@@ -55,6 +55,16 @@ function formatMoney(value: number | null) {
   return value !== null ? currencyFormatter.format(value) : "-";
 }
 
+function formatDiffValue(
+  value: ProductImportPreviewRow["diffs"][number]["currentValue"],
+  format: ProductImportPreviewRow["diffs"][number]["format"],
+) {
+  if (format === "money") return formatMoney(value as number | null);
+  if (format === "boolean") return value ? "Sí" : "No";
+  if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "-";
+  return value === null || value === "" ? "-" : String(value);
+}
+
 function getAttributeSummary(row: ProductImportPreviewRow) {
   const updates = Array.isArray(row.catalogAttributeUpdates)
     ? row.catalogAttributeUpdates
@@ -85,6 +95,13 @@ function StatusBadge({ row }: { row: ProductImportPreviewRow }) {
     blocked: "BLOCKED",
     error: "INVALID",
   } as const;
+  if (row.action === "unchanged") {
+    return (
+      <span className="rounded-full border border-[#1F1F1F]/15 bg-[#1F1F1F]/5 px-3 py-1 text-xs font-semibold text-[#1F1F1F]/65">
+        {labels.unchanged}
+      </span>
+    );
+  }
   if (row.rowState === "warning") {
     return (
       <span className="rounded-full border border-[#8B5E3C]/25 bg-[#F7F4ED] px-3 py-1 text-xs font-semibold text-[#8B5E3C]">
@@ -96,13 +113,6 @@ function StatusBadge({ row }: { row: ProductImportPreviewRow }) {
     return (
       <span className="rounded-full border border-[#556B2F]/25 bg-[#556B2F]/10 px-3 py-1 text-xs font-semibold text-[#556B2F]">
         {labels[row.action]}
-      </span>
-    );
-  }
-  if (row.action === "unchanged") {
-    return (
-      <span className="rounded-full border border-[#1F1F1F]/15 bg-[#1F1F1F]/5 px-3 py-1 text-xs font-semibold text-[#1F1F1F]/65">
-        {labels.unchanged}
       </span>
     );
   }
@@ -497,7 +507,7 @@ export function ProductImportTool({
                           {row.diffs.length > 0 ? (
                             row.diffs.map((diff) => (
                               <p key={diff.field} className="break-words">
-                                <strong>{diff.field}</strong>: {formatMoney(diff.currentValue)} → {formatMoney(diff.nextValue)}
+                                <strong>{diff.label}</strong>: {formatDiffValue(diff.currentValue, diff.format)} → {formatDiffValue(diff.nextValue, diff.format)}
                               </p>
                             ))
                           ) : getAttributeSummary(row).length > 0 ? (
