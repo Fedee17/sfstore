@@ -27,6 +27,7 @@ create table if not exists products (
   short_description text not null,
   description text,
   price numeric(12, 2) not null check (price >= 0),
+  transfer_price numeric(12, 2) check (transfer_price is null or transfer_price >= 0),
   compare_at_price numeric(12, 2) check (compare_at_price is null or compare_at_price >= 0),
   cost numeric(12, 2) check (cost is null or cost >= 0),
   stock integer not null default 0 check (stock >= 0),
