@@ -1,7 +1,12 @@
 import { AdminNav } from "@/components/admin/admin-nav";
 import {
+  CATALOG_ATTRIBUTE_KEYS,
   PERFUME_ATTRIBUTE_FIELDS,
   MATE_ATTRIBUTE_FIELDS,
+  getCatalogAttributeNameAliases,
+  getCatalogAttributeOptionLabel,
+  getCatalogAttributeValues,
+  type CatalogAttributeKey,
 } from "@/lib/catalog/attribute-config";
 import {
   filterQuickCatalogProducts,
@@ -71,10 +76,11 @@ function getAvailableAttributeFilters(products: QuickCatalogProduct[]) {
       const values = new Set<string>();
 
       for (const product of products) {
-        for (const attribute of product.attributes) {
-          if (attribute.name === field.key && attribute.value.trim()) {
-            values.add(attribute.value.trim());
-          }
+        for (const value of getCatalogAttributeValues(
+          product.attributes,
+          field.key,
+        )) {
+          values.add(value);
         }
       }
 
@@ -86,6 +92,48 @@ function getAvailableAttributeFilters(products: QuickCatalogProduct[]) {
       };
     })
     .filter((field) => field.values.length > 0);
+}
+
+function getDisplayValues(
+  product: QuickCatalogProduct,
+  key: CatalogAttributeKey,
+) {
+  return getCatalogAttributeValues(product.attributes, key).map((value) =>
+    getCatalogAttributeOptionLabel(key, value),
+  );
+}
+
+function getPerfumeSummary(product: QuickCatalogProduct) {
+  if (product.category?.slug !== "perfumes") return [];
+
+  const commercialCategory = getDisplayValues(
+    product,
+    CATALOG_ATTRIBUTE_KEYS.commercialCategory,
+  )[0];
+  const gender = getDisplayValues(
+    product,
+    CATALOG_ATTRIBUTE_KEYS.gender,
+  )[0];
+  const families = getDisplayValues(
+    product,
+    CATALOG_ATTRIBUTE_KEYS.olfactoryFamily,
+  );
+  const intensity = getDisplayValues(
+    product,
+    CATALOG_ATTRIBUTE_KEYS.intensity,
+  )[0];
+  const occasions = getDisplayValues(
+    product,
+    CATALOG_ATTRIBUTE_KEYS.occasion,
+  );
+  const mainLine = [
+    commercialCategory,
+    gender,
+    families.length > 0 ? families.join(" / ") : null,
+    intensity,
+  ].filter(Boolean);
+
+  return [mainLine.join(" · "), occasions.join(" · ")].filter(Boolean);
 }
 
 function ProductImage({ product }: { product: QuickCatalogProduct }) {
@@ -112,6 +160,7 @@ function ProductImage({ product }: { product: QuickCatalogProduct }) {
 
 function ProductCard({ product }: { product: QuickCatalogProduct }) {
   const stock = getStockLabel(product.stock);
+  const perfumeSummary = getPerfumeSummary(product);
 
   return (
     <article className="grid min-w-0 overflow-hidden rounded-3xl border border-[#8B5E3C]/15 bg-white/80 shadow-sm sm:grid-cols-[128px_minmax(0,1fr)]">
@@ -153,6 +202,16 @@ function ProductCard({ product }: { product: QuickCatalogProduct }) {
             </p>
           </div>
         </div>
+
+        {perfumeSummary.length > 0 ? (
+          <div className="mt-3 min-w-0 rounded-2xl border border-[#8B5E3C]/10 bg-[#F7F4ED]/70 px-3 py-2 text-sm text-[#1F1F1F]/70">
+            {perfumeSummary.map((line) => (
+              <p key={line} className="break-words">
+                {line}
+              </p>
+            ))}
+          </div>
+        ) : null}
 
         <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-xs">
           <span className="rounded-full border border-[#1F1F1F]/10 px-3 py-1 font-semibold text-[#1F1F1F]/65">
@@ -228,6 +287,12 @@ export default async function AdminQuickCatalogPage({
     status: getParam(params, "status"),
     stock: stockParam === "in" || stockParam === "out" ? stockParam : undefined,
     attributes,
+    attributeAliases: Object.fromEntries(
+      availableAttributeFilters.map((field) => [
+        field.key,
+        getCatalogAttributeNameAliases(field.key),
+      ]),
+    ),
   };
   const products = filterQuickCatalogProducts(catalog.data, filters);
 
@@ -335,7 +400,8 @@ export default async function AdminQuickCatalogPage({
                     {field.values.map((value) => (
                       <option key={value} value={value}>
                         {field.options.find((option) => option.value === value)
-                          ?.label ?? value}
+                          ?.label ??
+                          getCatalogAttributeOptionLabel(field.key, value)}
                       </option>
                     ))}
                   </select>

@@ -34,6 +34,7 @@ export type QuickCatalogFilters = {
   status?: string;
   stock?: "in" | "out";
   attributes?: Record<string, string>;
+  attributeAliases?: Record<string, readonly string[]>;
 };
 
 export function normalizeQuickCatalogText(value: unknown) {
@@ -66,13 +67,16 @@ function productHasAttribute(
   product: QuickCatalogProduct,
   attributeName: string,
   attributeValue: string,
+  aliases: readonly string[] = [],
 ) {
-  const normalizedName = normalizeQuickCatalogText(attributeName);
+  const acceptedNames = new Set(
+    [attributeName, ...aliases].map(normalizeQuickCatalogText),
+  );
   const normalizedValue = normalizeQuickCatalogText(attributeValue);
 
   return product.attributes.some(
     (attribute) =>
-      normalizeQuickCatalogText(attribute.name) === normalizedName &&
+      acceptedNames.has(normalizeQuickCatalogText(attribute.name)) &&
       normalizeQuickCatalogText(attribute.value) === normalizedValue,
   );
 }
@@ -96,7 +100,12 @@ export function filterQuickCatalogProducts(
     if (filters.stock === "out" && product.stock > 0) return false;
 
     return attributeFilters.every(([name, value]) =>
-      productHasAttribute(product, name, value),
+      productHasAttribute(
+        product,
+        name,
+        value,
+        filters.attributeAliases?.[name],
+      ),
     );
   });
 }

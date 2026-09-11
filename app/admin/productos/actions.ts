@@ -351,6 +351,7 @@ async function replaceCatalogAttributes(
 }
 function revalidateProductPaths(slug: string) {
   revalidatePath("/admin/productos");
+  revalidatePath("/admin/consulta");
   revalidatePath("/perfumes");
   revalidatePath("/mates");
   revalidatePath(`/producto/${slug}`);

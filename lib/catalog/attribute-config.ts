@@ -22,6 +22,7 @@ export const CATALOG_ATTRIBUTE_KEYS = {
   intensity: "intensity",
   occasion: "occasion",
   gender: "gender",
+  // Legacy parser token only. Decants are standalone products and this key is not a managed field.
   decantAvailable: "decant_available",
   mateType: "mate_type",
   material: "material",
@@ -38,57 +39,47 @@ const option = (value: string, label: string): CatalogAttributeOption => ({
 });
 
 export const PERFUME_COMMERCIAL_CATEGORY_OPTIONS = [
-  option("presencia", "Para hacer sentir presencia"),
-  option("diario", "Para usar todos los días"),
-  option("frescos", "Frescos y versátiles"),
-  option("dulces", "Dulces y llamativos"),
-  option("nocturnos", "Elegantes y nocturnos"),
-  option("diferentes", "Para salir de lo habitual"),
-  option("regalo", "Para regalar bien"),
-  option("decants", "Decants para probar"),
+  option("arabe", "Árabe"),
+  option("disenador", "Diseñador"),
+  option("nicho", "Nicho"),
+  option("inspirado", "Inspirado"),
+  option("otro", "Otro"),
 ] as const;
 
 export const PERFUME_OLFACTORY_FAMILY_OPTIONS = [
-  option("fresco", "Fresco"),
-  option("citrico", "Cítrico"),
-  option("acuatico", "Acuático"),
-  option("aromatico", "Aromático"),
-  option("verde", "Verde"),
-  option("frutal", "Frutal"),
   option("dulce", "Dulce"),
-  option("vainilla", "Vainilla"),
-  option("gourmand", "Gourmand"),
-  option("ambar", "Ámbar"),
+  option("fresco", "Fresco"),
+  option("frutal", "Frutal"),
+  option("citrico", "Cítrico"),
   option("amaderado", "Amaderado"),
   option("especiado", "Especiado"),
-  option("oud", "Oud"),
-  option("oriental", "Oriental"),
+  option("ambarado", "Ambarado"),
+  option("floral", "Floral"),
+  option("aromatico", "Aromático"),
+  option("acuatico", "Acuático"),
+  option("gourmand", "Gourmand"),
+  option("cuero", "Cuero"),
 ] as const;
 
 export const PERFUME_INTENSITY_OPTIONS = [
   option("suave", "Suave"),
   option("media", "Media"),
-  option("alta", "Alta"),
-  option("muy-alta", "Muy alta"),
+  option("intensa", "Intensa"),
 ] as const;
 
 export const PERFUME_OCCASION_OPTIONS = [
-  option("dia", "Día"),
-  option("noche", "Noche"),
+  option("diario", "Diario"),
   option("trabajo", "Trabajo"),
-  option("facultad", "Facultad"),
-  option("uso-diario", "Uso diario"),
   option("salida", "Salida"),
   option("cita", "Cita"),
+  option("noche", "Noche"),
   option("evento", "Evento"),
-  option("verano", "Verano"),
-  option("invierno", "Invierno"),
   option("regalo", "Regalo"),
 ] as const;
 
 export const PERFUME_GENDER_OPTIONS = [
-  option("hombre", "Hombre"),
-  option("mujer", "Mujer"),
+  option("masculino", "Masculino"),
+  option("femenino", "Femenino"),
   option("unisex", "Unisex"),
 ] as const;
 
@@ -127,13 +118,13 @@ export const PERFUME_ATTRIBUTE_FIELDS: readonly CatalogAttributeField[] = [
   {
     key: CATALOG_ATTRIBUTE_KEYS.commercialCategory,
     label: "Categoría comercial",
-    multiple: true,
-    input: "checkboxes",
+    multiple: false,
+    input: "select",
     options: PERFUME_COMMERCIAL_CATEGORY_OPTIONS,
   },
   {
     key: CATALOG_ATTRIBUTE_KEYS.olfactoryFamily,
-    label: "Familia olfativa",
+    label: "Familia / estilo olfativo",
     multiple: true,
     input: "checkboxes",
     options: PERFUME_OLFACTORY_FAMILY_OPTIONS,
@@ -147,24 +138,17 @@ export const PERFUME_ATTRIBUTE_FIELDS: readonly CatalogAttributeField[] = [
   },
   {
     key: CATALOG_ATTRIBUTE_KEYS.occasion,
-    label: "Momento de uso",
+    label: "Ocasión",
     multiple: true,
     input: "checkboxes",
     options: PERFUME_OCCASION_OPTIONS,
   },
   {
     key: CATALOG_ATTRIBUTE_KEYS.gender,
-    label: "Género / orientación comercial",
+    label: "Género",
     multiple: false,
     input: "select",
     options: PERFUME_GENDER_OPTIONS,
-  },
-  {
-    key: CATALOG_ATTRIBUTE_KEYS.decantAvailable,
-    label: "Disponible como decant",
-    multiple: false,
-    input: "boolean",
-    options: [],
   },
 ];
 
@@ -206,6 +190,49 @@ export const MANAGED_CATALOG_ATTRIBUTE_KEYS = [
 
 export const LEGACY_COMMERCIAL_CATEGORY_NAME = "Categoría comercial";
 
+const ATTRIBUTE_NAME_ALIASES: Record<CatalogAttributeKey, readonly string[]> = {
+  [CATALOG_ATTRIBUTE_KEYS.commercialCategory]: [
+    CATALOG_ATTRIBUTE_KEYS.commercialCategory,
+    LEGACY_COMMERCIAL_CATEGORY_NAME,
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.olfactoryFamily]: [
+    CATALOG_ATTRIBUTE_KEYS.olfactoryFamily,
+    "Familia olfativa",
+    "Familia / estilo olfativo",
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.intensity]: [
+    CATALOG_ATTRIBUTE_KEYS.intensity,
+    "Intensidad",
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.occasion]: [
+    CATALOG_ATTRIBUTE_KEYS.occasion,
+    "Ocasión",
+    "Momento",
+    "Momento de uso",
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.gender]: [
+    CATALOG_ATTRIBUTE_KEYS.gender,
+    "Género",
+    "Genero",
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.decantAvailable]: [
+    CATALOG_ATTRIBUTE_KEYS.decantAvailable,
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.mateType]: [
+    CATALOG_ATTRIBUTE_KEYS.mateType,
+    "Tipo de mate",
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.material]: [
+    CATALOG_ATTRIBUTE_KEYS.material,
+    "Material",
+  ],
+  [CATALOG_ATTRIBUTE_KEYS.color]: [CATALOG_ATTRIBUTE_KEYS.color, "Color"],
+  [CATALOG_ATTRIBUTE_KEYS.useCase]: [
+    CATALOG_ATTRIBUTE_KEYS.useCase,
+    "Uso",
+  ],
+};
+
 const legacyCommercialCategoryValues = new Map(
   PERFUME_COMMERCIAL_CATEGORY_OPTIONS.map((item) => [
     normalizeCatalogAttributeValue(item.label),
@@ -227,16 +254,20 @@ export function normalizeCatalogAttributeValue(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function getCatalogAttributeNameAliases(key: CatalogAttributeKey) {
+  return ATTRIBUTE_NAME_ALIASES[key];
+}
+
 export function getCatalogAttributeValues(
   attributes: CatalogAttribute[] | null | undefined,
   key: CatalogAttributeKey,
 ) {
+  const acceptedNames = new Set(
+    getCatalogAttributeNameAliases(key).map(normalizeCatalogAttributeValue),
+  );
   const values = (attributes ?? [])
-    .filter(
-      (attribute) =>
-        attribute.name === key ||
-        (key === CATALOG_ATTRIBUTE_KEYS.commercialCategory &&
-          attribute.name === LEGACY_COMMERCIAL_CATEGORY_NAME),
+    .filter((attribute) =>
+      acceptedNames.has(normalizeCatalogAttributeValue(attribute.name)),
     )
     .map((attribute) => normalizeCatalogAttributeValue(attribute.value))
     .map((value) =>
@@ -246,6 +277,24 @@ export function getCatalogAttributeValues(
     );
 
   return [...new Set(values)];
+}
+
+export function getCatalogAttributeField(key: CatalogAttributeKey) {
+  return [...PERFUME_ATTRIBUTE_FIELDS, ...MATE_ATTRIBUTE_FIELDS].find(
+    (field) => field.key === key,
+  );
+}
+
+export function getCatalogAttributeOptionLabel(
+  key: CatalogAttributeKey,
+  value: string,
+) {
+  const normalizedValue = normalizeCatalogAttributeValue(value);
+  return (
+    getCatalogAttributeField(key)?.options.find(
+      (option) => option.value === normalizedValue,
+    )?.label ?? value
+  );
 }
 
 export function productHasCatalogAttribute(

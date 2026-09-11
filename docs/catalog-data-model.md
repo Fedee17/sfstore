@@ -36,7 +36,25 @@ La lectura del catalogo de Production se realizo sin escrituras.
 - Perfumes: 62 productos. `Tipo` aparece en 62, `Proveedor` en 19 y `Marca` en 14.
 - Mates: 22 productos. `Tipo` aparece en 22 y `Marca` en 1.
 - Termos: 13 productos. `Tipo` aparece en 13.
-- No hay registros para las claves administradas `commercial_category`, `olfactory_family`, `intensity`, `occasion`, `gender`, `decant_available`, `mate_type`, `material`, `color` o `use_case`.
+- No hay registros para las claves administradas `commercial_category`, `olfactory_family`, `intensity`, `occasion`, `gender`, `mate_type`, `material`, `color` o `use_case`.
 - No se encontraron variantes por mayusculas o tildes de esas claves administradas. Los atributos legacy `Tipo`, `Proveedor` y `Marca` se conservan sin normalizar.
 
 La consulta rapida busca sobre todos los atributos existentes, pero solo muestra un filtro especifico cuando una clave administrada tiene valores reales.
+
+## Atributos comerciales de perfumes
+
+Los atributos administrados se guardan como filas independientes en `product_attributes`. Un atributo de valor unico tiene como maximo una fila por producto y clave; uno multivalor tiene una fila por cada valor seleccionado.
+
+| Clave | Etiqueta | Cardinalidad | Valores iniciales |
+| --- | --- | --- | --- |
+| `commercial_category` | Categoria comercial | Unico | arabe, disenador, nicho, inspirado, otro |
+| `olfactory_family` | Familia / estilo olfativo | Multiple | dulce, fresco, frutal, citrico, amaderado, especiado, ambarado, floral, aromatico, acuatico, gourmand, cuero |
+| `intensity` | Intensidad | Unico | suave, media, intensa |
+| `occasion` | Ocasion | Multiple | diario, trabajo, salida, cita, noche, evento, regalo |
+| `gender` | Genero | Unico | masculino, femenino, unisex |
+
+Las opciones se definen en una unica configuracion extensible. La interfaz muestra etiquetas en espanol y persiste claves y valores normalizados.
+
+Los decants son productos independientes, con stock, precio, costo, SKU y estado propios. `decant_available` no es un atributo administrado y no se crea desde el formulario. Tampoco existe por ahora una relacion entre un perfume y sus decants.
+
+La clasificacion comercial convive con `Tipo`, `Marca`, `Proveedor` y otros atributos historicos. Esta fase no completa automaticamente los 62 perfumes ni reescribe atributos legacy.
