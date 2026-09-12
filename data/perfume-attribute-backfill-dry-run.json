@@ -1,0 +1,6526 @@
+{
+  "schema_version": 1,
+  "mode": "dry-run",
+  "generated_at": "2026-09-11T23:57:39.098Z",
+  "source_file": "data/perfume-attribute-backfill-final.json",
+  "summary": {
+    "productsInFile": 62,
+    "productsFoundInSupabase": 62,
+    "validProducts": 62,
+    "invalidProducts": 0,
+    "attributesToCreate": 310,
+    "attributesToReplace": 0,
+    "attributesUnchanged": 0,
+    "rowsToInsert": 673,
+    "managedRowsToDelete": 0,
+    "errors": 0,
+    "warnings": 2
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "duplicate_context_name",
+      "message": "El nombre \"Lattafa Yara Rosa\" pertenece a IDs distintos y se conservarán separados.",
+      "name": "Lattafa Yara Rosa"
+    },
+    {
+      "code": "duplicate_context_name",
+      "message": "El nombre \"Lattafa Yara Tous\" pertenece a IDs distintos y se conservarán separados.",
+      "name": "Lattafa Yara Tous"
+    }
+  ],
+  "products": [
+    {
+      "product_id": "6de8ca53-7561-4353-b3f6-99b6da9a9c3c",
+      "source_name": "Afnan 9 AM DIVE",
+      "current_name": "Afnan 9 AM DIVE",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "fresco",
+            "frutal",
+            "citrico",
+            "aromatico",
+            "acuatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "fresco",
+                "frutal",
+                "citrico",
+                "aromatico",
+                "acuatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "9c07ceb2-4d7a-407c-898b-e0cb43fc008e",
+      "source_name": "Afnan 9 PM Elixir",
+      "current_name": "Afnan 9 PM Elixir",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "especiado",
+            "amaderado",
+            "ambarado",
+            "dulce"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "especiado",
+                "amaderado",
+                "ambarado",
+                "dulce"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "32ccb5e4-1854-4f3d-9b33-136ae2c2502a",
+      "source_name": "Afnan Turathi Blue",
+      "current_name": "Afnan Turathi Blue",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "fresco",
+            "amaderado",
+            "ambarado",
+            "aromatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "fresco",
+                "amaderado",
+                "ambarado",
+                "aromatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "469e3f38-36cc-45fd-bc6e-5bd558d3acf1",
+      "source_name": "Al Haramain Amber Oud Gold Edition",
+      "current_name": "Al Haramain Amber Oud Gold Edition",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "frutal",
+            "ambarado",
+            "gourmand",
+            "fresco"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "frutal",
+                "ambarado",
+                "gourmand",
+                "fresco"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "source_name": "Al Haramain dubai night",
+      "current_name": "Al Haramain dubai night",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "ambarado",
+            "especiado",
+            "amaderado",
+            "dulce"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "ambarado",
+                "especiado",
+                "amaderado",
+                "dulce"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "54295ff4-ea05-4e7d-8f53-2924ccf16f9c",
+      "source_name": "Badee Al Oud For Glory (Black)",
+      "current_name": "Badee Al Oud For Glory (Black)",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "amaderado",
+            "especiado",
+            "ambarado",
+            "cuero"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "amaderado",
+                "especiado",
+                "ambarado",
+                "cuero"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "noche",
+            "evento",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "noche",
+                "evento",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "5b729e4c-e54e-4e59-985f-42e3ce60e30d",
+      "source_name": "BHARARA King",
+      "current_name": "BHARARA King",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "otro"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "otro"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "frutal",
+            "dulce",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "frutal",
+                "dulce",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "72917d13-012c-4ea2-a05a-7c324ef38b3c",
+      "source_name": "BHARARA King Parfum",
+      "current_name": "BHARARA King Parfum",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "otro"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "otro"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "frutal",
+            "dulce",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "frutal",
+                "dulce",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "631dc501-2496-4c4f-9900-b0b14fbd19d2",
+      "source_name": "Club de Nuit Intense Man",
+      "current_name": "Club de Nuit Intense Man",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "frutal",
+            "amaderado",
+            "aromatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "frutal",
+                "amaderado",
+                "aromatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "5f7a5f98-ef5b-447c-a9d4-49bcc840903c",
+      "source_name": "CLUB DE NUIT SILLAGE",
+      "current_name": "CLUB DE NUIT SILLAGE",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "fresco",
+            "amaderado",
+            "aromatico",
+            "floral"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "fresco",
+                "amaderado",
+                "aromatico",
+                "floral"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "2e51cf34-5c02-42ff-867e-7a06d8bf273b",
+      "source_name": "CONFIDENTIAL GOLD - 100ML",
+      "current_name": "CONFIDENTIAL GOLD - 100ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "dulce",
+            "floral",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "dulce",
+                "floral",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "8d828391-4a86-4eb9-bb6a-f384bc3e1d7d",
+      "source_name": "Decant Game of Spades Full House 5ml",
+      "current_name": "Decant Game of Spades Full House 5ml",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "inspirado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "inspirado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "fresco",
+            "especiado",
+            "ambarado",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "fresco",
+                "especiado",
+                "ambarado",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "2db67b25-6e37-446a-8e98-5f626d5efc63",
+      "source_name": "Decant hawas elixir",
+      "current_name": "Decant hawas elixir",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "aromatico",
+            "ambarado",
+            "fresco"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "aromatico",
+                "ambarado",
+                "fresco"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "f91c4caa-32bb-4450-8a87-25422095257b",
+      "source_name": "Decant hawas fire",
+      "current_name": "Decant hawas fire",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "acuatico",
+            "aromatico",
+            "fresco",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "acuatico",
+                "aromatico",
+                "fresco",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "8f06198a-0199-407d-9d5d-9e7c38bcd578",
+      "source_name": "Decant hawas Kobra 5ml",
+      "current_name": "Decant hawas Kobra 5ml",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "fresco",
+            "especiado",
+            "aromatico",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "fresco",
+                "especiado",
+                "aromatico",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "0be4f17b-4888-466f-ad13-3643a645f730",
+      "source_name": "Decant hawas malibu 5ml",
+      "current_name": "Decant hawas malibu 5ml",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "citrico",
+            "dulce",
+            "ambarado",
+            "aromatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "citrico",
+                "dulce",
+                "ambarado",
+                "aromatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "fe29c305-f0f8-4752-855c-c785be1046ac",
+      "source_name": "Decant hawas tropical 5ml",
+      "current_name": "Decant hawas tropical 5ml",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "fresco",
+            "aromatico",
+            "frutal",
+            "dulce",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "fresco",
+                "aromatico",
+                "frutal",
+                "dulce",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "b6db64db-4768-43f9-aadd-e72f24d6d318",
+      "source_name": "Decant hawas verde",
+      "current_name": "Decant hawas verde",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "fresco",
+            "aromatico",
+            "amaderado",
+            "frutal"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "fresco",
+                "aromatico",
+                "amaderado",
+                "frutal"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "e5b37a2f-ab84-4009-b8d3-1a6f307c3eda",
+      "source_name": "Decant Lattafa Kahambra",
+      "current_name": "Decant Lattafa Kahambra",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "especiado",
+                "gourmand",
+                "ambarado",
+                "frutal"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "8ca47237-b9ae-4720-a8be-043ecd104ed7",
+      "source_name": "Decant liquid brun",
+      "current_name": "Decant liquid brun",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "especiado",
+                "gourmand",
+                "ambarado",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "3e52b75d-007c-4637-8ad7-3dd3a8efb159",
+      "source_name": "Decant Rayhaan elixir",
+      "current_name": "Decant Rayhaan elixir",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "ambarado",
+            "aromatico",
+            "especiado",
+            "gourmand"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "ambarado",
+                "aromatico",
+                "especiado",
+                "gourmand"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "c7659a2a-4bb5-439c-ba18-a62d2dd0c121",
+      "source_name": "Fakhar Rose Gold",
+      "current_name": "Fakhar Rose Gold",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "floral",
+            "frutal",
+            "dulce"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "floral",
+                "frutal",
+                "dulce"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "6ca63ce3-5694-418f-90a8-5d8043f4c2f5",
+      "source_name": "French Avenue Liquid Broun",
+      "current_name": "French Avenue Liquid Broun",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "especiado",
+                "gourmand",
+                "ambarado",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "b5cb8397-6821-4f8d-bc77-cb335e757ef4",
+      "source_name": "Hawas Elixir",
+      "current_name": "Hawas Elixir",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "aromatico",
+            "ambarado",
+            "fresco"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "aromatico",
+                "ambarado",
+                "fresco"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "9858eda6-63fb-41f7-9ba1-ab6e93d1f9b8",
+      "source_name": "Hawas Fire Rasasi",
+      "current_name": "Hawas Fire Rasasi",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "acuatico",
+            "aromatico",
+            "fresco",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "acuatico",
+                "aromatico",
+                "fresco",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "c6ab646e-ea3c-4ca9-928a-3f518e49f5e6",
+      "source_name": "HOMME BLACK - 100ML",
+      "current_name": "HOMME BLACK - 100ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "especiado",
+            "ambarado",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "especiado",
+                "ambarado",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "147395ec-1a0b-4f54-9904-f27d2a88f12f",
+      "source_name": "LA VIVACITE INTESA - 100ML",
+      "current_name": "LA VIVACITE INTESA - 100ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "inspirado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "inspirado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "frutal",
+            "floral",
+            "gourmand",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "frutal",
+                "floral",
+                "gourmand",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "bd7930a6-65c3-4e3b-b85f-1cb1b56d6835",
+      "source_name": "LATTAFA ASAD",
+      "current_name": "LATTAFA ASAD",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "ambarado",
+            "especiado",
+            "amaderado",
+            "dulce"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "ambarado",
+                "especiado",
+                "amaderado",
+                "dulce"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "13627ebe-ca04-46e0-9d26-d2861d1ee4a5",
+      "source_name": "Lattafa Asad Bourbon",
+      "current_name": "Lattafa Asad Bourbon",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "especiado",
+            "ambarado",
+            "gourmand",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "especiado",
+                "ambarado",
+                "gourmand",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "b58d9866-5d03-4f63-994d-762108522492",
+      "source_name": "Lattafa Bade'e Al Oud Sublime",
+      "current_name": "Lattafa Bade'e Al Oud Sublime",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "fresco",
+            "floral",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "fresco",
+                "floral",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "ad228c7e-6279-424f-a436-36e85685e5b8",
+      "source_name": "Lattafa Eclaire",
+      "current_name": "Lattafa Eclaire",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "gourmand",
+            "floral"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "gourmand",
+                "floral"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "9a56021e-9a8c-4bc6-a937-996d46faec61",
+      "source_name": "Lattafa Khamrah",
+      "current_name": "Lattafa Khamrah",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "especiado",
+                "gourmand",
+                "ambarado",
+                "frutal"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "aa3a931a-ef24-40b9-b65b-d2e2acd87a2b",
+      "source_name": "LATTAFA KHAMRAH - 100ML",
+      "current_name": "LATTAFA KHAMRAH - 100ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "especiado",
+                "gourmand",
+                "ambarado",
+                "frutal"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "f044976f-c174-445b-8349-d5c62c424a56",
+      "source_name": "LATTAFA MAYAR - 100ML",
+      "current_name": "LATTAFA MAYAR - 100ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "floral",
+            "dulce",
+            "fresco"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "floral",
+                "dulce",
+                "fresco"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "111846de-d228-438a-885b-f2a426a38489",
+      "source_name": "Lattafa Mayar Natural Intense",
+      "current_name": "Lattafa Mayar Natural Intense",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "floral",
+            "acuatico",
+            "frutal",
+            "fresco"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "floral",
+                "acuatico",
+                "frutal",
+                "fresco"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "540bdab9-469a-4c01-b122-e3c70557251f",
+      "source_name": "Lattafa Musamam White Intense",
+      "current_name": "Lattafa Musamam White Intense",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "amaderado",
+            "especiado",
+            "dulce",
+            "ambarado",
+            "floral"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "amaderado",
+                "especiado",
+                "dulce",
+                "ambarado",
+                "floral"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "65027262-d36d-4230-a859-40a007489bfa",
+      "source_name": "Lattafa Opulent Dubai",
+      "current_name": "Lattafa Opulent Dubai",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "citrico",
+            "fresco",
+            "amaderado",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "citrico",
+                "fresco",
+                "amaderado",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "1354e3bc-2fa3-486d-a43a-d38da696f160",
+      "source_name": "Lattafa Pride Nebras",
+      "current_name": "Lattafa Pride Nebras",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "gourmand",
+                "ambarado",
+                "frutal"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "1a0e151a-fe10-4276-9b0e-a3db50759c41",
+      "source_name": "Lattafa Qaed Al Fursan",
+      "current_name": "Lattafa Qaed Al Fursan",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "dulce",
+            "amaderado",
+            "ambarado",
+            "especiado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "dulce",
+                "amaderado",
+                "ambarado",
+                "especiado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "a6158818-9fa9-4762-a98f-06d6f7a8afb3",
+      "source_name": "Lattafa Yara Candy",
+      "current_name": "Lattafa Yara Candy",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "frutal",
+            "gourmand",
+            "floral"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "frutal",
+                "gourmand",
+                "floral"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "900a7c30-7412-4da3-b300-7d013044e853",
+      "source_name": "Lattafa Yara moi",
+      "current_name": "Lattafa Yara moi",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "floral",
+            "dulce",
+            "frutal",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "floral",
+                "dulce",
+                "frutal",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "source_name": "Lattafa Yara Rosa",
+      "current_name": "Lattafa Yara Rosa",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "floral",
+            "frutal",
+            "gourmand"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "floral",
+                "frutal",
+                "gourmand"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "source_name": "Lattafa Yara Rosa",
+      "current_name": "Lattafa Yara Rosa",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "floral",
+            "frutal",
+            "gourmand"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "floral",
+                "frutal",
+                "gourmand"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "ef80b721-2c20-466d-8584-a9ab852dd6ca",
+      "source_name": "Lattafa Yara Tous",
+      "current_name": "Lattafa Yara Tous",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "dulce",
+            "floral",
+            "gourmand"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "dulce",
+                "floral",
+                "gourmand"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+      "source_name": "Lattafa Yara Tous",
+      "current_name": "Lattafa Yara Tous",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "dulce",
+            "floral",
+            "gourmand"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "dulce",
+                "floral",
+                "gourmand"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "63350249-ae3f-457d-8e5f-e3bb60be80e3",
+      "source_name": "Odyseey Limoni",
+      "current_name": "Odyseey Limoni",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "fresco",
+            "aromatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "fresco",
+                "aromatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "73070e5d-763d-4d39-af59-957126199cab",
+      "source_name": "Odyssey Aqua",
+      "current_name": "Odyssey Aqua",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "aromatico",
+            "citrico",
+            "fresco",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "aromatico",
+                "citrico",
+                "fresco",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "53dda192-fa55-4d00-8deb-592b5f8deb4e",
+      "source_name": "Odyssey Artisto",
+      "current_name": "Odyssey Artisto",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "gourmand",
+            "frutal",
+            "ambarado",
+            "aromatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "gourmand",
+                "frutal",
+                "ambarado",
+                "aromatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "0c177ab6-1db8-4692-8bda-2ec0dcb7156a",
+      "source_name": "Odyssey Go Mango",
+      "current_name": "Odyssey Go Mango",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "dulce",
+            "citrico",
+            "amaderado",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "dulce",
+                "citrico",
+                "amaderado",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "b93f703a-2a95-4167-b9ea-168c380456b3",
+      "source_name": "ODYSSEY MANDARIN SKY",
+      "current_name": "ODYSSEY MANDARIN SKY",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "dulce",
+            "gourmand",
+            "ambarado",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "dulce",
+                "gourmand",
+                "ambarado",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "68c61d33-eb0e-4078-85fd-4481f7856451",
+      "source_name": "Odyssey Mega",
+      "current_name": "Odyssey Mega",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "aromatico",
+            "fresco",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "aromatico",
+                "fresco",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "f65ba129-7183-4894-bd1c-c9676df030ad",
+      "source_name": "Odyssey Wild One",
+      "current_name": "Odyssey Wild One",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "aromatico",
+            "especiado",
+            "amaderado",
+            "fresco"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "aromatico",
+                "especiado",
+                "amaderado",
+                "fresco"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "917dd573-dc58-435a-85a4-c6b55bcd7ffc",
+      "source_name": "Opulent Dubai",
+      "current_name": "Opulent Dubai",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "citrico",
+            "fresco",
+            "amaderado",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "citrico",
+                "fresco",
+                "amaderado",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "4d1af887-4b48-4be4-82e1-c0d9effb1a30",
+      "source_name": "PHILOS PURA - 100ML",
+      "current_name": "PHILOS PURA - 100ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "inspirado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "inspirado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "frutal",
+            "dulce",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "frutal",
+                "dulce",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "bedb3ca2-68ed-4158-a00f-4b203b4d8f92",
+      "source_name": "Qaed Al Fursan Untamed",
+      "current_name": "Qaed Al Fursan Untamed",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "especiado",
+            "dulce",
+            "ambarado",
+            "amaderado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "especiado",
+                "dulce",
+                "ambarado",
+                "amaderado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+      "source_name": "Rasasi Hawas For Him",
+      "current_name": "Rasasi Hawas For Him",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "fresco",
+            "frutal",
+            "acuatico",
+            "aromatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "fresco",
+                "frutal",
+                "acuatico",
+                "aromatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "7d334fd0-24b8-422a-a5bd-daa7de0e2947",
+      "source_name": "RASSASI HAWAS FOR HIM",
+      "current_name": "RASSASI HAWAS FOR HIM",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "fresco",
+            "frutal",
+            "acuatico",
+            "aromatico"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "fresco",
+                "frutal",
+                "acuatico",
+                "aromatico"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "f57365ec-33f2-4807-aa64-18a77c00b00b",
+      "source_name": "SALVO ELIXIR - 60ML",
+      "current_name": "SALVO ELIXIR - 60ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "inspirado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "inspirado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "ambarado",
+            "especiado",
+            "amaderado",
+            "dulce"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "ambarado",
+                "especiado",
+                "amaderado",
+                "dulce"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "d26152c8-44cf-4db0-9dc6-b46e728f85e0",
+      "source_name": "Sceptre Malachite Maison Alhambra",
+      "current_name": "Sceptre Malachite Maison Alhambra",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "inspirado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "inspirado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "citrico",
+            "aromatico",
+            "amaderado",
+            "frutal",
+            "fresco"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "citrico",
+                "aromatico",
+                "amaderado",
+                "frutal",
+                "fresco"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "314ab75f-58b3-49c5-8602-cda72295d855",
+      "source_name": "Uomo itense",
+      "current_name": "Uomo itense",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "otro"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "otro"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "amaderado",
+            "aromatico",
+            "acuatico",
+            "fresco",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "amaderado",
+                "aromatico",
+                "acuatico",
+                "fresco",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "media"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "media"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "diario",
+                "trabajo",
+                "salida",
+                "cita"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "masculino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "masculino"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "3593d659-714c-40ed-9231-8e57064c0fc3",
+      "source_name": "Vulcan Feu French Avenue",
+      "current_name": "Vulcan Feu French Avenue",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "frutal",
+            "dulce",
+            "citrico",
+            "amaderado",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "frutal",
+                "dulce",
+                "citrico",
+                "amaderado",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "evento"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "evento"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "unisex"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "unisex"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "919056a3-1dc9-4ae0-9f90-fbba8cf58be9",
+      "source_name": "YARA ELIXIR - 100ML",
+      "current_name": "YARA ELIXIR - 100ML",
+      "status": "valid",
+      "attributes": [
+        {
+          "field": "commercial_category",
+          "actual": [],
+          "desired": [
+            "arabe"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "commercial_category",
+              "values": [
+                "arabe"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "olfactory_family",
+          "actual": [],
+          "desired": [
+            "dulce",
+            "gourmand",
+            "floral",
+            "frutal",
+            "ambarado"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "olfactory_family",
+              "values": [
+                "dulce",
+                "gourmand",
+                "floral",
+                "frutal",
+                "ambarado"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "intensity",
+          "actual": [],
+          "desired": [
+            "intensa"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "intensity",
+              "values": [
+                "intensa"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "occasion",
+          "actual": [],
+          "desired": [
+            "salida",
+            "cita",
+            "noche"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "occasion",
+              "values": [
+                "salida",
+                "cita",
+                "noche"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "gender",
+          "actual": [],
+          "desired": [
+            "femenino"
+          ],
+          "action": "create",
+          "simulated_operations": [
+            {
+              "operation": "insert_values",
+              "name": "gender",
+              "values": [
+                "femenino"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
