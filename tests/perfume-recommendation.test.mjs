@@ -31,8 +31,12 @@ async function loadRecommendationModule() {
   );
 }
 
-const { isDecantProduct, recommendPerfumeGroups, recommendPerfumes } =
-  await loadRecommendationModule();
+const {
+  getPerfumeRecommendationTier,
+  isDecantProduct,
+  recommendPerfumeGroups,
+  recommendPerfumes,
+} = await loadRecommendationModule();
 
 function attribute(name, value) {
   return { name, value };
@@ -412,6 +416,14 @@ test("applies independent configurable limits to every group", () => {
     perfume({ id: "u1", stock: 0 }),
     perfume({ id: "u2", stock: 0 }),
     perfume({
+      id: "s1",
+      attributes: [attribute("gender", "masculino"), attribute("Tipo", "Perfume")],
+    }),
+    perfume({
+      id: "s2",
+      attributes: [attribute("gender", "masculino"), attribute("Tipo", "Perfume")],
+    }),
+    perfume({
       id: "d1",
       name: "Decant Uno",
       attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
@@ -424,10 +436,11 @@ test("applies independent configurable limits to every group", () => {
   ];
   const groups = recommendPerfumeGroups(
     products,
-    { gender: "masculino" },
-    { limits: { primary: 1, unavailable: 1, decants: 1 } },
+    { gender: "masculino", intensity: "intensa" },
+    { limits: { primary: 1, secondary: 1, unavailable: 1, decants: 1 } },
   );
   assert.equal(groups.primaryRecommendations.length, 1);
+  assert.equal(groups.secondaryRecommendations.length, 1);
   assert.equal(groups.unavailableRecommendations.length, 1);
   assert.equal(groups.decantRecommendations.length, 1);
 });
@@ -463,7 +476,195 @@ test("all commercial groups may be empty", () => {
   const groups = recommendPerfumeGroups([perfume()], { gender: "femenino" });
   assert.deepEqual(groups, {
     primaryRecommendations: [],
+    secondaryRecommendations: [],
     unavailableRecommendations: [],
     decantRecommendations: [],
   });
+});
+
+test("classifies exact commercial threshold boundaries", () => {
+  assert.equal(getPerfumeRecommendationTier(100), "primary");
+  assert.equal(getPerfumeRecommendationTier(70), "primary");
+  assert.equal(getPerfumeRecommendationTier(69.99), "secondary");
+  assert.equal(getPerfumeRecommendationTier(40), "secondary");
+  assert.equal(getPerfumeRecommendationTier(39.99), "hidden");
+});
+
+test(">=70 percent appears in primary", () => {
+  const result = recommendPerfumeGroups([perfume()], {
+    gender: "masculino",
+    olfactoryFamilies: ["dulce", "frutal"],
+    intensity: "intensa",
+    occasions: ["noche"],
+  });
+  assert.equal(result.primaryRecommendations[0].matchPercentage, 87.5);
+});
+
+test("40 to 69.99 percent appears in secondary", () => {
+  const result = recommendPerfumeGroups([perfume()], {
+    gender: "masculino",
+    intensity: "media",
+  });
+  assert.equal(result.secondaryRecommendations[0].matchPercentage, 50);
+  assert.deepEqual(result.primaryRecommendations, []);
+});
+
+test("an exact 40 percent match remains secondary", () => {
+  const result = recommendPerfumeGroups([perfume({ transfer_price: 120_000 })], {
+    gender: "masculino",
+    olfactoryFamilies: ["frutal"],
+    intensity: "intensa",
+    occasions: ["diario"],
+    maxTransferPrice: 100_000,
+  });
+  assert.equal(result.secondaryRecommendations[0].matchPercentage, 40);
+});
+
+test("below 40 percent is hidden from every commercial group", () => {
+  const preferences = {
+    gender: "masculino",
+    intensity: "media",
+    occasions: ["diario", "trabajo"],
+  };
+  assert.equal(first(preferences).matchPercentage, 33.33);
+  assert.deepEqual(recommendPerfumeGroups([perfume()], preferences), {
+    primaryRecommendations: [],
+    secondaryRecommendations: [],
+    unavailableRecommendations: [],
+    decantRecommendations: [],
+  });
+});
+
+test("a decant at or above 40 percent appears only in decants", () => {
+  const decant = perfume({
+    name: "Decant Ejemplo",
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+  });
+  const result = recommendPerfumeGroups([decant], {
+    gender: "masculino",
+    intensity: "intensa",
+  });
+  assert.equal(result.decantRecommendations[0].matchPercentage, 50);
+  assert.deepEqual(result.primaryRecommendations, []);
+  assert.deepEqual(result.secondaryRecommendations, []);
+});
+
+test("a decant below 40 percent is hidden", () => {
+  const decant = perfume({
+    name: "Decant Ejemplo",
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+  });
+  const result = recommendPerfumeGroups([decant], {
+    gender: "masculino",
+    intensity: "media",
+    occasions: ["diario"],
+  });
+  assert.deepEqual(result.decantRecommendations, []);
+});
+
+test("a perfect decant does not displace a qualifying full perfume", () => {
+  const full = perfume({ id: "full" });
+  const decant = perfume({
+    id: "decant",
+    name: "Decant Perfecto",
+    attributes: [
+      ...full.attributes.filter((item) => item.name !== "Tipo"),
+      attribute("Tipo", "Accesorios"),
+    ],
+  });
+  const result = recommendPerfumeGroups([decant, full], {
+    gender: "masculino",
+    olfactoryFamilies: ["dulce", "frutal"],
+    intensity: "intensa",
+    occasions: ["noche"],
+  });
+  assert.equal(result.primaryRecommendations[0].product.id, "full");
+  assert.equal(result.decantRecommendations[0].product.id, "decant");
+});
+
+test("a 66.67 percent full perfume is secondary, never primary", () => {
+  const result = recommendPerfumeGroups([perfume()], {
+    gender: "masculino",
+    intensity: "intensa",
+    occasions: ["diario"],
+  });
+  assert.equal(result.secondaryRecommendations[0].matchPercentage, 66.67);
+  assert.deepEqual(result.primaryRecommendations, []);
+});
+
+test("an unavailable perfume must meet the primary threshold", () => {
+  const strong = perfume({ id: "strong", stock: 0 });
+  const weak = perfume({
+    id: "weak",
+    stock: 0,
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Perfume")],
+  });
+  const result = recommendPerfumeGroups([weak, strong], {
+    gender: "masculino",
+    intensity: "intensa",
+  });
+  assert.deepEqual(
+    result.unavailableRecommendations.map((item) => item.product.id),
+    ["strong"],
+  );
+});
+
+test("ranking stays intact within primary and secondary groups", () => {
+  const cheaperPrimary = perfume({ id: "p1", transfer_price: 10 });
+  const expensivePrimary = perfume({ id: "p2", transfer_price: 20 });
+  const cheaperSecondary = perfume({
+    id: "s1",
+    transfer_price: 10,
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Perfume")],
+  });
+  const expensiveSecondary = perfume({
+    id: "s2",
+    transfer_price: 20,
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Perfume")],
+  });
+  const result = recommendPerfumeGroups(
+    [expensiveSecondary, expensivePrimary, cheaperSecondary, cheaperPrimary],
+    { gender: "masculino", intensity: "intensa" },
+  );
+  assert.deepEqual(
+    result.primaryRecommendations.map((item) => item.product.id),
+    ["p1", "p2"],
+  );
+  assert.deepEqual(
+    result.secondaryRecommendations.map((item) => item.product.id),
+    ["s1", "s2"],
+  );
+});
+
+test("inStockOnly keeps secondary stock and removes unavailable", () => {
+  const secondary = perfume({
+    id: "secondary",
+    stock: 1,
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Perfume")],
+  });
+  const unavailable = perfume({ id: "unavailable", stock: 0 });
+  const result = recommendPerfumeGroups([secondary, unavailable], {
+    gender: "masculino",
+    intensity: "intensa",
+    inStockOnly: true,
+  });
+  assert.equal(result.secondaryRecommendations[0].product.id, "secondary");
+  assert.deepEqual(result.unavailableRecommendations, []);
+});
+
+test("no secondary matches leaves a valid empty secondary group", () => {
+  const result = recommendPerfumeGroups([perfume()], { gender: "masculino" });
+  assert.deepEqual(result.secondaryRecommendations, []);
+});
+
+test("only qualifying decants remains a valid result", () => {
+  const decant = perfume({
+    name: "Decant Único",
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+  });
+  const result = recommendPerfumeGroups([decant], { gender: "masculino" });
+  assert.deepEqual(result.primaryRecommendations, []);
+  assert.deepEqual(result.secondaryRecommendations, []);
+  assert.deepEqual(result.unavailableRecommendations, []);
+  assert.equal(result.decantRecommendations.length, 1);
 });

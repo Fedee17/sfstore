@@ -17,6 +17,7 @@ export type PerfumeRecommendationPreferences = {
 
 export type PerfumeRecommendationLimits = {
   primary?: number;
+  secondary?: number;
   unavailable?: number;
   decants?: number;
 };
@@ -88,9 +89,31 @@ export type GroupedPerfumeRecommendations<
   T extends PerfumeRecommendationProduct,
 > = {
   primaryRecommendations: PerfumeRecommendation<T>[];
+  secondaryRecommendations: PerfumeRecommendation<T>[];
   unavailableRecommendations: PerfumeRecommendation<T>[];
   decantRecommendations: PerfumeRecommendation<T>[];
 };
+
+export type PerfumeRecommendationTier = "primary" | "secondary" | "hidden";
+
+export const PERFUME_RECOMMENDATION_THRESHOLDS = {
+  primary: 70,
+  secondary: 40,
+} as const;
+
+export function getPerfumeRecommendationTier(
+  matchPercentage: number,
+): PerfumeRecommendationTier {
+  if (matchPercentage >= PERFUME_RECOMMENDATION_THRESHOLDS.primary) {
+    return "primary";
+  }
+
+  if (matchPercentage >= PERFUME_RECOMMENDATION_THRESHOLDS.secondary) {
+    return "secondary";
+  }
+
+  return "hidden";
+}
 
 type NormalizedPreferences = {
   gender: string | null;
@@ -347,6 +370,7 @@ export function recommendPerfumes<T extends PerfumeRecommendationProduct>(
 
 const DEFAULT_RECOMMENDATION_LIMITS = {
   primary: 5,
+  secondary: 3,
   unavailable: 3,
   decants: 3,
 } as const;
@@ -370,6 +394,10 @@ export function recommendPerfumeGroups<
       options.limits?.primary,
       DEFAULT_RECOMMENDATION_LIMITS.primary,
     ),
+    secondary: normalizeLimit(
+      options.limits?.secondary,
+      DEFAULT_RECOMMENDATION_LIMITS.secondary,
+    ),
     unavailable: normalizeLimit(
       options.limits?.unavailable,
       DEFAULT_RECOMMENDATION_LIMITS.unavailable,
@@ -389,23 +417,42 @@ export function recommendPerfumeGroups<
   const decants = ranked.filter((recommendation) =>
     isDecantProduct(recommendation.product),
   );
+  const availableCompletePerfumes = completePerfumes.filter(
+    (recommendation) => Number(recommendation.product.stock ?? 0) > 0,
+  );
 
   return {
-    primaryRecommendations: completePerfumes
-      .filter((recommendation) => Number(recommendation.product.stock ?? 0) > 0)
+    primaryRecommendations: availableCompletePerfumes
+      .filter(
+        (recommendation) =>
+          getPerfumeRecommendationTier(recommendation.matchPercentage) ===
+          "primary",
+      )
       .slice(0, limits.primary),
+    secondaryRecommendations: availableCompletePerfumes
+      .filter(
+        (recommendation) =>
+          getPerfumeRecommendationTier(recommendation.matchPercentage) ===
+          "secondary",
+      )
+      .slice(0, limits.secondary),
     unavailableRecommendations: preferences.inStockOnly
       ? []
       : completePerfumes
           .filter(
-            (recommendation) => Number(recommendation.product.stock ?? 0) <= 0,
+            (recommendation) =>
+              Number(recommendation.product.stock ?? 0) <= 0 &&
+              getPerfumeRecommendationTier(recommendation.matchPercentage) ===
+                "primary",
           )
           .slice(0, limits.unavailable),
     decantRecommendations: decants
       .filter(
         (recommendation) =>
-          !preferences.inStockOnly ||
-          Number(recommendation.product.stock ?? 0) > 0,
+          getPerfumeRecommendationTier(recommendation.matchPercentage) !==
+            "hidden" &&
+          (!preferences.inStockOnly ||
+            Number(recommendation.product.stock ?? 0) > 0),
       )
       .slice(0, limits.decants),
   };

@@ -139,6 +139,7 @@ async function main() {
       "Perfumes disponibles",
       recommendations.primaryRecommendations,
     );
+    printGroup("Otras opciones", recommendations.secondaryRecommendations);
     if (!scenario.preferences.inStockOnly) {
       printGroup(
         "Perfumes sin stock",
