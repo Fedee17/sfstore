@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "source_sha256": "cf01a5b8c6706bb82ba97f1e2f544427d330c0135bdd6bfb6ea3c2f07c531930",
+  "initial_plan_sha256": "9bc3b363d893eb92a7c54379c3595158b58ad1ea17e0281469d0c0c7a1380e1c",
+  "expected": {
+    "products": 62,
+    "valid_products": 62,
+    "attributes_to_create": 310,
+    "attributes_to_replace": 0,
+    "attributes_unchanged": 0,
+    "rows_to_insert": 673,
+    "rows_to_delete": 0,
+    "errors": 0,
+    "warnings": 2
+  }
+}

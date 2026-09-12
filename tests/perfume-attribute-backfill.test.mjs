@@ -29,15 +29,37 @@ async function loadBackfillModule() {
   const backfillModule = await import(
     `data:text/javascript;base64,${Buffer.from(moduleCompiled).toString("base64")}`
   );
+  const applySource = readFileSync(
+    join(
+      testDirectory,
+      "..",
+      "lib",
+      "catalog",
+      "perfume-attribute-backfill-apply.ts",
+    ),
+    "utf8",
+  );
+  const applyCompiled = ts.transpileModule(applySource, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const applyModule = await import(
+    `data:text/javascript;base64,${Buffer.from(applyCompiled).toString("base64")}`
+  );
   const configModule = await import(configUrl);
 
-  return { ...backfillModule, configModule };
+  return { ...backfillModule, ...applyModule, configModule };
 }
 
 const {
   applySimulatedFieldPlans,
+  assertApprovedApplyPreflight,
+  assertPostWriteVerification,
+  buildBackfillInsertRows,
   buildPerfumeBackfillDryRun,
+  canonicalizeBackfillPlan,
   configModule,
+  executeAtomicAttributeInsert,
+  parseBackfillMode,
   planCommercialAttribute,
   validatePerfumeBackfillDocument,
 } = await loadBackfillModule();
@@ -181,6 +203,20 @@ test("rejects a product outside the Perfumes category", () => {
   assert.ok(report.errors.some((error) => error.code === "wrong_category"));
 });
 
+test("rejects a managed attribute that does not belong to perfumes", () => {
+  const validation = validatePerfumeBackfillDocument(document());
+  const report = buildPerfumeBackfillDryRun(
+    validation,
+    [databaseProduct({ attributes: [{ name: "mate_type", value: "imperial" }] })],
+    ["product-1"],
+  );
+
+  assert.equal(report.products[0].status, "invalid");
+  assert.ok(
+    report.errors.some((error) => error.code === "unexpected_managed_attribute"),
+  );
+});
+
 test("empty current attributes produce five creates", () => {
   const validation = validatePerfumeBackfillDocument(document());
   const report = buildPerfumeBackfillDryRun(
@@ -262,12 +298,189 @@ test("applying a plan makes the next plan idempotently unchanged", () => {
   assert.deepEqual(secondPlan.simulated_operations, []);
 });
 
-test("the executable script has no Supabase write calls", () => {
+test("apply mode is explicit and unknown arguments are rejected", () => {
+  assert.equal(parseBackfillMode([]), "dry-run");
+  assert.equal(parseBackfillMode(["--dry-run"]), "dry-run");
+  assert.equal(parseBackfillMode(["--apply"]), "apply");
+  assert.throws(() => parseBackfillMode(["--write"]), /no permitidos/);
+  assert.throws(
+    () => parseBackfillMode(["--dry-run", "--apply"]),
+    /No se pueden combinar/,
+  );
+});
+
+function approvalFor(report, planHash = "approved-plan") {
+  return {
+    schema_version: 1,
+    source_sha256: "approved-source",
+    initial_plan_sha256: planHash,
+    expected: {
+      products: 1,
+      valid_products: 1,
+      attributes_to_create: 5,
+      attributes_to_replace: 0,
+      attributes_unchanged: 0,
+      rows_to_insert: report.summary.rowsToInsert,
+      rows_to_delete: 0,
+      errors: 0,
+      warnings: 0,
+    },
+  };
+}
+
+test("apply preflight rejects a changed source or approved plan", () => {
+  const validation = validatePerfumeBackfillDocument(document());
+  const report = buildPerfumeBackfillDryRun(
+    validation,
+    [databaseProduct()],
+    ["product-1"],
+  );
+  const approval = approvalFor(report);
+
+  assert.throws(
+    () => assertApprovedApplyPreflight(report, approval, "changed", "approved-plan"),
+    /hash del archivo fuente/,
+  );
+  assert.throws(
+    () =>
+      assertApprovedApplyPreflight(
+        report,
+        approval,
+        "approved-source",
+        "changed-plan",
+      ),
+    /plan detallado/,
+  );
+
+  const invalidValidation = validatePerfumeBackfillDocument(
+    document([sourceProduct({ intensity: "extrema" })]),
+  );
+  const invalidReport = buildPerfumeBackfillDryRun(
+    invalidValidation,
+    [databaseProduct()],
+    ["product-1"],
+  );
+  assert.throws(
+    () =>
+      assertApprovedApplyPreflight(
+        invalidReport,
+        approval,
+        "approved-source",
+        "approved-plan",
+      ),
+    /resumen del preflight/,
+  );
+});
+
+test("the approved initial plan produces unique attribute-only insert rows", () => {
+  const validation = validatePerfumeBackfillDocument(document());
+  const current = databaseProduct({
+    attributes: [{ name: "Marca", value: "Marca histórica" }],
+    price: 999,
+    transfer_price: 888,
+    cost: 777,
+    stock: 7,
+  });
+  const report = buildPerfumeBackfillDryRun(validation, [current], ["product-1"]);
+  const rows = buildBackfillInsertRows(report);
+
+  assert.equal(rows.length, report.summary.rowsToInsert);
+  assert.equal(
+    new Set(rows.map((row) => `${row.product_id}/${row.name}/${row.value}`)).size,
+    rows.length,
+  );
+  assert.ok(
+    rows.every(
+      (row) =>
+        Object.keys(row).sort().join(",") ===
+        "name,product_id,sort_order,value",
+    ),
+  );
+  assert.deepEqual(current.attributes, [{ name: "Marca", value: "Marca histórica" }]);
+  assert.equal(current.price, 999);
+  assert.equal(current.transfer_price, 888);
+  assert.equal(current.cost, 777);
+  assert.equal(current.stock, 7);
+  assert.match(canonicalizeBackfillPlan(report), /product-1/);
+});
+
+test("apply preflight accepts the fully applied state as an idempotent no-op", () => {
+  const validation = validatePerfumeBackfillDocument(document());
+  const initial = buildPerfumeBackfillDryRun(
+    validation,
+    [databaseProduct()],
+    ["product-1"],
+  );
+  const rows = buildBackfillInsertRows(initial);
+  const appliedAttributes = rows.map((row) => ({ name: row.name, value: row.value }));
+  const applied = buildPerfumeBackfillDryRun(
+    validation,
+    [databaseProduct({ attributes: appliedAttributes })],
+    ["product-1"],
+  );
+  const approval = approvalFor(initial);
+
+  assert.equal(
+    assertApprovedApplyPreflight(
+      applied,
+      approval,
+      "approved-source",
+      "a-different-noop-hash",
+    ),
+    "already_applied",
+  );
+  assert.doesNotThrow(() => assertPostWriteVerification(applied, approval));
+  assert.deepEqual(buildBackfillInsertRows(applied), []);
+});
+
+test("an atomic writer error aborts without reporting inserted rows", async () => {
+  let calls = 0;
+  await assert.rejects(
+    executeAtomicAttributeInsert(
+      [{ product_id: "product-1", name: "gender", value: "unisex", sort_order: 0 }],
+      async () => {
+        calls += 1;
+        return { data: null, error: { message: "transaction rolled back" } };
+      },
+    ),
+    /Falló la inserción atómica/,
+  );
+  assert.equal(calls, 1);
+});
+
+test("post-write verification rejects partial application", () => {
+  const validation = validatePerfumeBackfillDocument(document());
+  const initial = buildPerfumeBackfillDryRun(
+    validation,
+    [databaseProduct()],
+    ["product-1"],
+  );
+  const partial = buildPerfumeBackfillDryRun(
+    validation,
+    [
+      databaseProduct({
+        attributes: [{ name: "gender", value: "unisex" }],
+      }),
+    ],
+    ["product-1"],
+  );
+
+  assert.throws(
+    () => assertPostWriteVerification(partial, approvalFor(initial)),
+    /verificación posterior/,
+  );
+});
+
+test("the executable writes only one bulk batch to product_attributes", () => {
   const scriptSource = readFileSync(
     join(testDirectory, "..", "scripts", "backfill-perfume-attributes.ts"),
     "utf8",
   );
 
-  assert.match(scriptSource, /mode: "dry-run"/);
-  assert.doesNotMatch(scriptSource, /\.(insert|update|upsert|delete)\s*\(/);
+  assert.match(scriptSource, /parseBackfillMode/);
+  assert.equal((scriptSource.match(/\.insert\(batch\)/g) ?? []).length, 1);
+  assert.match(scriptSource, /\.from\("product_attributes"\)/);
+  assert.doesNotMatch(scriptSource, /\.(upsert|delete)\s*\(/);
+  assert.doesNotMatch(scriptSource, /\.from\("products"\)\s*\.insert\s*\(/);
+  assert.doesNotMatch(scriptSource, /\.from\("products"\)\s*\.update\s*\(/);
 });

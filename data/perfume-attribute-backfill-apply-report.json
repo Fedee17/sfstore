@@ -1,0 +1,681 @@
+{
+  "schema_version": 1,
+  "mode": "apply",
+  "generated_at": "2026-09-12T00:14:39.816Z",
+  "source_file": "data/perfume-attribute-backfill-final.json",
+  "source_sha256": "cf01a5b8c6706bb82ba97f1e2f544427d330c0135bdd6bfb6ea3c2f07c531930",
+  "approved_initial_plan_sha256": "9bc3b363d893eb92a7c54379c3595158b58ad1ea17e0281469d0c0c7a1380e1c",
+  "preflight_plan_sha256": "9bc3b363d893eb92a7c54379c3595158b58ad1ea17e0281469d0c0c7a1380e1c",
+  "preflight_state": "initial",
+  "preflight": {
+    "productsInFile": 62,
+    "productsFoundInSupabase": 62,
+    "validProducts": 62,
+    "invalidProducts": 0,
+    "attributesToCreate": 310,
+    "attributesToReplace": 0,
+    "attributesUnchanged": 0,
+    "rowsToInsert": 673,
+    "managedRowsToDelete": 0,
+    "errors": 0,
+    "warnings": 2
+  },
+  "rows_inserted": 673,
+  "rows_deleted": 0,
+  "atomicity": "Una única inserción bulk en product_attributes; no se habilitaron deletes ni reemplazos.",
+  "post_write_verification": {
+    "success": true,
+    "summary": {
+      "productsInFile": 62,
+      "productsFoundInSupabase": 62,
+      "validProducts": 62,
+      "invalidProducts": 0,
+      "attributesToCreate": 0,
+      "attributesToReplace": 0,
+      "attributesUnchanged": 310,
+      "rowsToInsert": 0,
+      "managedRowsToDelete": 0,
+      "errors": 0,
+      "warnings": 2
+    }
+  },
+  "warnings": [
+    {
+      "code": "duplicate_context_name",
+      "message": "El nombre \"Lattafa Yara Rosa\" pertenece a IDs distintos y se conservarán separados.",
+      "name": "Lattafa Yara Rosa"
+    },
+    {
+      "code": "duplicate_context_name",
+      "message": "El nombre \"Lattafa Yara Tous\" pertenece a IDs distintos y se conservarán separados.",
+      "name": "Lattafa Yara Tous"
+    }
+  ],
+  "errors": [],
+  "reconciliation": {
+    "required": false,
+    "scope": [
+      {
+        "product_id": "6de8ca53-7561-4353-b3f6-99b6da9a9c3c",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "9c07ceb2-4d7a-407c-898b-e0cb43fc008e",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "32ccb5e4-1854-4f3d-9b33-136ae2c2502a",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "469e3f38-36cc-45fd-bc6e-5bd558d3acf1",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "54295ff4-ea05-4e7d-8f53-2924ccf16f9c",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "5b729e4c-e54e-4e59-985f-42e3ce60e30d",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "72917d13-012c-4ea2-a05a-7c324ef38b3c",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "631dc501-2496-4c4f-9900-b0b14fbd19d2",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "5f7a5f98-ef5b-447c-a9d4-49bcc840903c",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "2e51cf34-5c02-42ff-867e-7a06d8bf273b",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "8d828391-4a86-4eb9-bb6a-f384bc3e1d7d",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "2db67b25-6e37-446a-8e98-5f626d5efc63",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "f91c4caa-32bb-4450-8a87-25422095257b",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "8f06198a-0199-407d-9d5d-9e7c38bcd578",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "0be4f17b-4888-466f-ad13-3643a645f730",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "fe29c305-f0f8-4752-855c-c785be1046ac",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "b6db64db-4768-43f9-aadd-e72f24d6d318",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "e5b37a2f-ab84-4009-b8d3-1a6f307c3eda",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "8ca47237-b9ae-4720-a8be-043ecd104ed7",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "3e52b75d-007c-4637-8ad7-3dd3a8efb159",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "c7659a2a-4bb5-439c-ba18-a62d2dd0c121",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "6ca63ce3-5694-418f-90a8-5d8043f4c2f5",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "b5cb8397-6821-4f8d-bc77-cb335e757ef4",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "9858eda6-63fb-41f7-9ba1-ab6e93d1f9b8",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "c6ab646e-ea3c-4ca9-928a-3f518e49f5e6",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "147395ec-1a0b-4f54-9904-f27d2a88f12f",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "bd7930a6-65c3-4e3b-b85f-1cb1b56d6835",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "13627ebe-ca04-46e0-9d26-d2861d1ee4a5",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "b58d9866-5d03-4f63-994d-762108522492",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "ad228c7e-6279-424f-a436-36e85685e5b8",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "9a56021e-9a8c-4bc6-a937-996d46faec61",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "aa3a931a-ef24-40b9-b65b-d2e2acd87a2b",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "f044976f-c174-445b-8349-d5c62c424a56",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "111846de-d228-438a-885b-f2a426a38489",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "540bdab9-469a-4c01-b122-e3c70557251f",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "65027262-d36d-4230-a859-40a007489bfa",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "1354e3bc-2fa3-486d-a43a-d38da696f160",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "1a0e151a-fe10-4276-9b0e-a3db50759c41",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "a6158818-9fa9-4762-a98f-06d6f7a8afb3",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "900a7c30-7412-4da3-b300-7d013044e853",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "ef80b721-2c20-466d-8584-a9ab852dd6ca",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "63350249-ae3f-457d-8e5f-e3bb60be80e3",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "73070e5d-763d-4d39-af59-957126199cab",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "53dda192-fa55-4d00-8deb-592b5f8deb4e",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "0c177ab6-1db8-4692-8bda-2ec0dcb7156a",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "b93f703a-2a95-4167-b9ea-168c380456b3",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "68c61d33-eb0e-4078-85fd-4481f7856451",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "f65ba129-7183-4894-bd1c-c9676df030ad",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "917dd573-dc58-435a-85a4-c6b55bcd7ffc",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "4d1af887-4b48-4be4-82e1-c0d9effb1a30",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "bedb3ca2-68ed-4158-a00f-4b203b4d8f92",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "7d334fd0-24b8-422a-a5bd-daa7de0e2947",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "f57365ec-33f2-4807-aa64-18a77c00b00b",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "d26152c8-44cf-4db0-9dc6-b46e728f85e0",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "314ab75f-58b3-49c5-8602-cda72295d855",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "3593d659-714c-40ed-9231-8e57064c0fc3",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      },
+      {
+        "product_id": "919056a3-1dc9-4ae0-9f90-fbba8cf58be9",
+        "managed_attributes": [
+          "commercial_category",
+          "olfactory_family",
+          "intensity",
+          "occasion",
+          "gender"
+        ]
+      }
+    ]
+  },
+  "result": "success"
+}

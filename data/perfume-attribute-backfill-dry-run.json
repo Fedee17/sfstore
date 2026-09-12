@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "mode": "dry-run",
-  "generated_at": "2026-09-11T23:57:39.098Z",
+  "generated_at": "2026-09-12T00:14:52.885Z",
   "source_file": "data/perfume-attribute-backfill-final.json",
   "summary": {
     "productsInFile": 62,
     "productsFoundInSupabase": 62,
     "validProducts": 62,
     "invalidProducts": 0,
-    "attributesToCreate": 310,
+    "attributesToCreate": 0,
     "attributesToReplace": 0,
-    "attributesUnchanged": 0,
-    "rowsToInsert": 673,
+    "attributesUnchanged": 310,
+    "rowsToInsert": 0,
     "managedRowsToDelete": 0,
     "errors": 0,
     "warnings": 2
@@ -38,24 +38,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "fresco",
+            "frutal",
+            "citrico",
+            "aromatico",
+            "acuatico"
+          ],
           "desired": [
             "fresco",
             "frutal",
@@ -63,75 +63,45 @@
             "aromatico",
             "acuatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "fresco",
-                "frutal",
-                "citrico",
-                "aromatico",
-                "acuatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -143,100 +113,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "especiado",
+            "amaderado",
+            "ambarado",
+            "dulce"
+          ],
           "desired": [
             "especiado",
             "amaderado",
             "ambarado",
             "dulce"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "especiado",
-                "amaderado",
-                "ambarado",
-                "dulce"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -248,24 +188,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "fresco",
+            "amaderado",
+            "ambarado",
+            "aromatico"
+          ],
           "desired": [
             "citrico",
             "fresco",
@@ -273,75 +213,45 @@
             "ambarado",
             "aromatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "fresco",
-                "amaderado",
-                "ambarado",
-                "aromatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -353,24 +263,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "frutal",
+            "ambarado",
+            "gourmand",
+            "fresco"
+          ],
           "desired": [
             "dulce",
             "frutal",
@@ -378,75 +288,45 @@
             "gourmand",
             "fresco"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "frutal",
-                "ambarado",
-                "gourmand",
-                "fresco"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -458,100 +338,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "ambarado",
+            "especiado",
+            "amaderado",
+            "dulce"
+          ],
           "desired": [
             "ambarado",
             "especiado",
             "amaderado",
             "dulce"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "ambarado",
-                "especiado",
-                "amaderado",
-                "dulce"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -563,98 +413,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "amaderado",
+            "especiado",
+            "ambarado",
+            "cuero"
+          ],
           "desired": [
             "amaderado",
             "especiado",
             "ambarado",
             "cuero"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "amaderado",
-                "especiado",
-                "ambarado",
-                "cuero"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "noche",
+            "evento",
+            "salida"
+          ],
           "desired": [
             "noche",
             "evento",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "noche",
-                "evento",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -666,98 +486,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "otro"
+          ],
           "desired": [
             "otro"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "otro"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "frutal",
+            "dulce",
+            "ambarado"
+          ],
           "desired": [
             "citrico",
             "frutal",
             "dulce",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "frutal",
-                "dulce",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -769,100 +559,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "otro"
+          ],
           "desired": [
             "otro"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "otro"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "frutal",
+            "dulce",
+            "ambarado"
+          ],
           "desired": [
             "citrico",
             "frutal",
             "dulce",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "frutal",
-                "dulce",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -874,64 +634,52 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "frutal",
+            "amaderado",
+            "aromatico"
+          ],
           "desired": [
             "citrico",
             "frutal",
             "amaderado",
             "aromatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "frutal",
-                "amaderado",
-                "aromatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "diario",
             "trabajo",
@@ -939,37 +687,19 @@
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -981,24 +711,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "fresco",
+            "amaderado",
+            "aromatico",
+            "floral"
+          ],
           "desired": [
             "citrico",
             "fresco",
@@ -1006,77 +736,47 @@
             "aromatico",
             "floral"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "fresco",
-                "amaderado",
-                "aromatico",
-                "floral"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "evento"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1088,98 +788,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "dulce",
+            "floral",
+            "amaderado"
+          ],
           "desired": [
             "frutal",
             "dulce",
             "floral",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "dulce",
-                "floral",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1191,24 +861,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "inspirado"
+          ],
           "desired": [
             "inspirado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "inspirado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "fresco",
+            "especiado",
+            "ambarado",
+            "amaderado"
+          ],
           "desired": [
             "citrico",
             "fresco",
@@ -1216,77 +886,47 @@
             "ambarado",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "fresco",
-                "especiado",
-                "ambarado",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "evento"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1298,98 +938,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "aromatico",
+            "ambarado",
+            "fresco"
+          ],
           "desired": [
             "dulce",
             "aromatico",
             "ambarado",
             "fresco"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "aromatico",
-                "ambarado",
-                "fresco"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1401,98 +1011,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "acuatico",
+            "aromatico",
+            "fresco",
+            "ambarado"
+          ],
           "desired": [
             "acuatico",
             "aromatico",
             "fresco",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "acuatico",
-                "aromatico",
-                "fresco",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1504,24 +1084,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "fresco",
+            "especiado",
+            "aromatico",
+            "amaderado"
+          ],
           "desired": [
             "citrico",
             "fresco",
@@ -1529,77 +1109,47 @@
             "aromatico",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "fresco",
-                "especiado",
-                "aromatico",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "evento"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1611,24 +1161,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "citrico",
+            "dulce",
+            "ambarado",
+            "aromatico"
+          ],
           "desired": [
             "frutal",
             "citrico",
@@ -1636,75 +1186,45 @@
             "ambarado",
             "aromatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "citrico",
-                "dulce",
-                "ambarado",
-                "aromatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1716,24 +1236,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "fresco",
+            "aromatico",
+            "frutal",
+            "dulce",
+            "amaderado"
+          ],
           "desired": [
             "fresco",
             "aromatico",
@@ -1741,73 +1261,43 @@
             "dulce",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "fresco",
-                "aromatico",
-                "frutal",
-                "dulce",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida"
+          ],
           "desired": [
             "diario",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1819,24 +1309,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "fresco",
+            "aromatico",
+            "amaderado",
+            "frutal"
+          ],
           "desired": [
             "citrico",
             "fresco",
@@ -1844,75 +1334,45 @@
             "amaderado",
             "frutal"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "fresco",
-                "aromatico",
-                "amaderado",
-                "frutal"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -1924,24 +1384,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
           "desired": [
             "dulce",
             "especiado",
@@ -1949,77 +1409,47 @@
             "ambarado",
             "frutal"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "especiado",
-                "gourmand",
-                "ambarado",
-                "frutal"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2031,24 +1461,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "amaderado"
+          ],
           "desired": [
             "dulce",
             "especiado",
@@ -2056,77 +1486,47 @@
             "ambarado",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "especiado",
-                "gourmand",
-                "ambarado",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2138,24 +1538,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "ambarado",
+            "aromatico",
+            "especiado",
+            "gourmand"
+          ],
           "desired": [
             "dulce",
             "ambarado",
@@ -2163,75 +1563,45 @@
             "especiado",
             "gourmand"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "ambarado",
-                "aromatico",
-                "especiado",
-                "gourmand"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2243,98 +1613,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "floral",
+            "frutal",
+            "dulce"
+          ],
           "desired": [
             "floral",
             "frutal",
             "dulce"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "floral",
-                "frutal",
-                "dulce"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2346,24 +1686,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "amaderado"
+          ],
           "desired": [
             "dulce",
             "especiado",
@@ -2371,77 +1711,47 @@
             "ambarado",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "especiado",
-                "gourmand",
-                "ambarado",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2453,98 +1763,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "aromatico",
+            "ambarado",
+            "fresco"
+          ],
           "desired": [
             "dulce",
             "aromatico",
             "ambarado",
             "fresco"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "aromatico",
-                "ambarado",
-                "fresco"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2556,98 +1836,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "acuatico",
+            "aromatico",
+            "fresco",
+            "ambarado"
+          ],
           "desired": [
             "acuatico",
             "aromatico",
             "fresco",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "acuatico",
-                "aromatico",
-                "fresco",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2659,100 +1909,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "especiado",
+            "ambarado",
+            "amaderado"
+          ],
           "desired": [
             "dulce",
             "especiado",
             "ambarado",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "especiado",
-                "ambarado",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2764,24 +1984,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "inspirado"
+          ],
           "desired": [
             "inspirado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "inspirado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "frutal",
+            "floral",
+            "gourmand",
+            "amaderado"
+          ],
           "desired": [
             "dulce",
             "frutal",
@@ -2789,77 +2009,47 @@
             "gourmand",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "frutal",
-                "floral",
-                "gourmand",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2871,100 +2061,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "ambarado",
+            "especiado",
+            "amaderado",
+            "dulce"
+          ],
           "desired": [
             "ambarado",
             "especiado",
             "amaderado",
             "dulce"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "ambarado",
-                "especiado",
-                "amaderado",
-                "dulce"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -2976,24 +2136,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "especiado",
+            "ambarado",
+            "gourmand",
+            "amaderado"
+          ],
           "desired": [
             "dulce",
             "especiado",
@@ -3001,77 +2161,47 @@
             "gourmand",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "especiado",
-                "ambarado",
-                "gourmand",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3083,98 +2213,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "fresco",
+            "floral",
+            "amaderado"
+          ],
           "desired": [
             "frutal",
             "fresco",
             "floral",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "fresco",
-                "floral",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3186,96 +2286,66 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "gourmand",
+            "floral"
+          ],
           "desired": [
             "dulce",
             "gourmand",
             "floral"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "gourmand",
-                "floral"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3287,24 +2357,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
           "desired": [
             "dulce",
             "especiado",
@@ -3312,77 +2382,47 @@
             "ambarado",
             "frutal"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "especiado",
-                "gourmand",
-                "ambarado",
-                "frutal"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3394,24 +2434,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "especiado",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
           "desired": [
             "dulce",
             "especiado",
@@ -3419,77 +2459,47 @@
             "ambarado",
             "frutal"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "especiado",
-                "gourmand",
-                "ambarado",
-                "frutal"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3501,100 +2511,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "floral",
+            "dulce",
+            "fresco"
+          ],
           "desired": [
             "frutal",
             "floral",
             "dulce",
             "fresco"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "floral",
-                "dulce",
-                "fresco"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3606,98 +2586,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "floral",
+            "acuatico",
+            "frutal",
+            "fresco"
+          ],
           "desired": [
             "floral",
             "acuatico",
             "frutal",
             "fresco"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "floral",
-                "acuatico",
-                "frutal",
-                "fresco"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3709,24 +2659,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "amaderado",
+            "especiado",
+            "dulce",
+            "ambarado",
+            "floral"
+          ],
           "desired": [
             "amaderado",
             "especiado",
@@ -3734,77 +2684,47 @@
             "ambarado",
             "floral"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "amaderado",
-                "especiado",
-                "dulce",
-                "ambarado",
-                "floral"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3816,24 +2736,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "citrico",
+            "fresco",
+            "amaderado",
+            "ambarado"
+          ],
           "desired": [
             "frutal",
             "citrico",
@@ -3841,77 +2761,47 @@
             "amaderado",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "citrico",
-                "fresco",
-                "amaderado",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -3923,98 +2813,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "gourmand",
+            "ambarado",
+            "frutal"
+          ],
           "desired": [
             "dulce",
             "gourmand",
             "ambarado",
             "frutal"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "gourmand",
-                "ambarado",
-                "frutal"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4026,24 +2886,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "dulce",
+            "amaderado",
+            "ambarado",
+            "especiado"
+          ],
           "desired": [
             "frutal",
             "dulce",
@@ -4051,75 +2911,45 @@
             "ambarado",
             "especiado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "dulce",
-                "amaderado",
-                "ambarado",
-                "especiado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4131,98 +2961,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "frutal",
+            "gourmand",
+            "floral"
+          ],
           "desired": [
             "dulce",
             "frutal",
             "gourmand",
             "floral"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "frutal",
-                "gourmand",
-                "floral"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4234,100 +3034,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "floral",
+            "dulce",
+            "frutal",
+            "ambarado"
+          ],
           "desired": [
             "floral",
             "dulce",
             "frutal",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "floral",
-                "dulce",
-                "frutal",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4339,98 +3109,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "floral",
+            "frutal",
+            "gourmand"
+          ],
           "desired": [
             "dulce",
             "floral",
             "frutal",
             "gourmand"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "floral",
-                "frutal",
-                "gourmand"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4442,98 +3182,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "floral",
+            "frutal",
+            "gourmand"
+          ],
           "desired": [
             "dulce",
             "floral",
             "frutal",
             "gourmand"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "floral",
-                "frutal",
-                "gourmand"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4545,98 +3255,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "dulce",
+            "floral",
+            "gourmand"
+          ],
           "desired": [
             "frutal",
             "dulce",
             "floral",
             "gourmand"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "dulce",
-                "floral",
-                "gourmand"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4648,98 +3328,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "dulce",
+            "floral",
+            "gourmand"
+          ],
           "desired": [
             "frutal",
             "dulce",
             "floral",
             "gourmand"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "dulce",
-                "floral",
-                "gourmand"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4751,96 +3401,66 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "fresco",
+            "aromatico"
+          ],
           "desired": [
             "citrico",
             "fresco",
             "aromatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "fresco",
-                "aromatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4852,98 +3472,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "aromatico",
+            "citrico",
+            "fresco",
+            "amaderado"
+          ],
           "desired": [
             "aromatico",
             "citrico",
             "fresco",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "aromatico",
-                "citrico",
-                "fresco",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -4955,24 +3545,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "gourmand",
+            "frutal",
+            "ambarado",
+            "aromatico"
+          ],
           "desired": [
             "dulce",
             "gourmand",
@@ -4980,75 +3570,45 @@
             "ambarado",
             "aromatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "gourmand",
-                "frutal",
-                "ambarado",
-                "aromatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5060,24 +3620,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "dulce",
+            "citrico",
+            "amaderado",
+            "ambarado"
+          ],
           "desired": [
             "frutal",
             "dulce",
@@ -5085,75 +3645,45 @@
             "amaderado",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "dulce",
-                "citrico",
-                "amaderado",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5165,24 +3695,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "dulce",
+            "gourmand",
+            "ambarado",
+            "amaderado"
+          ],
           "desired": [
             "citrico",
             "dulce",
@@ -5190,75 +3720,45 @@
             "ambarado",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "dulce",
-                "gourmand",
-                "ambarado",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5270,98 +3770,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "aromatico",
+            "fresco",
+            "amaderado"
+          ],
           "desired": [
             "citrico",
             "aromatico",
             "fresco",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "aromatico",
-                "fresco",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5373,98 +3843,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "aromatico",
+            "especiado",
+            "amaderado",
+            "fresco"
+          ],
           "desired": [
             "aromatico",
             "especiado",
             "amaderado",
             "fresco"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "aromatico",
-                "especiado",
-                "amaderado",
-                "fresco"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "noche"
+          ],
           "desired": [
             "diario",
             "salida",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5476,24 +3916,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "citrico",
+            "fresco",
+            "amaderado",
+            "ambarado"
+          ],
           "desired": [
             "frutal",
             "citrico",
@@ -5501,77 +3941,47 @@
             "amaderado",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "citrico",
-                "fresco",
-                "amaderado",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5583,98 +3993,68 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "inspirado"
+          ],
           "desired": [
             "inspirado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "inspirado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "frutal",
+            "dulce",
+            "ambarado"
+          ],
           "desired": [
             "citrico",
             "frutal",
             "dulce",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "frutal",
-                "dulce",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5686,100 +4066,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "especiado",
+            "dulce",
+            "ambarado",
+            "amaderado"
+          ],
           "desired": [
             "especiado",
             "dulce",
             "ambarado",
             "amaderado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "especiado",
-                "dulce",
-                "ambarado",
-                "amaderado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5791,100 +4141,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "fresco",
+            "frutal",
+            "acuatico",
+            "aromatico"
+          ],
           "desired": [
             "fresco",
             "frutal",
             "acuatico",
             "aromatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "fresco",
-                "frutal",
-                "acuatico",
-                "aromatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -5896,100 +4216,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "fresco",
+            "frutal",
+            "acuatico",
+            "aromatico"
+          ],
           "desired": [
             "fresco",
             "frutal",
             "acuatico",
             "aromatico"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "fresco",
-                "frutal",
-                "acuatico",
-                "aromatico"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -6001,100 +4291,70 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "inspirado"
+          ],
           "desired": [
             "inspirado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "inspirado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "ambarado",
+            "especiado",
+            "amaderado",
+            "dulce"
+          ],
           "desired": [
             "ambarado",
             "especiado",
             "amaderado",
             "dulce"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "ambarado",
-                "especiado",
-                "amaderado",
-                "dulce"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -6106,24 +4366,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "inspirado"
+          ],
           "desired": [
             "inspirado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "inspirado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "citrico",
+            "aromatico",
+            "amaderado",
+            "frutal",
+            "fresco"
+          ],
           "desired": [
             "citrico",
             "aromatico",
@@ -6131,77 +4391,47 @@
             "frutal",
             "fresco"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "citrico",
-                "aromatico",
-                "amaderado",
-                "frutal",
-                "fresco"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -6213,24 +4443,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "otro"
+          ],
           "desired": [
             "otro"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "otro"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "amaderado",
+            "aromatico",
+            "acuatico",
+            "fresco",
+            "ambarado"
+          ],
           "desired": [
             "amaderado",
             "aromatico",
@@ -6238,77 +4468,47 @@
             "fresco",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "amaderado",
-                "aromatico",
-                "acuatico",
-                "fresco",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "media"
+          ],
           "desired": [
             "media"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "media"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "diario",
+            "trabajo",
+            "salida",
+            "cita"
+          ],
           "desired": [
             "diario",
             "trabajo",
             "salida",
             "cita"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "diario",
-                "trabajo",
-                "salida",
-                "cita"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "masculino"
+          ],
           "desired": [
             "masculino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "masculino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -6320,24 +4520,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "frutal",
+            "dulce",
+            "citrico",
+            "amaderado",
+            "ambarado"
+          ],
           "desired": [
             "frutal",
             "dulce",
@@ -6345,75 +4545,45 @@
             "amaderado",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "frutal",
-                "dulce",
-                "citrico",
-                "amaderado",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "evento"
+          ],
           "desired": [
             "salida",
             "cita",
             "evento"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "evento"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "unisex"
+          ],
           "desired": [
             "unisex"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "unisex"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     },
@@ -6425,24 +4595,24 @@
       "attributes": [
         {
           "field": "commercial_category",
-          "actual": [],
+          "actual": [
+            "arabe"
+          ],
           "desired": [
             "arabe"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "commercial_category",
-              "values": [
-                "arabe"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "olfactory_family",
-          "actual": [],
+          "actual": [
+            "dulce",
+            "gourmand",
+            "floral",
+            "frutal",
+            "ambarado"
+          ],
           "desired": [
             "dulce",
             "gourmand",
@@ -6450,75 +4620,45 @@
             "frutal",
             "ambarado"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "olfactory_family",
-              "values": [
-                "dulce",
-                "gourmand",
-                "floral",
-                "frutal",
-                "ambarado"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "intensity",
-          "actual": [],
+          "actual": [
+            "intensa"
+          ],
           "desired": [
             "intensa"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "intensity",
-              "values": [
-                "intensa"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "occasion",
-          "actual": [],
+          "actual": [
+            "salida",
+            "cita",
+            "noche"
+          ],
           "desired": [
             "salida",
             "cita",
             "noche"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "occasion",
-              "values": [
-                "salida",
-                "cita",
-                "noche"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         },
         {
           "field": "gender",
-          "actual": [],
+          "actual": [
+            "femenino"
+          ],
           "desired": [
             "femenino"
           ],
-          "action": "create",
-          "simulated_operations": [
-            {
-              "operation": "insert_values",
-              "name": "gender",
-              "values": [
-                "femenino"
-              ]
-            }
-          ]
+          "action": "unchanged",
+          "simulated_operations": []
         }
       ]
     }

@@ -1,4 +1,5 @@
 import {
+  MANAGED_CATALOG_ATTRIBUTE_KEYS,
   PERFUME_ATTRIBUTE_FIELDS,
   getAllowedValuesForField,
   getCatalogAttributeNameAliases,
@@ -108,6 +109,18 @@ type JsonRecord = Record<string, unknown>;
 const COMMERCIAL_KEYS = PERFUME_ATTRIBUTE_FIELDS.map(
   (field) => field.key,
 ) as PerfumeCommercialKey[];
+
+const PERFUME_ATTRIBUTE_NAMES = new Set(
+  PERFUME_ATTRIBUTE_FIELDS.flatMap((field) =>
+    getCatalogAttributeNameAliases(field.key).map(normalizeCatalogAttributeValue),
+  ),
+);
+
+const NON_PERFUME_MANAGED_ATTRIBUTE_NAMES = new Set(
+  MANAGED_CATALOG_ATTRIBUTE_KEYS.filter(
+    (key) => !COMMERCIAL_KEYS.includes(key as PerfumeCommercialKey),
+  ).map(normalizeCatalogAttributeValue),
+);
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -433,6 +446,32 @@ export function buildPerfumeBackfillDryRun(
         source_name: entry.name,
         current_name: databaseProduct.name,
         status: "wrong_category",
+        attributes: [],
+      };
+    }
+    const unexpectedManagedAttributes = databaseProduct.attributes.filter(
+      (attribute) => {
+        const normalizedName = normalizeCatalogAttributeValue(attribute.name);
+        return (
+          NON_PERFUME_MANAGED_ATTRIBUTE_NAMES.has(normalizedName) &&
+          !PERFUME_ATTRIBUTE_NAMES.has(normalizedName)
+        );
+      },
+    );
+    if (unexpectedManagedAttributes.length > 0) {
+      errors.push({
+        code: "unexpected_managed_attribute",
+        message: `El producto contiene atributos administrados no contemplados: ${[
+          ...new Set(unexpectedManagedAttributes.map((attribute) => attribute.name)),
+        ].join(", ")}.`,
+        product_id: entry.product_id,
+        name: entry.name,
+      });
+      return {
+        product_id: entry.product_id,
+        source_name: entry.name,
+        current_name: databaseProduct.name,
+        status: "invalid",
         attributes: [],
       };
     }
