@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import {
-  recommendPerfumes,
+  recommendPerfumeGroups,
+  type PerfumeRecommendation,
   type PerfumeRecommendationPreferences,
   type PerfumeRecommendationProduct,
 } from "../lib/catalog/perfume-recommendation.ts";
@@ -66,6 +67,23 @@ function firstCategory(row: ProductRow) {
   return Array.isArray(row.categories) ? row.categories[0] : row.categories;
 }
 
+function printGroup(
+  heading: string,
+  recommendations: PerfumeRecommendation<PerfumeRecommendationProduct>[],
+) {
+  console.log(`\n${heading}`);
+  if (recommendations.length === 0) {
+    console.log("Sin resultados");
+    return;
+  }
+
+  recommendations.forEach((recommendation, index) => {
+    console.log(
+      `${index + 1}. ${recommendation.product.name} | ${recommendation.score}/${recommendation.maxScore} | ${recommendation.matchPercentage}% | transferencia: ${recommendation.product.transfer_price ?? "sin precio"} | stock: ${recommendation.product.stock ?? "sin dato"} | coincide: ${recommendation.matchedCriteria.join(", ")}`,
+    );
+  });
+}
+
 async function main() {
   const supabase = createClient(
     requiredEnvironment("NEXT_PUBLIC_SUPABASE_URL"),
@@ -113,12 +131,21 @@ async function main() {
   console.log(`Perfumes leídos: ${products.length}`);
   for (const scenario of scenarios) {
     console.log(`\n${scenario.name}`);
-    const recommendations = recommendPerfumes(products, scenario.preferences).slice(0, 5);
-    recommendations.forEach((recommendation, index) => {
-      console.log(
-        `${index + 1}. ${recommendation.product.name} | ${recommendation.score}/${recommendation.maxScore} | ${recommendation.matchPercentage}% | transferencia: ${recommendation.product.transfer_price ?? "sin precio"} | stock: ${recommendation.product.stock ?? "sin dato"} | coincide: ${recommendation.matchedCriteria.join(", ")}`,
+    const recommendations = recommendPerfumeGroups(
+      products,
+      scenario.preferences,
+    );
+    printGroup(
+      "Perfumes disponibles",
+      recommendations.primaryRecommendations,
+    );
+    if (!scenario.preferences.inStockOnly) {
+      printGroup(
+        "Perfumes sin stock",
+        recommendations.unavailableRecommendations,
       );
-    });
+    }
+    printGroup("Decants", recommendations.decantRecommendations);
   }
 }
 

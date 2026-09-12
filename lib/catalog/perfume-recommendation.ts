@@ -15,6 +15,16 @@ export type PerfumeRecommendationPreferences = {
   minMatchPercentage?: number;
 };
 
+export type PerfumeRecommendationLimits = {
+  primary?: number;
+  unavailable?: number;
+  decants?: number;
+};
+
+export type PerfumeRecommendationOptions = {
+  limits?: PerfumeRecommendationLimits;
+};
+
 export type PerfumeRecommendationProduct = {
   id: string;
   name: string;
@@ -74,6 +84,14 @@ export type PerfumeRecommendation<T extends PerfumeRecommendationProduct> = {
   matchedCriteria: Array<keyof PerfumeRecommendationMatches>;
 };
 
+export type GroupedPerfumeRecommendations<
+  T extends PerfumeRecommendationProduct,
+> = {
+  primaryRecommendations: PerfumeRecommendation<T>[];
+  unavailableRecommendations: PerfumeRecommendation<T>[];
+  decantRecommendations: PerfumeRecommendation<T>[];
+};
+
 type NormalizedPreferences = {
   gender: string | null;
   olfactoryFamilies: string[];
@@ -125,6 +143,25 @@ function getLegacyType(attributes: CatalogAttribute[]) {
       (attribute) => normalizeCatalogAttributeValue(attribute.name) === "tipo",
     )?.value ?? null
   );
+}
+
+export function isDecantProduct(product: PerfumeRecommendationProduct) {
+  const normalizedType = normalizeCatalogAttributeValue(
+    getLegacyType(product.attributes ?? []) ?? "",
+  );
+  const normalizedName = normalizeCatalogAttributeValue(product.name);
+  const nameIdentifiesDecant =
+    normalizedName === "decant" || normalizedName.startsWith("decant-");
+
+  if (normalizedType === "decant" || normalizedType === "decants") {
+    return true;
+  }
+
+  if (normalizedType === "accesorios") {
+    return nameIdentifiesDecant;
+  }
+
+  return normalizedType === "" && nameIdentifiesDecant;
 }
 
 function proportionalMatch(requested: string[], actual: string[]) {
@@ -306,4 +343,70 @@ export function recommendPerfumes<T extends PerfumeRecommendationProduct>(
         : recommendation.score > 0,
     )
     .sort(compareRecommendations);
+}
+
+const DEFAULT_RECOMMENDATION_LIMITS = {
+  primary: 5,
+  unavailable: 3,
+  decants: 3,
+} as const;
+
+function normalizeLimit(value: number | undefined, fallback: number) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue >= 0
+    ? Math.floor(numericValue)
+    : fallback;
+}
+
+export function recommendPerfumeGroups<
+  T extends PerfumeRecommendationProduct,
+>(
+  products: T[],
+  preferences: PerfumeRecommendationPreferences,
+  options: PerfumeRecommendationOptions = {},
+): GroupedPerfumeRecommendations<T> {
+  const limits = {
+    primary: normalizeLimit(
+      options.limits?.primary,
+      DEFAULT_RECOMMENDATION_LIMITS.primary,
+    ),
+    unavailable: normalizeLimit(
+      options.limits?.unavailable,
+      DEFAULT_RECOMMENDATION_LIMITS.unavailable,
+    ),
+    decants: normalizeLimit(
+      options.limits?.decants,
+      DEFAULT_RECOMMENDATION_LIMITS.decants,
+    ),
+  };
+  const ranked = recommendPerfumes(products, {
+    ...preferences,
+    inStockOnly: false,
+  });
+  const completePerfumes = ranked.filter(
+    (recommendation) => !isDecantProduct(recommendation.product),
+  );
+  const decants = ranked.filter((recommendation) =>
+    isDecantProduct(recommendation.product),
+  );
+
+  return {
+    primaryRecommendations: completePerfumes
+      .filter((recommendation) => Number(recommendation.product.stock ?? 0) > 0)
+      .slice(0, limits.primary),
+    unavailableRecommendations: preferences.inStockOnly
+      ? []
+      : completePerfumes
+          .filter(
+            (recommendation) => Number(recommendation.product.stock ?? 0) <= 0,
+          )
+          .slice(0, limits.unavailable),
+    decantRecommendations: decants
+      .filter(
+        (recommendation) =>
+          !preferences.inStockOnly ||
+          Number(recommendation.product.stock ?? 0) > 0,
+      )
+      .slice(0, limits.decants),
+  };
 }

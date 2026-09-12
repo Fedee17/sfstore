@@ -31,7 +31,8 @@ async function loadRecommendationModule() {
   );
 }
 
-const { recommendPerfumes } = await loadRecommendationModule();
+const { isDecantProduct, recommendPerfumeGroups, recommendPerfumes } =
+  await loadRecommendationModule();
 
 function attribute(name, value) {
   return { name, value };
@@ -298,4 +299,171 @@ test("the real-data runner selects no cost and contains no write operation", () 
   assert.doesNotMatch(source, /\bcost\b/i);
   assert.doesNotMatch(source, /\.(insert|update|upsert|delete)\s*\(/);
   assert.match(source, /\.select\s*\(/);
+});
+
+test("a full perfume and a decant keep the same perfect affinity", () => {
+  const full = perfume({ id: "full", name: "Frasco completo" });
+  const decant = perfume({
+    id: "decant",
+    name: "Decant Frasco completo",
+    attributes: [
+      ...full.attributes.filter((item) => item.name !== "Tipo"),
+      attribute("Tipo", "Accesorios"),
+    ],
+  });
+  const groups = recommendPerfumeGroups([decant, full], {
+    gender: "masculino",
+    intensity: "intensa",
+  });
+  assert.equal(groups.primaryRecommendations[0].matchPercentage, 100);
+  assert.equal(groups.decantRecommendations[0].matchPercentage, 100);
+});
+
+test("a decant never appears among primary recommendations", () => {
+  const decant = perfume({
+    name: "Decant Ejemplo",
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+  });
+  const groups = recommendPerfumeGroups([decant], { gender: "masculino" });
+  assert.equal(groups.primaryRecommendations.length, 0);
+  assert.equal(groups.decantRecommendations.length, 1);
+});
+
+test("an in-stock full perfume appears in primary", () => {
+  const groups = recommendPerfumeGroups([perfume({ stock: 1 })], {
+    gender: "masculino",
+  });
+  assert.equal(groups.primaryRecommendations.length, 1);
+});
+
+test("an out-of-stock full perfume appears in unavailable", () => {
+  const groups = recommendPerfumeGroups([perfume({ stock: 0 })], {
+    gender: "masculino",
+  });
+  assert.equal(groups.unavailableRecommendations.length, 1);
+});
+
+test("inStockOnly removes the unavailable group", () => {
+  const groups = recommendPerfumeGroups([perfume({ stock: 0 })], {
+    gender: "masculino",
+    inStockOnly: true,
+  });
+  assert.deepEqual(groups.unavailableRecommendations, []);
+});
+
+test("inStockOnly excludes an out-of-stock decant", () => {
+  const decant = perfume({
+    name: "Decant Ejemplo",
+    stock: 0,
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+  });
+  const groups = recommendPerfumeGroups([decant], {
+    gender: "masculino",
+    inStockOnly: true,
+  });
+  assert.deepEqual(groups.decantRecommendations, []);
+});
+
+test("isDecantProduct uses the explicit legacy type and normalized name", () => {
+  assert.equal(
+    isDecantProduct(
+      perfume({
+        name: "  DECÁNT de prueba",
+        attributes: [attribute("Tipo", "ACCESORIOS")],
+      }),
+    ),
+    true,
+  );
+  assert.equal(
+    isDecantProduct(
+      perfume({
+        name: "Estuche de regalo",
+        attributes: [attribute("Tipo", "Accesorios")],
+      }),
+    ),
+    false,
+  );
+});
+
+test("classification remains deterministic regardless of input order", () => {
+  const products = [
+    perfume({ id: "b", name: "Beta", slug: "beta", transfer_price: 20 }),
+    perfume({ id: "a", name: "Alfa", slug: "alfa", transfer_price: 10 }),
+  ];
+  const expected = ["Alfa", "Beta"];
+  assert.deepEqual(
+    recommendPerfumeGroups(products, { gender: "masculino" }).primaryRecommendations.map(
+      (item) => item.product.name,
+    ),
+    expected,
+  );
+  assert.deepEqual(
+    recommendPerfumeGroups(products.toReversed(), { gender: "masculino" }).primaryRecommendations.map(
+      (item) => item.product.name,
+    ),
+    expected,
+  );
+});
+
+test("applies independent configurable limits to every group", () => {
+  const products = [
+    perfume({ id: "p1", stock: 1 }),
+    perfume({ id: "p2", stock: 1 }),
+    perfume({ id: "u1", stock: 0 }),
+    perfume({ id: "u2", stock: 0 }),
+    perfume({
+      id: "d1",
+      name: "Decant Uno",
+      attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+    }),
+    perfume({
+      id: "d2",
+      name: "Decant Dos",
+      attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+    }),
+  ];
+  const groups = recommendPerfumeGroups(
+    products,
+    { gender: "masculino" },
+    { limits: { primary: 1, unavailable: 1, decants: 1 } },
+  );
+  assert.equal(groups.primaryRecommendations.length, 1);
+  assert.equal(groups.unavailableRecommendations.length, 1);
+  assert.equal(groups.decantRecommendations.length, 1);
+});
+
+test("no full perfume available does not promote a decant", () => {
+  const decant = perfume({
+    name: "Decant Único",
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+  });
+  const groups = recommendPerfumeGroups([decant], { gender: "masculino" });
+  assert.deepEqual(groups.primaryRecommendations, []);
+  assert.equal(groups.decantRecommendations.length, 1);
+});
+
+test("only decants available is a valid grouped result", () => {
+  const decant = perfume({
+    name: "Decant Único",
+    attributes: [attribute("gender", "masculino"), attribute("Tipo", "Accesorios")],
+  });
+  const groups = recommendPerfumeGroups([decant], { gender: "masculino" });
+  assert.deepEqual(groups.primaryRecommendations, []);
+  assert.deepEqual(groups.unavailableRecommendations, []);
+  assert.equal(groups.decantRecommendations.length, 1);
+});
+
+test("no decants available leaves only the applicable full-perfume group", () => {
+  const groups = recommendPerfumeGroups([perfume()], { gender: "masculino" });
+  assert.equal(groups.primaryRecommendations.length, 1);
+  assert.deepEqual(groups.decantRecommendations, []);
+});
+
+test("all commercial groups may be empty", () => {
+  const groups = recommendPerfumeGroups([perfume()], { gender: "femenino" });
+  assert.deepEqual(groups, {
+    primaryRecommendations: [],
+    unavailableRecommendations: [],
+    decantRecommendations: [],
+  });
 });
