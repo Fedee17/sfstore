@@ -21,6 +21,12 @@ import {
   getPriceImportSource,
   type PriceImportDiff,
 } from "@/lib/product-import/price-import";
+import {
+  buildPerfumeImportDecision,
+  getExistingPerfumeImportErrors,
+  type ExistingPerfumeImportProduct,
+  type ProductImportDiff,
+} from "@/lib/product-import/perfume-import";
 import type {
   NormalizedProductImportRow,
   SupportedProductSheet,
@@ -51,7 +57,7 @@ export type ProductImportPreviewRow = NormalizedProductImportRow & {
   canImport: boolean;
   excludedFromImport: boolean;
   existingProductId: string | null;
-  diffs: PriceImportDiff[];
+  diffs: ProductImportDiff[];
 };
 
 export type ProductImportPreviewState = {
@@ -73,14 +79,11 @@ export type ProductImportPreviewState = {
   source: ImportSource;
 };
 
-type ExistingProduct = {
-  id: string;
-  slug: string;
+type ExistingProduct = ExistingPerfumeImportProduct & {
   sku: string | null;
   price: number;
   transfer_price: number | null;
   cost: number | null;
-  categories: { name: string; slug: string } | Array<{ name: string; slug: string }> | null;
 };
 
 const initialCounts = {
@@ -156,7 +159,17 @@ async function findExistingProducts(rows: NormalizedProductImportRow[]) {
   if (slugs.length === 0) return [];
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, slug, sku, price, transfer_price, cost, categories(name, slug)")
+    .select(`
+      id,
+      name,
+      slug,
+      sku,
+      price,
+      transfer_price,
+      cost,
+      categories(name, slug),
+      product_attributes(name, value, sort_order)
+    `)
     .in("slug", slugs);
   if (error) throw new Error(error.message);
   return (data ?? []) as ExistingProduct[];
@@ -168,8 +181,14 @@ function buildPreviewState(sheetName: SupportedProductSheet, rows: NormalizedPro
     const existing = row.sku
       ? existingProducts.find((product) => product.sku === row.sku) ?? null
       : selectExistingProductForImport(existingProducts, sheetName, row.slug);
-    const blocked = row.errors.some((error) => error.toLowerCase().includes("producto restringido"));
-    const hasErrors = row.errors.length > 0;
+    const effectiveErrors =
+      sheetName === "Producto Perfumes" && existing
+        ? getExistingPerfumeImportErrors(row.errors)
+        : row.errors;
+    const blocked = effectiveErrors.some((error) =>
+      error.toLowerCase().includes("producto restringido"),
+    );
+    const hasErrors = effectiveErrors.length > 0;
     if (sheetName === "Precios Productos") {
       const category = Array.isArray(existing?.categories) ? existing.categories[0] : existing?.categories;
       const classification = classifyPriceImportPreview({
@@ -189,20 +208,43 @@ function buildPreviewState(sheetName: SupportedProductSheet, rows: NormalizedPro
         canImport: classification.canImport,
         excludedFromImport: !classification.canImport,
         existingProductId: existing?.id ?? null,
-        diffs: classification.diffs,
+        diffs: classification.diffs.map((diff: PriceImportDiff) => ({
+          ...diff,
+          label: diff.field,
+          format: "money" as const,
+        })),
         errors: classification.errors,
       } satisfies ProductImportPreviewRow;
     }
-    const rowState: PreviewRowState = blocked ? "blocked" : hasErrors ? "error" : row.warnings.length > 0 ? "warning" : "valid";
+    const perfumeDecision =
+      sheetName === "Producto Perfumes" && !hasErrors
+        ? buildPerfumeImportDecision(row, existing)
+        : null;
+    const action: ImportAction = hasErrors
+      ? blocked
+        ? "blocked"
+        : "error"
+      : perfumeDecision?.kind ?? (existing ? "update" : "create");
+    const rowState: PreviewRowState = blocked
+      ? "blocked"
+      : hasErrors
+        ? "error"
+        : action === "unchanged"
+          ? "unchanged"
+          : row.warnings.length > 0
+            ? "warning"
+            : "valid";
+    const canImport = !hasErrors && action !== "unchanged";
     return {
       ...row,
       key: `${row.sourceSheet}-${row.rowNumber}-${row.slug}`,
-      action: hasErrors ? (blocked ? "blocked" : "error") : existing ? "update" : "create",
+      action,
       rowState,
-      canImport: !hasErrors,
-      excludedFromImport: hasErrors,
+      canImport,
+      excludedFromImport: !canImport,
       existingProductId: existing?.id ?? null,
-      diffs: [],
+      diffs: perfumeDecision?.diffs ?? [],
+      errors: effectiveErrors,
     } satisfies ProductImportPreviewRow;
   });
   return {

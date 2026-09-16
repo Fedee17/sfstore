@@ -25,6 +25,13 @@ import {
   findDuplicateImportSlugs,
   getPriceImportSource,
 } from "@/lib/product-import/price-import";
+import {
+  buildExistingPerfumeImportPatch,
+  buildPerfumeImportDecision,
+  getExistingPerfumeImportErrors,
+  type ExistingPerfumeImportProduct,
+  type PerfumeImportDecision,
+} from "@/lib/product-import/perfume-import";
 import type {
   ImportCatalogAttributeUpdate,
   NormalizedProductImportRow,
@@ -34,9 +41,7 @@ import type {
 } from "@/lib/product-import/types";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
-type ExistingProduct = {
-  id: string;
-  slug: string;
+type ExistingProduct = ExistingPerfumeImportProduct & {
   price: number;
   transfer_price: number | null;
   cost: number | null;
@@ -71,7 +76,17 @@ async function findExistingProduct(
   const slugs = getProductImportLookupSlugs(sourceSheet, slug, previousSlug);
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, slug, price, transfer_price, cost, status")
+    .select(`
+      id,
+      name,
+      slug,
+      price,
+      transfer_price,
+      cost,
+      status,
+      categories(name, slug),
+      product_attributes(name, value, sort_order)
+    `)
     .in("slug", slugs);
   if (error) throw new Error(error.message);
   const products = (data ?? []) as ExistingProduct[];
@@ -148,6 +163,42 @@ async function replaceNamedAttributes(productId: string, attributes: { name: str
     });
     if (insertError) throw new Error(insertError.message);
   }
+}
+
+async function applyExistingPerfumeUpdate(
+  row: NormalizedProductImportRow,
+  existing: ExistingProduct,
+  decision: Extract<PerfumeImportDecision, { kind: "update" }>,
+) {
+  const changedFields = new Set(decision.diffs.map((diff) => diff.field));
+  const categoryId = changedFields.has("category")
+    ? await getOrCreateCategory(row.categoryName, row.categorySlug)
+    : null;
+  const patch = buildExistingPerfumeImportPatch(
+    row,
+    categoryId,
+    decision.diffs,
+  );
+  if (Object.keys(patch).length > 0) {
+    const { error } = await getSupabaseAdminClient()
+      .from("products")
+      .update(patch)
+      .eq("id", existing.id);
+    if (error) throw new Error(error.message);
+  }
+  await replaceNamedAttributes(
+    existing.id,
+    row.attributes.filter((attribute) =>
+      changedFields.has(`attribute:${attribute.name}`),
+    ),
+  );
+  await replaceCatalogAttributes(
+    existing.id,
+    row.categorySlug,
+    row.catalogAttributeUpdates.filter((update) =>
+      changedFields.has(`attribute:${update.key}`),
+    ),
+  );
 }
 
 function getPriceCells(sheet: SupportedProductSheet, row: Record<string, unknown>) {
@@ -243,6 +294,34 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
         revalidatePath(`/producto/${existing.slug}`);
         continue;
       }
+      if (sheet === "Producto Perfumes" && existing) {
+        const errors = getExistingPerfumeImportErrors(normalized.errors);
+        if (errors.length > 0) {
+          summary.invalid += 1;
+          summary.results.push(
+            result(input.rowNumber, slug, "invalid", errors.join(" ")),
+          );
+          continue;
+        }
+        const decision = buildPerfumeImportDecision(normalized, existing);
+        if (decision.kind === "unchanged") {
+          summary.unchanged += 1;
+          summary.results.push(
+            result(input.rowNumber, existing.slug, "unchanged", "Sin cambios efectivos."),
+          );
+          continue;
+        }
+        if (decision.kind !== "update") {
+          throw new Error("No se pudo clasificar el perfume existente.");
+        }
+        await applyExistingPerfumeUpdate(normalized, existing, decision);
+        summary.updated += 1;
+        summary.results.push(
+          result(input.rowNumber, normalized.slug, "updated", "Perfume actualizado."),
+        );
+        revalidatePath(`/producto/${normalized.slug}`);
+        continue;
+      }
       const cells = getPriceCells(sheet, input.row);
       let price = normalized.price;
       let transferPrice = normalized.transferPrice;
@@ -331,12 +410,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
       result.omittedDuplicates += 1;
       continue;
     }
-    if (
-      isRestrictedImportedProduct(row.name) ||
-      !row.slug ||
-      (row.sourceSheet !== "Precios Productos" &&
-        (row.price === null || row.price <= 0 || (row.transferPrice !== null && row.transferPrice >= row.price)))
-    ) {
+    if (isRestrictedImportedProduct(row.name) || !row.slug) {
       result.omittedErrors += 1;
       continue;
     }
@@ -364,6 +438,33 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
         if (error) throw new Error(error.message);
         result.updated += 1;
         revalidatePath(`/producto/${existing.slug}`);
+        continue;
+      }
+      if (row.sourceSheet === "Producto Perfumes" && existing) {
+        if (getExistingPerfumeImportErrors(row.errors).length > 0) {
+          result.omittedErrors += 1;
+          continue;
+        }
+        const decision = buildPerfumeImportDecision(row, existing);
+        if (decision.kind === "unchanged") {
+          result.unchanged += 1;
+          continue;
+        }
+        if (decision.kind !== "update") {
+          result.omittedErrors += 1;
+          continue;
+        }
+        await applyExistingPerfumeUpdate(row, existing, decision);
+        result.updated += 1;
+        revalidatePath(`/producto/${row.slug}`);
+        continue;
+      }
+      if (
+        row.price === null ||
+        row.price <= 0 ||
+        (row.transferPrice !== null && row.transferPrice >= row.price)
+      ) {
+        result.omittedErrors += 1;
         continue;
       }
       const categoryId = await getOrCreateCategory(row.categoryName, row.categorySlug);

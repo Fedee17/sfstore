@@ -55,6 +55,16 @@ function formatMoney(value: number | null) {
   return value !== null ? currencyFormatter.format(value) : "-";
 }
 
+function formatDiffValue(
+  value: ProductImportPreviewRow["diffs"][number]["currentValue"],
+  format: ProductImportPreviewRow["diffs"][number]["format"],
+) {
+  if (format === "money") return formatMoney(value as number | null);
+  if (format === "boolean") return value ? "Sí" : "No";
+  if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "-";
+  return value === null || value === "" ? "-" : String(value);
+}
+
 function getAttributeSummary(row: ProductImportPreviewRow) {
   const updates = Array.isArray(row.catalogAttributeUpdates)
     ? row.catalogAttributeUpdates
@@ -497,10 +507,10 @@ export function ProductImportTool({
                           {row.diffs.length > 0 ? (
                             row.diffs.map((diff) => (
                               <p key={diff.field} className="break-words">
-                                <strong>{diff.field}</strong>: {formatMoney(diff.currentValue)} → {formatMoney(diff.nextValue)}
+                                <strong>{diff.label}</strong>: {formatDiffValue(diff.currentValue, diff.format)} → {formatDiffValue(diff.nextValue, diff.format)}
                               </p>
                             ))
-                          ) : getAttributeSummary(row).length > 0 ? (
+                          ) : row.action !== "unchanged" && getAttributeSummary(row).length > 0 ? (
                             getAttributeSummary(row).map((summary) => (
                               <p key={summary} className="break-words">
                                 {summary}
