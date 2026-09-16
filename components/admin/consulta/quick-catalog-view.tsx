@@ -1,4 +1,10 @@
+import Link from "next/link";
+
 import { ConsultationProductCard } from "@/components/admin/consulta/consultation-product-card";
+import {
+  GetNavigationForm,
+  GetNavigationSubmitButton,
+} from "@/components/admin/get-navigation-form";
 import {
   getCatalogAttributeNameAliases,
   getCatalogAttributeOptionLabel,
@@ -87,7 +93,7 @@ export function QuickCatalogView({
 
   return (
     <>
-      <form className="mt-6 border border-[#8B5E3C]/15 bg-white/80 p-4 shadow-sm">
+      <GetNavigationForm className="mt-6 border border-[#8B5E3C]/15 bg-white/80 p-4 shadow-sm">
         <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(280px,1fr)_repeat(3,minmax(150px,0.35fr))_auto] lg:items-end">
           <label className="grid min-w-0 gap-2">
             <span className="text-xs font-semibold uppercase text-[#8B5E3C]">
@@ -151,12 +157,12 @@ export function QuickCatalogView({
             </select>
           </label>
 
-          <button
-            type="submit"
-            className="h-12 rounded-md bg-[#556B2F] px-5 font-semibold text-white transition hover:bg-[#465826] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
+          <GetNavigationSubmitButton
+            pendingLabel="Buscando..."
+            className="h-12 rounded-md bg-[#556B2F] px-5 font-semibold text-white transition hover:bg-[#465826] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Buscar
-          </button>
+          </GetNavigationSubmitButton>
         </div>
 
         {availableAttributeFilters.length > 0 ? (
@@ -184,19 +190,19 @@ export function QuickCatalogView({
             ))}
           </div>
         ) : null}
-      </form>
+      </GetNavigationForm>
 
       <div className="mt-5 flex min-w-0 flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[#1F1F1F]/60">
           {filteredProducts.length} resultado
           {filteredProducts.length === 1 ? "" : "s"}
         </p>
-        <a
+        <Link
           href="/admin/consulta"
           className="text-sm font-semibold text-[#8B5E3C] hover:text-[#556B2F]"
         >
           Limpiar filtros
-        </a>
+        </Link>
       </div>
 
       {filteredProducts.length === 0 ? (

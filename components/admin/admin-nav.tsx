@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { logoutAdmin } from "@/app/admin/login/actions";
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
 const adminLinks = [
   { href: "/admin", label: "Dashboard" },
@@ -14,26 +17,26 @@ export function AdminNav() {
     <header className="border-b border-[#8B5E3C]/15 bg-[#F7F4ED]">
       {/* TODO: mantener este panel limitado a usuarios autorizados de Supabase Auth. */}
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-5 sm:px-8 md:flex-row md:items-center md:justify-between">
-        <a href="/admin" className="text-lg font-semibold text-[#1F1F1F]">
+        <Link href="/admin" className="text-lg font-semibold text-[#1F1F1F]">
           SFSTORE Admin
-        </a>
+        </Link>
         <nav className="flex flex-wrap items-center gap-2">
           {adminLinks.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className="rounded-full border border-[#8B5E3C]/20 px-4 py-2 text-sm font-semibold text-[#1F1F1F]/70 transition hover:border-[#556B2F] hover:text-[#556B2F]"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
           <form action={logoutAdmin}>
-            <button
-              type="submit"
-              className="rounded-full bg-[#1F1F1F] px-4 py-2 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#8B5E3C]"
+            <PendingSubmitButton
+              pendingLabel="Cerrando..."
+              className="rounded-full bg-[#1F1F1F] px-4 py-2 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#8B5E3C] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cerrar sesion
-            </button>
+            </PendingSubmitButton>
           </form>
         </nav>
       </div>

@@ -1,11 +1,13 @@
 "use client";
 
 import imageCompression from "browser-image-compression";
+import Link from "next/link";
 import { useState, type ChangeEvent } from "react";
 import {
   deleteProductImage,
   setPrimaryProductImage,
 } from "@/app/admin/productos/actions";
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import {
   getAttributeFieldsForCategory,
   getCatalogAttributeInputName,
@@ -251,12 +253,12 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                       <input type="hidden" name="imageId" value={image.id} />
                       <input type="hidden" name="slug" value={product.slug} />
                       <input type="hidden" name="returnTo" value={returnTo} />
-                      <button
-                        type="submit"
-                        className="w-full rounded-full bg-[#556B2F] px-4 py-2 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826]"
+                      <PendingSubmitButton
+                        pendingLabel="Guardando..."
+                        className="w-full rounded-full bg-[#556B2F] px-4 py-2 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Hacer principal
-                      </button>
+                      </PendingSubmitButton>
                     </form>
                   ) : (
                     <div className="rounded-full border border-[#556B2F]/20 px-4 py-2 text-center text-sm font-semibold text-[#556B2F]">
@@ -269,12 +271,12 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                     <input type="hidden" name="imageId" value={image.id} />
                     <input type="hidden" name="slug" value={product.slug} />
                     <input type="hidden" name="returnTo" value={returnTo} />
-                    <button
-                      type="submit"
-                      className="w-full rounded-full border border-[#8B5E3C]/35 px-4 py-2 text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-white/80"
+                    <PendingSubmitButton
+                      pendingLabel="Eliminando..."
+                      className="w-full rounded-full border border-[#8B5E3C]/35 px-4 py-2 text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Eliminar
-                    </button>
+                    </PendingSubmitButton>
                   </form>
                 </div>
               </div>
@@ -588,19 +590,19 @@ export function ProductForm({
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <button
-            type="submit"
+          <PendingSubmitButton
+            pendingLabel="Guardando..."
             disabled={isOptimizingImage}
             className="rounded-full bg-[#556B2F] px-6 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isOptimizingImage ? "Optimizando imagenes..." : submitLabel}
-          </button>
-          <a
+          </PendingSubmitButton>
+          <Link
             href="/admin/productos"
             className="rounded-full border border-[#8B5E3C]/35 px-6 py-3 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-[#F7F4ED]"
           >
             Cancelar
-          </a>
+          </Link>
         </div>
       </form>
     </>

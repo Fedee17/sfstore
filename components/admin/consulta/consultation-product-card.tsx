@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   CATALOG_ATTRIBUTE_KEYS,
   getCatalogAttributeOptionLabel,
@@ -221,12 +223,12 @@ export function ConsultationProductCard({
             </div>
           </details>
 
-          <a
+          <Link
             href={`/admin/productos/${product.id}/editar`}
             className="flex min-h-11 items-center justify-center rounded-md border border-[#556B2F]/30 px-4 text-center text-sm font-semibold text-[#465826] transition hover:bg-[#556B2F]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
           >
             Editar
-          </a>
+          </Link>
         </div>
       </div>
     </article>

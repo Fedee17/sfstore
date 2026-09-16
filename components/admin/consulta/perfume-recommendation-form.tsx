@@ -1,3 +1,9 @@
+import Link from "next/link";
+
+import {
+  GetNavigationForm,
+  GetNavigationSubmitButton,
+} from "@/components/admin/get-navigation-form";
 import {
   PERFUME_GENDER_OPTIONS,
   PERFUME_INTENSITY_OPTIONS,
@@ -51,8 +57,7 @@ export function PerfumeRecommendationForm({
   preferences,
 }: PerfumeRecommendationFormProps) {
   return (
-    <form
-      method="get"
+    <GetNavigationForm
       className="mt-6 border border-[#8B5E3C]/15 bg-white/85 p-4 shadow-sm sm:p-5"
     >
       <input type="hidden" name="mode" value="recommend" />
@@ -131,20 +136,20 @@ export function PerfumeRecommendationForm({
           Elegí solo lo que el cliente ya tenga claro. El resto puede quedar vacío.
         </p>
         <div className="flex flex-wrap gap-2">
-          <a
+          <Link
             href="/admin/consulta?mode=recommend"
             className="flex min-h-11 items-center justify-center rounded-md border border-[#8B5E3C]/20 px-4 text-sm font-semibold text-[#8B5E3C] hover:bg-[#F7F4ED] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
           >
             Limpiar
-          </a>
-          <button
-            type="submit"
-            className="min-h-11 rounded-md bg-[#556B2F] px-5 text-sm font-semibold text-white transition hover:bg-[#465826] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
+          </Link>
+          <GetNavigationSubmitButton
+            pendingLabel="Recomendando..."
+            className="min-h-11 rounded-md bg-[#556B2F] px-5 text-sm font-semibold text-white transition hover:bg-[#465826] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Ver recomendaciones
-          </button>
+          </GetNavigationSubmitButton>
         </div>
       </div>
-    </form>
+    </GetNavigationForm>
   );
 }

@@ -1,6 +1,7 @@
 ﻿import { AdminNav } from "@/components/admin/admin-nav";
 import { ProductImportTool } from "@/components/admin/products/product-import-tool";
 import { requireAdminSession } from "@/lib/admin-session";
+import Link from "next/link";
 
 type ImportPageSearchParams = Record<string, string | string[] | undefined>;
 
@@ -48,12 +49,12 @@ export default async function AdminProductImportPage({
               Subí el Excel de SFSTORE, elegí una hoja y revisá la previsualización antes de guardar cambios en Supabase.
             </p>
           </div>
-          <a
+          <Link
             href="/admin/productos"
             className="w-full rounded-full border border-[#8B5E3C]/30 px-6 py-3 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#556B2F] hover:text-[#556B2F] sm:w-auto"
           >
             Volver a productos
-          </a>
+          </Link>
         </div>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">

@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { getAdminUser } from "@/lib/admin-session";
 import { loginAdmin } from "./actions";
 
@@ -23,9 +25,9 @@ export default async function AdminLoginPage({
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
       <section className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-5 py-12 sm:px-8">
-        <a href="/" className="text-sm font-semibold text-[#8B5E3C]">
+        <Link href="/" className="text-sm font-semibold text-[#8B5E3C]">
           SFSTORE Importados
-        </a>
+        </Link>
 
         <div className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/75 p-7 shadow-sm sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8B5E3C]">
@@ -69,12 +71,12 @@ export default async function AdminLoginPage({
               />
             </label>
 
-            <button
-              type="submit"
-              className="rounded-full bg-[#556B2F] px-6 py-3.5 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826]"
+            <PendingSubmitButton
+              pendingLabel="Ingresando..."
+              className="rounded-full bg-[#556B2F] px-6 py-3.5 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Entrar
-            </button>
+            </PendingSubmitButton>
           </form>
 
           <p className="mt-6 text-xs leading-5 text-[#1F1F1F]/50">

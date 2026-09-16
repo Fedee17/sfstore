@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AdminNav } from "@/components/admin/admin-nav";
 import { ConsultationProductCard } from "@/components/admin/consulta/consultation-product-card";
 import { PerfumeRecommendationForm } from "@/components/admin/consulta/perfume-recommendation-form";
@@ -37,7 +39,7 @@ function ModeNavigation({ mode }: { mode: "search" | "recommend" }) {
       className="mt-6 inline-flex rounded-md border border-[#8B5E3C]/20 bg-white p-1"
     >
       {links.map((link) => (
-        <a
+        <Link
           key={link.value}
           href={link.href}
           aria-current={mode === link.value ? "page" : undefined}
@@ -48,7 +50,7 @@ function ModeNavigation({ mode }: { mode: "search" | "recommend" }) {
           }
         >
           {link.label}
-        </a>
+        </Link>
       ))}
     </nav>
   );

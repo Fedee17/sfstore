@@ -1,4 +1,5 @@
 import { AdminNav } from "@/components/admin/admin-nav";
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { brand } from "@/lib/brand";
 import { requireAdminSession } from "@/lib/admin-session";
 import { getAdminOrders, type AdminOrder } from "@/services/admin";
@@ -126,12 +127,12 @@ function OrderCard({ order }: { order: AdminOrder }) {
             <option value="refunded">refunded</option>
           </select>
         </label>
-        <button
-          type="submit"
-          className="self-end rounded-full bg-[#556B2F] px-5 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826]"
+        <PendingSubmitButton
+          pendingLabel="Guardando..."
+          className="self-end rounded-full bg-[#556B2F] px-5 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
         >
           Guardar cambios
-        </button>
+        </PendingSubmitButton>
       </form>
 
       <details className="mt-5 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] p-4">

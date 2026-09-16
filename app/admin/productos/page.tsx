@@ -1,4 +1,11 @@
 ﻿import { AdminNav } from "@/components/admin/admin-nav";
+import Link from "next/link";
+
+import {
+  GetNavigationForm,
+  GetNavigationSubmitButton,
+} from "@/components/admin/get-navigation-form";
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { requireAdminSession } from "@/lib/admin-session";
 import {
   getAdminCategories,
@@ -169,12 +176,12 @@ function ProductStockForm({
         aria-label={`Stock de ${product.name}`}
         className="h-11 w-full min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 text-sm font-semibold outline-none transition focus:border-[#556B2F]"
       />
-      <button
-        type="submit"
-        className="h-11 w-full min-w-0 rounded-2xl border border-[#556B2F]/25 px-4 text-xs font-semibold text-[#556B2F] transition hover:border-[#556B2F] hover:bg-[#556B2F]/10 sm:w-auto"
+      <PendingSubmitButton
+        pendingLabel="Guardando..."
+        className="h-11 w-full min-w-0 rounded-2xl border border-[#556B2F]/25 px-4 text-xs font-semibold text-[#556B2F] transition hover:border-[#556B2F] hover:bg-[#556B2F]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         Cambiar stock
-      </button>
+      </PendingSubmitButton>
     </form>
   );
 }
@@ -269,18 +276,18 @@ export default async function AdminProductsPage({
             </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <a
+            <Link
               href="/admin/productos/importar"
               className="w-full rounded-full border border-[#8B5E3C]/30 px-6 py-3 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#556B2F] hover:text-[#556B2F] sm:w-auto"
             >
               Importar productos
-            </a>
-            <a
+            </Link>
+            <Link
               href="/admin/productos/nuevo"
               className="w-full rounded-full bg-[#556B2F] px-6 py-3 text-center text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] sm:w-auto"
             >
               Nuevo producto
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -292,7 +299,7 @@ export default async function AdminProductsPage({
           </div>
         ) : null}
 
-        <form className="mt-8 overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
+        <GetNavigationForm className="mt-8 overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
           <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <label className="grid min-w-0 gap-2">
               <span className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
@@ -307,19 +314,19 @@ export default async function AdminProductsPage({
             </label>
 
             <div className="grid min-w-0 gap-2 sm:grid-cols-2">
-              <button
-                type="submit"
-                className="h-12 min-w-0 rounded-2xl bg-[#556B2F] px-5 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826]"
+              <GetNavigationSubmitButton
+                pendingLabel="Buscando..."
+                className="h-12 min-w-0 rounded-2xl bg-[#556B2F] px-5 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Aplicar filtros
-              </button>
+              </GetNavigationSubmitButton>
               {isFiltered ? (
-                <a
+                <Link
                   href="/admin/productos"
                   className="flex h-12 min-w-0 items-center justify-center rounded-2xl border border-[#8B5E3C]/30 px-5 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-[#F7F4ED]"
                 >
                   Limpiar
-                </a>
+                </Link>
               ) : null}
             </div>
           </div>
@@ -390,7 +397,7 @@ export default async function AdminProductsPage({
               </select>
             </label>
           </div>
-        </form>
+        </GetNavigationForm>
 
         <div className="mt-5 flex min-w-0 flex-wrap gap-3 text-sm text-[#1F1F1F]/60">
           <span className="break-words rounded-full border border-[#8B5E3C]/15 bg-white/60 px-4 py-2">
@@ -519,12 +526,12 @@ export default async function AdminProductsPage({
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8B5E3C]">
                           Acciones
                         </p>
-                        <a
+                        <Link
                           href={`/admin/productos/${product.id}/editar`}
                           className="flex h-11 min-w-0 items-center justify-center rounded-2xl border border-[#8B5E3C]/25 px-4 text-center text-xs font-semibold text-[#8B5E3C] transition hover:border-[#556B2F] hover:text-[#556B2F]"
                         >
                           Editar
-                        </a>
+                        </Link>
                         <form action={toggleProductFeatured} className="min-w-0">
                           <input type="hidden" name="productId" value={product.id} />
                           <input type="hidden" name="slug" value={product.slug} />
@@ -534,16 +541,16 @@ export default async function AdminProductsPage({
                             value={product.featured ? "false" : "true"}
                           />
                           <input type="hidden" name="returnTo" value={productsPath} />
-                          <button
-                            type="submit"
+                          <PendingSubmitButton
+                            pendingLabel="Procesando..."
                             className={
                               product.featured
-                                ? "h-11 w-full min-w-0 rounded-2xl bg-[#556B2F] px-4 text-xs font-semibold text-[#F7F4ED] transition hover:bg-[#465826]"
-                                : "h-11 w-full min-w-0 rounded-2xl border border-[#556B2F]/25 px-4 text-xs font-semibold text-[#556B2F] transition hover:border-[#556B2F] hover:bg-[#556B2F]/10"
+                                ? "h-11 w-full min-w-0 rounded-2xl bg-[#556B2F] px-4 text-xs font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
+                                : "h-11 w-full min-w-0 rounded-2xl border border-[#556B2F]/25 px-4 text-xs font-semibold text-[#556B2F] transition hover:border-[#556B2F] hover:bg-[#556B2F]/10 disabled:cursor-not-allowed disabled:opacity-60"
                             }
                           >
                             {product.featured ? "Quitar destacado" : "Destacar"}
-                          </button>
+                          </PendingSubmitButton>
                         </form>
                         <ProductStockForm product={product} returnTo={productsPath} />
                         {product.status !== "archived" ? (
@@ -559,12 +566,12 @@ export default async function AdminProductsPage({
                               name="returnTo"
                               value={productsPath}
                             />
-                            <button
-                              type="submit"
-                              className="h-11 w-full min-w-0 rounded-2xl border border-[#1F1F1F]/15 px-4 text-xs font-semibold text-[#1F1F1F]/65 transition hover:border-[#8B5E3C] hover:text-[#8B5E3C]"
+                            <PendingSubmitButton
+                              pendingLabel="Archivando..."
+                              className="h-11 w-full min-w-0 rounded-2xl border border-[#1F1F1F]/15 px-4 text-xs font-semibold text-[#1F1F1F]/65 transition hover:border-[#8B5E3C] hover:text-[#8B5E3C] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Archivar
-                            </button>
+                            </PendingSubmitButton>
                           </form>
                         ) : null}
                       </div>
