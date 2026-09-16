@@ -123,11 +123,23 @@ test("the attention page is admin-only and does not expose cost", () => {
     join(testDirectory, "..", "services", "admin-catalog.ts"),
     "utf8",
   );
+  const productCard = readFileSync(
+    join(
+      testDirectory,
+      "..",
+      "components",
+      "admin",
+      "consulta",
+      "consultation-product-card.tsx",
+    ),
+    "utf8",
+  );
 
   assert.match(page, /await requireAdminSession\(\)/);
-  assert.match(page, /Precio lista/);
-  assert.match(page, /Efectivo \/ transferencia/);
+  assert.match(productCard, /Precio lista/);
+  assert.match(productCard, /Efectivo \/ transferencia/);
   assert.doesNotMatch(page, /product\.cost/);
+  assert.doesNotMatch(productCard, /product\.cost/);
   assert.doesNotMatch(service, /^\s*cost,?\s*$/m);
   assert.match(service, /transfer_price/);
 });
