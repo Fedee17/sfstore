@@ -87,6 +87,13 @@ export type CreatePurchaseProductResult = {
   product: PurchaseProduct;
 };
 
+export type ConfirmPurchaseResult = {
+  purchase_id: string;
+  status: "confirmed" | "already_confirmed";
+  confirmed_at: string;
+  movements_created: number;
+};
+
 export async function listActiveSuppliers() {
   const { data, error } = await getSupabaseAdminClient()
     .from("suppliers")
@@ -441,4 +448,33 @@ export async function cancelPurchaseDraft(purchaseId: string) {
   if (error) {
     throw new Error(error.message);
   }
+}
+
+export async function confirmPurchase(
+  purchaseId: string,
+  createdBy: string,
+): Promise<ConfirmPurchaseResult> {
+  const normalizedPurchaseId = purchaseId.trim();
+
+  if (!normalizedPurchaseId) {
+    throw new Error("Falta el ID de la compra.");
+  }
+
+  const { data, error } = await getSupabaseAdminClient().rpc(
+    "confirm_purchase",
+    {
+      p_purchase_id: normalizedPurchaseId,
+      p_created_by: createdBy,
+    },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("La base no devolvio el resultado de la confirmacion.");
+  }
+
+  return data as ConfirmPurchaseResult;
 }

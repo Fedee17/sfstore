@@ -30,7 +30,7 @@ export default async function AdminPurchasesPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8B5E3C]">Admin</p>
             <h1 className="mt-3 text-4xl font-semibold">Compras</h1>
             <p className="mt-2 text-sm text-[#1F1F1F]/60">
-              Borradores de compras a proveedores. Confirmar e impactar stock queda fuera de esta fase.
+              Registrá compras a proveedores y confirmalas cuando recibas la mercadería.
             </p>
           </div>
           <Link

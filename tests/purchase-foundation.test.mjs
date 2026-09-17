@@ -95,19 +95,21 @@ test("all purchase pages require an admin session", () => {
 
 test("all purchase mutations require an admin action session", () => {
   const matches = actions.match(/await requireAdminActionSession\(\)/g) ?? [];
-  assert.equal(matches.length, 4);
+  assert.equal(matches.length, 5);
 });
 
-test("the UI exposes save draft but no confirmation action", () => {
+test("draft editing and confirmation remain separate actions", () => {
   const form = source(
     "components",
     "admin",
     "purchases",
     "purchase-draft-form.tsx",
   );
+  const detail = source("app", "admin", "compras", "[id]", "page.tsx");
   assert.match(form, /Guardar borrador/);
   assert.doesNotMatch(form, /Confirmar compra/);
-  assert.doesNotMatch(actions, /confirmPurchase/i);
+  assert.match(detail, /ConfirmPurchaseForm/);
+  assert.match(actions, /confirmPurchaseAction/);
 });
 
 test("the admin navigation includes purchases", () => {

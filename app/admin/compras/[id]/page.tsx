@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cancelPurchaseDraftAction } from "@/app/admin/compras/actions";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
+import { ConfirmPurchaseForm } from "@/components/admin/purchases/confirm-purchase-form";
 import { requireAdminSession } from "@/lib/admin-session";
 import { getPurchaseById } from "@/services/purchases";
 
@@ -12,6 +13,15 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
   currency: "ARS",
   minimumFractionDigits: 2,
 });
+const dateTimeFormatter = new Intl.DateTimeFormat("es-AR", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+const statusLabels = {
+  draft: "Borrador",
+  confirmed: "Confirmada",
+  cancelled: "Cancelada",
+};
 
 type PurchaseDetailPageProps = { params: Promise<{ id: string }> };
 
@@ -31,9 +41,14 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
         <Link href="/admin/compras" className="text-sm font-semibold text-[#8B5E3C]">Volver a compras</Link>
         <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">{purchase.status}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">{statusLabels[purchase.status]}</p>
             <h1 className="mt-2 break-words text-4xl font-semibold">{purchase.supplier_name_snapshot}</h1>
             <p className="mt-2 text-sm text-[#1F1F1F]/60">Fecha: {purchase.purchase_date}</p>
+            {purchase.confirmed_at ? (
+              <p className="mt-1 text-sm font-medium text-[#556B2F]">
+                Confirmada el {dateTimeFormatter.format(new Date(purchase.confirmed_at))}
+              </p>
+            ) : null}
           </div>
           {purchase.status === "draft" ? (
             <div className="flex flex-wrap gap-3">
@@ -42,6 +57,7 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
                 <input type="hidden" name="purchaseId" value={purchase.id} />
                 <PendingSubmitButton pendingLabel="Cancelando..." className="rounded-full border border-[#8B5E3C]/30 px-5 py-3 text-sm font-semibold text-[#8B5E3C] transition hover:bg-[#8B5E3C]/10 disabled:cursor-not-allowed disabled:opacity-60">Cancelar borrador</PendingSubmitButton>
               </form>
+              <ConfirmPurchaseForm purchaseId={purchase.id} />
             </div>
           ) : null}
         </div>
