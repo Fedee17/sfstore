@@ -73,6 +73,8 @@ export function PurchaseDraftForm({
     return initialLines?.length ? initialLines : [emptyLine()];
   });
   const [createForLine, setCreateForLine] = useState<string | null>(null);
+  const [openProductDropdownForLine, setOpenProductDropdownForLine] =
+    useState<string | null>(null);
   const [newProductName, setNewProductName] = useState("");
   const [newProductCategoryId, setNewProductCategoryId] = useState("");
   const [newProductSku, setNewProductSku] = useState("");
@@ -109,6 +111,7 @@ export function PurchaseDraftForm({
   }
 
   function selectProduct(lineKey: string, product: PurchaseProduct) {
+    setOpenProductDropdownForLine(null);
     updateLine(lineKey, {
       productId: product.id,
       productQuery: product.name,
@@ -117,10 +120,17 @@ export function PurchaseDraftForm({
   }
 
   function openProductCreate(line: DraftLine) {
+    setOpenProductDropdownForLine(null);
     setCreateForLine(line.key);
     setNewProductName(line.productQuery.trim());
     setNewProductCategoryId("");
     setNewProductSku("");
+    setCreateResult(null);
+  }
+
+  function cancelProductCreate() {
+    setCreateForLine(null);
+    setOpenProductDropdownForLine(null);
     setCreateResult(null);
   }
 
@@ -158,6 +168,7 @@ export function PurchaseDraftForm({
       });
       selectProduct(lineKey, product);
       setCreateForLine(null);
+      setOpenProductDropdownForLine(null);
       requestAnimationFrame(() => quantityInputRefs.current[lineKey]?.focus());
     });
   }
@@ -267,8 +278,14 @@ export function PurchaseDraftForm({
                     required
                     value={line.productQuery}
                     placeholder="Buscar por nombre o SKU"
+                    onFocus={() => {
+                      if (createForLine !== line.key) {
+                        setOpenProductDropdownForLine(line.key);
+                      }
+                    }}
                     onChange={(event) => {
                       const query = event.target.value;
+                      setOpenProductDropdownForLine(line.key);
                       updateLine(line.key, {
                         productQuery: query,
                         productId: "",
@@ -277,7 +294,10 @@ export function PurchaseDraftForm({
                     }}
                     className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-white px-4 outline-none focus:border-[#556B2F]"
                   />
-                  {line.productQuery.trim() && !line.productId ? (
+                  {openProductDropdownForLine === line.key &&
+                  createForLine !== line.key &&
+                  line.productQuery.trim() &&
+                  !line.productId ? (
                     <div className="z-10 grid max-h-64 gap-1 overflow-y-auto rounded-2xl border border-[#8B5E3C]/20 bg-white p-2 shadow-lg lg:absolute lg:top-[4.75rem] lg:w-full">
                       {matchingProducts.map((product) => (
                         <button
@@ -415,7 +435,7 @@ export function PurchaseDraftForm({
                       <button
                         type="button"
                         disabled={isCreating}
-                        onClick={() => setCreateForLine(null)}
+                        onClick={cancelProductCreate}
                         className="h-12 rounded-2xl border border-[#8B5E3C]/30 px-4 text-sm font-semibold text-[#8B5E3C] transition hover:bg-[#8B5E3C]/10 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         Cancelar
