@@ -242,7 +242,13 @@ export function normalizeProductImportRow(sheet: SupportedProductSheet, row: Rec
   if (sheet === "Precios Productos" && priceCell.nonBlank && (price === null || price <= 0)) errors.push("Precio lista inválido");
   if (sheet === "Precios Productos" && transferPriceCell.nonBlank && (transferPrice === null || transferPrice <= 0)) errors.push("Precio efectivo/transferencia inválido");
   if (transferPrice !== null && price !== null && transferPrice >= price) errors.push("Precio efectivo/transferencia debe ser menor que precio lista");
-  if (costCell.nonBlank && (cost === null || cost < 0)) errors.push("El costo no puede ser negativo.");
+  if (
+    sheet !== "Precios Productos" &&
+    costCell.nonBlank &&
+    (cost === null || cost < 0)
+  ) {
+    errors.push("El costo no puede ser negativo.");
+  }
   return {
     rowNumber,
     sourceSheet: sheet,

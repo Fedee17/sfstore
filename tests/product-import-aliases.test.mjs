@@ -141,15 +141,15 @@ test("a real commercial change through an alias updates only that field", () => 
     "bombillas-plana",
   );
   const decision = buildSafePriceImportDecision({
-    price: 7929,
+    price: 8000,
     transferPrice: 6105,
-    cost: 3800,
+    cost: 3700,
     priceProvided: true,
     transferPriceProvided: true,
     costProvided: true,
   }, selected);
   assert.equal(decision.kind, "update");
-  assert.deepEqual(decision.patch, { cost: 3800 });
+  assert.deepEqual(decision.patch, { price: 8000 });
   assert.equal(Object.hasOwn(decision.patch, "name"), false);
   assert.equal(Object.hasOwn(decision.patch, "slug"), false);
   assert.equal(Object.hasOwn(decision.patch, "stock"), false);

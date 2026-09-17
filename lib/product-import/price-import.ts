@@ -1,4 +1,4 @@
-export type PriceImportField = "price" | "transfer_price" | "cost";
+export type PriceImportField = "price" | "transfer_price";
 
 export type PriceImportSource = {
   price: number | null;
@@ -13,7 +13,6 @@ export type ExistingPriceProduct = {
   id: string;
   price: number;
   transfer_price: number | null;
-  cost: number | null;
 };
 
 export type PriceImportDiff = {
@@ -154,7 +153,6 @@ export function buildSafePriceImportDecision(
   const errors: string[] = [];
   const normalizedPrice = normalizePriceImportMoney(source.price);
   const normalizedTransferPrice = normalizePriceImportMoney(source.transferPrice);
-  const normalizedCost = normalizePriceImportMoney(source.cost);
   if (source.priceProvided && (normalizedPrice === null || normalizedPrice <= 0)) {
     errors.push("Precio lista inválido; debe ser mayor que cero.");
   }
@@ -163,12 +161,6 @@ export function buildSafePriceImportDecision(
     (normalizedTransferPrice === null || normalizedTransferPrice <= 0)
   ) {
     errors.push("Precio efectivo/transferencia inválido; debe ser mayor que cero.");
-  }
-  if (
-    source.costProvided &&
-    (normalizedCost === null || source.cost === null || source.cost < 0)
-  ) {
-    errors.push("Costo inválido; no puede ser negativo.");
   }
 
   const effectivePrice = source.priceProvided
@@ -206,12 +198,6 @@ export function buildSafePriceImportDecision(
       provided: source.transferPriceProvided,
       currentValue: normalizePriceImportMoney(existing.transfer_price),
       nextValue: normalizedTransferPrice,
-    },
-    {
-      field: "cost",
-      provided: source.costProvided,
-      currentValue: normalizePriceImportMoney(existing.cost),
-      nextValue: normalizedCost,
     },
   ];
   const diffs = candidates

@@ -54,16 +54,14 @@ const source = {
   costProvided: true,
 };
 
-test("an existing product can change only cost", () => {
+test("a cost-only change is ignored because purchases own product cost", () => {
   const decision = buildSafePriceImportDecision({ ...source, cost: 120 }, existing);
-  assert.equal(decision.kind, "update");
-  assert.deepEqual(decision.patch, { cost: 120 });
-  assert.deepEqual(decision.diffs, [{ field: "cost", currentValue: 100, nextValue: 120 }]);
+  assert.deepEqual(decision, { kind: "unchanged", patch: {}, diffs: [], errors: [] });
 });
 
 for (const field of ["stock", "featured", "status", "category_id", "description"]) {
   test(`${field} is outside the allowed commercial patch`, () => {
-    const decision = buildSafePriceImportDecision({ ...source, cost: 120 }, existing);
+    const decision = buildSafePriceImportDecision({ ...source, price: 220 }, existing);
     assert.equal(decision.kind, "update");
     assert.equal(Object.hasOwn(decision.patch, field), false);
     assert.equal(existing[field] !== undefined, true);
@@ -160,19 +158,15 @@ test("a value below half a cent is unchanged", () => {
   assert.deepEqual(decision, { kind: "unchanged", patch: {}, diffs: [], errors: [] });
 });
 
-test("a value above half a cent updates to the normalized amount", () => {
+test("cost precision differences remain ignored", () => {
   const decision = buildSafePriceImportDecision(
     { ...source, cost: 26300.006 },
     { ...existing, cost: 26300 },
   );
-  assert.equal(decision.kind, "update");
-  assert.deepEqual(decision.patch, { cost: 26300.01 });
-  assert.deepEqual(decision.diffs, [
-    { field: "cost", currentValue: 26300, nextValue: 26300.01 },
-  ]);
+  assert.deepEqual(decision, { kind: "unchanged", patch: {}, diffs: [], errors: [] });
 });
 
-test("real changes in cost and recalculated prices produce three normalized diffs", () => {
+test("real price changes produce two normalized diffs while cost stays ignored", () => {
   const decision = buildSafePriceImportDecision(
     { price: 220.125, transferPrice: 180.126, cost: 120.126, priceProvided: true, transferPriceProvided: true, costProvided: true },
     existing,
@@ -181,13 +175,20 @@ test("real changes in cost and recalculated prices produce three normalized diff
   assert.deepEqual(decision.patch, {
     price: 220.13,
     transfer_price: 180.13,
-    cost: 120.13,
   });
   assert.deepEqual(decision.diffs, [
     { field: "price", currentValue: 200, nextValue: 220.13 },
     { field: "transfer_price", currentValue: 150, nextValue: 180.13 },
-    { field: "cost", currentValue: 100, nextValue: 120.13 },
   ]);
+});
+
+test("an invalid cost does not block an otherwise valid price update", () => {
+  const decision = buildSafePriceImportDecision(
+    { ...source, price: 220, cost: -1 },
+    existing,
+  );
+  assert.equal(decision.kind, "update");
+  assert.deepEqual(decision.patch, { price: 220 });
 });
 
 test("Google Visualization uses the raw numeric value instead of its rounded display", () => {
