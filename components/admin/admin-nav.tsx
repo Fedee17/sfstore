@@ -7,6 +7,7 @@ const adminLinks = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/pedidos", label: "Pedidos" },
+  { href: "/admin/compras", label: "Compras" },
   { href: "/admin/productos", label: "Productos" },
   { href: "/admin/consulta", label: "Consulta rapida" },
   { href: "/admin/configuracion", label: "Configuracion" },

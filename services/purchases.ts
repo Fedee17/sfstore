@@ -1,0 +1,305 @@
+import {
+  calculatePurchaseDraft,
+  centsToDatabaseMoney,
+  type PurchaseCalculationLineInput,
+} from "@/lib/purchases/calculation";
+import {
+  assertPurchaseIsDraft,
+  type PurchaseStatus,
+} from "@/lib/purchases/lifecycle";
+import {
+  cleanSupplierName,
+  normalizeSupplierName,
+} from "@/lib/purchases/supplier";
+import { getSupabaseAdminClient } from "@/lib/supabase/server";
+
+export type Supplier = {
+  id: string;
+  name: string;
+  normalized_name: string;
+  notes: string | null;
+  is_active: boolean;
+};
+
+export type PurchaseProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  sku: string | null;
+  cost: number | string | null;
+  status: string;
+};
+
+export type PurchaseItem = {
+  id: string;
+  product_id: string;
+  product_name_snapshot: string;
+  product_slug_snapshot: string;
+  sku_snapshot: string | null;
+  quantity: number;
+  unit_purchase_cost: number | string;
+  supplier_line_total: number | string;
+  allocated_shipping_total: number | string;
+  allocated_shipping_per_unit: number | string;
+  effective_unit_cost: number | string;
+  effective_line_total: number | string;
+};
+
+export type Purchase = {
+  id: string;
+  supplier_id: string;
+  supplier_name_snapshot: string;
+  purchase_date: string;
+  status: PurchaseStatus;
+  shipping_cost: number | string;
+  supplier_subtotal: number | string;
+  total_cost: number | string;
+  total_units: number;
+  notes: string | null;
+  confirmed_at: string | null;
+  cancelled_at: string | null;
+  created_at: string;
+  updated_at: string;
+  distinct_product_count?: number;
+  purchase_items?: PurchaseItem[];
+};
+
+export type SavePurchaseDraftInput = {
+  purchaseId?: string;
+  supplierId: string;
+  purchaseDate: string;
+  shippingCost: string;
+  notes: string;
+  createdBy: string;
+  lines: PurchaseCalculationLineInput[];
+};
+
+export async function listActiveSuppliers() {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("suppliers")
+    .select("id, name, normalized_name, notes, is_active")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as Supplier[];
+}
+
+export async function createSupplier({
+  name,
+  notes,
+}: {
+  name: string;
+  notes: string;
+}) {
+  const cleanName = cleanSupplierName(name);
+  const normalizedName = normalizeSupplierName(name);
+
+  if (!cleanName || !normalizedName) {
+    throw new Error("El nombre del proveedor es requerido.");
+  }
+
+  const { data, error } = await getSupabaseAdminClient()
+    .from("suppliers")
+    .insert({
+      name: cleanName,
+      normalized_name: normalizedName,
+      notes: notes.trim() || null,
+    })
+    .select("id, name, normalized_name, notes, is_active")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      throw new Error("Ya existe un proveedor con ese nombre.");
+    }
+
+    throw new Error(error.message);
+  }
+
+  return data as Supplier;
+}
+
+export async function listPurchaseProducts() {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("products")
+    .select("id, name, slug, sku, cost, status")
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as PurchaseProduct[];
+}
+
+export async function listPurchases() {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("purchases")
+    .select(
+      "id, supplier_id, supplier_name_snapshot, purchase_date, status, shipping_cost, supplier_subtotal, total_cost, total_units, notes, confirmed_at, cancelled_at, created_at, updated_at, purchase_items(count)",
+    )
+    .order("purchase_date", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map((row) => {
+    const itemCount = Array.isArray(row.purchase_items)
+      ? Number(row.purchase_items[0]?.count ?? 0)
+      : 0;
+
+    return {
+      ...row,
+      distinct_product_count: itemCount,
+      purchase_items: undefined,
+    } as Purchase;
+  });
+}
+
+export async function getPurchaseById(purchaseId: string) {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("purchases")
+    .select(
+      `
+      id,
+      supplier_id,
+      supplier_name_snapshot,
+      purchase_date,
+      status,
+      shipping_cost,
+      supplier_subtotal,
+      total_cost,
+      total_units,
+      notes,
+      confirmed_at,
+      cancelled_at,
+      created_at,
+      updated_at,
+      purchase_items (
+        id,
+        product_id,
+        product_name_snapshot,
+        product_slug_snapshot,
+        sku_snapshot,
+        quantity,
+        unit_purchase_cost,
+        supplier_line_total,
+        allocated_shipping_total,
+        allocated_shipping_per_unit,
+        effective_unit_cost,
+        effective_line_total
+      )
+    `,
+    )
+    .eq("id", purchaseId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Purchase | null;
+}
+
+export async function savePurchaseDraft(input: SavePurchaseDraftInput) {
+  const supplierId = input.supplierId.trim();
+  const purchaseDate = input.purchaseDate.trim();
+
+  if (!supplierId) {
+    throw new Error("El proveedor es requerido.");
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(purchaseDate)) {
+    throw new Error("La fecha de compra no es valida.");
+  }
+
+  const calculation = calculatePurchaseDraft({
+    lines: input.lines,
+    shippingCost: input.shippingCost,
+  });
+  const supabase = getSupabaseAdminClient();
+
+  if (input.purchaseId) {
+    const existingPurchase = await getPurchaseById(input.purchaseId);
+
+    if (!existingPurchase) {
+      throw new Error("La compra no existe.");
+    }
+
+    assertPurchaseIsDraft(existingPurchase.status);
+  }
+
+  const { data: supplier, error: supplierError } = await supabase
+    .from("suppliers")
+    .select("id")
+    .eq("id", supplierId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (supplierError) {
+    throw new Error(supplierError.message);
+  }
+
+  if (!supplier) {
+    throw new Error("El proveedor no existe o esta inactivo.");
+  }
+
+  const productIds = calculation.lines.map((line) => line.productId);
+  const { data: products, error: productsError } = await supabase
+    .from("products")
+    .select("id")
+    .in("id", productIds);
+
+  if (productsError) {
+    throw new Error(productsError.message);
+  }
+
+  if ((products ?? []).length !== productIds.length) {
+    throw new Error("Uno o mas productos no existen.");
+  }
+
+  const { data, error } = await supabase.rpc("save_purchase_draft", {
+    p_purchase_id: input.purchaseId || null,
+    p_supplier_id: supplierId,
+    p_purchase_date: purchaseDate,
+    p_shipping_cost: centsToDatabaseMoney(calculation.shippingCostCents),
+    p_notes: input.notes.trim() || null,
+    p_created_by: input.createdBy,
+    p_items: calculation.lines.map((line) => ({
+      product_id: line.productId,
+      quantity: line.quantity,
+      unit_purchase_cost: centsToDatabaseMoney(line.unitPurchaseCostCents),
+    })),
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return String(data);
+}
+
+export async function cancelPurchaseDraft(purchaseId: string) {
+  const purchase = await getPurchaseById(purchaseId);
+
+  if (!purchase) {
+    throw new Error("La compra no existe.");
+  }
+
+  assertPurchaseIsDraft(purchase.status);
+
+  const { error } = await getSupabaseAdminClient().rpc(
+    "cancel_purchase_draft",
+    { p_purchase_id: purchaseId },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
