@@ -1,28 +1,20 @@
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
+import {
+  isAllowedAdminEmail,
+  parseAllowedAdminEmails,
+} from "@/lib/admin-authorization";
 import { getSupabaseAuthServerClient } from "@/lib/supabase/auth-server";
 
 export function getAllowedAdminEmails() {
-  const rawEmails =
-    process.env.ADMIN_ALLOWED_EMAILS ?? process.env.ADMIN_EMAIL ?? "";
-
-  return rawEmails
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
+  return parseAllowedAdminEmails(process.env.ADMIN_ALLOWED_EMAILS);
 }
 
 export function isAllowedAdminUser(user: User) {
-  const allowedEmails = getAllowedAdminEmails();
-
-  // TODO: configurar ADMIN_ALLOWED_EMAILS con el email del dueño antes de producción.
-  if (allowedEmails.length === 0) {
-    return true;
-  }
-
-  return Boolean(
-    user.email && allowedEmails.includes(user.email.trim().toLowerCase()),
+  return isAllowedAdminEmail(
+    user.email,
+    process.env.ADMIN_ALLOWED_EMAILS,
   );
 }
 
