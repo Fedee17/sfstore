@@ -11,6 +11,7 @@ import {
   MANAGED_CATALOG_ATTRIBUTE_KEYS,
 } from "@/lib/catalog/attribute-config";
 import { PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
+import { slugifyProductValue } from "@/lib/products/slug";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
@@ -20,16 +21,6 @@ type ProductCategoryInfo = {
   name: string;
   slug: string;
 };
-
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function parseMoney(value: FormDataEntryValue | null, fieldName: string) {
   const normalized = String(value ?? "").replace(",", ".").trim();
@@ -73,7 +64,7 @@ function readProductForm(formData: FormData) {
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
   const slugInput = String(formData.get("slug") ?? "").trim();
-  const slug = slugInput ? slugify(slugInput) : slugify(name);
+  const slug = slugifyProductValue(slugInput || name);
   const shortDescription = String(formData.get("shortDescription") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const sku = String(formData.get("sku") ?? "").trim();

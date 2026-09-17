@@ -95,7 +95,7 @@ test("all purchase pages require an admin session", () => {
 
 test("all purchase mutations require an admin action session", () => {
   const matches = actions.match(/await requireAdminActionSession\(\)/g) ?? [];
-  assert.equal(matches.length, 3);
+  assert.equal(matches.length, 4);
 });
 
 test("the UI exposes save draft but no confirmation action", () => {

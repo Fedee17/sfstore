@@ -5,6 +5,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { PurchaseDraftForm } from "@/components/admin/purchases/purchase-draft-form";
 import { requireAdminSession } from "@/lib/admin-session";
+import { getAdminCategories } from "@/services/admin";
 import {
   listActiveSuppliers,
   listPurchaseProducts,
@@ -17,10 +18,14 @@ type NewPurchasePageProps = {
 export default async function NewPurchasePage({ searchParams }: NewPurchasePageProps) {
   await requireAdminSession();
   const params = searchParams ? await searchParams : {};
-  const [suppliers, products] = await Promise.all([
+  const [suppliers, products, categoriesResult] = await Promise.all([
     listActiveSuppliers(),
     listPurchaseProducts(),
+    getAdminCategories(),
   ]);
+  const categories = (categoriesResult.data ?? []).filter(
+    (category) => category.is_active,
+  );
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -60,7 +65,11 @@ export default async function NewPurchasePage({ searchParams }: NewPurchasePageP
           </form>
         </details>
 
-        <PurchaseDraftForm suppliers={suppliers} products={products} />
+        <PurchaseDraftForm
+          suppliers={suppliers}
+          products={products}
+          categories={categories}
+        />
       </section>
     </main>
   );

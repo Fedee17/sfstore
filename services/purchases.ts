@@ -11,6 +11,7 @@ import {
   cleanSupplierName,
   normalizeSupplierName,
 } from "@/lib/purchases/supplier";
+import { slugifyProductValue } from "@/lib/products/slug";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 export type Supplier = {
@@ -74,6 +75,18 @@ export type SavePurchaseDraftInput = {
   lines: PurchaseCalculationLineInput[];
 };
 
+export type CreatePurchaseProductInput = {
+  name: string;
+  categoryId: string;
+  sku?: string;
+  purchaseId?: string;
+};
+
+export type CreatePurchaseProductResult = {
+  created: boolean;
+  product: PurchaseProduct;
+};
+
 export async function listActiveSuppliers() {
   const { data, error } = await getSupabaseAdminClient()
     .from("suppliers")
@@ -134,6 +147,132 @@ export async function listPurchaseProducts() {
   }
 
   return (data ?? []) as PurchaseProduct[];
+}
+
+function cleanProductName(value: string) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+async function findPurchaseProductBySlug(slug: string) {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("products")
+    .select("id, name, slug, sku, cost, status")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as PurchaseProduct | null;
+}
+
+async function findPurchaseProductByName(name: string) {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("products")
+    .select("id, name, slug, sku, cost, status")
+    .ilike("name", name)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as PurchaseProduct | null;
+}
+
+export async function createPurchaseProduct(
+  input: CreatePurchaseProductInput,
+): Promise<CreatePurchaseProductResult> {
+  const name = cleanProductName(input.name);
+  const categoryId = input.categoryId.trim();
+  const sku = input.sku?.trim() || null;
+  const slug = slugifyProductValue(name);
+
+  if (!name) {
+    throw new Error("Nombre es requerido.");
+  }
+
+  if (!categoryId) {
+    throw new Error("Categoria es requerida.");
+  }
+
+  if (!slug) {
+    throw new Error("El nombre no permite generar un slug valido.");
+  }
+
+  if (input.purchaseId) {
+    const purchase = await getPurchaseById(input.purchaseId);
+
+    if (!purchase) {
+      throw new Error("La compra no existe.");
+    }
+
+    assertPurchaseIsDraft(purchase.status);
+  }
+
+  const supabase = getSupabaseAdminClient();
+  const { data: category, error: categoryError } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("id", categoryId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (categoryError) {
+    throw new Error(categoryError.message);
+  }
+
+  if (!category) {
+    throw new Error("La categoria no existe o esta inactiva.");
+  }
+
+  const existingProduct =
+    (await findPurchaseProductBySlug(slug)) ??
+    (await findPurchaseProductByName(name));
+
+  if (existingProduct) {
+    return { created: false, product: existingProduct };
+  }
+
+  const productId = crypto.randomUUID();
+  const { data, error } = await supabase
+    .from("products")
+    .insert({
+      id: productId,
+      category_id: categoryId,
+      name,
+      slug,
+      short_description: "",
+      description: null,
+      price: 0,
+      transfer_price: null,
+      compare_at_price: null,
+      cost: null,
+      stock: 0,
+      sku,
+      featured: false,
+      status: "active",
+    })
+    .select("id, name, slug, sku, cost, status")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      const duplicate = await findPurchaseProductBySlug(slug);
+
+      if (duplicate) {
+        return { created: false, product: duplicate };
+      }
+
+      throw new Error("Ya existe un producto con ese SKU.");
+    }
+
+    throw new Error(error.message);
+  }
+
+  return { created: true, product: data as PurchaseProduct };
 }
 
 export async function listPurchases() {

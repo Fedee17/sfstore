@@ -6,9 +6,17 @@ import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
   cancelPurchaseDraft,
+  createPurchaseProduct,
   createSupplier,
   savePurchaseDraft,
 } from "@/services/purchases";
+import type { PurchaseProduct } from "@/services/purchases";
+
+export type CreatePurchaseProductActionResult = {
+  status: "idle" | "created" | "existing" | "error";
+  message: string;
+  product?: PurchaseProduct;
+};
 
 function readPurchaseLines(formData: FormData) {
   const productIds = formData.getAll("productId").map(String);
@@ -38,6 +46,43 @@ export async function createSupplierAction(formData: FormData) {
 
   revalidatePath("/admin/compras/nueva");
   redirect("/admin/compras/nueva?supplierCreated=1");
+}
+
+export async function createPurchaseProductAction(input: {
+  name: string;
+  categoryId: string;
+  sku?: string;
+  purchaseId?: string;
+}): Promise<CreatePurchaseProductActionResult> {
+  await requireAdminActionSession();
+
+  try {
+    const result = await createPurchaseProduct(input);
+
+    revalidatePath("/admin/productos");
+    revalidatePath("/admin/consulta");
+    revalidatePath("/admin/compras/nueva");
+
+    if (input.purchaseId) {
+      revalidatePath(`/admin/compras/${input.purchaseId}/editar`);
+    }
+
+    return {
+      status: result.created ? "created" : "existing",
+      message: result.created
+        ? "Producto creado y agregado a la compra."
+        : "Ya existe un producto con ese nombre. Podés agregarlo a la compra.",
+      product: result.product,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "No se pudo crear el producto.",
+    };
+  }
 }
 
 export async function savePurchaseDraftAction(formData: FormData) {

@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { PurchaseDraftForm } from "@/components/admin/purchases/purchase-draft-form";
 import { requireAdminSession } from "@/lib/admin-session";
+import { getAdminCategories } from "@/services/admin";
 import {
   getPurchaseById,
   listActiveSuppliers,
@@ -15,10 +16,11 @@ type EditPurchasePageProps = { params: Promise<{ id: string }> };
 export default async function EditPurchasePage({ params }: EditPurchasePageProps) {
   await requireAdminSession();
   const { id } = await params;
-  const [purchase, suppliers, products] = await Promise.all([
+  const [purchase, suppliers, products, categoriesResult] = await Promise.all([
     getPurchaseById(id),
     listActiveSuppliers(),
     listPurchaseProducts(),
+    getAdminCategories(),
   ]);
 
   if (!purchase) {
@@ -36,7 +38,14 @@ export default async function EditPurchasePage({ params }: EditPurchasePageProps
         <Link href={`/admin/compras/${purchase.id}`} className="text-sm font-semibold text-[#8B5E3C]">Volver al detalle</Link>
         <h1 className="mt-4 text-4xl font-semibold">Editar borrador</h1>
         <p className="mt-2 text-sm text-[#1F1F1F]/60">Los totales se recalculan en el servidor al guardar.</p>
-        <PurchaseDraftForm suppliers={suppliers} products={products} purchase={purchase} />
+        <PurchaseDraftForm
+          suppliers={suppliers}
+          products={products}
+          categories={(categoriesResult.data ?? []).filter(
+            (category) => category.is_active,
+          )}
+          purchase={purchase}
+        />
       </section>
     </main>
   );

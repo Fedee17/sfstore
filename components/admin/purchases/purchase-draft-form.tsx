@@ -1,10 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 
-import { savePurchaseDraftAction } from "@/app/admin/compras/actions";
+import {
+  createPurchaseProductAction,
+  savePurchaseDraftAction,
+  type CreatePurchaseProductActionResult,
+} from "@/app/admin/compras/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { calculatePurchaseDraft } from "@/lib/purchases/calculation";
+import type { AdminCategory } from "@/services/admin";
 import type {
   Purchase,
   PurchaseProduct,
@@ -14,6 +19,7 @@ import type {
 type DraftLine = {
   key: string;
   productId: string;
+  productQuery: string;
   quantity: string;
   unitPurchaseCost: string;
 };
@@ -32,6 +38,7 @@ function emptyLine(): DraftLine {
   return {
     key: crypto.randomUUID(),
     productId: "",
+    productQuery: "",
     quantity: "1",
     unitPurchaseCost: "0.00",
   };
@@ -40,12 +47,15 @@ function emptyLine(): DraftLine {
 export function PurchaseDraftForm({
   suppliers,
   products,
+  categories,
   purchase,
 }: {
   suppliers: Supplier[];
   products: PurchaseProduct[];
+  categories: AdminCategory[];
   purchase?: Purchase;
 }) {
+  const [availableProducts, setAvailableProducts] = useState(products);
   const [shippingCost, setShippingCost] = useState(
     moneyInput(purchase?.shipping_cost),
   );
@@ -53,12 +63,23 @@ export function PurchaseDraftForm({
     const initialLines = purchase?.purchase_items?.map((item) => ({
       key: item.id,
       productId: item.product_id,
+      productQuery:
+        products.find((product) => product.id === item.product_id)?.name ??
+        item.product_name_snapshot,
       quantity: String(item.quantity),
       unitPurchaseCost: moneyInput(item.unit_purchase_cost),
     }));
 
     return initialLines?.length ? initialLines : [emptyLine()];
   });
+  const [createForLine, setCreateForLine] = useState<string | null>(null);
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductCategoryId, setNewProductCategoryId] = useState("");
+  const [newProductSku, setNewProductSku] = useState("");
+  const [createResult, setCreateResult] =
+    useState<CreatePurchaseProductActionResult | null>(null);
+  const [isCreating, startCreating] = useTransition();
+  const quantityInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const preview = useMemo(() => {
     try {
@@ -85,6 +106,60 @@ export function PurchaseDraftForm({
     setLines((current) =>
       current.map((line) => (line.key === key ? { ...line, ...patch } : line)),
     );
+  }
+
+  function selectProduct(lineKey: string, product: PurchaseProduct) {
+    updateLine(lineKey, {
+      productId: product.id,
+      productQuery: product.name,
+      unitPurchaseCost: moneyInput(product.cost),
+    });
+  }
+
+  function openProductCreate(line: DraftLine) {
+    setCreateForLine(line.key);
+    setNewProductName(line.productQuery.trim());
+    setNewProductCategoryId("");
+    setNewProductSku("");
+    setCreateResult(null);
+  }
+
+  function submitProductCreate() {
+    if (!createForLine || isCreating) {
+      return;
+    }
+
+    const lineKey = createForLine;
+
+    startCreating(async () => {
+      const result = await createPurchaseProductAction({
+        name: newProductName,
+        categoryId: newProductCategoryId,
+        sku: newProductSku,
+        purchaseId: purchase?.id,
+      });
+
+      setCreateResult(result);
+
+      if (!result.product) {
+        return;
+      }
+
+      const product = result.product;
+
+      setAvailableProducts((current) => {
+        if (current.some((candidate) => candidate.id === product.id)) {
+          return current;
+        }
+
+        return [...current, product].sort((first, second) =>
+          first.name.localeCompare(second.name, "es"),
+        );
+      });
+      selectProduct(lineKey, product);
+      setCreateForLine(null);
+      requestAnimationFrame(() => quantityInputRefs.current[lineKey]?.focus());
+    });
   }
 
   return (
@@ -151,41 +226,93 @@ export function PurchaseDraftForm({
         <div className="mt-5 grid gap-4">
           {lines.map((line, index) => {
             const previewLine = preview.calculation?.lines[index];
+            const normalizedQuery = line.productQuery
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .trim()
+              .toLowerCase();
+            const matchingProducts = normalizedQuery
+              ? availableProducts
+                  .filter((product) => {
+                    const searchable = `${product.name} ${product.sku ?? ""}`
+                      .normalize("NFD")
+                      .replace(/[\u0300-\u036f]/g, "")
+                      .toLowerCase();
+                    return searchable.includes(normalizedQuery);
+                  })
+                  .slice(0, 8)
+              : [];
+            const exactProduct = availableProducts.find((product) => {
+              const normalizedName = product.name
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .trim()
+                .toLowerCase();
+              return (
+                normalizedName === normalizedQuery ||
+                product.sku?.trim().toLowerCase() === normalizedQuery
+              );
+            });
 
             return (
               <div
                 key={line.key}
                 className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] p-4 lg:grid-cols-[minmax(0,2fr)_minmax(7rem,0.6fr)_minmax(9rem,0.8fr)_auto] lg:items-end"
               >
-                <label className="grid min-w-0 gap-2 text-sm font-semibold">
+                <div className="relative grid min-w-0 gap-2 text-sm font-semibold">
                   Producto
-                  <select
-                    name="productId"
+                  <input type="hidden" name="productId" value={line.productId} />
+                  <input
+                    type="search"
                     required
-                    value={line.productId}
+                    value={line.productQuery}
+                    placeholder="Buscar por nombre o SKU"
                     onChange={(event) => {
-                      const product = products.find(
-                        (candidate) => candidate.id === event.target.value,
-                      );
+                      const query = event.target.value;
                       updateLine(line.key, {
-                        productId: event.target.value,
-                        unitPurchaseCost: moneyInput(product?.cost),
+                        productQuery: query,
+                        productId: "",
+                        unitPurchaseCost: "0.00",
                       });
                     }}
                     className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-white px-4 outline-none focus:border-[#556B2F]"
-                  >
-                    <option value="">Seleccionar producto</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name}{product.sku ? ` - ${product.sku}` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                  />
+                  {line.productQuery.trim() && !line.productId ? (
+                    <div className="z-10 grid max-h-64 gap-1 overflow-y-auto rounded-2xl border border-[#8B5E3C]/20 bg-white p-2 shadow-lg lg:absolute lg:top-[4.75rem] lg:w-full">
+                      {matchingProducts.map((product) => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          onClick={() => selectProduct(line.key, product)}
+                          className="min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold transition hover:bg-[#556B2F]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
+                        >
+                          {product.name}
+                          {product.sku ? (
+                            <span className="ml-2 text-xs font-normal text-[#1F1F1F]/50">
+                              {product.sku}
+                            </span>
+                          ) : null}
+                        </button>
+                      ))}
+                      {!exactProduct ? (
+                        <button
+                          type="button"
+                          onClick={() => openProductCreate(line)}
+                          className="min-h-11 rounded-xl border border-dashed border-[#556B2F]/35 px-3 py-2 text-left text-sm font-semibold text-[#556B2F] transition hover:bg-[#556B2F]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
+                        >
+                          + Crear producto nuevo
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
 
                 <label className="grid min-w-0 gap-2 text-sm font-semibold">
                   Cantidad
                   <input
+                    ref={(element) => {
+                      quantityInputRefs.current[line.key] = element;
+                    }}
                     name="quantity"
                     type="number"
                     min="1"
@@ -227,11 +354,91 @@ export function PurchaseDraftForm({
                     Subtotal {currencyFormatter.format(previewLine.supplierLineTotalCents / 100)} · Envio {currencyFormatter.format(previewLine.allocatedShippingTotalCents / 100)} · Costo efectivo unitario {currencyFormatter.format(previewLine.effectiveUnitCostCents / 100)} · Total efectivo {currencyFormatter.format(previewLine.effectiveLineTotalCents / 100)}
                   </p>
                 ) : null}
+
+                {createForLine === line.key ? (
+                  <div
+                    className="grid min-w-0 gap-3 rounded-2xl border border-[#556B2F]/25 bg-white p-4 lg:col-span-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.8fr)_auto] lg:items-end"
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        submitProductCreate();
+                      }
+                    }}
+                  >
+                    <label className="grid min-w-0 gap-2 text-sm font-semibold">
+                      Nombre
+                      <input
+                        autoFocus
+                        required
+                        value={newProductName}
+                        onChange={(event) => setNewProductName(event.target.value)}
+                        className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 outline-none focus:border-[#556B2F]"
+                      />
+                    </label>
+                    <label className="grid min-w-0 gap-2 text-sm font-semibold">
+                      Categoria
+                      <select
+                        required
+                        value={newProductCategoryId}
+                        onChange={(event) => setNewProductCategoryId(event.target.value)}
+                        className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 outline-none focus:border-[#556B2F]"
+                      >
+                        <option value="">Seleccionar categoria</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="grid min-w-0 gap-2 text-sm font-semibold">
+                      SKU opcional
+                      <input
+                        value={newProductSku}
+                        onChange={(event) => setNewProductSku(event.target.value)}
+                        className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 outline-none focus:border-[#556B2F]"
+                      />
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={
+                          isCreating ||
+                          !newProductName.trim() ||
+                          !newProductCategoryId
+                        }
+                        onClick={submitProductCreate}
+                        className="h-12 rounded-2xl bg-[#556B2F] px-5 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F] disabled:cursor-not-allowed disabled:bg-[#1F1F1F]/20 disabled:text-[#1F1F1F]/60"
+                      >
+                        {isCreating ? "Creando..." : "Crear y agregar"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isCreating}
+                        onClick={() => setCreateForLine(null)}
+                        className="h-12 rounded-2xl border border-[#8B5E3C]/30 px-4 text-sm font-semibold text-[#8B5E3C] transition hover:bg-[#8B5E3C]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                    {createResult?.status === "error" ? (
+                      <p role="alert" className="text-sm font-semibold text-[#8B5E3C] lg:col-span-4">
+                        {createResult.message}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             );
           })}
         </div>
       </section>
+
+      {createResult && createResult.status !== "error" ? (
+        <p role="status" className="rounded-2xl border border-[#556B2F]/20 bg-[#556B2F]/10 px-4 py-3 text-sm font-semibold text-[#556B2F]">
+          {createResult.message}
+        </p>
+      ) : null}
 
       <section className="grid gap-4 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 md:grid-cols-[minmax(0,1fr)_minmax(15rem,0.7fr)] md:items-end">
         <label className="grid min-w-0 gap-2 text-sm font-semibold">
@@ -262,7 +469,7 @@ export function PurchaseDraftForm({
       <div className="flex justify-end">
         <PendingSubmitButton
           pendingLabel="Guardando borrador..."
-          disabled={!preview.calculation || suppliers.length === 0 || products.length === 0}
+          disabled={!preview.calculation || suppliers.length === 0 || availableProducts.length === 0}
           className="rounded-full bg-[#556B2F] px-7 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:bg-[#1F1F1F]/20 disabled:text-[#1F1F1F]/60"
         >
           Guardar borrador
