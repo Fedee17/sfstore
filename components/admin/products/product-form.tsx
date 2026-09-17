@@ -472,18 +472,25 @@ export function ProductForm({
             />
           </label>
 
-          <label className="grid gap-2">
-            <span className="text-sm font-semibold text-[#1F1F1F]/75">Stock</span>
-            <input
-              name="stock"
-              type="number"
-              min="0"
-              step="1"
-              required
-              defaultValue={product?.stock ?? 0}
-              className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
-            />
-          </label>
+          <div className="grid gap-2 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] px-4 py-3">
+            <span className="text-sm font-semibold text-[#1F1F1F]/75">
+              Stock actual
+            </span>
+            <span className="font-semibold">{product?.stock ?? 0}</span>
+            <span className="text-xs leading-5 text-[#1F1F1F]/55">
+              {product
+                ? "El saldo se modifica mediante un ajuste auditable desde Productos."
+                : "El producto se creara con stock inicial 0."}
+            </span>
+            {product ? (
+              <Link
+                href={`/admin/inventario?product=${product.id}`}
+                className="text-xs font-semibold text-[#556B2F] underline-offset-4 hover:underline"
+              >
+                Ver movimientos
+              </Link>
+            ) : null}
+          </div>
 
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Costo</span>

@@ -6,6 +6,7 @@ import {
   GetNavigationSubmitButton,
 } from "@/components/admin/get-navigation-form";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
+import { InventoryAdjustmentForm } from "@/components/admin/products/inventory-adjustment-form";
 import { requireAdminSession } from "@/lib/admin-session";
 import {
   getAdminCategories,
@@ -16,7 +17,6 @@ import {
 import {
   archiveProduct,
   toggleProductFeatured,
-  updateProductStock,
 } from "./actions";
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
@@ -152,40 +152,6 @@ function ProductThumbnail({ product }: { product: AdminProduct }) {
   );
 }
 
-function ProductStockForm({
-  product,
-  returnTo,
-}: {
-  product: AdminProduct;
-  returnTo: string;
-}) {
-  return (
-    <form
-      action={updateProductStock}
-      className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
-    >
-      <input type="hidden" name="productId" value={product.id} />
-      <input type="hidden" name="slug" value={product.slug} />
-      <input type="hidden" name="returnTo" value={returnTo} />
-      <input
-        name="stock"
-        type="number"
-        min="0"
-        step="1"
-        defaultValue={product.stock}
-        aria-label={`Stock de ${product.name}`}
-        className="h-11 w-full min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 text-sm font-semibold outline-none transition focus:border-[#556B2F]"
-      />
-      <PendingSubmitButton
-        pendingLabel="Guardando..."
-        className="h-11 w-full min-w-0 rounded-2xl border border-[#556B2F]/25 px-4 text-xs font-semibold text-[#556B2F] transition hover:border-[#556B2F] hover:bg-[#556B2F]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-      >
-        Cambiar stock
-      </PendingSubmitButton>
-    </form>
-  );
-}
-
 function PriceBlock({
   label,
   value,
@@ -272,7 +238,7 @@ export default async function AdminProductsPage({
               Productos
             </h1>
             <p className="mt-2 break-words text-sm text-[#1F1F1F]/60">
-              Gestion rapida del catalogo real, stock manual y productos destacados.
+              Gestion del catalogo, ajustes auditables de stock y productos destacados.
             </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -552,7 +518,12 @@ export default async function AdminProductsPage({
                             {product.featured ? "Quitar destacado" : "Destacar"}
                           </PendingSubmitButton>
                         </form>
-                        <ProductStockForm product={product} returnTo={productsPath} />
+                        <InventoryAdjustmentForm
+                          productId={product.id}
+                          productName={product.name}
+                          productSlug={product.slug}
+                          currentStock={product.stock}
+                        />
                         {product.status !== "archived" ? (
                           <form action={archiveProduct} className="min-w-0">
                             <input

@@ -13,6 +13,7 @@ import {
 import { PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
 import { slugifyProductValue } from "@/lib/products/slug";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { adjustInventoryStock } from "@/services/inventory";
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
 const PRODUCT_IMAGES_BUCKET = "product-images";
@@ -50,9 +51,10 @@ function parseOptionalMoney(value: FormDataEntryValue | null, fieldName: string)
 }
 
 function parseStock(value: FormDataEntryValue | null) {
-  const number = Number(String(value ?? "").trim());
+  const normalized = String(value ?? "").trim();
+  const number = Number(normalized);
 
-  if (!Number.isInteger(number) || number < 0) {
+  if (!normalized || !Number.isInteger(number) || number < 0) {
     throw new Error("Stock debe ser un numero entero mayor o igual a 0.");
   }
 
@@ -104,7 +106,6 @@ function readProductForm(formData: FormData) {
         "Precio comparativo",
       ),
       cost: parseOptionalMoney(formData.get("cost"), "Costo"),
-      stock: parseStock(formData.get("stock")),
       sku: sku || null,
       featured: formData.get("featured") === "on",
       status,
@@ -598,30 +599,65 @@ export async function toggleProductFeatured(formData: FormData) {
   redirect(returnTo);
 }
 
-export async function updateProductStock(formData: FormData) {
-  await requireAdminActionSession();
+export type InventoryAdjustmentActionState = {
+  status: "idle" | "success" | "no_change" | "error";
+  message: string;
+  newStock?: number;
+  movementId?: string;
+};
 
-  const productId = String(formData.get("productId") ?? "");
-  const slug = String(formData.get("slug") ?? "");
-  const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
+export async function updateProductStock(
+  _previousState: InventoryAdjustmentActionState,
+  formData: FormData,
+): Promise<InventoryAdjustmentActionState> {
+  try {
+    const user = await requireAdminActionSession();
+    const productId = String(formData.get("productId") ?? "").trim();
+    const slug = String(formData.get("slug") ?? "").trim();
+    const reason = String(formData.get("reason") ?? "").trim();
 
-  if (!productId) {
-    throw new Error("Falta el ID del producto.");
+    if (!productId) {
+      throw new Error("Falta el ID del producto.");
+    }
+
+    if (!reason) {
+      throw new Error("El motivo del ajuste es obligatorio.");
+    }
+
+    const newStock = parseStock(formData.get("newStock"));
+    const result = await adjustInventoryStock({
+      productId,
+      newStock,
+      reason,
+      createdBy: user.id,
+    });
+
+    revalidateProductPaths(slug);
+    revalidatePath("/admin/inventario");
+
+    if (result.status === "no_change") {
+      return {
+        status: "no_change",
+        message: "El stock ya tenia ese valor. No se creo ningun movimiento.",
+        newStock: result.new_stock,
+      };
+    }
+
+    return {
+      status: "success",
+      message: `Stock ajustado de ${result.previous_stock} a ${result.new_stock}.`,
+      newStock: result.new_stock,
+      movementId: result.movement_id ?? undefined,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "No se pudo ajustar el stock.",
+    };
   }
-
-  const stock = parseStock(formData.get("stock"));
-  const supabase = getSupabaseAdminClient();
-  const { error } = await supabase
-    .from("products")
-    .update({ stock })
-    .eq("id", productId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  revalidateProductPaths(slug);
-  redirect(returnTo);
 }
 
 
