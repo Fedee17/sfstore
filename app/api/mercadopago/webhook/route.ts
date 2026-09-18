@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { decreaseStockForOrder } from "@/services/inventory";
+import { addOrderPayment } from "@/services/order-payments";
 
 type MercadoPagoWebhookBody = {
   type?: string;
@@ -18,12 +19,12 @@ type OrderRow = {
   id: string;
   status: string | null;
   payment_status: string | null;
+  total: number;
   metadata: Record<string, unknown> | null;
 };
 
 type PaymentStatusUpdate = {
-  paymentStatus: "pending" | "approved" | "rejected" | "refunded";
-  orderStatus?: "paid";
+  entryStatus: "pending" | "approved" | "rejected" | "refunded";
 };
 
 function getPaymentId(body: MercadoPagoWebhookBody, searchParams: URLSearchParams) {
@@ -47,24 +48,23 @@ function mapMercadoPagoStatus(status: string | undefined): PaymentStatusUpdate {
   switch (status) {
     case "approved":
       return {
-        paymentStatus: "approved",
-        orderStatus: "paid",
+        entryStatus: "approved",
       };
     case "rejected":
     case "cancelled":
       return {
-        paymentStatus: "rejected",
+        entryStatus: "rejected",
       };
     case "refunded":
     case "charged_back":
       return {
-        paymentStatus: "refunded",
+        entryStatus: "refunded",
       };
     case "pending":
     case "in_process":
     default:
       return {
-        paymentStatus: "pending",
+        entryStatus: "pending",
       };
   }
 }
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
     const supabase = getSupabaseAdminClient();
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
-      .select("id, status, payment_status, metadata")
+      .select("id, status, payment_status, total, metadata")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -165,6 +165,26 @@ export async function POST(request: Request) {
 
     const previousMetadata = isRecord(order.metadata) ? order.metadata : {};
     const statusUpdate = mapMercadoPagoStatus(payment.status);
+    const paymentAmount = Number(payment.transaction_amount);
+
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Mercado Pago no devolvio un importe valido para la orden.",
+        },
+        500,
+      );
+    }
+
+    const paymentResult = await addOrderPayment({
+      orderId: order.id,
+      method: "mercadopago",
+      amount: paymentAmount,
+      status: statusUpdate.entryStatus,
+      reference: String(payment.id ?? paymentId),
+      paidAt: payment.date_approved ?? null,
+    });
     const nextMetadata = {
       ...previousMetadata,
       mercado_pago_payment_id: payment.id ?? paymentId,
@@ -175,12 +195,11 @@ export async function POST(request: Request) {
     };
 
     const updatePayload: Record<string, unknown> = {
-      payment_status: statusUpdate.paymentStatus,
       metadata: nextMetadata,
     };
 
-    if (statusUpdate.orderStatus) {
-      updatePayload.status = statusUpdate.orderStatus;
+    if (paymentResult.paymentStatus === "paid") {
+      updatePayload.status = "paid";
     }
 
     const { error: updateError } = await supabase
@@ -199,7 +218,8 @@ export async function POST(request: Request) {
     }
 
     const stockResult =
-      statusUpdate.paymentStatus === "approved"
+      statusUpdate.entryStatus === "approved" &&
+      paymentResult.paymentStatus === "paid"
         ? await decreaseStockForOrder(order.id)
         : null;
 
@@ -216,8 +236,10 @@ export async function POST(request: Request) {
       order_id: order.id,
       mercado_pago_payment_id: payment.id ?? paymentId,
       mercado_pago_status: payment.status ?? null,
-      payment_status: statusUpdate.paymentStatus,
-      order_status: statusUpdate.orderStatus ?? order.status,
+      payment_status: paymentResult.paymentStatus,
+      payment_operation: paymentResult.operation,
+      order_status:
+        paymentResult.paymentStatus === "paid" ? "paid" : order.status,
       stock_decrease: stockResult,
     });
   } catch (error) {

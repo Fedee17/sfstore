@@ -18,6 +18,8 @@ const ORDER_STATUSES = [
 
 const PAYMENT_STATUSES = [
   "pending",
+  "partial",
+  "paid",
   "approved",
   "rejected",
   "refunded",
@@ -70,8 +72,8 @@ export async function updateOrderState(formData: FormData) {
   }
 
   const paymentApprovedChanged =
-    paymentStatus === "approved" &&
-    previousOrder?.payment_status !== "approved";
+    (paymentStatus === "approved" || paymentStatus === "paid") &&
+    previousOrder?.payment_status !== paymentStatus;
   const statusConfirmedOrPaidChanged =
     (status === "confirmed" || status === "paid") &&
     previousOrder?.status !== status;

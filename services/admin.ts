@@ -24,10 +24,11 @@ export type AdminOrderItem = {
 export type AdminOrder = {
   id: string;
   order_number: string;
+  channel: "web" | "store" | "order";
   status: string;
-  payment_method: string;
+  payment_method: string | null;
   payment_status: string;
-  shipping_method: string;
+  shipping_method: string | null;
   shipping_carrier: string | null;
   shipping_province: string | null;
   shipping_city: string | null;
@@ -201,6 +202,7 @@ export async function getAdminOrders(): Promise<AdminResult<AdminOrder[]>> {
         `
         id,
         order_number,
+        channel,
         status,
         payment_method,
         payment_status,
@@ -428,6 +430,7 @@ function isRealSale(order: AdminOrder) {
 
   return (
     order.payment_status === "approved" ||
+    order.payment_status === "paid" ||
     order.status === "paid" ||
     order.status === "completed"
   );
@@ -507,7 +510,11 @@ export async function getAdminAnalyticsData(): Promise<
         continue;
       }
 
-      addToGroupedTotal(salesByPaymentMethod, order.payment_method, order.total);
+      addToGroupedTotal(
+        salesByPaymentMethod,
+        order.payment_method ?? "other",
+        order.total,
+      );
 
       for (const item of order.order_items ?? []) {
         const key = item.product_slug || item.product_name;

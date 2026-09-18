@@ -126,7 +126,7 @@ test("the service delegates stock math and movement creation to one RPC", () => 
 test("Mercado Pago retries keep using the idempotent inventory service", () => {
   assert.match(
     webhook,
-    /paymentStatus === "approved"[\s\S]+decreaseStockForOrder\(order\.id\)/i,
+    /entryStatus === "approved"[\s\S]+paymentStatus === "paid"[\s\S]+decreaseStockForOrder\(order\.id\)/i,
   );
   assert.match(webhook, /stock_decrease: stockResult/i);
 });

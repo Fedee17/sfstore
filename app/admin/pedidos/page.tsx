@@ -83,6 +83,7 @@ function OrderCard({ order }: { order: AdminOrder }) {
             <p>Cliente: {customer?.full_name ?? "Sin nombre"}</p>
             <p>Telefono: {customer?.phone ?? "Sin telefono"}</p>
             <p>Pago: {order.payment_method}</p>
+            <p>Canal: {order.channel}</p>
             <p>Pago estado: {order.payment_status}</p>
             <p>Orden estado: {order.status}</p>
             <p>Total: {currencyFormatter.format(order.total)}</p>
@@ -122,6 +123,8 @@ function OrderCard({ order }: { order: AdminOrder }) {
             className="rounded-2xl border border-[#8B5E3C]/20 bg-white/70 px-4 py-3 font-medium outline-none transition focus:border-[#556B2F]"
           >
             <option value="pending">pending</option>
+            <option value="partial">partial</option>
+            <option value="paid">paid</option>
             <option value="approved">approved</option>
             <option value="rejected">rejected</option>
             <option value="refunded">refunded</option>

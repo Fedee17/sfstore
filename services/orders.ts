@@ -109,6 +109,7 @@ export async function createOrderFromCheckout(
       id: orderId,
       customer_id: customerId,
       order_number: orderNumber,
+      channel: "web",
       status: "pending",
       payment_status: "pending",
       payment_method: payload.paymentMethod,
