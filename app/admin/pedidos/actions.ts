@@ -24,7 +24,7 @@ const PAYMENT_STATUSES = [
 ] as const;
 
 export async function updateOrderState(formData: FormData) {
-  await requireAdminActionSession();
+  const user = await requireAdminActionSession();
 
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "");
@@ -77,7 +77,7 @@ export async function updateOrderState(formData: FormData) {
     previousOrder?.status !== status;
 
   if (paymentApprovedChanged || statusConfirmedOrPaidChanged) {
-    const stockResult = await decreaseStockForOrder(orderId);
+    const stockResult = await decreaseStockForOrder(orderId, user.id);
 
     if (!stockResult.success) {
       console.warn("[admin] No se pudo descontar stock para la orden", {

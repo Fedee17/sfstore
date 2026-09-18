@@ -15,6 +15,7 @@ const productForm = source("components", "admin", "products", "product-form.tsx"
 const productPage = source("app", "admin", "productos", "page.tsx");
 const navigation = source("components", "admin", "admin-nav.tsx");
 const purchaseMigration = source("supabase", "migrations", "202609170001_purchase_confirmation.sql");
+const saleMigration = source("supabase", "migrations", "202609170003_atomic_sales_inventory.sql");
 
 test("adjustment RPC is service-role only and uses invoker security", () => {
   assert.match(migration, /create or replace function adjust_inventory_stock/i);
@@ -97,10 +98,11 @@ test("admin navigation and product history links expose Inventory", () => {
 
 test("purchase and sale movement shapes remain compatible", () => {
   assert.match(purchaseMigration, /'purchase',[\s\S]+v_item\.quantity,[\s\S]+v_product\.stock,[\s\S]+v_new_stock::integer/i);
-  assert.match(service, /movement_type: "sale"/);
-  assert.match(service, /quantity: item\.quantity/);
-  assert.match(service, /previous_stock: previousStock/);
-  assert.match(service, /new_stock: newStock/);
+  assert.match(
+    saleMigration,
+    /'sale',[\s\S]+v_product\.quantity,[\s\S]+v_product\.stock,[\s\S]+v_new_stock/i,
+  );
+  assert.match(service, /"purchase",[\s\S]+"sale",[\s\S]+"adjustment"/i);
 });
 
 test("the audit foundation does not change cost or create retroactive rows", () => {
