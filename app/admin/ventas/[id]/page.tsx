@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { StoreSalePaymentForm } from "@/components/admin/sales/store-sale-payment-form";
 import { requireAdminSession } from "@/lib/admin-session";
+import { getStoreSaleDisplayName } from "@/lib/store-sales";
 import { getStoreSaleById } from "@/services/store-sales";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 });
@@ -20,6 +21,10 @@ export default async function StoreSaleDetailPage({ params }: { params: Promise<
   const canAddPayment = sale.payment_status === "pending" || sale.payment_status === "partial";
   const paidWithoutInventory =
     sale.payment_status === "paid" && !sale.inventory_movements?.length;
+  const displayName = getStoreSaleDisplayName(
+    sale.order_number,
+    sale.order_items,
+  );
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -28,8 +33,9 @@ export default async function StoreSaleDetailPage({ params }: { params: Promise<
         <Link href="/admin/ventas" className="text-sm font-semibold text-[#8B5E3C]">Volver a ventas</Link>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-4xl font-semibold">{sale.order_number}</h1>
-            <p className="mt-2 text-sm text-[#1F1F1F]/60">{customerName} · {dateFormatter.format(new Date(sale.created_at))}</p>
+            <h1 className="text-4xl font-semibold">{displayName}</h1>
+            <p className="mt-2 text-sm text-[#1F1F1F]/60">Venta {sale.order_number}</p>
+            <p className="mt-1 text-sm text-[#1F1F1F]/60">{customerName} · {dateFormatter.format(new Date(sale.created_at))}</p>
           </div>
           <span className="rounded-full bg-[#556B2F]/10 px-4 py-2 text-sm font-semibold text-[#556B2F]">{sale.payment_status}</span>
         </div>

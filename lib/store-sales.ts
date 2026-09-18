@@ -8,6 +8,31 @@ export type StoreSalePaymentInput = {
   amount: number;
 };
 
+export type StoreSaleDisplayItem = {
+  product_name: string | null;
+};
+
+export function getStoreSaleDisplayName(
+  orderNumber: string,
+  items: readonly StoreSaleDisplayItem[],
+) {
+  const firstProductName = items[0]?.product_name?.trim();
+
+  if (!firstProductName) {
+    return orderNumber;
+  }
+
+  const additionalProducts = items.length - 1;
+
+  if (additionalProducts === 0) {
+    return firstProductName;
+  }
+
+  return `${firstProductName} + ${additionalProducts} ${
+    additionalProducts === 1 ? "producto" : "productos"
+  }`;
+}
+
 export function getStoreSaleUnitPrice(product: StoreSaleProductPrice) {
   return Number(product.transfer_price ?? product.price);
 }

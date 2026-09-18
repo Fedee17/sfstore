@@ -1,4 +1,5 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getStoreSaleDisplayName } from "@/lib/store-sales";
 import { addOrderPayment, type OrderPayment } from "@/services/order-payments";
 
 export type StoreSaleProduct = {
@@ -22,6 +23,7 @@ export type StoreSaleLine = {
   unit_price: number;
   quantity: number;
   subtotal: number;
+  created_at: string;
 };
 
 export type StoreSale = {
@@ -189,7 +191,7 @@ export async function listStoreSales(filters: StoreSaleListFilters = {}) {
   let query = getSupabaseAdminClient()
     .from("orders")
     .select(
-      "id, order_number, channel, status, payment_status, total, metadata, created_at, order_items(count), order_payments(amount,status)",
+      "id, order_number, channel, status, payment_status, total, metadata, created_at, order_items(id,product_name,created_at), order_payments(amount,status)",
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -217,13 +219,18 @@ export async function listStoreSales(filters: StoreSaleListFilters = {}) {
   return (data ?? []).map((sale) => {
     const payments = (sale.order_payments ?? []) as Pick<OrderPayment, "amount" | "status">[];
     const summary = paymentSummary(Number(sale.total), payments as OrderPayment[]);
-    const itemCount = Array.isArray(sale.order_items)
-      ? Number(sale.order_items[0]?.count ?? 0)
-      : 0;
+    const items = Array.isArray(sale.order_items)
+      ? [...sale.order_items].sort(
+          (left, right) =>
+            String(left.created_at).localeCompare(String(right.created_at)) ||
+            String(left.id).localeCompare(String(right.id)),
+        )
+      : [];
 
     return {
       ...sale,
-      productCount: itemCount,
+      displayName: getStoreSaleDisplayName(sale.order_number, items),
+      productCount: items.length,
       ...summary,
       order_items: undefined,
       order_payments: undefined,
@@ -241,7 +248,7 @@ export async function getStoreSaleById(orderId: string) {
       notes, metadata, created_at,
       order_items (
         id, product_id, product_name, product_slug, category_name,
-        unit_price, quantity, subtotal
+        unit_price, quantity, subtotal, created_at
       ),
       order_payments (
         id, order_id, method, amount, status, reference, notes,
@@ -272,8 +279,15 @@ export async function getStoreSaleById(orderId: string) {
     throw new Error("No se pudieron cargar los movimientos de la venta.");
   }
 
+  const orderItems = [...(data.order_items ?? [])].sort(
+    (left, right) =>
+      String(left.created_at).localeCompare(String(right.created_at)) ||
+      String(left.id).localeCompare(String(right.id)),
+  );
+
   return {
     ...data,
+    order_items: orderItems,
     inventory_movements: movements ?? [],
     ...paymentSummary(Number(data.total), (data.order_payments ?? []) as OrderPayment[]),
   } as StoreSale & { totalPaid: number; remainingAmount: number };

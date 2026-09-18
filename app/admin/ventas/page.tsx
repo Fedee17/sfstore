@@ -95,7 +95,8 @@ export default async function AdminSalesPage({ searchParams }: SalesPageProps) {
                     <span className="rounded-full bg-[#556B2F]/10 px-3 py-1 text-xs font-semibold text-[#556B2F]">{paymentLabels[sale.payment_status] ?? sale.payment_status}</span>
                     <span className="text-xs text-[#1F1F1F]/50">{sale.channel} · {dateFormatter.format(new Date(sale.created_at))}</span>
                   </div>
-                  <h2 className="mt-2 break-words text-xl font-semibold">{sale.order_number}</h2>
+                  <h2 className="mt-2 break-words text-xl font-semibold">{sale.displayName}</h2>
+                  <p className="mt-1 text-xs text-[#1F1F1F]/50">Venta {sale.order_number}</p>
                   <p className="mt-2 text-sm text-[#1F1F1F]/60">
                     {sale.productCount} productos · Total {currencyFormatter.format(Number(sale.total))} · Pagado {currencyFormatter.format(sale.totalPaid)} · Saldo {currencyFormatter.format(sale.remainingAmount)}
                   </p>
