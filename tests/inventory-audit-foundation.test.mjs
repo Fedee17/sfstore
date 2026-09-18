@@ -100,7 +100,7 @@ test("purchase and sale movement shapes remain compatible", () => {
   assert.match(purchaseMigration, /'purchase',[\s\S]+v_item\.quantity,[\s\S]+v_product\.stock,[\s\S]+v_new_stock::integer/i);
   assert.match(
     saleMigration,
-    /'sale',[\s\S]+v_product\.quantity,[\s\S]+v_product\.stock,[\s\S]+v_new_stock/i,
+    /'sale',[\s\S]+v_item\.quantity,[\s\S]+v_product\.stock,[\s\S]+v_new_stock/i,
   );
   assert.match(service, /"purchase",[\s\S]+"sale",[\s\S]+"adjustment"/i);
 });

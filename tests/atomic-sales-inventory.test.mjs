@@ -60,13 +60,17 @@ test("all lines are validated before any product update", () => {
   assert.match(migration, /if v_new_stock < 0/i);
 });
 
-test("a normal sale writes one positive auditable movement per aggregated product", () => {
+test("a normal sale writes one positive auditable movement per order line", () => {
   assert.match(migration, /group by product_id/i);
-  assert.match(migration, /update products[\s\S]+set stock = v_new_stock/i);
+  assert.match(
+    migration,
+    /for v_item in[\s\S]+select id, quantity[\s\S]+from order_items[\s\S]+order by id[\s\S]+loop/i,
+  );
+  assert.match(migration, /update products[\s\S]+set stock = v_product\.stock/i);
   assert.match(migration, /insert into inventory_movements/i);
   assert.match(
     migration,
-    /'sale',[\s\S]+v_product\.quantity,[\s\S]+v_product\.stock,[\s\S]+v_new_stock/i,
+    /v_item\.id,[\s\S]+'sale',[\s\S]+v_item\.quantity,[\s\S]+v_product\.stock,[\s\S]+v_new_stock/i,
   );
   assert.match(migration, /'Venta confirmada',[\s\S]+p_created_by/i);
   assert.doesNotMatch(migration, /-v_product\.quantity/i);
@@ -95,7 +99,7 @@ test("missing products, empty orders and invalid quantities are distinct", () =>
 test("retries are idempotent by order lock, metadata and a unique movement key", () => {
   assert.match(
     migration,
-    /inventory_movements_sale_order_product_unique[\s\S]+order_id, product_id[\s\S]+movement_type = 'sale'/i,
+    /inventory_movements_sale_order_item_unique[\s\S]+order_item_id[\s\S]+movement_type = 'sale'/i,
   );
   assert.match(
     migration,

@@ -1,6 +1,9 @@
-create unique index if not exists inventory_movements_sale_order_product_unique
-  on inventory_movements(order_id, product_id)
-  where movement_type = 'sale' and order_id is not null;
+alter table inventory_movements
+  add column if not exists order_item_id uuid references order_items(id) on delete restrict;
+
+create unique index if not exists inventory_movements_sale_order_item_unique
+  on inventory_movements(order_item_id)
+  where movement_type = 'sale' and order_item_id is not null;
 
 create or replace function apply_sale_inventory(
   p_order_id uuid,
@@ -19,6 +22,7 @@ declare
   v_locked_count integer := 0;
   v_movements_created integer := 0;
   v_product record;
+  v_item record;
   v_new_stock integer;
   v_applied_at timestamptz := now();
 begin
@@ -145,50 +149,60 @@ begin
   end if;
 
   for v_product in
-    with item_totals as (
-      select product_id, sum(quantity)::integer as quantity
+    select product.id, product.stock
+    from products product
+    where product.id in (
+      select distinct product_id
       from order_items
       where order_id = p_order_id
-      group by product_id
+        and product_id is not null
     )
-    select product.id, product.stock, item_totals.quantity
-    from item_totals
-    join products product on product.id = item_totals.product_id
     order by product.id
   loop
-    v_new_stock := v_product.stock - v_product.quantity;
+    for v_item in
+      select id, quantity
+      from order_items
+      where order_id = p_order_id
+        and product_id = v_product.id
+      order by id
+    loop
+      v_new_stock := v_product.stock - v_item.quantity;
 
-    if v_new_stock < 0 then
-      raise exception using
-        errcode = 'P0001',
-        message = 'SALE_INVENTORY_STOCK_INSUFFICIENT';
-    end if;
+      if v_new_stock < 0 then
+        raise exception using
+          errcode = 'P0001',
+          message = 'SALE_INVENTORY_STOCK_INSUFFICIENT';
+      end if;
+
+      insert into inventory_movements (
+        product_id,
+        order_id,
+        order_item_id,
+        movement_type,
+        quantity,
+        previous_stock,
+        new_stock,
+        reason,
+        created_by
+      ) values (
+        v_product.id,
+        p_order_id,
+        v_item.id,
+        'sale',
+        v_item.quantity,
+        v_product.stock,
+        v_new_stock,
+        'Venta confirmada',
+        p_created_by
+      );
+
+      v_product.stock := v_new_stock;
+      v_movements_created := v_movements_created + 1;
+    end loop;
 
     update products
-    set stock = v_new_stock
+    set stock = v_product.stock
     where id = v_product.id;
-
-    insert into inventory_movements (
-      product_id,
-      order_id,
-      movement_type,
-      quantity,
-      previous_stock,
-      new_stock,
-      reason,
-      created_by
-    ) values (
-      v_product.id,
-      p_order_id,
-      'sale',
-      v_product.quantity,
-      v_product.stock,
-      v_new_stock,
-      'Venta confirmada',
-      p_created_by
-    );
-
-    v_movements_created := v_movements_created + 1;
   end loop;
 
   update orders
