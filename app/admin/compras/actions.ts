@@ -8,10 +8,10 @@ import {
   cancelPurchaseDraft,
   confirmPurchase,
   createPurchaseProduct,
-  createSupplier,
   savePurchaseDraft,
 } from "@/services/purchases";
 import type { PurchaseProduct } from "@/services/purchases";
+import { createOrReuseSupplier } from "@/services/suppliers";
 
 export type CreatePurchaseProductActionResult = {
   status: "idle" | "created" | "existing" | "error";
@@ -45,13 +45,17 @@ function readPurchaseLines(formData: FormData) {
 
 export async function createSupplierAction(formData: FormData) {
   await requireAdminActionSession();
-  await createSupplier({
+  const result = await createOrReuseSupplier({
     name: String(formData.get("name") ?? ""),
     notes: String(formData.get("notes") ?? ""),
   });
 
   revalidatePath("/admin/compras/nueva");
-  redirect("/admin/compras/nueva?supplierCreated=1");
+  redirect(
+    result.created
+      ? "/admin/compras/nueva?supplierCreated=1"
+      : "/admin/compras/nueva?supplierExisting=1",
+  );
 }
 
 export async function createPurchaseProductAction(input: {

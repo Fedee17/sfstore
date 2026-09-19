@@ -7,18 +7,17 @@ import { requireAdminSession } from "@/lib/admin-session";
 import { getAdminCategories } from "@/services/admin";
 import {
   getPurchaseById,
-  listActiveSuppliers,
   listPurchaseProducts,
 } from "@/services/purchases";
+import { listSelectableSuppliers } from "@/services/suppliers";
 
 type EditPurchasePageProps = { params: Promise<{ id: string }> };
 
 export default async function EditPurchasePage({ params }: EditPurchasePageProps) {
   await requireAdminSession();
   const { id } = await params;
-  const [purchase, suppliers, products, categoriesResult] = await Promise.all([
+  const [purchase, products, categoriesResult] = await Promise.all([
     getPurchaseById(id),
-    listActiveSuppliers(),
     listPurchaseProducts(),
     getAdminCategories(),
   ]);
@@ -30,6 +29,8 @@ export default async function EditPurchasePage({ params }: EditPurchasePageProps
   if (purchase.status !== "draft") {
     redirect(`/admin/compras/${purchase.id}`);
   }
+
+  const suppliers = await listSelectableSuppliers(purchase.supplier_id);
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">

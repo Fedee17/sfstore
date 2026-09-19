@@ -13,8 +13,8 @@ import type { AdminCategory } from "@/services/admin";
 import type {
   Purchase,
   PurchaseProduct,
-  Supplier,
 } from "@/services/purchases";
+import type { Supplier } from "@/services/suppliers";
 
 type DraftLine = {
   key: string;
@@ -188,8 +188,12 @@ export function PurchaseDraftForm({
           >
             <option value="">Seleccionar proveedor</option>
             {suppliers.map((supplier) => (
-              <option key={supplier.id} value={supplier.id}>
-                {supplier.name}
+              <option
+                key={supplier.id}
+                value={supplier.id}
+                disabled={!supplier.is_active}
+              >
+                {supplier.name}{supplier.is_active ? "" : " (inactivo)"}
               </option>
             ))}
           </select>

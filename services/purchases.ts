@@ -7,20 +7,8 @@ import {
   assertPurchaseIsDraft,
   type PurchaseStatus,
 } from "@/lib/purchases/lifecycle";
-import {
-  cleanSupplierName,
-  normalizeSupplierName,
-} from "@/lib/purchases/supplier";
 import { slugifyProductValue } from "@/lib/products/slug";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
-
-export type Supplier = {
-  id: string;
-  name: string;
-  normalized_name: string;
-  notes: string | null;
-  is_active: boolean;
-};
 
 export type PurchaseProduct = {
   id: string;
@@ -93,55 +81,6 @@ export type ConfirmPurchaseResult = {
   confirmed_at: string;
   movements_created: number;
 };
-
-export async function listActiveSuppliers() {
-  const { data, error } = await getSupabaseAdminClient()
-    .from("suppliers")
-    .select("id, name, normalized_name, notes, is_active")
-    .eq("is_active", true)
-    .order("name", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data ?? []) as Supplier[];
-}
-
-export async function createSupplier({
-  name,
-  notes,
-}: {
-  name: string;
-  notes: string;
-}) {
-  const cleanName = cleanSupplierName(name);
-  const normalizedName = normalizeSupplierName(name);
-
-  if (!cleanName || !normalizedName) {
-    throw new Error("El nombre del proveedor es requerido.");
-  }
-
-  const { data, error } = await getSupabaseAdminClient()
-    .from("suppliers")
-    .insert({
-      name: cleanName,
-      normalized_name: normalizedName,
-      notes: notes.trim() || null,
-    })
-    .select("id, name, normalized_name, notes, is_active")
-    .single();
-
-  if (error) {
-    if (error.code === "23505") {
-      throw new Error("Ya existe un proveedor con ese nombre.");
-    }
-
-    throw new Error(error.message);
-  }
-
-  return data as Supplier;
-}
 
 export async function listPurchaseProducts() {
   const { data, error } = await getSupabaseAdminClient()

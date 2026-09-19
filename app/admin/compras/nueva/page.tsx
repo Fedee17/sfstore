@@ -7,9 +7,9 @@ import { PurchaseDraftForm } from "@/components/admin/purchases/purchase-draft-f
 import { requireAdminSession } from "@/lib/admin-session";
 import { getAdminCategories } from "@/services/admin";
 import {
-  listActiveSuppliers,
   listPurchaseProducts,
 } from "@/services/purchases";
+import { listActiveSuppliers } from "@/services/suppliers";
 
 type NewPurchasePageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -46,6 +46,9 @@ export default async function NewPurchasePage({ searchParams }: NewPurchasePageP
           <summary className="cursor-pointer font-semibold text-[#8B5E3C]">Agregar proveedor</summary>
           {params.supplierCreated ? (
             <p role="status" className="mt-3 text-sm font-semibold text-[#556B2F]">Proveedor creado.</p>
+          ) : null}
+          {params.supplierExisting ? (
+            <p role="status" className="mt-3 text-sm font-semibold text-[#556B2F]">Ese proveedor ya existia y fue reutilizado.</p>
           ) : null}
           <form action={createSupplierAction} className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
             <label className="grid min-w-0 gap-2 text-sm font-semibold">
