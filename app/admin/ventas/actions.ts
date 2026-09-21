@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
+import { parseStoreSaleUnitPrice } from "@/lib/store-sales";
 import type { OrderPaymentStatus } from "@/services/order-payments";
 import {
   addStoreSalePayment,
@@ -39,14 +40,21 @@ function parsePaymentAmount(value: FormDataEntryValue | null) {
 function readItems(formData: FormData) {
   const productIds = formData.getAll("productId").map(String);
   const quantities = formData.getAll("quantity").map(Number);
+  const unitPrices = formData
+    .getAll("unitPrice")
+    .map((value) => parseStoreSaleUnitPrice(String(value)));
 
-  if (productIds.length !== quantities.length) {
+  if (
+    productIds.length !== quantities.length ||
+    productIds.length !== unitPrices.length
+  ) {
     throw new Error("Las lineas de la venta estan incompletas.");
   }
 
   return productIds.map((productId, index) => ({
     productId: productId.trim(),
     quantity: quantities[index],
+    unitPrice: unitPrices[index],
   }));
 }
 

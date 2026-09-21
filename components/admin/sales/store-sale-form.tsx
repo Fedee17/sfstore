@@ -12,6 +12,7 @@ import {
   calculateEnteredPayments,
   calculateStoreSaleTotal,
   getStoreSaleUnitPrice,
+  matchesStoreSaleProduct,
 } from "@/lib/store-sales";
 import type { StoreSaleProduct } from "@/services/store-sales";
 
@@ -26,6 +27,7 @@ const initialState: StoreSaleActionState = { status: "idle", message: "" };
 type SaleLine = {
   product: StoreSaleProduct;
   quantity: number;
+  unitPrice: string;
 };
 
 type PaymentLine = {
@@ -33,14 +35,6 @@ type PaymentLine = {
   method: "cash" | "transfer" | "card" | "other";
   amount: string;
 };
-
-function normalizeSearch(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .toLowerCase();
-}
 
 function parseAmount(value: string) {
   return Number(value.replace(",", ".")) || 0;
@@ -60,21 +54,15 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
   const quantityRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const matches = useMemo(() => {
-    const normalized = normalizeSearch(query);
-    if (!normalized) return [];
-
     return products
-      .filter((product) => {
-        const haystack = normalizeSearch(`${product.name} ${product.sku ?? ""}`);
-        return haystack.includes(normalized);
-      })
+      .filter((product) => matchesStoreSaleProduct(product, query))
       .slice(0, 10);
   }, [products, query]);
 
   const total = calculateStoreSaleTotal(
     lines.map((line) => ({
       quantity: line.quantity,
-      unitPrice: getStoreSaleUnitPrice(line.product),
+      unitPrice: parseAmount(line.unitPrice),
     })),
   );
   const paid = calculateEnteredPayments(
@@ -99,7 +87,14 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
             : line,
         );
       }
-      return [...current, { product, quantity: 1 }];
+      return [
+        ...current,
+        {
+          product,
+          quantity: 1,
+          unitPrice: getStoreSaleUnitPrice(product).toFixed(2),
+        },
+      ];
     });
     requestAnimationFrame(() => quantityRefs.current[product.id]?.focus());
   }
@@ -113,6 +108,14 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
               quantity: Math.max(1, Math.min(Math.trunc(quantity) || 1, line.product.stock)),
             }
           : line,
+      ),
+    );
+  }
+
+  function updateUnitPrice(productId: string, unitPrice: string) {
+    setLines((current) =>
+      current.map((line) =>
+        line.product.id === productId ? { ...line, unitPrice } : line,
       ),
     );
   }
@@ -185,11 +188,11 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
             </p>
           ) : (
             lines.map((line) => {
-              const unitPrice = getStoreSaleUnitPrice(line.product);
+              const unitPrice = parseAmount(line.unitPrice);
               return (
                 <article
                   key={line.product.id}
-                  className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] p-4 md:grid-cols-[minmax(0,1.7fr)_8rem_9rem_9rem_auto] md:items-end"
+                  className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] p-4 md:grid-cols-[minmax(0,1.7fr)_8rem_10rem_9rem_auto] md:items-end"
                 >
                   <div className="min-w-0">
                     <input type="hidden" name="productId" value={line.product.id} />
@@ -217,10 +220,20 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                       className="h-11 min-w-0 rounded-xl border border-[#8B5E3C]/20 bg-white px-3 outline-none focus:border-[#556B2F] disabled:opacity-60"
                     />
                   </label>
-                  <div className="text-sm">
-                    <span className="block text-xs text-[#1F1F1F]/55">Precio</span>
-                    <strong>{currencyFormatter.format(unitPrice)}</strong>
-                  </div>
+                  <label className="grid gap-2 text-sm font-semibold">
+                    Precio unitario
+                    <input
+                      name="unitPrice"
+                      inputMode="decimal"
+                      required
+                      disabled={completed}
+                      value={line.unitPrice}
+                      onChange={(event) =>
+                        updateUnitPrice(line.product.id, event.target.value)
+                      }
+                      className="h-11 min-w-0 rounded-xl border border-[#8B5E3C]/20 bg-white px-3 outline-none focus:border-[#556B2F] disabled:opacity-60"
+                    />
+                  </label>
                   <div className="text-sm">
                     <span className="block text-xs text-[#1F1F1F]/55">Subtotal</span>
                     <strong>{currencyFormatter.format(unitPrice * line.quantity)}</strong>

@@ -115,7 +115,7 @@ export async function createStoreSale(input: {
   createdBy: string;
   customerName: string;
   notes: string;
-  items: { productId: string; quantity: number }[];
+  items: { productId: string; quantity: number; unitPrice: number }[];
 }) {
   const { data, error } = await getSupabaseAdminClient().rpc(
     "create_store_sale",
@@ -127,6 +127,7 @@ export async function createStoreSale(input: {
       p_items: input.items.map((item) => ({
         product_id: item.productId,
         quantity: item.quantity,
+        unit_price: item.unitPrice,
       })),
     },
   );
