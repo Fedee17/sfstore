@@ -78,7 +78,12 @@ test("server action submits use one reusable pending button", () => {
     "products",
     "inventory-adjustment-form.tsx",
   );
-  const orderPage = source("app", "admin", "pedidos", "page.tsx");
+  const orderActions = source(
+    "components",
+    "admin",
+    "orders",
+    "customer-order-actions.tsx",
+  );
   const loginPage = source("app", "admin", "login", "page.tsx");
 
   assert.match(pendingButton, /useFormStatus\(\)/);
@@ -86,7 +91,8 @@ test("server action submits use one reusable pending button", () => {
   assert.match(productPage, /InventoryAdjustmentForm/);
   assert.match(inventoryAdjustmentForm, /Ajustando\.\.\./);
   assert.match(productPage, /pendingLabel="Archivando\.\.\."/);
-  assert.match(orderPage, /pendingLabel="Guardando\.\.\."/);
+  assert.match(orderActions, /pendingLabel="Registrando\.\.\."/);
+  assert.match(orderActions, /pendingLabel="Entregando\.\.\."/);
   assert.match(loginPage, /pendingLabel="Ingresando\.\.\."/);
 });
 

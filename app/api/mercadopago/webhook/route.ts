@@ -17,6 +17,7 @@ type MercadoPagoWebhookBody = {
 
 type OrderRow = {
   id: string;
+  channel: string;
   status: string | null;
   payment_status: string | null;
   total: number;
@@ -138,7 +139,7 @@ export async function POST(request: Request) {
     const supabase = getSupabaseAdminClient();
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
-      .select("id, status, payment_status, total, metadata")
+      .select("id, channel, status, payment_status, total, metadata")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -198,7 +199,7 @@ export async function POST(request: Request) {
       metadata: nextMetadata,
     };
 
-    if (paymentResult.paymentStatus === "paid") {
+    if (paymentResult.paymentStatus === "paid" && order.channel === "web") {
       updatePayload.status = "paid";
     }
 
@@ -219,7 +220,8 @@ export async function POST(request: Request) {
 
     const stockResult =
       statusUpdate.entryStatus === "approved" &&
-      paymentResult.paymentStatus === "paid"
+      paymentResult.paymentStatus === "paid" &&
+      order.channel === "web"
         ? await decreaseStockForOrder(order.id)
         : null;
 
@@ -239,7 +241,9 @@ export async function POST(request: Request) {
       payment_status: paymentResult.paymentStatus,
       payment_operation: paymentResult.operation,
       order_status:
-        paymentResult.paymentStatus === "paid" ? "paid" : order.status,
+        paymentResult.paymentStatus === "paid" && order.channel === "web"
+          ? "paid"
+          : order.status,
       stock_decrease: stockResult,
     });
   } catch (error) {

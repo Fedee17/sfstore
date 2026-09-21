@@ -131,12 +131,10 @@ test("Mercado Pago retries keep using the idempotent inventory service", () => {
   assert.match(webhook, /stock_decrease: stockResult/i);
 });
 
-test("manual approval records the admin actor without changing its trigger rules", () => {
-  assert.match(orderActions, /const user = await requireAdminActionSession\(\)/i);
-  assert.match(
-    orderActions,
-    /paymentApprovedChanged \|\| statusConfirmedOrPaidChanged[\s\S]+decreaseStockForOrder\(orderId, user\.id\)/i,
-  );
+test("customer order payments and statuses never call inventory directly", () => {
+  assert.match(orderActions, /requireAdminActionSession\(\)/i);
+  assert.doesNotMatch(orderActions, /decreaseStockForOrder/i);
+  assert.doesNotMatch(orderActions, /\.from\("products"\)[\s\S]+\.update/i);
 });
 
 test("purchase and adjustment RPCs remain independent and unchanged", () => {

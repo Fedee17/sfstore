@@ -18,6 +18,7 @@ const webhook = source("app", "api", "mercadopago", "webhook", "route.ts");
 const inventoryService = source("services", "inventory.ts");
 const adminOrders = source("services", "admin.ts");
 const adminActions = source("app", "admin", "pedidos", "actions.ts");
+const adminOrdersPage = source("app", "admin", "pedidos", "page.tsx");
 const paymentModel = await import(
   pathToFileURL(join(root, "lib", "order-payments.ts")).href
 );
@@ -201,19 +202,12 @@ test("legacy checkout payment selection remains available during the transition"
   );
 });
 
-test("admin orders understand canonical payment states without losing legacy states", () => {
-  for (const status of [
-    "pending",
-    "partial",
-    "paid",
-    "approved",
-    "rejected",
-    "refunded",
-  ]) {
-    assert.match(adminActions, new RegExp(`"${status}"`));
+test("customer order admin uses the canonical payment ledger states", () => {
+  for (const status of ["pending", "partial", "paid", "refunded"]) {
+    assert.match(adminOrdersPage, new RegExp(status, "i"));
   }
 
-  assert.match(adminOrders, /order\.payment_status === "paid"/i);
+  assert.match(adminActions, /result\.paymentStatus === "paid"/i);
 });
 
 test("the migration does not implement reservations or a local-sale UI", () => {
