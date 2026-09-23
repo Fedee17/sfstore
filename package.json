@@ -9,7 +9,8 @@
     "lint": "eslint",
     "export:perfume-attributes": "node --env-file=.env.local scripts/export-perfume-attributes.ts",
     "backfill:perfume-attributes": "node --env-file=.env.local scripts/backfill-perfume-attributes.ts",
-    "recommend:perfumes": "node --env-file=.env.local scripts/run-perfume-recommendations.ts"
+    "recommend:perfumes": "node --env-file=.env.local scripts/run-perfume-recommendations.ts",
+    "audit:catalog": "node --env-file=.env.local scripts/audit-catalog-quality.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

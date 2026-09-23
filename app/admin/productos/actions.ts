@@ -439,41 +439,64 @@ async function uploadProductImages(
   );
 
   const imageRows = [];
+  const uploadedPaths: string[] = [];
 
-  for (const [index, file] of files.entries()) {
-    const filePath = `products/${productId}/${Date.now()}-${index}-${sanitizeFileName(file.name)}`;
-    const { error: uploadError } = await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: file.type,
+  try {
+    for (const [index, file] of files.entries()) {
+      const filePath = `products/${productId}/${Date.now()}-${index}-${sanitizeFileName(file.name)}`;
+      const { error: uploadError } = await supabase.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type,
+        });
+
+      if (uploadError) {
+        throw new Error(uploadError.message);
+      }
+
+      uploadedPaths.push(filePath);
+
+      const { data } = supabase.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .getPublicUrl(filePath);
+
+      imageRows.push({
+        id: crypto.randomUUID(),
+        product_id: productId,
+        url: data.publicUrl,
+        alt: productName,
+        sort_order: lastSortOrder + index + 1,
+        is_primary: !hasPrimary && index === 0,
       });
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
     }
 
-    const { data } = supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .getPublicUrl(filePath);
+    const { error: imageError } = await supabase
+      .from("product_images")
+      .insert(imageRows);
 
-    imageRows.push({
-      id: crypto.randomUUID(),
-      product_id: productId,
-      url: data.publicUrl,
-      alt: productName,
-      sort_order: lastSortOrder + index + 1,
-      is_primary: !hasPrimary && index === 0,
-    });
-  }
-
-  const { error: imageError } = await supabase
-    .from("product_images")
-    .insert(imageRows);
-
-  if (imageError) {
-    throw new Error(imageError.message);
+    if (imageError) {
+      throw new Error(imageError.message);
+    }
+  } catch (error) {
+    if (uploadedPaths.length > 0) {
+      const { error: cleanupError } = await supabase.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .remove(uploadedPaths);
+      if (cleanupError) {
+        console.warn("[product-images] Fallo la limpieza compensatoria", {
+          productId,
+          fileCount: uploadedPaths.length,
+          message: cleanupError.message,
+        });
+      }
+    }
+    throw new Error(
+      error instanceof Error
+        ? `No se pudieron guardar todas las imagenes: ${error.message}`
+        : "No se pudieron guardar todas las imagenes.",
+    );
   }
 }
 
@@ -706,6 +729,82 @@ export async function setPrimaryProductImage(formData: FormData) {
 
   if (updateError) {
     throw new Error(updateError.message);
+  }
+
+  revalidateProductPaths(slug);
+  redirect(returnTo);
+}
+
+export async function moveProductImage(formData: FormData) {
+  await requireAdminActionSession();
+
+  const productId = String(formData.get("productId") ?? "");
+  const imageId = String(formData.get("imageId") ?? "");
+  const direction = String(formData.get("direction") ?? "");
+  const slug = String(formData.get("slug") ?? "");
+  const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
+
+  if (!productId || !imageId || !["previous", "next"].includes(direction)) {
+    throw new Error("Faltan datos para reordenar la imagen.");
+  }
+
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("product_images")
+    .select("id, sort_order")
+    .eq("product_id", productId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  const images = data ?? [];
+  const currentIndex = images.findIndex((image) => image.id === imageId);
+  const targetIndex = direction === "previous" ? currentIndex - 1 : currentIndex + 1;
+
+  if (currentIndex === -1) throw new Error("La imagen no pertenece a este producto.");
+  if (targetIndex < 0 || targetIndex >= images.length) redirect(returnTo);
+
+  const current = images[currentIndex];
+  const target = images[targetIndex];
+  const temporaryOrder = Math.min(...images.map((image) => image.sort_order)) - 1;
+  const { error: temporaryError } = await supabase
+    .from("product_images")
+    .update({ sort_order: temporaryOrder })
+    .eq("id", current.id)
+    .eq("product_id", productId);
+  if (temporaryError) throw new Error(temporaryError.message);
+
+  const { error: targetError } = await supabase
+    .from("product_images")
+    .update({ sort_order: current.sort_order })
+    .eq("id", target.id)
+    .eq("product_id", productId);
+  if (targetError) {
+    await supabase
+      .from("product_images")
+      .update({ sort_order: current.sort_order })
+      .eq("id", current.id)
+      .eq("product_id", productId);
+    throw new Error(targetError.message);
+  }
+
+  const { error: currentError } = await supabase
+    .from("product_images")
+    .update({ sort_order: target.sort_order })
+    .eq("id", current.id)
+    .eq("product_id", productId);
+  if (currentError) {
+    await supabase
+      .from("product_images")
+      .update({ sort_order: target.sort_order })
+      .eq("id", target.id)
+      .eq("product_id", productId);
+    await supabase
+      .from("product_images")
+      .update({ sort_order: current.sort_order })
+      .eq("id", current.id)
+      .eq("product_id", productId);
+    throw new Error(currentError.message);
   }
 
   revalidateProductPaths(slug);

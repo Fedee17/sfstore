@@ -1,10 +1,12 @@
 "use client";
 
 import imageCompression from "browser-image-compression";
+import Image from "next/image";
 import Link from "next/link";
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import {
   deleteProductImage,
+  moveProductImage,
   setPrimaryProductImage,
 } from "@/app/admin/productos/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
@@ -179,14 +181,6 @@ function CatalogAttributeControl({
 
 function getSortedImages(product: AdminProduct | undefined) {
   return [...(product?.product_images ?? [])].sort((first, second) => {
-    if (first.is_primary && !second.is_primary) {
-      return -1;
-    }
-
-    if (!first.is_primary && second.is_primary) {
-      return 1;
-    }
-
     return first.sort_order - second.sort_order;
   });
 }
@@ -217,16 +211,18 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
         </div>
       ) : (
         <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {images.map((image) => (
+          {images.map((image, index) => (
             <article
               key={image.id}
               className="min-w-0 overflow-hidden rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED]"
             >
-              <div className="aspect-[4/3] overflow-hidden bg-[#1F1F1F]">
-                <img
+              <div className="relative aspect-[4/3] overflow-hidden bg-[#1F1F1F]">
+                <Image
                   src={image.url}
                   alt={image.alt ?? product.name}
-                  loading="lazy"
+                  fill
+                  unoptimized
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -279,6 +275,46 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                     </PendingSubmitButton>
                   </form>
                 </div>
+
+                <div className="flex items-center justify-between gap-2 border-t border-[#8B5E3C]/15 pt-3">
+                  <span className="text-xs font-semibold text-[#1F1F1F]/55">
+                    Ordenar imagen
+                  </span>
+                  <div className="flex gap-2">
+                    <form action={moveProductImage}>
+                      <input type="hidden" name="productId" value={product.id} />
+                      <input type="hidden" name="imageId" value={image.id} />
+                      <input type="hidden" name="direction" value="previous" />
+                      <input type="hidden" name="slug" value={product.slug} />
+                      <input type="hidden" name="returnTo" value={returnTo} />
+                      <PendingSubmitButton
+                        pendingLabel="..."
+                        disabled={index === 0}
+                        title="Mover imagen a la izquierda"
+                        aria-label="Mover imagen a la izquierda"
+                        className="h-11 w-11 rounded-full border border-[#8B5E3C]/30 text-lg font-semibold text-[#8B5E3C] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
+                      >
+                        ←
+                      </PendingSubmitButton>
+                    </form>
+                    <form action={moveProductImage}>
+                      <input type="hidden" name="productId" value={product.id} />
+                      <input type="hidden" name="imageId" value={image.id} />
+                      <input type="hidden" name="direction" value="next" />
+                      <input type="hidden" name="slug" value={product.slug} />
+                      <input type="hidden" name="returnTo" value={returnTo} />
+                      <PendingSubmitButton
+                        pendingLabel="..."
+                        disabled={index === images.length - 1}
+                        title="Mover imagen a la derecha"
+                        aria-label="Mover imagen a la derecha"
+                        className="h-11 w-11 rounded-full border border-[#8B5E3C]/30 text-lg font-semibold text-[#8B5E3C] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
+                      >
+                        →
+                      </PendingSubmitButton>
+                    </form>
+                  </div>
+                </div>
               </div>
             </article>
           ))}
@@ -296,6 +332,11 @@ export function ProductForm({
 }: ProductFormProps) {
   const [imageStatus, setImageStatus] = useState("");
   const [isOptimizingImage, setIsOptimizingImage] = useState(false);
+  const [pendingImages, setPendingImages] = useState<
+    { id: string; file: File; previewUrl: string }[]
+  >([]);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef(new Set<string>());
   const [selectedCategoryId, setSelectedCategoryId] = useState(
     product?.category_id ?? "",
   );
@@ -305,6 +346,40 @@ export function ProductForm({
   const catalogAttributeFields = getAttributeFieldsForCategory(
     selectedCategory?.slug ?? "",
   );
+
+  useEffect(() => {
+    const urls = previewUrlsRef.current;
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  function syncPendingFiles(nextImages: { file: File }[]) {
+    if (imageInputRef.current) {
+      replaceSelectedFiles(
+        imageInputRef.current,
+        nextImages.map((image) => image.file),
+      );
+    }
+  }
+
+  function removePendingImage(imageId: string) {
+    setPendingImages((current) => {
+      const removed = current.find((image) => image.id === imageId);
+      if (removed) {
+        URL.revokeObjectURL(removed.previewUrl);
+        previewUrlsRef.current.delete(removed.previewUrl);
+      }
+      const next = current.filter((image) => image.id !== imageId);
+      syncPendingFiles(next);
+      setImageStatus(
+        next.length === 0
+          ? ""
+          : `${next.length} imagen${next.length === 1 ? "" : "es"} seleccionada${next.length === 1 ? "" : "s"}.`,
+      );
+      return next;
+    });
+  }
 
   async function handleProductImagesChange(
     event: ChangeEvent<HTMLInputElement>,
@@ -330,13 +405,24 @@ export function ProductForm({
     );
 
     try {
-      const optimizedFiles = [];
+      const optimizedFiles: File[] = [];
 
       for (const file of files) {
-        optimizedFiles.push(await optimizeProductImage(file));
+        try {
+          optimizedFiles.push(await optimizeProductImage(file));
+        } catch {
+          optimizedFiles.push(file);
+        }
       }
 
-      replaceSelectedFiles(input, optimizedFiles);
+      const additions = optimizedFiles.map((file) => {
+        const previewUrl = URL.createObjectURL(file);
+        previewUrlsRef.current.add(previewUrl);
+        return { id: crypto.randomUUID(), file, previewUrl };
+      });
+      const nextImages = [...pendingImages, ...additions];
+      setPendingImages(nextImages);
+      replaceSelectedFiles(input, nextImages.map((image) => image.file));
 
       const originalSize = files.reduce((total, file) => total + file.size, 0);
       const optimizedSize = optimizedFiles.reduce(
@@ -345,18 +431,14 @@ export function ProductForm({
       );
 
       setImageStatus(
-        `Imagenes optimizadas: ${formatFileSize(originalSize)} -> ${formatFileSize(
-          optimizedSize,
-        )}.`,
+        `${nextImages.length} imagen${nextImages.length === 1 ? "" : "es"} seleccionada${nextImages.length === 1 ? "" : "s"}. Ultimo lote: ${formatFileSize(originalSize)} -> ${formatFileSize(optimizedSize)}.`,
       );
     } catch (error) {
       console.warn("[product-image-compression] No se pudieron optimizar imagenes", {
         fileCount: files.length,
         error: error instanceof Error ? error.message : "unknown",
       });
-      setImageStatus(
-        "No se pudieron optimizar automaticamente. Se enviaran los archivos originales.",
-      );
+      setImageStatus("No se pudieron preparar las imagenes. Volve a seleccionarlas.");
     } finally {
       setIsOptimizingImage(false);
     }
@@ -575,9 +657,10 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Destacado</span>
           </label>
 
-          <label className="grid gap-2 md:col-span-2">
+          <div className="grid gap-3 md:col-span-2">
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Agregar imagenes</span>
             <input
+              ref={imageInputRef}
               name="productImages"
               type="file"
               accept="image/png,image/jpeg,image/webp"
@@ -593,12 +676,41 @@ export function ProductForm({
             <span className="text-xs text-[#1F1F1F]/55">
               Sube JPG, PNG o WebP. Se optimizan automaticamente a 1200px y menor peso antes de guardar.
             </span>
-          </label>
+            {pendingImages.length > 0 ? (
+              <section className="grid min-w-0 gap-3 rounded-2xl border border-[#556B2F]/20 bg-[#F7F4ED] p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-[#1F1F1F]">Nuevas imagenes</h3>
+                  <span className="text-xs font-semibold text-[#556B2F]">
+                    {pendingImages.length} imagen{pendingImages.length === 1 ? "" : "es"} seleccionada{pendingImages.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {pendingImages.map((image, index) => (
+                    <article key={image.id} className="min-w-0 overflow-hidden rounded-xl border border-[#8B5E3C]/15 bg-white">
+                      <div className="relative aspect-square overflow-hidden bg-[#1F1F1F]">
+                        <Image src={image.previewUrl} alt={`Vista previa ${index + 1}`} fill unoptimized sizes="(min-width: 1024px) 25vw, 50vw" className="h-full w-full object-cover" />
+                      </div>
+                      <div className="grid gap-2 p-3">
+                        <p className="truncate text-xs font-semibold text-[#1F1F1F]/70" title={image.file.name}>{image.file.name}</p>
+                        <button
+                          type="button"
+                          onClick={() => removePendingImage(image.id)}
+                          className="min-h-11 rounded-full border border-[#8B5E3C]/30 px-3 text-xs font-semibold text-[#8B5E3C] transition hover:bg-[#8B5E3C]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <PendingSubmitButton
-            pendingLabel="Guardando..."
+            pendingLabel={pendingImages.length > 0 ? "Subiendo imagenes..." : "Guardando..."}
             disabled={isOptimizingImage}
             className="rounded-full bg-[#556B2F] px-6 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
           >
