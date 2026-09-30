@@ -1,0 +1,2 @@
+status,product_id,product_name,current_database_stock,reported_physical_stock,suggested_adjustment,reason,required_action
+CURRENT_INVENTORY_ADJUSTMENT_REQUIRED,8f06198a-0199-407d-9d5d-9e7c38bcd578,Decant hawas Kobra 5ml,1,0,1 -> 0,Entregado como regalo junto con venta de perfume,Realizar después mediante el flujo normal de Inventario; no ajustar desde la migración histórica.

@@ -10,7 +10,10 @@
     "export:perfume-attributes": "node --env-file=.env.local scripts/export-perfume-attributes.ts",
     "backfill:perfume-attributes": "node --env-file=.env.local scripts/backfill-perfume-attributes.ts",
     "recommend:perfumes": "node --env-file=.env.local scripts/run-perfume-recommendations.ts",
-    "audit:catalog": "node --env-file=.env.local scripts/audit-catalog-quality.ts"
+    "audit:catalog": "node --env-file=.env.local scripts/audit-catalog-quality.ts",
+    "historical:dry-run": "node --env-file=.env.local scripts/dry-run-historical-import.ts",
+    "historical:products": "node scripts/build-historical-product-foundation.ts",
+    "historical:snapshot": "node --env-file=.env.local scripts/snapshot-historical-import-invariants.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

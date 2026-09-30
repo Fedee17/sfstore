@@ -1,0 +1,6 @@
+proposed_name,category_candidate,current_stock_reported,current_catalog_match,decision,price,transfer_price,cost,description,attributes_required,ready_to_create,notes
+Lata Matera,,6,NOT_FOUND,CREATE_CURRENT_PRODUCT_REQUIRED,,,,,,false,"Combo lata de yerba + lata de azúcar; stock informado en pares. Faltan categoría, precio, costo, descripción y atributos."
+Mate Pampa Original boca abierta,,1,NOT_FOUND,CREATE_CURRENT_PRODUCT_REQUIRED,,,,,,false,"Color negro. Faltan categoría, precio, costo, descripción y atributos."
+Vaso Cervecero Stanley,,2,NOT_FOUND,CREATE_CURRENT_PRODUCT_REQUIRED,,,,,,false,"No equivale a TERMO STANLEY. Faltan categoría, precio, costo, descripción y atributos."
+Mate Algarrobo Simple,,3,NOT_FOUND,CREATE_CURRENT_PRODUCT_REQUIRED,,,,,,false,"Distinto de Mate Algarrobo Acrílico. Faltan categoría, precio, costo, descripción y atributos."
+Vaso Cervecero Liso,,1,NOT_FOUND,CREATE_CURRENT_PRODUCT_REQUIRED,,,,,,false,"Faltan categoría, precio, costo, descripción y atributos."

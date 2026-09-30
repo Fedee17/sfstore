@@ -1,0 +1,53 @@
+source_row,date,product_name,quantity,unit_price,total,issue,suggested_action,import_decision
+3,2025-05-22,VAPE IGNATE  V150,1,20490.00,20490.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+7,2025-06-26,VAPE IGNATE  V150,1,20490.00,20490.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+8,2025-06-27,VAPE IGNATE  V150,1,20490.00,20490.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+9,2025-06-30,VAPE IGNATE  V150,1,20490.00,20490.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+13,2025-07-10,VAPE ELFBAR 30K,1,63581.00,63581.00,DUPLICADO_POTENCIAL_FILAS_13_14|PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+14,2025-07-10,VAPE ELFBAR 30K,1,63581.00,63581.00,DUPLICADO_POTENCIAL_FILAS_13_14|PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+16,2025-07-11,TERMO MATESYSTEM,1,60600.00,60600.00,DUPLICADO_POTENCIAL_FILAS_16_20,Verificar comprobante/origen antes de importar.,REVIEW
+17,2025-07-18,VAPE IGNATE  V150,1,20490.00,20490.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+18,2025-07-19,VAPE IGNATE  V150,1,20490.00,20490.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+20,2025-07-11,TERMO MATESYSTEM,1,60600.00,60600.00,DUPLICADO_POTENCIAL_FILAS_16_20,Verificar comprobante/origen antes de importar.,REVIEW
+21,2025-08-08,VAPE ELFBAR 30K,1,63581.00,63581.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+22,2025-08-09,"CABEZAL 20W USB-C	 
+ORIGINAL",1,15000.00,15000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+23,2025-08-09,AFNAN 9PM BLACK MEN EDP 100ML,1,54000.00,54000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+24,2025-08-09,AFNAN 9PM REBEL 100ML EDP,1,69900.00,69900.00,PRODUCTO_NO_ENCONTRADO|DEUDA_O_PAGO_INCOMPLETO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+25,2025-08-09,PAVA ELECTRICA,2,12500.00,25000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+26,2025-08-09,SECAPLATO,1,29000.00,29000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+27,2025-08-19,VAPE IGNATE  V150,1,29000.00,29000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+31,2025-09-07,Dolce and Gabbana Light Blue 60ml,1,15000.00,15000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+32,2025-09-07,Asad Lattafa Masculino 100ml,1,45000.00,45000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+34,2025-10-01,ODYSSEY MANDARIN SKYBOTELLA FLIP KENCHER 900ML,1,29000.00,29000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+36,2025-10-15,AIRPODS PRO 2,1,36000.00,36000.00,DUPLICADO_POTENCIAL_FILAS_36_37,Verificar comprobante/origen antes de importar.,REVIEW
+37,2025-10-15,AIRPODS PRO 2,1,36000.00,36000.00,DUPLICADO_POTENCIAL_FILAS_36_37,Verificar comprobante/origen antes de importar.,REVIEW
+40,2025-10-20,Lattafa Musamam White Intense,1,77500.00,74787.50,TOTAL_INCONSISTENTE,Corregir o aprobar manualmente el dato fuente.,REVIEW
+42,2025-11-05,VAPE IGNATE  V150,1,25000.00,25000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+46,2025-12-19,Lattafa Yara Tous,1,46750.00,46750.00,PRODUCTO_AMBIGUO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+53,2026-03-07,VAPE IGNATE  V150,1,25500.00,25500.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+62,2026-03-25,Elfbar BC 15k,1,27000.00,27000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+67,2026-04-08,Elfbar BC 15k,1,27000.00,27000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+70,2026-04-09,Despolvillador,1,8000.00,8000.00,DUPLICADO_POTENCIAL_FILAS_70_71,Verificar comprobante/origen antes de importar.,REVIEW
+71,2026-04-09,Despolvillador,1,8000.00,8000.00,DUPLICADO_POTENCIAL_FILAS_70_71,Verificar comprobante/origen antes de importar.,REVIEW
+74,2026-04-13,Decant hawas malibu,1,11670.00,11670.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+78,2026-04-16,Bombilla plana stanley,1,5000.00,5000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+79,2026-04-16,Termo media manija negro 1L,1,27900.00,27900.00,DUPLICADO_POTENCIAL_FILAS_79_82,Verificar comprobante/origen antes de importar.,REVIEW
+80,2026-04-16,Imperial cuero liso virola en acero y bronce con bolitas,1,41650.00,41650.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+82,2026-04-16,Termo media manija negro 1L,1,27900.00,27900.00,DUPLICADO_POTENCIAL_FILAS_79_82,Verificar comprobante/origen antes de importar.,REVIEW
+85,2026-04-27,Elfbar BC 15k,1,27000.00,27000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+88,2026-05-09,VAPE IGNATE  V150,1,25000.00,25000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+89,2026-05-09,Elfbar BC 15k,1,27000.00,27000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+91,2026-05-13,Decant Bharara king,1,11000.00,11670.00,TOTAL_INCONSISTENTE,Corregir o aprobar manualmente el dato fuente.,REVIEW
+92,2026-05-13,Decant dubai nigth,1,11000.00,11670.00,TOTAL_INCONSISTENTE,Corregir o aprobar manualmente el dato fuente.,REVIEW
+93,2026-05-13,Decant 9 pm elixir,1,11000.00,11670.00,TOTAL_INCONSISTENTE,Corregir o aprobar manualmente el dato fuente.,REVIEW
+99,2026-06-09,VAPE IGNATE  V150,1,30800.00,30800.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+100,2026-06-10,VAPE IGNATE  V151,1,30800.00,30800.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+103,2026-06-13,Imperial Algarrobo Acero + Bombilla pico de loro,1,32500.00,32500.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+105,2026-06-15,Lattafa Yara Tous,1,51000.00,51000.00,PRODUCTO_AMBIGUO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+107,2026-06-27,TERMO STANLEY Verde,1,29250.00,29250.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+109,2026-06-27,Decant 9 AM,1,0.00,0.00,PRECIO_INVALIDO|TOTAL_INVALIDO,Corregir o aprobar manualmente el dato fuente.,REVIEW
+110,2026-06-27,Decant Club de nuit iconic,1,0.00,0.00,PRECIO_INVALIDO|TOTAL_INVALIDO,Corregir o aprobar manualmente el dato fuente.,REVIEW
+111,2026-06-30,Imperial Con Refuerzo Alpaca Y Base De Bolitasperial + Bombilla Pico de Loro,1,24500.00,24500.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+121,2026-07-31,Desodorante Asad,1,33000.00,33000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW
+127,2026-09-04,Imperial Algarrobo Acero + Bombilla pico de loro,1,32500.00,32500.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping; luego revisar las demás anomalías de la fila.,REVIEW

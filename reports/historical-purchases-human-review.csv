@@ -1,0 +1,43 @@
+source_row,date,product_name,quantity,unit_cost,total,issue,impact_amount,recommended_decision,final_decision,notes
+5,2025-06-20,Vaper Ignite V150,15,17000.00,255000.00,PRODUCTO_NO_ENCONTRADO,255000.00,REVIEW,,
+6,2025-06-20,VAPE ELFBAR 30K,15,18166.00,272490.00,PRODUCTO_NO_ENCONTRADO,272490.00,REVIEW,,
+16,2025-06-20,CABEZAL 20W USB-C,10,7300.00,73000.00,PRODUCTO_NO_ENCONTRADO,73000.00,REVIEW,,
+23,2025-09-02,Lattafa Fakhar Gold Edition Alternativo,1,29500.00,29500.00,PRODUCTO_NO_ENCONTRADO,29500.00,REVIEW,,
+24,2025-09-02,Versace 30ml,1,7500.00,7500.00,PRODUCTO_NO_ENCONTRADO,7500.00,REVIEW,,
+25,2025-09-19,Vaper Ignite V150,8,14820.00,118560.00,PRODUCTO_NO_ENCONTRADO,118560.00,REVIEW,,
+40,2025-11-04,Lattafa Yara Tous,1,31823.15,31823.15,PRODUCTO_AMBIGUO,31823.15,REVIEW,,
+50,2025-12-17,Bharara King 100ml Masculino,1,71450.00,71450.00,PRODUCTO_NO_ENCONTRADO,71450.00,REVIEW,,
+51,2025-12-17,Yara Tous Lattafa,1,32495.00,32495.00,PRODUCTO_NO_ENCONTRADO,32495.00,REVIEW,,
+52,2025-12-17,Lattafa Asad Masculino 100ml,2,36200.00,72400.00,PRODUCTO_NO_ENCONTRADO,72400.00,REVIEW,,
+54,2025-12-17,Lattafa Opulence Dubai,1,35030.00,35030.00,PRODUCTO_NO_ENCONTRADO,35030.00,REVIEW,,
+56,2025-12-17,Lattafa Yara Rosa,1,35740.00,35740.00,PRODUCTO_AMBIGUO,35740.00,REVIEW,,
+58,2026-01-22,Canasta matera,2,8999.00,17998.00,PRODUCTO_NO_ENCONTRADO,17998.00,REVIEW,,
+59,2026-01-22,Lata Matera,6,6699.00,40194.00,PRODUCTO_NO_ENCONTRADO,40194.00,REVIEW,,
+60,2026-01-22,Vaso Cervecero Stanley,2,10200.00,20400.00,PRODUCTO_NO_ENCONTRADO,20400.00,REVIEW,,
+61,2026-01-22,Vaso Cervecero Liso,1,9990.00,9990.00,PRODUCTO_NO_ENCONTRADO,9990.00,REVIEW,,
+62,2026-01-22,Mate Pampa Original boca abierta,2,10700.00,21400.00,PRODUCTO_NO_ENCONTRADO,21400.00,REVIEW,,
+63,2026-01-22,Termo media manija negro tapa plateada 1L,1,14500.00,14500.00,PRODUCTO_NO_ENCONTRADO,14500.00,REVIEW,,
+64,2026-01-22,Termo media manija plateada 1L,1,13950.00,13950.00,PRODUCTO_NO_ENCONTRADO,13950.00,REVIEW,,
+65,2026-01-22,Mate Algarrobo Simple,1,10000.00,10000.00,PRODUCTO_NO_ENCONTRADO,10000.00,REVIEW,,
+68,2026-01-22,Airpods,3,15682.90,47048.70,PRODUCTO_NO_ENCONTRADO,47048.70,REVIEW,,
+69,2026-01-22,Elfbar BC 15k,5,12678.00,63390.00,PRODUCTO_NO_ENCONTRADO,63390.00,REVIEW,,
+72,2026-01-22,Lattafa Yara rosa,1,32504.30,32504.30,PRODUCTO_AMBIGUO,32504.30,REVIEW,,
+73,2026-01-22,Lattafa Yara Tous,1,31930.50,31930.50,PRODUCTO_AMBIGUO,31930.50,REVIEW,,
+95,2026-03-05,CABEZAL 20W USB-C,10,3650.00,36500.00,PRODUCTO_NO_ENCONTRADO,36500.00,REVIEW,,
+118,2026-03-10,Decant hawas Kobra,1,8000.00,8000.00,PRODUCTO_NO_ENCONTRADO,8000.00,REVIEW,,
+121,2026-03-10,Decant hawas malibu,1,8000.00,8000.00,PRODUCTO_NO_ENCONTRADO,8000.00,REVIEW,,
+125,2026-03-10,Decant hawas tropical,1,8000.00,8000.00,PRODUCTO_NO_ENCONTRADO,8000.00,REVIEW,,
+127,2026-03-10,Decant Game of Spades Full House,1,8000.00,8000.00,PRODUCTO_NO_ENCONTRADO,8000.00,REVIEW,,
+142,2026-03-20,Porta mate cuero,3,7150.00,21450.00,PRODUCTO_NO_ENCONTRADO,21450.00,REVIEW,,
+151,2026-04-30,Elfbar BC 15k,5,13689.60,68448.00,PRODUCTO_NO_ENCONTRADO,68448.00,REVIEW,,
+154,,Bombilla de alpaca y bronce cincelada,1,11900.00,11900.00,FECHA_AUSENTE,11900.00,IMPORT_WITH_CORRECTION,,"Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡ticamente."
+155,,Camionero Criollo Base de Cuero,1,8500.00,8500.00,FECHA_AUSENTE,8500.00,IMPORT_WITH_CORRECTION,,"Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡ticamente."
+156,,Combo 5 imperiales algarrobo acero + 5 pico loro,5,9998.00,49990.00,FECHA_AUSENTE,49990.00,IMPORT_WITH_CORRECTION,,"Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡ticamente."
+157,,Imperial Con Refuerzo Alpaca Y Base De Bolitas,1,22900.00,22900.00,FECHA_AUSENTE,22900.00,IMPORT_WITH_CORRECTION,,"Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡ticamente."
+158,,Termo Media Manija Negro,3,12500.00,37500.00,FECHA_AUSENTE|PRODUCTO_NO_ENCONTRADO,37500.00,REVIEW,,"Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡ticamente."
+159,,Torpedo Criollo Con Base,1,19000.00,19000.00,FECHA_AUSENTE,19000.00,IMPORT_WITH_CORRECTION,,"Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡ticamente."
+163,2026-05-11,Ignite V150,2,15435.00,30870.00,PRODUCTO_NO_ENCONTRADO,30870.00,REVIEW,,
+164,2026-05-11,Elfbar BC 15k,3,13230.00,39690.00,PRODUCTO_NO_ENCONTRADO,39690.00,REVIEW,,
+172,2026-07-30,YARA CLASICO - 100ML,1,44700.00,44700.00,PRODUCTO_NO_ENCONTRADO,44700.00,REVIEW,,
+173,2026-07-30,ASAD BLACK - 100ML,1,49200.00,49200.00,PRODUCTO_NO_ENCONTRADO,49200.00,REVIEW,,
+181,2026-07-30,Decants Muestras,9,49500.00,445500.00,PRODUCTO_NO_ENCONTRADO,445500.00,REVIEW,,

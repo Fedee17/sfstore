@@ -44,5 +44,9 @@ next-env.d.ts
 .next-dev*.log
 .codex-next-*.log
 
+# Historical source workbooks are local inputs and may contain business data.
+/data/*.xls
+/data/*.xlsx
+
 .vercel
 .env*
