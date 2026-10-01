@@ -171,6 +171,7 @@ export async function getProductsByCategorySlug(
         )
       `,
       )
+      .eq("historical_identity", false)
       .eq("status", "active")
       .order("featured", { ascending: false })
       .order("name", { ascending: true });
@@ -231,6 +232,7 @@ export async function getProductBySlug(slug: string) {
         )
       `,
       )
+      .eq("historical_identity", false)
       .eq("status", "active")
       .eq("slug", slug)
       .maybeSingle();
@@ -295,6 +297,7 @@ export async function getRelatedProducts(
         )
       `,
       )
+      .eq("historical_identity", false)
       .eq("status", "active")
       .eq("category_id", categoryId)
       .neq("id", currentProductId)

@@ -34,6 +34,44 @@ revoke all on table historical_import_batches, historical_import_records from pu
 grant select, insert on table historical_import_batches to service_role;
 grant select, insert on table historical_import_records to service_role;
 
+alter table products
+  add column historical_identity boolean not null default false,
+  add column historical_group_key text;
+
+alter table products alter column price drop not null;
+alter table products alter column short_description drop not null;
+alter table products drop constraint if exists products_price_check;
+alter table products add constraint products_price_nonnegative_check
+  check (price is null or price >= 0);
+alter table products add constraint products_historical_group_key_check check (
+  (historical_identity = false and historical_group_key is null)
+  or
+  (historical_identity = true and nullif(btrim(historical_group_key), '') is not null)
+);
+alter table products add constraint products_operational_commercial_fields_check check (
+  historical_identity = true
+  or
+  (price is not null and short_description is not null)
+);
+alter table products add constraint products_historical_identity_check check (
+  historical_identity = false
+  or
+  (
+    status = 'archived'
+    and stock = 0
+    and featured = false
+    and price is null
+    and transfer_price is null
+    and compare_at_price is null
+    and cost is null
+    and cost_source_purchase_item_id is null
+    and short_description is null
+  )
+);
+create unique index products_historical_group_key_unique
+  on products(historical_group_key)
+  where historical_identity = true;
+
 alter table orders
   add column historical_import boolean not null default false,
   add column historical_occurred_on date,
@@ -86,6 +124,24 @@ as $$
   select coalesce(current_setting('sfstore.historical_import', true), '') = 'on';
 $$;
 
+create or replace function prevent_historical_product_identity_mutation()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if old.historical_identity then
+    raise exception using errcode = 'P0001', message = 'HISTORICAL_PRODUCT_IDENTITY_IMMUTABLE';
+  end if;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
+end;
+$$;
+
+create trigger protect_historical_product_identities
+before update or delete on products
+for each row execute function prevent_historical_product_identity_mutation();
+
 create or replace function prevent_historical_order_mutation()
 returns trigger
 language plpgsql
@@ -112,6 +168,14 @@ as $$
 declare
   v_order_id uuid := case when tg_op = 'DELETE' then old.order_id else new.order_id end;
 begin
+  if tg_op <> 'DELETE' and new.product_id is not null
+     and exists (select 1 from products where id = new.product_id and historical_identity)
+     and not (
+       historical_import_context_enabled()
+       and exists (select 1 from orders where id = new.order_id and historical_import)
+     ) then
+    raise exception using errcode = 'P0001', message = 'HISTORICAL_IDENTITY_REQUIRES_HISTORICAL_ORDER';
+  end if;
   if exists (select 1 from orders where id = v_order_id and historical_import)
      and not historical_import_context_enabled() then
     raise exception using errcode = 'P0001', message = 'HISTORICAL_ORDER_ITEM_IMMUTABLE';
@@ -152,6 +216,11 @@ declare
   v_purchase purchases%rowtype;
 begin
   select * into v_purchase from purchases where id = v_purchase_id;
+  if tg_op <> 'DELETE' and new.product_id is not null
+     and exists (select 1 from products where id = new.product_id and historical_identity)
+     and not (historical_import_context_enabled() and v_purchase.historical_import) then
+    raise exception using errcode = 'P0001', message = 'HISTORICAL_IDENTITY_REQUIRES_HISTORICAL_PURCHASE';
+  end if;
   if v_purchase.status = 'confirmed' then
     raise exception 'Las lineas de una compra confirmada no se pueden modificar ni eliminar.';
   end if;
@@ -169,6 +238,9 @@ language plpgsql
 set search_path = public
 as $$
 begin
+  if exists (select 1 from products where id = new.product_id and historical_identity) then
+    raise exception using errcode = 'P0001', message = 'HISTORICAL_IDENTITY_CANNOT_AFFECT_INVENTORY';
+  end if;
   if (new.order_id is not null and exists (
       select 1 from orders where id = new.order_id and historical_import
     )) or (new.purchase_id is not null and exists (

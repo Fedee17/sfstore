@@ -285,6 +285,7 @@ export async function getAdminProducts(
         )
       `,
       )
+      .eq("historical_identity", false)
       .order("created_at", { ascending: false });
 
     const search = filters.search?.trim();
@@ -387,6 +388,7 @@ export async function getAdminProductById(
         )
       `,
       )
+      .eq("historical_identity", false)
       .eq("id", id)
       .maybeSingle();
 

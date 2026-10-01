@@ -59,6 +59,7 @@ async function main() {
         product_attributes (name, value)
       `,
     )
+    .eq("historical_identity", false)
     .eq("categories.slug", "perfumes")
     .order("name", { ascending: true });
 

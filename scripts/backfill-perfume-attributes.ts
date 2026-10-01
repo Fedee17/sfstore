@@ -93,10 +93,12 @@ async function readCurrentState(
           product_attributes (id, name, value)
         `,
       )
+      .eq("historical_identity", false)
       .in("id", productIds),
     supabase
       .from("products")
       .select("id, categories!inner(slug)")
+      .eq("historical_identity", false)
       .eq("categories.slug", "perfumes"),
   ]);
 

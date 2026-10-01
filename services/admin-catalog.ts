@@ -52,6 +52,7 @@ export async function getQuickCatalogProducts(): Promise<{
         product_images (url, alt, sort_order, is_primary)
       `,
       )
+      .eq("historical_identity", false)
       .order("name", { ascending: true });
 
     if (error) throw new Error(error.message);

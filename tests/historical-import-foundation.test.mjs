@@ -87,6 +87,40 @@ test("archived products are valid historical references", () => {
   assert.match(reportScript, /14 identidades y 17 aliases/i);
 });
 
+test("historical product identities can omit commercial values only while archived", () => {
+  assert.match(migration, /historical_identity boolean not null default false/i);
+  assert.match(migration, /alter column price drop not null/i);
+  assert.match(migration, /alter column short_description drop not null/i);
+  assert.match(migration, /historical_identity = true[\s\S]+status = 'archived'[\s\S]+stock = 0[\s\S]+featured = false/i);
+  assert.match(migration, /price is null[\s\S]+transfer_price is null[\s\S]+compare_at_price is null[\s\S]+cost is null/i);
+  assert.match(migration, /historical_identity = true[\s\S]+or[\s\S]+price is not null and short_description is not null/i);
+  assert.match(migration, /HISTORICAL_PRODUCT_IDENTITY_IMMUTABLE/i);
+});
+
+test("historical identities are restricted to historical records", () => {
+  assert.match(migration, /HISTORICAL_IDENTITY_REQUIRES_HISTORICAL_ORDER/i);
+  assert.match(migration, /HISTORICAL_IDENTITY_REQUIRES_HISTORICAL_PURCHASE/i);
+  assert.match(migration, /HISTORICAL_IDENTITY_CANNOT_AFFECT_INVENTORY/i);
+  assert.match(purchaseImport, /item\.unit_cost[\s\S]+item\.source_total/i);
+  assert.match(saleImport, /item\.unit_price[\s\S]+item\.source_total/i);
+  assert.doesNotMatch(purchaseImport, /product\.cost|product\.price/i);
+  assert.doesNotMatch(saleImport, /product\.cost|product\.price/i);
+});
+
+test("operational services explicitly exclude historical identities", () => {
+  for (const path of [
+    ["services", "products.ts"],
+    ["services", "purchases.ts"],
+    ["services", "store-sales.ts"],
+    ["services", "customer-orders.ts"],
+    ["services", "admin-catalog.ts"],
+    ["services", "product-import.ts"],
+  ]) {
+    assert.match(source(...path), /historical_identity["'], false/i, `${path.join("/")} debe excluir identidades historicas`);
+  }
+  assert.match(source("app", "admin", "productos", "actions.ts"), /assertOperationalProduct/i);
+});
+
 test("historical dates remain date values instead of UTC timestamps", () => {
   assert.match(migration, /historical_occurred_on date/i);
   assert.match(purchaseImport, /p_occurred_on date/i);
@@ -150,6 +184,17 @@ test("foundation reports keep current and historical product work separate", () 
   assert.match(currentProductsReport, /ready_to_create/);
   assert.equal((currentProductsReport.match(/,false,/g) ?? []).length, 5);
   assert.equal(historicalProductsReport.trim().split(/\r?\n/).length - 1, 14);
+  assert.match(historicalProductsReport, /proposed_category_id,proposed_category_name,category_confidence,category_reason/i);
+  assert.match(historicalProductsReport, /,archived,0,,,,/i);
+  assert.match(
+    historicalProductsReport,
+    /imperial-algarrobo-acero-bombilla-pico-loro[\s\S]+61a589e6-7a88-4236-8813-8e3cbfdc3182,Mates,HIGH/i,
+  );
+  assert.match(
+    historicalProductsReport,
+    /secaplato,Secaplato[\s\S]+6c932233-8d56-4c99-a066-cb44a37cc0ea,Accesorios,HIGH/i,
+  );
+  assert.doesNotMatch(historicalProductsReport, /,PENDING,/i);
   assert.match(historicalProductsReport, /ignite-v150[\s\S]+VAPE IGNATE  V150\|Vaper Ignite V150\|Ignite V150/i);
   assert.doesNotMatch(historicalProductsReport, /SFSTORE_control_emprendimiento_\.xlsx/i);
 });

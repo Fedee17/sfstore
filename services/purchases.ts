@@ -86,6 +86,7 @@ export async function listPurchaseProducts() {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
     .select("id, name, slug, sku, cost, status")
+    .eq("historical_identity", false)
     .order("name", { ascending: true });
 
   if (error) {
@@ -103,6 +104,7 @@ async function findPurchaseProductBySlug(slug: string) {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
     .select("id, name, slug, sku, cost, status")
+    .eq("historical_identity", false)
     .eq("slug", slug)
     .maybeSingle();
 
@@ -117,6 +119,7 @@ async function findPurchaseProductByName(name: string) {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
     .select("id, name, slug, sku, cost, status")
+    .eq("historical_identity", false)
     .ilike("name", name)
     .limit(1)
     .maybeSingle();
@@ -339,6 +342,7 @@ export async function savePurchaseDraft(input: SavePurchaseDraftInput) {
   const { data: products, error: productsError } = await supabase
     .from("products")
     .select("id")
+    .eq("historical_identity", false)
     .in("id", productIds);
 
   if (productsError) {

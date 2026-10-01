@@ -130,6 +130,7 @@ export async function listCustomerOrderProducts() {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
     .select("id, name, slug, sku, price, transfer_price, stock, status, categories(name)")
+    .eq("historical_identity", false)
     .eq("status", "active")
     .order("name", { ascending: true });
 

@@ -14,6 +14,7 @@ async function getActiveProductUrls() {
     const { data, error } = await supabase
       .from("products")
       .select("slug, updated_at")
+      .eq("historical_identity", false)
       .eq("status", "active")
       .order("updated_at", { ascending: false });
 

@@ -444,6 +444,23 @@ async function uploadProductImages(
   }
 }
 
+async function assertOperationalProduct(productId: string) {
+  const { data, error } = await getSupabaseAdminClient()
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("historical_identity", false)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Las identidades historicas no admiten modificaciones operativas.");
+  }
+}
+
 export async function createProduct(formData: FormData) {
   await requireAdminActionSession();
   const payload = readProductForm(formData);
@@ -483,6 +500,8 @@ export async function updateProduct(formData: FormData) {
   if (!payload.productId) {
     throw new Error("Falta el ID del producto.");
   }
+
+  await assertOperationalProduct(payload.productId);
 
   const supabase = getSupabaseAdminClient();
   const product = await applyDescriptionFallbacks(payload);
@@ -526,6 +545,8 @@ export async function archiveProduct(formData: FormData) {
     throw new Error("Falta el ID del producto.");
   }
 
+  await assertOperationalProduct(productId);
+
   const supabase = getSupabaseAdminClient();
   const { error } = await supabase
     .from("products")
@@ -551,6 +572,8 @@ export async function toggleProductFeatured(formData: FormData) {
   if (!productId) {
     throw new Error("Falta el ID del producto.");
   }
+
+  await assertOperationalProduct(productId);
 
   const supabase = getSupabaseAdminClient();
   const { error } = await supabase
@@ -586,6 +609,8 @@ export async function updateProductStock(
     if (!productId) {
       throw new Error("Falta el ID del producto.");
     }
+
+    await assertOperationalProduct(productId);
 
     if (!reason) {
       throw new Error("El motivo del ajuste es obligatorio.");
@@ -640,6 +665,8 @@ export async function setPrimaryProductImage(formData: FormData) {
     throw new Error("Faltan datos para marcar la imagen principal.");
   }
 
+  await assertOperationalProduct(productId);
+
   const supabase = getSupabaseAdminClient();
   const { data: image, error: imageError } = await supabase
     .from("product_images")
@@ -691,6 +718,8 @@ export async function moveProductImage(formData: FormData) {
   if (!productId || !imageId || !["previous", "next"].includes(direction)) {
     throw new Error("Faltan datos para reordenar la imagen.");
   }
+
+  await assertOperationalProduct(productId);
 
   const supabase = getSupabaseAdminClient();
   const { data, error } = await supabase
@@ -777,6 +806,8 @@ export async function deleteProductImage(formData: FormData) {
   if (!productId || !imageId) {
     throw new Error("Faltan datos para eliminar la imagen.");
   }
+
+  await assertOperationalProduct(productId);
 
   const supabase = getSupabaseAdminClient();
   const { data: image, error: readError } = await supabase

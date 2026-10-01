@@ -87,6 +87,7 @@ async function findExistingProduct(
       categories(name, slug),
       product_attributes(name, value, sort_order)
     `)
+    .eq("historical_identity", false)
     .in("slug", slugs);
   if (error) throw new Error(error.message);
   const products = (data ?? []) as ExistingProduct[];
@@ -183,6 +184,7 @@ async function applyExistingPerfumeUpdate(
     const { error } = await getSupabaseAdminClient()
       .from("products")
       .update(patch)
+      .eq("historical_identity", false)
       .eq("id", existing.id);
     if (error) throw new Error(error.message);
   }
@@ -287,6 +289,7 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
         const { error } = await getSupabaseAdminClient()
           .from("products")
           .update(decision.patch)
+          .eq("historical_identity", false)
           .eq("id", existing.id);
         if (error) throw new Error(error.message);
         summary.updated += 1;
@@ -376,7 +379,7 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
       };
       const supabase = getSupabaseAdminClient();
       const { error } = existing
-        ? await supabase.from("products").update(payload).eq("id", productId)
+        ? await supabase.from("products").update(payload).eq("historical_identity", false).eq("id", productId)
         : await supabase.from("products").insert({ id: productId, ...payload });
       if (error) throw new Error(error.message);
       await replaceNamedAttributes(productId, normalized.attributes);
@@ -434,6 +437,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
         const { error } = await getSupabaseAdminClient()
           .from("products")
           .update(decision.patch)
+          .eq("historical_identity", false)
           .eq("id", existing.id);
         if (error) throw new Error(error.message);
         result.updated += 1;
@@ -486,7 +490,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
       };
       const supabase = getSupabaseAdminClient();
       const { error } = existing
-        ? await supabase.from("products").update(payload).eq("id", productId)
+        ? await supabase.from("products").update(payload).eq("historical_identity", false).eq("id", productId)
         : await supabase.from("products").insert({ id: productId, ...payload });
       if (error) throw new Error(error.message);
       await replaceNamedAttributes(productId, row.attributes);

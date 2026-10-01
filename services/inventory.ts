@@ -64,7 +64,23 @@ export async function adjustInventoryStock({
   reason: string;
   createdBy: string;
 }): Promise<InventoryAdjustmentResult> {
-  const { data, error } = await getSupabaseAdminClient().rpc(
+  const supabase = getSupabaseAdminClient();
+  const { data: product, error: productError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("historical_identity", false)
+    .maybeSingle();
+
+  if (productError) {
+    throw new Error(productError.message);
+  }
+
+  if (!product) {
+    throw new Error("Las identidades historicas no admiten ajustes de inventario.");
+  }
+
+  const { data, error } = await supabase.rpc(
     "adjust_inventory_stock",
     {
       p_product_id: productId,
@@ -101,6 +117,7 @@ export async function listInventoryMovements(filters: {
       const { data: products, error: productsError } = await supabase
         .from("products")
         .select("id")
+        .eq("historical_identity", false)
         .or(`name.ilike.%${escaped}%,slug.ilike.%${escaped}%,sku.ilike.%${escaped}%`);
 
       if (productsError) {

@@ -170,6 +170,7 @@ async function findExistingProducts(rows: NormalizedProductImportRow[]) {
       categories(name, slug),
       product_attributes(name, value, sort_order)
     `)
+    .eq("historical_identity", false)
     .in("slug", slugs);
   if (error) throw new Error(error.message);
   return (data ?? []) as ExistingProduct[];

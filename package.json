@@ -13,6 +13,7 @@
     "audit:catalog": "node --env-file=.env.local scripts/audit-catalog-quality.ts",
     "historical:dry-run": "node --env-file=.env.local scripts/dry-run-historical-import.ts",
     "historical:products": "node scripts/build-historical-product-foundation.ts",
+    "historical:create-products": "node --env-file=.env.local scripts/create-historical-product-identities.ts",
     "historical:snapshot": "node --env-file=.env.local scripts/snapshot-historical-import-invariants.ts"
   },
   "dependencies": {
