@@ -9,6 +9,7 @@ import { PRODUCT_IMPORT_SLUG_ALIASES } from "../lib/product-import/aliases.ts";
 type Decision = "INSERT" | "OMIT" | "REVIEW" | "INVALID";
 type ReadinessStatus =
   | "READY"
+  | "OMIT"
   | "HISTORICAL_PRODUCT_READY"
   | "CURRENT_PRODUCT_REQUIRED"
   | "SOURCE_DATE_REQUIRED"
@@ -26,9 +27,11 @@ type ProductRow = {
   sku: string | null;
   status: string;
   stock: number;
-  price: number;
+  price: number | null;
   transfer_price: number | null;
   cost: number | null;
+  historical_identity: boolean;
+  historical_group_key: string | null;
   created_at: string;
 };
 type CategoryRow = { id: string; name: string; slug: string };
@@ -104,6 +107,13 @@ type DryRunRow = {
   fingerprint: string;
 };
 
+type SaleDecisionOverride = {
+  decision: "INSERT" | "OMIT";
+  reason: string;
+  ignoredIssuePrefixes?: string[];
+  paymentState?: "paid";
+};
+
 const root = process.cwd();
 const inputPath = join(root, "data", "SFSTORE_control_emprendimiento_.xlsx");
 const reportsDirectory = join(root, "reports");
@@ -115,6 +125,35 @@ const dryRunMarkdownPath = join(reportsDirectory, "historical-import-dry-run.md"
 const humanMappingReviewPath = join(reportsDirectory, "historical-product-mapping-human-review.csv");
 const humanSalesReviewPath = join(reportsDirectory, "historical-sales-human-review.csv");
 const humanPurchasesReviewPath = join(reportsDirectory, "historical-purchases-human-review.csv");
+
+const saleDecisionOverrides = new Map<number, SaleDecisionOverride>([
+  [13, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [14, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [16, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [20, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [24, { decision: "INSERT", reason: "Venta confirmada como completamente pagada; sin saldo pendiente.", ignoredIssuePrefixes: ["DEUDA_O_PAGO_INCOMPLETO"], paymentState: "paid" }],
+  [36, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [37, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [40, { decision: "INSERT", reason: "Total fuente confirmado; se conserva sin recalcular.", ignoredIssuePrefixes: ["TOTAL_INCONSISTENTE"] }],
+  [70, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [71, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [79, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [82, { decision: "INSERT", reason: "Operación repetida confirmada como venta independiente.", ignoredIssuePrefixes: ["DUPLICADO_POTENCIAL_"] }],
+  [91, { decision: "INSERT", reason: "Total fuente confirmado; se conserva sin recalcular.", ignoredIssuePrefixes: ["TOTAL_INCONSISTENTE"] }],
+  [92, { decision: "INSERT", reason: "Total fuente confirmado; se conserva sin recalcular.", ignoredIssuePrefixes: ["TOTAL_INCONSISTENTE"] }],
+  [93, { decision: "INSERT", reason: "Total fuente confirmado; se conserva sin recalcular.", ignoredIssuePrefixes: ["TOTAL_INCONSISTENTE"] }],
+  [109, { decision: "OMIT", reason: "DAMAGED_PRODUCT_NOT_SALE" }],
+  [110, { decision: "OMIT", reason: "DAMAGED_PRODUCT_NOT_SALE" }],
+]);
+
+const purchaseDateOverrides = new Map<number, string>([
+  [154, "2026-04-18"],
+  [155, "2026-04-22"],
+  [156, "2026-04-26"],
+  [157, "2026-04-30"],
+  [158, "2026-05-04"],
+  [159, "2026-05-08"],
+]);
 const humanSummaryPath = join(reportsDirectory, "historical-human-review-summary.md");
 const inventoryAdjustmentsPath = join(reportsDirectory, "historical-current-inventory-adjustments-review.csv");
 const sourceFile = basename(inputPath);
@@ -267,6 +306,7 @@ function countBy<T>(rows: T[], getKey: (row: T) => string) {
 
 function readinessStatus(decision: Decision, reason: string): ReadinessStatus {
   if (decision === "INVALID") return "INVALID";
+  if (decision === "OMIT") return "OMIT";
   if (reason.includes("CURRENT_PRODUCT_REQUIRED")) return "CURRENT_PRODUCT_REQUIRED";
   if (reason.includes("HISTORICAL_PRODUCT_REQUIRED")) return "HISTORICAL_PRODUCT_READY";
   if (reason.includes("FECHA_AUSENTE") || reason.includes("FECHA_INVALIDA")) return "SOURCE_DATE_REQUIRED";
@@ -387,7 +427,7 @@ const salesMatrix = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets["Control
 const purchasesMatrix = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets["Control de compras"], { header: 1, raw: true, defval: null });
 
 const [products, categories, attributes, images, suppliers, purchases, purchaseItems, orders, orderItems, orderPayments] = await Promise.all([
-  readAll<ProductRow>("products", "id,category_id,name,slug,sku,status,stock,price,transfer_price,cost,created_at"),
+  readAll<ProductRow>("products", "id,category_id,name,slug,sku,status,stock,price,transfer_price,cost,historical_identity,historical_group_key,created_at"),
   readAll<CategoryRow>("categories", "id,name,slug"),
   readAll<AttributeRow>("product_attributes", "product_id,name,value,sort_order"),
   readAll<ImageRow>("product_images", "product_id,url,is_primary,sort_order,created_at"),
@@ -408,12 +448,12 @@ const salesBase = salesMatrix.slice(1).map((row, index) => ({
   total: numeric(row[4]),
   paymentMethod: text(row[5]),
   margin: numeric(row[6]),
-  debt: text(row[7]),
+  debt: saleDecisionOverrides.get(index + 2)?.paymentState === "paid" ? "" : text(row[7]),
 })).filter((row) => row.productName || row.date);
 
 const purchasesBase = purchasesMatrix.slice(1).map((row, index) => ({
   sourceRow: index + 2,
-  date: excelDate(row[1]),
+  date: purchaseDateOverrides.get(index + 2) ?? excelDate(row[1]),
   productName: text(row[2]),
   quantity: numeric(row[3]),
   unitCost: numeric(row[4]),
@@ -529,6 +569,14 @@ function resolveFinalProduct(name: string, match: Match) {
   const finalDecision = text(review?.final_decision).toUpperCase();
   if (finalDecision === "OMIT") return { product: null, matchType: match.type, finalDecision: "OMIT" };
   if (finalDecision === "CREATE_HISTORICAL") {
+    const historicalGroupKey = text(review?.historical_group_key);
+    const product = products.find((candidate) =>
+      candidate.historical_identity === true
+      && candidate.historical_group_key === historicalGroupKey
+    );
+    if (product) {
+      return { product, matchType: "MANUAL_MATCH" as const, finalDecision: "HISTORICAL_MATCH" };
+    }
     return { product: null, matchType: match.type, finalDecision: "CREATE_HISTORICAL" };
   }
   if (finalDecision === "CREATE_CURRENT_PRODUCT_REQUIRED") {
@@ -576,16 +624,27 @@ function purchaseIssues(row: PurchaseSource) {
 function classifySale(row: SaleSource): DryRunRow {
   const issues = saleIssues(row);
   const resolved = resolveFinalProduct(row.productName, row.match);
-  const explicitReviewReason = text(manualMappingByName.get(row.productName)?.decision_reason);
-  const effectiveIssues = resolved.product
+  const decisionOverride = saleDecisionOverrides.get(row.sourceRow);
+  const storedReviewReason = text(manualMappingByName.get(row.productName)?.decision_reason);
+  const explicitReviewReason = resolved.finalDecision === "HISTORICAL_MATCH"
+    && storedReviewReason === "HISTORICAL_PRODUCT_REQUIRED"
+    ? ""
+    : storedReviewReason;
+  const resolvedIssues = resolved.product
     ? issues.filter((issue) => !["PRODUCTO_AMBIGUO", "PRODUCTO_NO_ENCONTRADO"].includes(issue))
     : issues;
+  const effectiveIssues = resolvedIssues.filter((issue) =>
+    !decisionOverride?.ignoredIssuePrefixes?.some((prefix) => issue.startsWith(prefix))
+  );
   let decision: Decision = "INSERT";
-  let reason = "Fila válida, producto resuelto y pago documentado; candidata a venta histórica sin efecto de inventario.";
-  const invalid = issues.some((issue) => ["FECHA_INVALIDA", "PRODUCTO_VACIO", "CANTIDAD_INVALIDA", "PRECIO_INVALIDO", "TOTAL_INVALIDO"].includes(issue));
-  if (invalid) {
+  let reason = decisionOverride?.reason
+    ?? "Fila válida, producto resuelto y pago documentado; candidata a venta histórica sin efecto de inventario.";
+  const invalid = effectiveIssues.some((issue) => ["FECHA_INVALIDA", "PRODUCTO_VACIO", "CANTIDAD_INVALIDA", "PRECIO_INVALIDO", "TOTAL_INVALIDO"].includes(issue));
+  if (decisionOverride?.decision === "OMIT") {
+    decision = "OMIT";
+  } else if (invalid) {
     decision = "INVALID";
-    reason = issues.join("|");
+    reason = effectiveIssues.join("|");
   } else if (resolved.finalDecision === "OMIT") {
     decision = "OMIT";
     reason = "Decisión humana OMIT en el mapping.";
@@ -626,7 +685,11 @@ function classifySale(row: SaleSource): DryRunRow {
 function classifyPurchase(row: PurchaseSource): DryRunRow {
   const issues = purchaseIssues(row);
   const resolved = resolveFinalProduct(row.productName, row.match);
-  const explicitReviewReason = text(manualMappingByName.get(row.productName)?.decision_reason);
+  const storedReviewReason = text(manualMappingByName.get(row.productName)?.decision_reason);
+  const explicitReviewReason = resolved.finalDecision === "HISTORICAL_MATCH"
+    && storedReviewReason === "HISTORICAL_PRODUCT_REQUIRED"
+    ? ""
+    : storedReviewReason;
   const effectiveIssues = resolved.product
     ? issues.filter((issue) => !["PRODUCTO_AMBIGUO", "PRODUCTO_NO_ENCONTRADO"].includes(issue))
     : issues;
@@ -751,9 +814,15 @@ function classifyPurchaseRows(row: PurchaseSource): DryRunRow[] {
 }
 
 const dryRunRows = [...sales.map(classifySale), ...historicalPurchases.flatMap(classifyPurchaseRows)];
+const pendingSaleSourceRows = new Set(dryRunRows
+  .filter((row) => row.record_type === "sale" && ["REVIEW", "INVALID"].includes(row.decision))
+  .map((row) => row.source_row));
+const pendingPurchaseSourceRows = new Set(dryRunRows
+  .filter((row) => row.record_type === "purchase" && ["REVIEW", "INVALID"].includes(row.decision))
+  .map((row) => row.source_row));
 const salesReviewRows = sales.flatMap((row) => {
+  if (!pendingSaleSourceRows.has(row.sourceRow)) return [];
   const issues = saleIssues(row);
-  if (!issues.length) return [];
   return [{
     source_row: row.sourceRow,
     date: row.date ?? "",
@@ -772,8 +841,8 @@ const salesReviewRows = sales.flatMap((row) => {
 });
 
 const purchasesReviewRows = historicalPurchases.flatMap((row) => {
+  if (!pendingPurchaseSourceRows.has(row.sourceRow)) return [];
   const issues = purchaseIssues(row);
-  if (!issues.length) return [];
   return [{
     source_row: row.sourceRow,
     date: row.date ?? "",
@@ -883,8 +952,8 @@ function saleHumanRecommendation(row: SaleSource, issues: string[]) {
 }
 
 const humanSalesRows = sales.flatMap((row) => {
+  if (!pendingSaleSourceRows.has(row.sourceRow)) return [];
   const issues = saleIssues(row);
-  if (!issues.length) return [];
   const previous = previousHumanSalesByRow.get(row.sourceRow);
   const calculated = row.quantity != null && row.unitPrice != null ? roundMoney(row.quantity * row.unitPrice) : null;
   const difference = calculated != null && row.total != null ? roundMoney(row.total - calculated) : null;
@@ -919,8 +988,8 @@ function surroundingPurchaseContext(row: PurchaseSource) {
 }
 
 const humanPurchaseRows = historicalPurchases.flatMap((row) => {
+  if (!pendingPurchaseSourceRows.has(row.sourceRow)) return [];
   const issues = purchaseIssues(row);
-  if (!issues.length) return [];
   const previous = previousHumanPurchaseByRow.get(row.sourceRow);
   const generatedNotes = issues.includes("FECHA_AUSENTE") ? surroundingPurchaseContext(row) : "";
   const recommendedDecision = issues.includes("FECHA_AUSENTE") && !issues.some((issue) => issue.startsWith("PRODUCTO_"))
@@ -1218,11 +1287,11 @@ await Promise.all([
   writeFile(salesReviewPath, serializeCsv(salesReviewHeaders, salesReviewRows), "utf8"),
   writeFile(purchasesReviewPath, serializeCsv(purchasesReviewHeaders, purchasesReviewRows), "utf8"),
   writeFile(dryRunCsvPath, serializeCsv(dryRunHeaders, dryRunRows), "utf8"),
-  writeFile(dryRunMarkdownPath, markdown.join("\n") + "\n", "utf8"),
+  writeFile(dryRunMarkdownPath, `${markdown.join("\n").trimEnd()}\n`, "utf8"),
   writeFile(humanMappingReviewPath, serializeCsv(humanMappingHeaders, humanMappingRows), "utf8"),
   writeFile(humanSalesReviewPath, serializeCsv(humanSalesHeaders, humanSalesRows), "utf8"),
   writeFile(humanPurchasesReviewPath, serializeCsv(humanPurchasesHeaders, humanPurchaseRows), "utf8"),
-  writeFile(humanSummaryPath, humanSummary.join("\n") + "\n", "utf8"),
+  writeFile(humanSummaryPath, `${humanSummary.join("\n").trimEnd()}\n`, "utf8"),
   writeFile(inventoryAdjustmentsPath, serializeCsv([
     "status", "product_id", "product_name", "current_database_stock", "reported_physical_stock",
     "suggested_adjustment", "reason", "required_action",

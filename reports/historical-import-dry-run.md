@@ -14,28 +14,24 @@
 
 | Tipo | INSERT | OMIT | REVIEW | INVALID |
 |---|---:|---:|---:|---:|
-| Ventas | 89 | 0 | 40 | 2 |
-| Compras | 166 | 0 | 16 | 0 |
+| Ventas | 129 | 2 | 0 | 0 |
+| Compras | 182 | 0 | 0 | 0 |
 
 ## Estado de preparación
 
 | Estado | Filas |
 |---|---:|
-| HISTORICAL_PRODUCT_READY | 38 |
-| INVALID | 2 |
-| POSSIBLE_DUPLICATE | 8 |
-| READY | 255 |
-| SOURCE_DATE_REQUIRED | 6 |
-| TOTAL_REVIEW | 4 |
+| OMIT | 2 |
+| READY | 311 |
 
 `HISTORICAL_PRODUCT_READY` conserva la decisión REVIEW: indica que la identidad histórica ya fue resuelta y podrá pasar a INSERT cuando exista el producto archivado.
 
-- Productos distintos en filas INSERT: 148.
-- Total de ventas INSERT: $2815384.50.
-- Total de compras INSERT: $5562857.70.
-- Orders/order_items esperados: 89/89; no se agrupan filas porque el Excel no tiene ID ni hora de venta.
-- Purchases/purchase_items esperados: 164/166; cada fila fuente genera una compra, salvo splits humanos que generan varios ítems reconciliados.
-- Pagos históricos esperados: 89.
+- Productos distintos en filas INSERT: 167.
+- Total de ventas INSERT: $4093365.00.
+- Total de compras INSERT: $7043595.70.
+- Orders/order_items esperados: 129/129; no se agrupan filas porque el Excel no tiene ID ni hora de venta.
+- Purchases/purchase_items esperados: 180/182; cada fila fuente genera una compra, salvo splits humanos que generan varios ítems reconciliados.
+- Pagos históricos esperados: 129.
 - Mappings pendientes: 0.
 - Duplicados potenciales dentro del Excel: 5 grupos de ventas y 0 grupos de compras.
 - Candidatos contra operaciones actuales: 0 ventas y 0 compras.
@@ -58,7 +54,7 @@
 
 ## Snapshot de Production consultado
 
-- Productos: 165.
+- Productos: 179.
 - Proveedores: 1.
 - Compras / ítems: 2 / 3.
 - Órdenes / ítems / pagos: 3 / 6 / 2.
@@ -108,13 +104,13 @@ Los 0 casos pendientes están en `reports/historical-product-mapping-review.csv`
 
 ## Ventas problemáticas
 
-Filas de revisión: 51. Incluyen producto sin mapping, ambigüedad, total inconsistente, cero, deuda y duplicados potenciales. El detalle está en `reports/historical-sales-review.csv`.
+Filas de revisión: 0. Incluyen producto sin mapping, ambigüedad, total inconsistente, cero, deuda y duplicados potenciales. El detalle está en `reports/historical-sales-review.csv`.
 
 Los medios observados se pueden mapear conservadoramente: `Efectivo -> cash`, `Transferencia -> transfer`, `Crédito/Débito -> card`. Se conserva siempre el texto original. Una fila con `DEBE` queda en REVIEW y no genera pago.
 
 ## Compras problemáticas
 
-Filas de revisión: 37. Las seis filas sin fecha permanecen en REVIEW. El detalle está en `reports/historical-purchases-review.csv`.
+Filas de revisión: 0. Las seis filas sin fecha permanecen en REVIEW. El detalle está en `reports/historical-purchases-review.csv`.
 
 Las líneas de compra no contienen proveedor. Las listas auxiliares no pueden asignarse a una operación concreta; el modelo histórico debe permitir `supplier_id = NULL` solo cuando `historical_import=true`.
 
@@ -156,7 +152,7 @@ Antes y después del lote deben ser idénticos:
 
 ## Condiciones antes de implementar
 
-1. No quedan mappings de identidad pendientes; conservar las decisiones humanas versionadas.
+1. Resolver manualmente los 0 mappings pendientes o marcar cada uno como OMIT.
 2. Resolver las filas de ventas/compras en REVIEW e INVALID.
 3. Aprobar el modelo `historical`, la nulabilidad acotada de proveedor y `payment_status='unknown'`.
 4. Crear y revisar una migration versionada; no aplicar SQL improvisado.

@@ -5,10 +5,10 @@
 ## Resumen
 
 - Mappings pendientes: 0.
-- Ventas problemáticas: 51 filas; dry-run: 40 REVIEW y 2 INVALID.
-- Compras problemáticas: 37 filas; dry-run: 16 REVIEW.
+- Ventas problemáticas: 0 filas; dry-run: 0 REVIEW y 0 INVALID.
+- Compras problemáticas: 0 filas; dry-run: 0 REVIEW.
 - Duplicados potenciales: 5 grupos de ventas; no se detectaron grupos de compras.
-- Compras sin fecha: 6.
+- Compras sin fecha: 0.
 
 ## Impacto económico
 
@@ -16,11 +16,11 @@ Los importes se superponen: el impacto de mappings no resueltos está contenido 
 
 | Conjunto | Ventas | Compras | Total |
 |---|---:|---:|---:|
-| Mappings no resueltos | 15000.00 | 0.00 | 15000.00 |
-| Filas REVIEW | 1277980.50 | 1480738.00 | 2758718.50 |
+| Mappings no resueltos | 0.00 | 0.00 | 0.00 |
+| Filas REVIEW | 0.00 | 0.00 | 0.00 |
 | Filas INVALID | 0.00 | 0.00 | 0.00 |
 
-Si no se resuelve ninguna fila pendiente, quedarían fuera de la importación $2758718.50: $1277980.50 de ventas y $1480738.00 de compras.
+Si no se resuelve ninguna fila pendiente, quedarían fuera de la importación $0.00: $0.00 de ventas y $0.00 de compras.
 
 ## Propuesta Yara
 
@@ -96,12 +96,6 @@ No se eligió entre el total informado y el calculado. La recomendación es `IMP
 
 | Fila | Producto | Cantidad | Costo | Total | Contexto |
 |---:|---|---:|---:|---:|---|
-| 154 | Bombilla de alpaca y bronce cincelada | 1 | 11900.00 | 11900.00 | Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automáticamente. |
-| 155 | Camionero Criollo Base de Cuero | 1 | 8500.00 | 8500.00 | Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automáticamente. |
-| 156 | Combo 5 imperiales algarrobo acero + 5 pico loro | 5 | 9998.00 | 49990.00 | Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automáticamente. |
-| 157 | Imperial Con Refuerzo Alpaca Y Base De Bolitas | 1 | 22900.00 | 22900.00 | Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automáticamente. |
-| 158 | Termo Media Manija Negro | 3 | 12500.00 | 37500.00 | Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automáticamente. |
-| 159 | Torpedo Criollo Con Base | 1 | 19000.00 | 19000.00 | Anterior fechada: fila 153, 2026-04-15, Autocebante 2 en 1. Posterior fechada: fila 160, 2026-05-11, Lattafa Yara Candy. Intervalo solo orientativo; no asignar fecha automáticamente. |
 
 Las seis están entre una fila fechada el 2026-04-15 y otra fechada el 2026-05-11, pero la hoja no mantiene orden cronológico estricto. Ese intervalo es solo contexto y no autoriza asignar una fecha.
 

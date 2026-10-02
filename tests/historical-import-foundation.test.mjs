@@ -167,6 +167,24 @@ test("dry-run readiness extends review without changing human decisions", () => 
   assert.match(dryRun, /decision = "REVIEW";[\s\S]+reason = "HISTORICAL_PRODUCT_REQUIRED"/i);
 });
 
+test("dry-run resolves an approved historical identity after it exists", () => {
+  assert.match(dryRun, /historical_identity,historical_group_key/);
+  assert.match(dryRun, /candidate\.historical_identity === true[\s\S]+candidate\.historical_group_key === historicalGroupKey/);
+  assert.match(dryRun, /finalDecision: "HISTORICAL_MATCH"/);
+  assert.match(dryRun, /resolved\.finalDecision === "HISTORICAL_MATCH"[\s\S]+storedReviewReason === "HISTORICAL_PRODUCT_REQUIRED"/);
+});
+
+test("final transaction decisions are explicit and reproducible", () => {
+  assert.match(dryRun, /\[24,[\s\S]+completamente pagada[\s\S]+paymentState: "paid"/);
+  assert.match(dryRun, /\[109, \{ decision: "OMIT", reason: "DAMAGED_PRODUCT_NOT_SALE" \}\]/);
+  assert.match(dryRun, /\[110, \{ decision: "OMIT", reason: "DAMAGED_PRODUCT_NOT_SALE" \}\]/);
+  for (const [row, date] of [[154, "2026-04-18"], [155, "2026-04-22"], [156, "2026-04-26"], [157, "2026-04-30"], [158, "2026-05-04"], [159, "2026-05-08"]]) {
+    assert.match(dryRun, new RegExp(`\\[${row}, "${date}"\\]`));
+  }
+  assert.match(dryRun, /decision === "OMIT"\) return "OMIT"/);
+  assert.match(dryRun, /pendingSaleSourceRows[\s\S]+pendingPurchaseSourceRows/);
+});
+
 test("snapshot comparison covers every required inventory invariant", () => {
   const before = {
     captured_at: "before", products_count: 2, stock_total: 3, products_hash: "a",
