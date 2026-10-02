@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
-import { useFormStatus } from "react-dom";
-import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useRef } from "react";
 
 import {
   updateProductStock,
@@ -23,9 +21,7 @@ const REASON_SUGGESTIONS = [
   "Otro",
 ];
 
-function AdjustStockButton() {
-  const { pending } = useFormStatus();
-
+function AdjustStockButton({ pending }: { pending: boolean }) {
   return (
     <button
       type="submit"
@@ -49,19 +45,22 @@ export function InventoryAdjustmentForm({
   productSlug: string;
   currentStock: number;
 }) {
-  const router = useRouter();
-  const [state, formAction] = useActionState(updateProductStock, INITIAL_STATE);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, formAction, isPending] = useActionState(
+    updateProductStock,
+    INITIAL_STATE,
+  );
   const displayedStock = state.newStock ?? currentStock;
 
   useEffect(() => {
     if (state.status === "success" || state.status === "no_change") {
-      router.refresh();
+      formRef.current?.reset();
     }
-  }, [router, state.movementId, state.newStock, state.status]);
+  }, [state.movementId, state.newStock, state.status]);
 
   return (
     <div className="grid min-w-0 gap-3">
-      <form action={formAction} className="grid min-w-0 gap-3">
+      <form ref={formRef} action={formAction} className="grid min-w-0 gap-3">
         <input type="hidden" name="productId" value={productId} />
         <input type="hidden" name="slug" value={productSlug} />
 
@@ -105,7 +104,7 @@ export function InventoryAdjustmentForm({
           </datalist>
         </label>
 
-        <AdjustStockButton />
+        <AdjustStockButton pending={isPending} />
       </form>
 
       {state.message ? (

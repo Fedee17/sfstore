@@ -1,6 +1,7 @@
 "use client";
 
 import imageCompression from "browser-image-compression";
+import { isHeicFile, normalizeHeicFile } from "heic-normalize";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
@@ -17,6 +18,11 @@ import {
   type CatalogAttributeField,
 } from "@/lib/catalog/attribute-config";
 import { MATE_PRODUCT_TYPES, PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
+import {
+  MAX_PRODUCT_IMAGE_SOURCE_BYTES,
+  PRODUCT_IMAGE_ACCEPT,
+  isSupportedProductImageSourceMimeType,
+} from "@/lib/products/product-image-files";
 import type { AdminCategory, AdminProduct } from "@/services/admin";
 
 type ProductFormProps = {
@@ -62,7 +68,7 @@ async function optimizeProductImage(file: File) {
       maxSizeMB: 0.8,
       maxWidthOrHeight: 1200,
       useWebWorker: true,
-      initialQuality: 0.8,
+      initialQuality: 0.86,
       fileType: "image/webp",
     });
 
@@ -79,7 +85,7 @@ async function optimizeProductImage(file: File) {
       maxSizeMB: 0.8,
       maxWidthOrHeight: 1200,
       useWebWorker: true,
-      initialQuality: 0.8,
+      initialQuality: 0.86,
       fileType: "image/jpeg",
     });
 
@@ -92,6 +98,24 @@ async function optimizeProductImage(file: File) {
       },
     );
   }
+}
+
+async function prepareProductImage(file: File) {
+  if (file.size > MAX_PRODUCT_IMAGE_SOURCE_BYTES) {
+    throw new Error(`${file.name} supera el limite de 25 MB.`);
+  }
+
+  const isHeic = await isHeicFile(file);
+
+  if (!isHeic && !isSupportedProductImageSourceMimeType(file.type)) {
+    throw new Error(`${file.name} no es una imagen JPG, PNG, WebP, HEIC o HEIF valida.`);
+  }
+
+  const normalized = isHeic
+    ? await normalizeHeicFile(file, "image/jpeg")
+    : file;
+
+  return optimizeProductImage(normalized);
 }
 
 function getAttribute(product: AdminProduct | undefined, name: string) {
@@ -392,27 +416,16 @@ export function ProductForm({
       return;
     }
 
-    const invalidFile = files.find((file) => !file.type.startsWith("image/"));
-
-    if (invalidFile) {
-      setImageStatus("Selecciona solo imagenes validas.");
-      return;
-    }
-
     setIsOptimizingImage(true);
     setImageStatus(
-      `Optimizando ${files.length} imagen${files.length === 1 ? "" : "es"}...`,
+      `Preparando ${files.length} imagen${files.length === 1 ? "" : "es"}...`,
     );
 
     try {
       const optimizedFiles: File[] = [];
 
       for (const file of files) {
-        try {
-          optimizedFiles.push(await optimizeProductImage(file));
-        } catch {
-          optimizedFiles.push(file);
-        }
+        optimizedFiles.push(await prepareProductImage(file));
       }
 
       const additions = optimizedFiles.map((file) => {
@@ -438,7 +451,15 @@ export function ProductForm({
         fileCount: files.length,
         error: error instanceof Error ? error.message : "unknown",
       });
-      setImageStatus("No se pudieron preparar las imagenes. Volve a seleccionarlas.");
+      replaceSelectedFiles(
+        input,
+        pendingImages.map((image) => image.file),
+      );
+      setImageStatus(
+        error instanceof Error
+          ? error.message
+          : "No se pudieron preparar las imagenes. Volve a seleccionarlas.",
+      );
     } finally {
       setIsOptimizingImage(false);
     }
@@ -663,8 +684,9 @@ export function ProductForm({
               ref={imageInputRef}
               name="productImages"
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept={PRODUCT_IMAGE_ACCEPT}
               multiple
+              disabled={isOptimizingImage}
               onChange={handleProductImagesChange}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 text-sm outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[#556B2F] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#F7F4ED] focus:border-[#556B2F]"
             />
@@ -674,7 +696,7 @@ export function ProductForm({
               </span>
             ) : null}
             <span className="text-xs text-[#1F1F1F]/55">
-              Sube JPG, PNG o WebP. Se optimizan automaticamente a 1200px y menor peso antes de guardar.
+              Sube JPG, PNG, WebP, HEIC o HEIF. Las fotos de iPhone se convierten y todas las imagenes se optimizan antes de guardar.
             </span>
             {pendingImages.length > 0 ? (
               <section className="grid min-w-0 gap-3 rounded-2xl border border-[#556B2F]/20 bg-[#F7F4ED] p-4">

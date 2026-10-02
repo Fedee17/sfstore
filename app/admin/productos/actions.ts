@@ -17,6 +17,11 @@ import {
   type ProductCategoryInfo,
 } from "@/lib/products/auto-descriptions";
 import { slugifyProductValue } from "@/lib/products/slug";
+import {
+  MAX_PRODUCT_IMAGE_UPLOAD_BYTES,
+  PRODUCT_IMAGE_OUTPUT_MIME_TYPES,
+  detectProductImageOutputMimeType,
+} from "@/lib/products/product-image-files";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { adjustInventoryStock } from "@/services/inventory";
 
@@ -317,12 +322,31 @@ function getProductImageFiles(formData: FormData) {
       return false;
     }
 
-    if (!file.type.startsWith("image/")) {
-      throw new Error("Las imágenes deben ser JPG, PNG o WebP.");
+    if (
+      !PRODUCT_IMAGE_OUTPUT_MIME_TYPES.includes(
+        file.type as (typeof PRODUCT_IMAGE_OUTPUT_MIME_TYPES)[number],
+      )
+    ) {
+      throw new Error("Las imágenes deben llegar convertidas a JPG, PNG o WebP.");
+    }
+
+    if (file.size > MAX_PRODUCT_IMAGE_UPLOAD_BYTES) {
+      throw new Error("Cada imagen debe pesar como máximo 5 MB después de optimizarse.");
     }
 
     return true;
   });
+}
+
+async function validateProductImageContents(files: File[]) {
+  for (const file of files) {
+    const header = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+    const detectedType = detectProductImageOutputMimeType(header);
+
+    if (!detectedType || detectedType !== file.type) {
+      throw new Error("Una imagen no coincide con su formato JPG, PNG o WebP declarado.");
+    }
+  }
 }
 
 async function ensureProductImagesBucket() {
@@ -361,6 +385,8 @@ async function uploadProductImages(
   if (files.length === 0) {
     return;
   }
+
+  await validateProductImageContents(files);
 
   await ensureProductImagesBucket();
 

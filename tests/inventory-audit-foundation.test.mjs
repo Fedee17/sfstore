@@ -69,6 +69,11 @@ test("adjustment UI requires the new balance and a reason with pending feedback"
   assert.match(adjustmentForm, /required/);
   assert.match(adjustmentForm, /Ajustando\.\.\./);
   assert.match(adjustmentForm, /disabled=\{pending\}/);
+  assert.match(adjustmentForm, /\[state, formAction, isPending\] = useActionState/);
+  assert.match(adjustmentForm, /<AdjustStockButton pending=\{isPending\}/);
+  assert.match(adjustmentForm, /formRef\.current\?\.reset\(\)/);
+  assert.match(adjustmentForm, /state\.status === "success" \|\| state\.status === "no_change"/);
+  assert.doesNotMatch(adjustmentForm, /router\.refresh\(\)/);
   assert.match(adjustmentForm, /role=\{state\.status === "error" \? "alert" : "status"\}/);
   assert.match(productPage, /InventoryAdjustmentForm/);
 });

@@ -3,10 +3,15 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import {
+  detectProductImageOutputMimeType,
+  isSupportedProductImageSourceMimeType,
+} from "../lib/products/product-image-files.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const form = readFileSync(join(root, "components", "admin", "products", "product-form.tsx"), "utf8");
 const actions = readFileSync(join(root, "app", "admin", "productos", "actions.ts"), "utf8");
+const imageFiles = readFileSync(join(root, "lib", "products", "product-image-files.ts"), "utf8");
 
 test("the file input supports one or several images", () => {
   assert.match(form, /name="productImages"[\s\S]*?multiple/);
@@ -19,6 +24,54 @@ test("new images have immediate previews and can be removed before saving", () =
   assert.match(form, /imagen\{pendingImages\.length === 1 \? "" : "es"\} seleccionada/);
   assert.match(form, /removePendingImage\(image\.id\)/);
   assert.match(form, />\s*Quitar\s*</);
+});
+
+test("HEIC and HEIF are detected by content and converted before preview or upload", () => {
+  assert.match(form, /isHeicFile\(file\)/);
+  assert.match(form, /normalizeHeicFile\(file, "image\/jpeg"\)/);
+  assert.match(form, /accept=\{PRODUCT_IMAGE_ACCEPT\}/);
+  assert.match(imageFiles, /image\/heic/);
+  assert.match(imageFiles, /image\/heif/);
+  assert.match(imageFiles, /\.heic,\.heif/);
+  assert.match(form, /Preparando \$\{files\.length\} imagen/);
+});
+
+test("failed conversion keeps broken files out of the submitted batch", () => {
+  assert.match(form, /optimizedFiles\.push\(await prepareProductImage\(file\)\)/);
+  assert.doesNotMatch(form, /catch \{\s*optimizedFiles\.push\(file\)/);
+  assert.match(form, /replaceSelectedFiles\([\s\S]*pendingImages\.map\(\(image\) => image\.file\)/);
+});
+
+test("the server accepts only optimized formats with matching file signatures", () => {
+  assert.match(actions, /PRODUCT_IMAGE_OUTPUT_MIME_TYPES\.includes/);
+  assert.match(actions, /MAX_PRODUCT_IMAGE_UPLOAD_BYTES/);
+  assert.match(actions, /validateProductImageContents\(files\)/);
+  assert.match(actions, /detectProductImageOutputMimeType\(header\)/);
+  assert.match(actions, /detectedType !== file\.type/);
+  assert.match(imageFiles, /bytes\[0\] === 0xff[\s\S]+bytes\[1\] === 0xd8/);
+  assert.match(imageFiles, /"RIFF"[\s\S]+"WEBP"/);
+});
+
+test("binary signature validation recognizes only JPEG, PNG and WebP output", () => {
+  assert.equal(
+    detectProductImageOutputMimeType(new Uint8Array([0xff, 0xd8, 0xff, 0x00])),
+    "image/jpeg",
+  );
+  assert.equal(
+    detectProductImageOutputMimeType(
+      new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    ),
+    "image/png",
+  );
+  assert.equal(
+    detectProductImageOutputMimeType(
+      new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]),
+    ),
+    "image/webp",
+  );
+  assert.equal(detectProductImageOutputMimeType(new Uint8Array([1, 2, 3])), null);
+  assert.equal(isSupportedProductImageSourceMimeType("image/heic"), true);
+  assert.equal(isSupportedProductImageSourceMimeType("application/pdf"), false);
 });
 
 test("stored and pending images are rendered in separate sections", () => {
