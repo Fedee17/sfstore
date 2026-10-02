@@ -15,27 +15,26 @@
 | Tipo | INSERT | OMIT | REVIEW | INVALID |
 |---|---:|---:|---:|---:|
 | Ventas | 89 | 0 | 40 | 2 |
-| Compras | 161 | 0 | 21 | 0 |
+| Compras | 166 | 0 | 16 | 0 |
 
 ## Estado de preparación
 
 | Estado | Filas |
 |---|---:|
-| CURRENT_PRODUCT_REQUIRED | 5 |
 | HISTORICAL_PRODUCT_READY | 38 |
 | INVALID | 2 |
 | POSSIBLE_DUPLICATE | 8 |
-| READY | 250 |
+| READY | 255 |
 | SOURCE_DATE_REQUIRED | 6 |
 | TOTAL_REVIEW | 4 |
 
 `HISTORICAL_PRODUCT_READY` conserva la decisión REVIEW: indica que la identidad histórica ya fue resuelta y podrá pasar a INSERT cuando exista el producto archivado.
 
-- Productos distintos en filas INSERT: 143.
+- Productos distintos en filas INSERT: 148.
 - Total de ventas INSERT: $2815384.50.
-- Total de compras INSERT: $5460873.70.
+- Total de compras INSERT: $5562857.70.
 - Orders/order_items esperados: 89/89; no se agrupan filas porque el Excel no tiene ID ni hora de venta.
-- Purchases/purchase_items esperados: 159/161; cada fila fuente genera una compra, salvo splits humanos que generan varios ítems reconciliados.
+- Purchases/purchase_items esperados: 164/166; cada fila fuente genera una compra, salvo splits humanos que generan varios ítems reconciliados.
 - Pagos históricos esperados: 89.
 - Mappings pendientes: 0.
 - Duplicados potenciales dentro del Excel: 5 grupos de ventas y 0 grupos de compras.
@@ -59,7 +58,7 @@
 
 ## Snapshot de Production consultado
 
-- Productos: 160.
+- Productos: 165.
 - Proveedores: 1.
 - Compras / ítems: 2 / 3.
 - Órdenes / ítems / pagos: 3 / 6 / 2.
@@ -115,7 +114,7 @@ Los medios observados se pueden mapear conservadoramente: `Efectivo -> cash`, `T
 
 ## Compras problemáticas
 
-Filas de revisión: 42. Las seis filas sin fecha permanecen en REVIEW. El detalle está en `reports/historical-purchases-review.csv`.
+Filas de revisión: 37. Las seis filas sin fecha permanecen en REVIEW. El detalle está en `reports/historical-purchases-review.csv`.
 
 Las líneas de compra no contienen proveedor. Las listas auxiliares no pueden asignarse a una operación concreta; el modelo histórico debe permitir `supplier_id = NULL` solo cuando `historical_import=true`.
 
@@ -157,9 +156,8 @@ Antes y después del lote deben ser idénticos:
 
 ## Condiciones antes de implementar
 
-1. Resolver manualmente los 0 mappings pendientes o marcar cada uno como OMIT.
+1. No quedan mappings de identidad pendientes; conservar las decisiones humanas versionadas.
 2. Resolver las filas de ventas/compras en REVIEW e INVALID.
 3. Aprobar el modelo `historical`, la nulabilidad acotada de proveedor y `payment_status='unknown'`.
 4. Crear y revisar una migration versionada; no aplicar SQL improvisado.
 5. Repetir este dry-run contra el snapshot inmediato de Production antes de cualquier escritura.
-

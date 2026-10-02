@@ -6,7 +6,7 @@
 
 - Mappings pendientes: 0.
 - Ventas problemáticas: 51 filas; dry-run: 40 REVIEW y 2 INVALID.
-- Compras problemáticas: 42 filas; dry-run: 21 REVIEW.
+- Compras problemáticas: 37 filas; dry-run: 16 REVIEW.
 - Duplicados potenciales: 5 grupos de ventas; no se detectaron grupos de compras.
 - Compras sin fecha: 6.
 
@@ -16,11 +16,11 @@ Los importes se superponen: el impacto de mappings no resueltos está contenido 
 
 | Conjunto | Ventas | Compras | Total |
 |---|---:|---:|---:|
-| Mappings no resueltos | 0.00 | 0.00 | 0.00 |
-| Filas REVIEW | 1277980.50 | 1582722.00 | 2860702.50 |
+| Mappings no resueltos | 15000.00 | 0.00 | 15000.00 |
+| Filas REVIEW | 1277980.50 | 1480738.00 | 2758718.50 |
 | Filas INVALID | 0.00 | 0.00 | 0.00 |
 
-Si no se resuelve ninguna fila pendiente, quedarían fuera de la importación $2860702.50: $1277980.50 de ventas y $1582722.00 de compras.
+Si no se resuelve ninguna fila pendiente, quedarían fuera de la importación $2758718.50: $1277980.50 de ventas y $1480738.00 de compras.
 
 ## Propuesta Yara
 
@@ -113,4 +113,3 @@ Las seis están entre una fila fechada el 2026-04-15 y otra fechada el 2026-05-1
 4. Determinar si cada par repetido representa dos ventas reales o una duplicación de carga.
 5. Completar las seis fechas de compra solo con evidencia externa.
 6. Revisar la fila con deuda antes de generar cualquier pago histórico.
-

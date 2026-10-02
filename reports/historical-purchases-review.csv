@@ -12,13 +12,8 @@ source_row,date,product_name,quantity,unit_cost,total,issue,suggested_action,imp
 54,2025-12-17,Lattafa Opulence Dubai,1,35030.00,35030.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
 56,2025-12-17,Lattafa Yara Rosa,1,35740.00,35740.00,PRODUCTO_AMBIGUO,Resolver mapping del producto.,REVIEW
 58,2026-01-22,Canasta matera,2,8999.00,17998.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
-59,2026-01-22,Lata Matera,6,6699.00,40194.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
-60,2026-01-22,Vaso Cervecero Stanley,2,10200.00,20400.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
-61,2026-01-22,Vaso Cervecero Liso,1,9990.00,9990.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
-62,2026-01-22,Mate Pampa Original boca abierta,2,10700.00,21400.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
 63,2026-01-22,Termo media manija negro tapa plateada 1L,1,14500.00,14500.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
 64,2026-01-22,Termo media manija plateada 1L,1,13950.00,13950.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
-65,2026-01-22,Mate Algarrobo Simple,1,10000.00,10000.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
 68,2026-01-22,Airpods,3,15682.90,47048.70,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
 69,2026-01-22,Elfbar BC 15k,5,12678.00,63390.00,PRODUCTO_NO_ENCONTRADO,Resolver mapping del producto.,REVIEW
 72,2026-01-22,Lattafa Yara rosa,1,32504.30,32504.30,PRODUCTO_AMBIGUO,Resolver mapping del producto.,REVIEW
