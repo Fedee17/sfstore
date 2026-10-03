@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
@@ -21,12 +22,30 @@ import {
   MAX_PRODUCT_IMAGE_UPLOAD_BYTES,
   PRODUCT_IMAGE_OUTPUT_MIME_TYPES,
   detectProductImageOutputMimeType,
+  findMatchingStoredProductImage,
 } from "@/lib/products/product-image-files";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { adjustInventoryStock } from "@/services/inventory";
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
 const PRODUCT_IMAGES_BUCKET = "product-images";
+
+export type ProductFormActionState = {
+  status: "idle" | "success" | "error";
+  message: string;
+  productId?: string;
+  submissionId?: string;
+};
+
+function productFormErrorState(error: unknown): ProductFormActionState {
+  return {
+    status: "error",
+    message:
+      error instanceof Error
+        ? error.message
+        : "No se pudieron guardar los cambios del producto.",
+  };
+}
 
 function parseMoney(value: FormDataEntryValue | null, fieldName: string) {
   const normalized = String(value ?? "").replace(",", ".").trim();
@@ -311,6 +330,18 @@ function sanitizeFileName(fileName: string) {
   return `${baseName || "image"}.${extension}`;
 }
 
+function getProductImageId(productId: string, contentHash: string) {
+  const bytes = createHash("sha256")
+    .update(`${productId}:${contentHash}`)
+    .digest()
+    .subarray(0, 16);
+  bytes[6] = (bytes[6] & 0x0f) | 0x50;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = bytes.toString("hex");
+
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 function getProductImageFiles(formData: FormData) {
   const files = [
     ...formData.getAll("productImages"),
@@ -393,7 +424,7 @@ async function uploadProductImages(
   const supabase = getSupabaseAdminClient();
   const { data: currentImages, error: readError } = await supabase
     .from("product_images")
-    .select("id, sort_order, is_primary")
+    .select("id, url, sort_order, is_primary")
     .eq("product_id", productId)
     .order("sort_order", { ascending: true });
 
@@ -402,6 +433,7 @@ async function uploadProductImages(
   }
 
   const existingImages = currentImages ?? [];
+  const existingImageUrls = new Set(existingImages.map((image) => image.url));
   const hasPrimary = existingImages.some((image) => image.is_primary);
   const lastSortOrder = existingImages.reduce(
     (max, image) => Math.max(max, Number(image.sort_order ?? 0)),
@@ -410,41 +442,74 @@ async function uploadProductImages(
 
   const imageRows = [];
   const uploadedPaths: string[] = [];
+  const folderPath = `products/${productId}`;
+
+  const { data: storedObjects, error: storageReadError } = await supabase.storage
+    .from(PRODUCT_IMAGES_BUCKET)
+    .list(folderPath, { limit: 1000 });
+
+  if (storageReadError) {
+    throw new Error(storageReadError.message);
+  }
 
   try {
-    for (const [index, file] of files.entries()) {
-      const filePath = `products/${productId}/${Date.now()}-${index}-${sanitizeFileName(file.name)}`;
-      const { error: uploadError } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type,
-        });
+    for (const file of files) {
+      const fileBytes = Buffer.from(await file.arrayBuffer());
+      const contentHash = createHash("md5").update(fileBytes).digest("hex");
+      const matchingObject = findMatchingStoredProductImage(storedObjects ?? [], {
+        contentHash,
+        mimeType: file.type as (typeof PRODUCT_IMAGE_OUTPUT_MIME_TYPES)[number],
+        size: file.size,
+      });
+      const objectName =
+        matchingObject?.name ?? `${contentHash}-${sanitizeFileName(file.name)}`;
+      const filePath = `${folderPath}/${objectName}`;
 
-      if (uploadError) {
-        throw new Error(uploadError.message);
+      if (!matchingObject) {
+        const { error: uploadError } = await supabase.storage
+          .from(PRODUCT_IMAGES_BUCKET)
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type,
+          });
+
+        if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) {
+          throw new Error(uploadError.message);
+        }
+
+        if (!uploadError) {
+          uploadedPaths.push(filePath);
+        }
       }
-
-      uploadedPaths.push(filePath);
 
       const { data } = supabase.storage
         .from(PRODUCT_IMAGES_BUCKET)
         .getPublicUrl(filePath);
 
+      if (existingImageUrls.has(data.publicUrl)) {
+        continue;
+      }
+
+      existingImageUrls.add(data.publicUrl);
+
       imageRows.push({
-        id: crypto.randomUUID(),
+        id: getProductImageId(productId, contentHash),
         product_id: productId,
         url: data.publicUrl,
         alt: productName,
-        sort_order: lastSortOrder + index + 1,
-        is_primary: !hasPrimary && index === 0,
+        sort_order: lastSortOrder + imageRows.length + 1,
+        is_primary: !hasPrimary && imageRows.length === 0,
       });
+    }
+
+    if (imageRows.length === 0) {
+      return;
     }
 
     const { error: imageError } = await supabase
       .from("product_images")
-      .insert(imageRows);
+      .upsert(imageRows, { onConflict: "id", ignoreDuplicates: true });
 
     if (imageError) {
       throw new Error(imageError.message);
@@ -487,77 +552,101 @@ async function assertOperationalProduct(productId: string) {
   }
 }
 
-export async function createProduct(formData: FormData) {
-  await requireAdminActionSession();
-  const payload = readProductForm(formData);
-  const productId = crypto.randomUUID();
-  const supabase = getSupabaseAdminClient();
-  const product = await applyDescriptionFallbacks(payload);
+export async function createProduct(
+  _previousState: ProductFormActionState,
+  formData: FormData,
+): Promise<ProductFormActionState> {
+  try {
+    await requireAdminActionSession();
+    const payload = readProductForm(formData);
+    const productId = crypto.randomUUID();
+    const supabase = getSupabaseAdminClient();
+    const product = await applyDescriptionFallbacks(payload);
 
-  const { error } = await supabase.from("products").insert({
-    id: productId,
-    ...product,
-  });
+    const { error } = await supabase.from("products").insert({
+      id: productId,
+      ...product,
+    });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await replaceSimpleAttributes(productId, {
+      brand: payload.brand,
+      type: payload.type,
+    });
+    const category = await getProductCategoryInfo(payload.product.category_id);
+    await replaceCatalogAttributes(productId, category?.slug ?? "", formData);
+    await uploadProductImages(
+      productId,
+      product.name,
+      getProductImageFiles(formData),
+    );
+
+    revalidateProductPaths(product.slug);
+    return {
+      status: "success",
+      message: "Producto creado correctamente.",
+      productId,
+      submissionId: crypto.randomUUID(),
+    };
+  } catch (error) {
+    return productFormErrorState(error);
   }
-
-  await replaceSimpleAttributes(productId, {
-    brand: payload.brand,
-    type: payload.type,
-  });
-  const category = await getProductCategoryInfo(payload.product.category_id);
-  await replaceCatalogAttributes(productId, category?.slug ?? "", formData);
-  await uploadProductImages(
-    productId,
-    product.name,
-    getProductImageFiles(formData),
-  );
-
-  revalidateProductPaths(product.slug);
-  redirect("/admin/productos");
 }
 
-export async function updateProduct(formData: FormData) {
-  await requireAdminActionSession();
-  const payload = readProductForm(formData);
+export async function updateProduct(
+  _previousState: ProductFormActionState,
+  formData: FormData,
+): Promise<ProductFormActionState> {
+  try {
+    await requireAdminActionSession();
+    const payload = readProductForm(formData);
 
-  if (!payload.productId) {
-    throw new Error("Falta el ID del producto.");
+    if (!payload.productId) {
+      throw new Error("Falta el ID del producto.");
+    }
+
+    await assertOperationalProduct(payload.productId);
+
+    const supabase = getSupabaseAdminClient();
+    const product = await applyDescriptionFallbacks(payload);
+    const { error } = await supabase
+      .from("products")
+      .update(product)
+      .eq("id", payload.productId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await replaceSimpleAttributes(payload.productId, {
+      brand: payload.brand,
+      type: payload.type,
+    });
+    const category = await getProductCategoryInfo(payload.product.category_id);
+    await replaceCatalogAttributes(
+      payload.productId,
+      category?.slug ?? "",
+      formData,
+    );
+    await uploadProductImages(
+      payload.productId,
+      product.name,
+      getProductImageFiles(formData),
+    );
+
+    revalidateProductPaths(product.slug);
+    return {
+      status: "success",
+      message: "Producto actualizado correctamente.",
+      productId: payload.productId,
+      submissionId: crypto.randomUUID(),
+    };
+  } catch (error) {
+    return productFormErrorState(error);
   }
-
-  await assertOperationalProduct(payload.productId);
-
-  const supabase = getSupabaseAdminClient();
-  const product = await applyDescriptionFallbacks(payload);
-  const { error } = await supabase
-    .from("products")
-    .update(product)
-    .eq("id", payload.productId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  await replaceSimpleAttributes(payload.productId, {
-    brand: payload.brand,
-    type: payload.type,
-  });
-  const category = await getProductCategoryInfo(payload.product.category_id);
-  await replaceCatalogAttributes(
-    payload.productId,
-    category?.slug ?? "",
-    formData,
-  );
-  await uploadProductImages(
-    payload.productId,
-    product.name,
-    getProductImageFiles(formData),
-  );
-
-  revalidateProductPaths(product.slug);
-  redirect("/admin/productos");
 }
 
 export async function archiveProduct(formData: FormData) {

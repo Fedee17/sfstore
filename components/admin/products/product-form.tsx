@@ -4,11 +4,19 @@ import imageCompression from "browser-image-compression";
 import { isHeicFile, normalizeHeicFile } from "heic-normalize";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
+import {
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 import {
   deleteProductImage,
   moveProductImage,
   setPrimaryProductImage,
+  type ProductFormActionState,
 } from "@/app/admin/productos/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import {
@@ -26,13 +34,20 @@ import {
 import type { AdminCategory, AdminProduct } from "@/services/admin";
 
 type ProductFormProps = {
-  action: (formData: FormData) => Promise<void>;
+  action: (
+    previousState: ProductFormActionState,
+    formData: FormData,
+  ) => Promise<ProductFormActionState>;
   categories: AdminCategory[];
   product?: AdminProduct;
   submitLabel: string;
 };
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
+const INITIAL_ACTION_STATE: ProductFormActionState = {
+  status: "idle",
+  message: "",
+};
 
 function formatFileSize(size: number) {
   if (size < 1024 * 1024) {
@@ -354,6 +369,12 @@ export function ProductForm({
   product,
   submitLabel,
 }: ProductFormProps) {
+  const router = useRouter();
+  const [actionState, formAction, isSubmitting] = useActionState(
+    action,
+    INITIAL_ACTION_STATE,
+  );
+  const handledSubmissionRef = useRef<string | undefined>(undefined);
   const [imageStatus, setImageStatus] = useState("");
   const [isOptimizingImage, setIsOptimizingImage] = useState(false);
   const [pendingImages, setPendingImages] = useState<
@@ -377,6 +398,35 @@ export function ProductForm({
       urls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
+
+  useEffect(() => {
+    if (
+      actionState.status !== "success" ||
+      !actionState.submissionId ||
+      handledSubmissionRef.current === actionState.submissionId
+    ) {
+      return;
+    }
+
+    handledSubmissionRef.current = actionState.submissionId;
+
+    for (const image of pendingImages) {
+      URL.revokeObjectURL(image.previewUrl);
+      previewUrlsRef.current.delete(image.previewUrl);
+    }
+    setPendingImages([]);
+    syncPendingFiles([]);
+    setImageStatus(actionState.message);
+
+    if (product) {
+      router.refresh();
+      return;
+    }
+
+    if (actionState.productId) {
+      router.replace(`/admin/productos/${actionState.productId}/editar`);
+    }
+  }, [actionState, pendingImages, product, router]);
 
   function syncPendingFiles(nextImages: { file: File }[]) {
     if (imageInputRef.current) {
@@ -470,7 +520,7 @@ export function ProductForm({
       {product ? <ProductImageGalleryAdmin product={product} /> : null}
 
       <form
-        action={action}
+        action={formAction}
         className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm"
       >
         {product ? <input type="hidden" name="productId" value={product.id} /> : null}
@@ -731,13 +781,20 @@ export function ProductForm({
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <PendingSubmitButton
-            pendingLabel={pendingImages.length > 0 ? "Subiendo imagenes..." : "Guardando..."}
-            disabled={isOptimizingImage}
+          <button
+            type="submit"
+            disabled={isOptimizingImage || isSubmitting}
+            aria-disabled={isOptimizingImage || isSubmitting}
             className="rounded-full bg-[#556B2F] px-6 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isOptimizingImage ? "Optimizando imagenes..." : submitLabel}
-          </PendingSubmitButton>
+            {isOptimizingImage
+              ? "Optimizando imagenes..."
+              : isSubmitting
+                ? pendingImages.length > 0
+                  ? "Subiendo imagenes..."
+                  : "Guardando..."
+                : submitLabel}
+          </button>
           <Link
             href="/admin/productos"
             className="rounded-full border border-[#8B5E3C]/35 px-6 py-3 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-[#F7F4ED]"
@@ -745,6 +802,16 @@ export function ProductForm({
             Cancelar
           </Link>
         </div>
+        {actionState.message ? (
+          <p
+            role={actionState.status === "error" ? "alert" : "status"}
+            className={`mt-4 text-sm font-semibold ${
+              actionState.status === "error" ? "text-red-700" : "text-[#556B2F]"
+            }`}
+          >
+            {actionState.message}
+          </p>
+        ) : null}
       </form>
     </>
   );
