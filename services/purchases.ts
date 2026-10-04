@@ -82,18 +82,46 @@ export type ConfirmPurchaseResult = {
   movements_created: number;
 };
 
-export async function listPurchaseProducts() {
-  const { data, error } = await getSupabaseAdminClient()
+export async function listPurchaseProducts(includeProductIds: string[] = []) {
+  const supabase = getSupabaseAdminClient();
+  const { data: activeProducts, error } = await supabase
     .from("products")
     .select("id, name, slug, sku, cost, status")
     .eq("historical_identity", false)
+    .eq("status", "active")
     .order("name", { ascending: true });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return (data ?? []) as PurchaseProduct[];
+  const products = new Map(
+    ((activeProducts ?? []) as PurchaseProduct[]).map((product) => [
+      product.id,
+      product,
+    ]),
+  );
+  const retainedIds = [...new Set(includeProductIds.filter(Boolean))];
+
+  if (retainedIds.length > 0) {
+    const { data: retainedProducts, error: retainedError } = await supabase
+      .from("products")
+      .select("id, name, slug, sku, cost, status")
+      .eq("historical_identity", false)
+      .in("id", retainedIds);
+
+    if (retainedError) {
+      throw new Error(retainedError.message);
+    }
+
+    for (const product of (retainedProducts ?? []) as PurchaseProduct[]) {
+      products.set(product.id, product);
+    }
+  }
+
+  return [...products.values()].sort((first, second) =>
+    first.name.localeCompare(second.name, "es"),
+  );
 }
 
 function cleanProductName(value: string) {
@@ -182,6 +210,12 @@ export async function createPurchaseProduct(
     (await findPurchaseProductByName(name));
 
   if (existingProduct) {
+    if (existingProduct.status === "archived") {
+      throw new Error(
+        "El producto existente esta archivado. Reactivalo antes de agregarlo a una compra nueva.",
+      );
+    }
+
     return { created: false, product: existingProduct };
   }
 
@@ -202,7 +236,7 @@ export async function createPurchaseProduct(
       stock: 0,
       sku,
       featured: false,
-      status: "active",
+      status: "draft",
     })
     .select("id, name, slug, sku, cost, status")
     .single();
@@ -313,6 +347,7 @@ export async function savePurchaseDraft(input: SavePurchaseDraftInput) {
     shippingCost: input.shippingCost,
   });
   const supabase = getSupabaseAdminClient();
+  const retainedProductIds = new Set<string>();
 
   if (input.purchaseId) {
     const existingPurchase = await getPurchaseById(input.purchaseId);
@@ -322,6 +357,19 @@ export async function savePurchaseDraft(input: SavePurchaseDraftInput) {
     }
 
     assertPurchaseIsDraft(existingPurchase.status);
+
+    const { data: existingItems, error: existingItemsError } = await supabase
+      .from("purchase_items")
+      .select("product_id")
+      .eq("purchase_id", input.purchaseId);
+
+    if (existingItemsError) {
+      throw new Error(existingItemsError.message);
+    }
+
+    for (const item of existingItems ?? []) {
+      retainedProductIds.add(item.product_id);
+    }
   }
 
   const { data: supplier, error: supplierError } = await supabase
@@ -342,7 +390,7 @@ export async function savePurchaseDraft(input: SavePurchaseDraftInput) {
   const productIds = calculation.lines.map((line) => line.productId);
   const { data: products, error: productsError } = await supabase
     .from("products")
-    .select("id")
+    .select("id, status")
     .eq("historical_identity", false)
     .in("id", productIds);
 
@@ -352,6 +400,17 @@ export async function savePurchaseDraft(input: SavePurchaseDraftInput) {
 
   if ((products ?? []).length !== productIds.length) {
     throw new Error("Uno o mas productos no existen.");
+  }
+
+  const unavailableProduct = (products ?? []).find(
+    (product) =>
+      product.status === "archived" && !retainedProductIds.has(product.id),
+  );
+
+  if (unavailableProduct) {
+    throw new Error(
+      "Los productos archivados no pueden agregarse a compras nuevas.",
+    );
   }
 
   const { data, error } = await supabase.rpc("save_purchase_draft", {

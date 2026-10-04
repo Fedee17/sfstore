@@ -311,6 +311,13 @@ export function PurchaseDraftForm({
                           className="min-h-11 rounded-xl px-3 py-2 text-left text-sm font-semibold transition hover:bg-[#556B2F]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]"
                         >
                           {product.name}
+                          {product.status !== "active" ? (
+                            <span className="ml-2 text-xs font-normal text-[#8B5E3C]">
+                              {product.status === "draft"
+                                ? "borrador"
+                                : "archivado en este borrador"}
+                            </span>
+                          ) : null}
                           {product.sku ? (
                             <span className="ml-2 text-xs font-normal text-[#1F1F1F]/50">
                               {product.sku}

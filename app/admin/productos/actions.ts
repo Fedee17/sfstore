@@ -24,17 +24,31 @@ import {
   detectProductImageOutputMimeType,
   findMatchingStoredProductImage,
 } from "@/lib/products/product-image-files";
+import {
+  PRODUCT_STATUSES,
+  assertProductStatusTransition,
+  shouldClearCostSource,
+  type ProductStatus,
+} from "@/lib/products/admin-product-policy";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { adjustInventoryStock } from "@/services/inventory";
 
-const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
 const PRODUCT_IMAGES_BUCKET = "product-images";
+
+type PersistedProductState = {
+  id: string;
+  status: ProductStatus;
+  updatedAt: string;
+  slug: string;
+  categoryId: string;
+};
 
 export type ProductFormActionState = {
   status: "idle" | "success" | "error";
   message: string;
   productId?: string;
   submissionId?: string;
+  persistedProduct?: PersistedProductState;
 };
 
 function productFormErrorState(error: unknown): ProductFormActionState {
@@ -132,7 +146,7 @@ function readProductForm(formData: FormData) {
       cost: parseOptionalMoney(formData.get("cost"), "Costo"),
       sku: sku || null,
       featured: formData.get("featured") === "on",
-      status,
+      status: status as ProductStatus,
     },
     brand: String(formData.get("brand") ?? "").trim(),
     type: String(formData.get("type") ?? "").trim(),
@@ -309,12 +323,41 @@ async function replaceCatalogAttributes(
     throw new Error(insertError.message);
   }
 }
-function revalidateProductPaths(slug: string) {
-  revalidatePath("/admin/productos");
-  revalidatePath("/admin/consulta");
-  revalidatePath("/perfumes");
-  revalidatePath("/mates");
-  revalidatePath(`/producto/${slug}`);
+function revalidateProductPaths({
+  productId,
+  slug,
+  previousSlug,
+  categorySlugs,
+}: {
+  productId: string;
+  slug: string;
+  previousSlug?: string;
+  categorySlugs: Array<string | null | undefined>;
+}) {
+  const paths = new Set([
+    "/admin/productos",
+    `/admin/productos/${productId}/editar`,
+    "/admin/consulta",
+    "/",
+    "/sitemap.xml",
+    `/producto/${slug}`,
+  ]);
+
+  if (previousSlug && previousSlug !== slug) {
+    paths.add(`/producto/${previousSlug}`);
+  }
+
+  for (const categorySlug of categorySlugs) {
+    if (!categorySlug) {
+      continue;
+    }
+
+    paths.add(categorySlug === "perfumes" ? "/perfumes" : "/mates");
+  }
+
+  for (const path of paths) {
+    revalidatePath(path);
+  }
 }
 
 function sanitizeFileName(fileName: string) {
@@ -535,12 +578,23 @@ async function uploadProductImages(
   }
 }
 
+type OperationalProductSnapshot = {
+  id: string;
+  slug: string;
+  status: ProductStatus;
+  category_id: string;
+  cost: number | null;
+  cost_source_purchase_item_id: string | null;
+  historical_identity: boolean;
+};
+
 async function assertOperationalProduct(productId: string) {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id")
+    .select(
+      "id, slug, status, category_id, cost, cost_source_purchase_item_id, historical_identity",
+    )
     .eq("id", productId)
-    .eq("historical_identity", false)
     .maybeSingle();
 
   if (error) {
@@ -548,8 +602,41 @@ async function assertOperationalProduct(productId: string) {
   }
 
   if (!data) {
+    throw new Error("El producto no existe.");
+  }
+
+  if (data.historical_identity) {
     throw new Error("Las identidades historicas no admiten modificaciones operativas.");
   }
+
+  return data as OperationalProductSnapshot;
+}
+
+function persistedProductState(row: {
+  id: string;
+  status: string;
+  updated_at: string;
+  slug: string;
+  category_id: string;
+}): PersistedProductState {
+  return {
+    id: row.id,
+    status: row.status as ProductStatus,
+    updatedAt: row.updated_at,
+    slug: row.slug,
+    categoryId: row.category_id,
+  };
+}
+
+async function revalidateOperationalProductPaths(
+  product: OperationalProductSnapshot,
+) {
+  const category = await getProductCategoryInfo(product.category_id);
+  revalidateProductPaths({
+    productId: product.id,
+    slug: product.slug,
+    categorySlugs: [category?.slug],
+  });
 }
 
 export async function createProduct(
@@ -563,10 +650,14 @@ export async function createProduct(
     const supabase = getSupabaseAdminClient();
     const product = await applyDescriptionFallbacks(payload);
 
-    const { error } = await supabase.from("products").insert({
-      id: productId,
-      ...product,
-    });
+    const { data: persisted, error } = await supabase
+      .from("products")
+      .insert({
+        id: productId,
+        ...product,
+      })
+      .select("id, status, updated_at, slug, category_id")
+      .single();
 
     if (error) {
       throw new Error(error.message);
@@ -584,12 +675,17 @@ export async function createProduct(
       getProductImageFiles(formData),
     );
 
-    revalidateProductPaths(product.slug);
+    revalidateProductPaths({
+      productId,
+      slug: persisted.slug,
+      categorySlugs: [category?.slug],
+    });
     return {
       status: "success",
       message: "Producto creado correctamente.",
       productId,
       submissionId: crypto.randomUUID(),
+      persistedProduct: persistedProductState(persisted),
     };
   } catch (error) {
     return productFormErrorState(error);
@@ -608,14 +704,27 @@ export async function updateProduct(
       throw new Error("Falta el ID del producto.");
     }
 
-    await assertOperationalProduct(payload.productId);
+    const existingProduct = await assertOperationalProduct(payload.productId);
+    assertProductStatusTransition({
+      currentStatus: existingProduct.status,
+      nextStatus: payload.product.status,
+      historicalIdentity: existingProduct.historical_identity,
+    });
 
     const supabase = getSupabaseAdminClient();
     const product = await applyDescriptionFallbacks(payload);
-    const { error } = await supabase
+    const productUpdate = shouldClearCostSource(
+      existingProduct.cost,
+      product.cost,
+    )
+      ? { ...product, cost_source_purchase_item_id: null }
+      : product;
+    const { data: persisted, error } = await supabase
       .from("products")
-      .update(product)
-      .eq("id", payload.productId);
+      .update(productUpdate)
+      .eq("id", payload.productId)
+      .select("id, status, updated_at, slug, category_id")
+      .single();
 
     if (error) {
       throw new Error(error.message);
@@ -625,7 +734,12 @@ export async function updateProduct(
       brand: payload.brand,
       type: payload.type,
     });
-    const category = await getProductCategoryInfo(payload.product.category_id);
+    const [category, previousCategory] = await Promise.all([
+      getProductCategoryInfo(payload.product.category_id),
+      existingProduct.category_id === payload.product.category_id
+        ? Promise.resolve(null)
+        : getProductCategoryInfo(existingProduct.category_id),
+    ]);
     await replaceCatalogAttributes(
       payload.productId,
       category?.slug ?? "",
@@ -637,12 +751,18 @@ export async function updateProduct(
       getProductImageFiles(formData),
     );
 
-    revalidateProductPaths(product.slug);
+    revalidateProductPaths({
+      productId: payload.productId,
+      slug: persisted.slug,
+      previousSlug: existingProduct.slug,
+      categorySlugs: [category?.slug, previousCategory?.slug],
+    });
     return {
       status: "success",
       message: "Producto actualizado correctamente.",
       productId: payload.productId,
       submissionId: crypto.randomUUID(),
+      persistedProduct: persistedProductState(persisted),
     };
   } catch (error) {
     return productFormErrorState(error);
@@ -653,14 +773,18 @@ export async function archiveProduct(formData: FormData) {
   await requireAdminActionSession();
 
   const productId = String(formData.get("productId") ?? "");
-  const slug = String(formData.get("slug") ?? "");
   const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
 
   if (!productId) {
     throw new Error("Falta el ID del producto.");
   }
 
-  await assertOperationalProduct(productId);
+  const existingProduct = await assertOperationalProduct(productId);
+  assertProductStatusTransition({
+    currentStatus: existingProduct.status,
+    nextStatus: "archived",
+    historicalIdentity: existingProduct.historical_identity,
+  });
 
   const supabase = getSupabaseAdminClient();
   const { error } = await supabase
@@ -672,7 +796,7 @@ export async function archiveProduct(formData: FormData) {
     throw new Error(error.message);
   }
 
-  revalidateProductPaths(slug);
+  await revalidateOperationalProductPaths(existingProduct);
   redirect(returnTo);
 }
 
@@ -680,7 +804,6 @@ export async function toggleProductFeatured(formData: FormData) {
   await requireAdminActionSession();
 
   const productId = String(formData.get("productId") ?? "");
-  const slug = String(formData.get("slug") ?? "");
   const featured = String(formData.get("featured") ?? "") === "true";
   const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
 
@@ -688,7 +811,7 @@ export async function toggleProductFeatured(formData: FormData) {
     throw new Error("Falta el ID del producto.");
   }
 
-  await assertOperationalProduct(productId);
+  const existingProduct = await assertOperationalProduct(productId);
 
   const supabase = getSupabaseAdminClient();
   const { error } = await supabase
@@ -700,7 +823,7 @@ export async function toggleProductFeatured(formData: FormData) {
     throw new Error(error.message);
   }
 
-  revalidateProductPaths(slug);
+  await revalidateOperationalProductPaths(existingProduct);
   redirect(returnTo);
 }
 
@@ -718,14 +841,13 @@ export async function updateProductStock(
   try {
     const user = await requireAdminActionSession();
     const productId = String(formData.get("productId") ?? "").trim();
-    const slug = String(formData.get("slug") ?? "").trim();
     const reason = String(formData.get("reason") ?? "").trim();
 
     if (!productId) {
       throw new Error("Falta el ID del producto.");
     }
 
-    await assertOperationalProduct(productId);
+    const existingProduct = await assertOperationalProduct(productId);
 
     if (!reason) {
       throw new Error("El motivo del ajuste es obligatorio.");
@@ -739,7 +861,7 @@ export async function updateProductStock(
       createdBy: user.id,
     });
 
-    revalidateProductPaths(slug);
+    await revalidateOperationalProductPaths(existingProduct);
     revalidatePath("/admin/inventario");
 
     if (result.status === "no_change") {
@@ -773,14 +895,13 @@ export async function setPrimaryProductImage(formData: FormData) {
 
   const productId = String(formData.get("productId") ?? "");
   const imageId = String(formData.get("imageId") ?? "");
-  const slug = String(formData.get("slug") ?? "");
   const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
 
   if (!productId || !imageId) {
     throw new Error("Faltan datos para marcar la imagen principal.");
   }
 
-  await assertOperationalProduct(productId);
+  const existingProduct = await assertOperationalProduct(productId);
 
   const supabase = getSupabaseAdminClient();
   const { data: image, error: imageError } = await supabase
@@ -817,7 +938,7 @@ export async function setPrimaryProductImage(formData: FormData) {
     throw new Error(updateError.message);
   }
 
-  revalidateProductPaths(slug);
+  await revalidateOperationalProductPaths(existingProduct);
   redirect(returnTo);
 }
 
@@ -827,14 +948,13 @@ export async function moveProductImage(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   const imageId = String(formData.get("imageId") ?? "");
   const direction = String(formData.get("direction") ?? "");
-  const slug = String(formData.get("slug") ?? "");
   const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
 
   if (!productId || !imageId || !["previous", "next"].includes(direction)) {
     throw new Error("Faltan datos para reordenar la imagen.");
   }
 
-  await assertOperationalProduct(productId);
+  const existingProduct = await assertOperationalProduct(productId);
 
   const supabase = getSupabaseAdminClient();
   const { data, error } = await supabase
@@ -895,7 +1015,7 @@ export async function moveProductImage(formData: FormData) {
     throw new Error(currentError.message);
   }
 
-  revalidateProductPaths(slug);
+  await revalidateOperationalProductPaths(existingProduct);
   redirect(returnTo);
 }
 
@@ -915,14 +1035,13 @@ export async function deleteProductImage(formData: FormData) {
 
   const productId = String(formData.get("productId") ?? "");
   const imageId = String(formData.get("imageId") ?? "");
-  const slug = String(formData.get("slug") ?? "");
   const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
 
   if (!productId || !imageId) {
     throw new Error("Faltan datos para eliminar la imagen.");
   }
 
-  await assertOperationalProduct(productId);
+  const existingProduct = await assertOperationalProduct(productId);
 
   const supabase = getSupabaseAdminClient();
   const { data: image, error: readError } = await supabase
@@ -993,7 +1112,7 @@ export async function deleteProductImage(formData: FormData) {
     }
   }
 
-  revalidateProductPaths(slug);
+  await revalidateOperationalProductPaths(existingProduct);
   redirect(returnTo);
 }
 

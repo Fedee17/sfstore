@@ -80,7 +80,7 @@ export async function createPurchaseProductAction(input: {
     return {
       status: result.created ? "created" : "existing",
       message: result.created
-        ? "Producto creado y agregado a la compra."
+        ? "Producto creado como borrador y agregado a la compra. Completa su ficha antes de publicarlo."
         : "Ya existe un producto con ese nombre. Podés agregarlo a la compra.",
       product: result.product,
     };

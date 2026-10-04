@@ -224,6 +224,28 @@ function getSortedImages(product: AdminProduct | undefined) {
   });
 }
 
+function ProductStatusControl({ initialStatus }: { initialStatus: string }) {
+  const [status, setStatus] = useState(initialStatus);
+
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-semibold text-[#1F1F1F]/75">Estado</span>
+      <select
+        name="status"
+        value={status}
+        onChange={(event) => setStatus(event.target.value)}
+        className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
+      >
+        {PRODUCT_STATUSES.map((productStatus) => (
+          <option key={productStatus} value={productStatus}>
+            {productStatus}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
   const images = getSortedImages(product);
   const returnTo = `/admin/productos/${product.id}/editar`;
@@ -544,20 +566,15 @@ export function ProductForm({
             </select>
           </label>
 
-          <label className="grid gap-2">
-            <span className="text-sm font-semibold text-[#1F1F1F]/75">Estado</span>
-            <select
-              name="status"
-              defaultValue={product?.status ?? "draft"}
-              className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
-            >
-              {PRODUCT_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          </label>
+          <ProductStatusControl
+            key={
+              actionState.submissionId ??
+              `${product?.id ?? "new"}:${product?.status ?? "draft"}`
+            }
+            initialStatus={
+              actionState.persistedProduct?.status ?? product?.status ?? "draft"
+            }
+          />
 
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Nombre</span>

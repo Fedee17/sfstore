@@ -36,13 +36,26 @@ test("quick product validation requires a name and active category", () => {
   assert.match(service, /La categoria no existe o esta inactiva/);
 });
 
-test("new products use safe purchase-flow defaults", () => {
+test("new products use safe private purchase-flow defaults", () => {
   assert.match(service, /price: 0/);
   assert.match(service, /transfer_price: null/);
   assert.match(service, /cost: null/);
   assert.match(service, /stock: 0/);
   assert.match(service, /featured: false/);
-  assert.match(service, /status: "active"/);
+  assert.match(service, /status: "draft"/);
+});
+
+test("new purchases expose active products while edit keeps referenced lines", () => {
+  assert.match(
+    service,
+    /listPurchaseProducts\(includeProductIds: string\[\] = \[\]\)[\s\S]+\.eq\("status", "active"\)/,
+  );
+  assert.match(service, /\.in\("id", retainedIds\)/);
+  assert.match(
+    editPage,
+    /\(purchase\.purchase_items \?\? \[\]\)\.map\(\(item\) => item\.product_id\)/,
+  );
+  assert.match(form, /archivado en este borrador/);
 });
 
 test("duplicates resolve to the existing product instead of inserting again", () => {
