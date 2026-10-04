@@ -1,14 +1,18 @@
 import { products as fallbackProducts } from "@/data/products";
-import { MATE_PUBLIC_CATEGORY_SLUGS } from "@/lib/product-taxonomy";
+import {
+  resolvePublicCatalogSection,
+  type PublicCatalogSection,
+} from "@/lib/catalog/public-product-visibility";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import type { Product } from "@/types/product";
 
-type SupportedPublicCategory = "perfumes" | "mates";
+type SupportedPublicCategory = PublicCatalogSection;
 
 type SupabaseCategory = {
   id: string;
   name: string;
   slug: string;
+  is_active: boolean;
 };
 
 type SupabaseImage = {
@@ -34,6 +38,8 @@ type SupabaseProductRow = {
   transfer_price: number | string | null;
   stock: number;
   featured: boolean;
+  status: string;
+  historical_identity: boolean;
   category_id: string;
   categories: SupabaseCategory | SupabaseCategory[] | null;
   product_images?: SupabaseImage[];
@@ -55,24 +61,6 @@ function firstRelation<T>(relation: T | T[] | null | undefined) {
   return Array.isArray(relation) ? relation[0] ?? null : relation ?? null;
 }
 
-function getSupportedPublicCategory(
-  categorySlug: string | undefined,
-): SupportedPublicCategory | null {
-  if (categorySlug === "perfumes") {
-    return "perfumes";
-  }
-
-  if (
-    MATE_PUBLIC_CATEGORY_SLUGS.includes(
-      categorySlug as (typeof MATE_PUBLIC_CATEGORY_SLUGS)[number],
-    )
-  ) {
-    return "mates";
-  }
-
-  return null;
-}
-
 function createImagePlaceholder(name: string) {
   return name
     .split(" ")
@@ -85,8 +73,12 @@ function createImagePlaceholder(name: string) {
 
 function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
   const category = firstRelation(row.categories);
-  const categorySlug = category?.slug;
-  const publicCategory = getSupportedPublicCategory(categorySlug);
+  const publicCategory = resolvePublicCatalogSection({
+    status: row.status,
+    historicalIdentity: row.historical_identity,
+    categorySlug: category?.slug,
+    categoryIsActive: category?.is_active ?? false,
+  });
 
   if (!publicCategory) {
     return null;
@@ -152,11 +144,14 @@ export async function getProductsByCategorySlug(
         transfer_price,
         stock,
         featured,
+        status,
+        historical_identity,
         category_id,
         categories!inner (
           id,
           name,
-          slug
+          slug,
+          is_active
         ),
         product_images (
           url,
@@ -173,13 +168,14 @@ export async function getProductsByCategorySlug(
       )
       .eq("historical_identity", false)
       .eq("status", "active")
+      .eq("categories.is_active", true)
       .order("featured", { ascending: false })
       .order("name", { ascending: true });
 
     if (categorySlug === "perfumes") {
       query = query.eq("categories.slug", "perfumes");
     } else {
-      query = query.in("categories.slug", [...MATE_PUBLIC_CATEGORY_SLUGS]);
+      query = query.neq("categories.slug", "perfumes");
     }
 
     const { data, error } = await query;
@@ -213,11 +209,14 @@ export async function getProductBySlug(slug: string) {
         transfer_price,
         stock,
         featured,
+        status,
+        historical_identity,
         category_id,
-        categories (
+        categories!inner (
           id,
           name,
-          slug
+          slug,
+          is_active
         ),
         product_images (
           url,
@@ -234,6 +233,7 @@ export async function getProductBySlug(slug: string) {
       )
       .eq("historical_identity", false)
       .eq("status", "active")
+      .eq("categories.is_active", true)
       .eq("slug", slug)
       .maybeSingle();
 
@@ -278,11 +278,14 @@ export async function getRelatedProducts(
         transfer_price,
         stock,
         featured,
+        status,
+        historical_identity,
         category_id,
-        categories (
+        categories!inner (
           id,
           name,
-          slug
+          slug,
+          is_active
         ),
         product_images (
           url,
@@ -299,6 +302,7 @@ export async function getRelatedProducts(
       )
       .eq("historical_identity", false)
       .eq("status", "active")
+      .eq("categories.is_active", true)
       .eq("category_id", categoryId)
       .neq("id", currentProductId)
       .limit(4);

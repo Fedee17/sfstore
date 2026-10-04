@@ -13,9 +13,10 @@ async function getActiveProductUrls() {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("products")
-      .select("slug, updated_at")
+      .select("slug, updated_at, categories!inner(is_active)")
       .eq("historical_identity", false)
       .eq("status", "active")
+      .eq("categories.is_active", true)
       .order("updated_at", { ascending: false });
 
     if (error) {
