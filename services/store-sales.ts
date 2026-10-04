@@ -1,6 +1,9 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { getStoreSaleDisplayName } from "@/lib/store-sales";
-import { addOrderPayment, type OrderPayment } from "@/services/order-payments";
+import type {
+  OrderPayment,
+  OrderPaymentStatus,
+} from "@/services/order-payments";
 
 export type StoreSaleProduct = {
   id: string;
@@ -62,16 +65,24 @@ type CreateStoreSaleResult = {
   order_number: string;
   operation: "created" | "already_created";
   total: number;
-};
-
-type CompleteStoreSaleResult = {
-  order_id: string;
-  status: "paid";
+  total_paid: number;
+  remaining_amount: number;
+  payment_status: OrderPaymentStatus;
   inventory: {
     order_id: string;
     status: "applied" | "already_applied";
     movements_created: number;
-  };
+  } | null;
+};
+
+type AddStoreSalePaymentResult = {
+  order_id: string;
+  payment_id: string;
+  operation: "created" | "already_applied";
+  total_paid: number;
+  remaining_amount: number;
+  payment_status: OrderPaymentStatus;
+  inventory: CreateStoreSaleResult["inventory"];
 };
 
 type RelationOne<T> = T | T[] | null;
@@ -117,9 +128,13 @@ export async function createStoreSale(input: {
   customerName: string;
   notes: string;
   items: { productId: string; quantity: number; unitPrice: number }[];
+  payments: {
+    method: "cash" | "transfer" | "card" | "other";
+    amount: number;
+  }[];
 }) {
   const { data, error } = await getSupabaseAdminClient().rpc(
-    "create_store_sale",
+    "create_store_sale_atomic",
     {
       p_idempotency_key: input.idempotencyKey,
       p_created_by: input.createdBy,
@@ -130,6 +145,7 @@ export async function createStoreSale(input: {
         quantity: item.quantity,
         unit_price: item.unitPrice,
       })),
+      p_payments: input.payments,
     },
   );
 
@@ -140,8 +156,14 @@ export async function createStoreSale(input: {
       STORE_SALE_QUANTITY_INVALID: "Las cantidades deben ser enteras mayores que cero.",
       STORE_SALE_PRODUCT_NOT_FOUND: "Uno o mas productos ya no existen.",
       STORE_SALE_PRODUCT_INACTIVE: "Uno o mas productos ya no estan activos.",
+      STORE_SALE_PRODUCT_HISTORICAL: "Un producto historico no se puede vender.",
       STORE_SALE_PRICE_INVALID: "Uno o mas productos no tienen un precio valido.",
       STORE_SALE_STOCK_INSUFFICIENT: "No hay stock suficiente para registrar la venta.",
+      STORE_SALE_PAYMENT_INVALID: "Uno o mas pagos no son validos.",
+      STORE_SALE_IDEMPOTENCY_CONFLICT: "La operacion ya fue usada con otros datos.",
+      ORDER_PAYMENT_OVERPAYMENT: "Los pagos no pueden superar el total de la venta.",
+      SALE_INVENTORY_STOCK_INSUFFICIENT:
+        "No hay stock suficiente. No se registro la venta ni sus pagos.",
     };
     const known = Object.entries(messages).find(([code]) =>
       error.message.includes(code),
@@ -158,35 +180,43 @@ export async function createStoreSale(input: {
 
 export async function addStoreSalePayment(input: {
   orderId: string;
+  createdBy: string;
   method: "cash" | "transfer" | "card" | "other";
   amount: number;
   reference: string;
 }) {
-  return addOrderPayment({
-    orderId: input.orderId,
-    method: input.method,
-    amount: input.amount,
-    reference: input.reference,
-  });
-}
-
-export async function completeStoreSale(orderId: string, createdBy: string) {
   const { data, error } = await getSupabaseAdminClient().rpc(
-    "complete_store_sale",
-    { p_order_id: orderId, p_created_by: createdBy },
+    "record_store_sale_payment_atomic",
+    {
+      p_order_id: input.orderId,
+      p_created_by: input.createdBy,
+      p_method: input.method,
+      p_amount: input.amount,
+      p_reference: input.reference,
+    },
   );
 
   if (error) {
-    if (error.message.includes("SALE_INVENTORY_STOCK_INSUFFICIENT")) {
-      throw new Error(
-        "El pago quedo registrado, pero ya no hay stock suficiente. La venta requiere revision manual.",
-      );
-    }
-
-    throw new Error("No se pudo completar la venta ni descontar el stock.");
+    const messages: Record<string, string> = {
+      STORE_SALE_NOT_FOUND: "La venta local no existe.",
+      STORE_SALE_PAYMENT_INVALID: "El pago no es valido.",
+      STORE_SALE_PAYMENT_REFERENCE_CONFLICT:
+        "La referencia del pago ya fue utilizada con otros datos.",
+      ORDER_PAYMENT_OVERPAYMENT: "Los pagos no pueden superar el total de la venta.",
+      SALE_INVENTORY_STOCK_INSUFFICIENT:
+        "No hay stock suficiente. El pago no fue registrado.",
+    };
+    const known = Object.entries(messages).find(([code]) =>
+      error.message.includes(code),
+    );
+    throw new Error(known?.[1] ?? "No se pudo registrar el pago de la venta.");
   }
 
-  return data as CompleteStoreSaleResult;
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("La base no devolvio el resultado del pago.");
+  }
+
+  return data as AddStoreSalePaymentResult;
 }
 
 export async function listStoreSales(filters: StoreSaleListFilters = {}) {

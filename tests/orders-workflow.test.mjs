@@ -146,7 +146,8 @@ test("Mercado Pago never auto-applies inventory to order channel", () => {
 
 test("store sales remain on their existing channel and completion service", () => {
   assert.match(storeService, /create_store_sale/i);
-  assert.match(storeService, /complete_store_sale/i);
+  assert.match(storeService, /create_store_sale_atomic/i);
+  assert.match(storeService, /record_store_sale_payment_atomic/i);
 });
 
 test("web checkout remains explicitly channel web", () => {

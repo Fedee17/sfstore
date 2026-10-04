@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const source = (...segments) => readFileSync(join(root, ...segments), "utf8");
 const migration = source("supabase", "migrations", "202609210002_store_sale_custom_unit_price.sql");
+const atomicMigration = source("supabase", "migrations", "202610030001_atomic_store_sale_checkout.sql");
 const form = source("components", "admin", "sales", "store-sale-form.tsx");
 const actions = source("app", "admin", "ventas", "actions.ts");
 const service = source("services", "store-sales.ts");
@@ -95,13 +96,16 @@ test("historical detail reads snapshot price and subtotal from order items", () 
 });
 
 test("payments and overpayment use the RPC-returned custom total", () => {
-  assert.match(actions, /enteredPayments > Number\(sale\.total\)/i);
+  assert.match(service, /"create_store_sale_atomic"/i);
+  assert.match(service, /ORDER_PAYMENT_OVERPAYMENT/i);
+  assert.match(atomicMigration, /select public\.record_order_payment\(/i);
   assert.match(form, /paid > total/i);
   assert.match(form, /remaining.*total - paid/i);
 });
 
 test("stock still changes only after aggregate payment is paid", () => {
-  assert.match(actions, /if \(paymentStatus === "paid"\)[\s\S]+completeStoreSale/i);
+  assert.doesNotMatch(actions, /completeStoreSale/i);
+  assert.match(atomicMigration, /if v_payment_status = 'paid' then[\s\S]+complete_store_sale/i);
   assert.doesNotMatch(migration, /update products|insert into inventory_movements/i);
   assert.match(inventoryMigration, /create or replace function apply_sale_inventory/i);
 });

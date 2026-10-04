@@ -55,6 +55,26 @@ export function parseStoreSaleUnitPrice(value: string) {
   return Number(cents) / 100;
 }
 
+export function parseStoreSalePaymentAmount(value: string) {
+  const normalized = value.trim().replace(",", ".");
+  const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(normalized);
+  if (!match) {
+    throw new Error("El importe del pago debe tener como maximo 2 decimales.");
+  }
+
+  const cents =
+    BigInt(match[1]) * BigInt(100) +
+    BigInt((match[2] ?? "").padEnd(2, "0"));
+  if (cents <= BigInt(0)) {
+    throw new Error("El importe del pago debe ser mayor que cero.");
+  }
+  if (cents > BigInt(MAX_STORE_SALE_MONEY_CENTS)) {
+    throw new Error("El importe del pago supera el maximo permitido.");
+  }
+
+  return Number(cents) / 100;
+}
+
 export function getStoreSaleDisplayName(
   orderNumber: string,
   items: readonly StoreSaleDisplayItem[],

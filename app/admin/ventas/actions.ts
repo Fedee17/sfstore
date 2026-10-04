@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
-import { parseStoreSaleUnitPrice } from "@/lib/store-sales";
+import {
+  parseStoreSalePaymentAmount,
+  parseStoreSaleUnitPrice,
+} from "@/lib/store-sales";
 import type { OrderPaymentStatus } from "@/services/order-payments";
 import {
   addStoreSalePayment,
-  completeStoreSale,
   createStoreSale,
 } from "@/services/store-sales";
 
@@ -28,13 +30,7 @@ function parsePaymentAmount(value: FormDataEntryValue | null) {
     return 0;
   }
 
-  const amount = Number(raw.replace(",", "."));
-
-  if (!Number.isFinite(amount)) {
-    throw new Error("El importe del pago no es valido.");
-  }
-
-  return amount;
+  return parseStoreSalePaymentAmount(raw);
 }
 
 function readItems(formData: FormData) {
@@ -112,31 +108,10 @@ export async function createStoreSaleAction(
       customerName: String(formData.get("customerName") ?? ""),
       notes: String(formData.get("notes") ?? ""),
       items,
+      payments,
     });
     orderId = sale.order_id;
-
-    let paymentStatus: OrderPaymentStatus = "pending";
-    const enteredPayments = Math.round(
-      payments.reduce((total, payment) => total + payment.amount, 0) * 100,
-    ) / 100;
-
-    if (enteredPayments > Number(sale.total)) {
-      throw new Error("Los pagos no pueden superar el total de la venta.");
-    }
-
-    for (const [index, payment] of payments.entries()) {
-      const result = await addStoreSalePayment({
-        orderId,
-        method: payment.method,
-        amount: payment.amount,
-        reference: `store:${idempotencyKey}:payment:${index + 1}`,
-      });
-      paymentStatus = result.paymentStatus;
-    }
-
-    if (paymentStatus === "paid") {
-      await completeStoreSale(orderId, user.id);
-    }
+    const paymentStatus = sale.payment_status;
 
     revalidateStoreSale(orderId);
 
@@ -180,29 +155,30 @@ export async function addStoreSalePaymentAction(
       throw new Error("Faltan datos para registrar el pago.");
     }
 
+    if (amount <= 0) {
+      throw new Error("El importe del pago debe ser mayor que cero.");
+    }
+
     if (!allowedPaymentMethods.has(method)) {
       throw new Error("El medio de pago no es valido.");
     }
 
     const payment = await addStoreSalePayment({
       orderId,
+      createdBy: user.id,
       method: method as "cash" | "transfer" | "card" | "other",
       amount,
       reference: `store:${orderId}:payment:${paymentKey}`,
     });
-
-    if (payment.paymentStatus === "paid") {
-      await completeStoreSale(orderId, user.id);
-    }
 
     revalidateStoreSale(orderId);
 
     return {
       status: "success",
       orderId,
-      paymentStatus: payment.paymentStatus,
+      paymentStatus: payment.payment_status,
       message:
-        payment.paymentStatus === "paid"
+        payment.payment_status === "paid"
           ? "Pago completado. El stock fue actualizado."
           : "Pago parcial registrado. El stock todavia no fue descontado.",
     };

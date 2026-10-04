@@ -8,6 +8,7 @@ const testDirectory = dirname(fileURLToPath(import.meta.url));
 const root = join(testDirectory, "..");
 const source = (...segments) => readFileSync(join(root, ...segments), "utf8");
 const migration = source("supabase", "migrations", "202609180002_store_sales_checkout.sql");
+const atomicMigration = source("supabase", "migrations", "202610030001_atomic_store_sale_checkout.sql");
 const inventoryMigration = source("supabase", "migrations", "202609170003_atomic_sales_inventory.sql");
 const paymentMigration = source("supabase", "migrations", "202609180001_unified_sales_payments.sql");
 const actions = source("app", "admin", "ventas", "actions.ts");
@@ -49,12 +50,12 @@ test("order and snapshot items are created by one transactional RPC", () => {
   assert.match(migration, /create or replace function create_store_sale/i);
   assert.match(migration, /insert into orders/i);
   assert.match(migration, /insert into order_items/i);
-  assert.match(service, /\.rpc\([\s\S]+"create_store_sale"/i);
+  assert.match(service, /\.rpc\([\s\S]+"create_store_sale_atomic"/i);
 });
 
 test("a sale can remain pending without payments", () => {
   assert.match(migration, /'pending',[\s\S]+null,[\s\S]+'pending'/i);
-  assert.match(actions, /let paymentStatus: OrderPaymentStatus = "pending"/i);
+  assert.match(actions, /paymentStatus = sale\.payment_status/i);
 });
 
 test("cash is accepted as a local payment method", () => {
@@ -67,9 +68,11 @@ test("transfer is accepted as a local payment method", () => {
   assert.match(form, /value="transfer">Transferencia/i);
 });
 
-test("multiple payment rows are submitted and processed in order", () => {
+test("multiple payment rows are submitted in one atomic call", () => {
   assert.match(form, /setPayments\(\(current\) => \[\.\.\.current, newPayment\(\)\]\)/i);
-  assert.match(actions, /for \(const \[index, payment\] of payments\.entries\(\)\)/i);
+  assert.match(actions, /createStoreSale\([\s\S]+payments/i);
+  assert.doesNotMatch(actions, /for \(const \[index, payment\] of payments\.entries\(\)\)/i);
+  assert.match(atomicMigration, /jsonb_array_elements\(p_payments\) with ordinality/i);
 });
 
 test("partial payments remain partial and warn that stock is untouched", () => {
@@ -77,25 +80,27 @@ test("partial payments remain partial and warn that stock is untouched", () => {
   assert.match(detailPage, /Pago parcial: el stock no fue descontado ni reservado/i);
 });
 
-test("paid sales call the completion service", () => {
-  assert.match(actions, /if \(paymentStatus === "paid"\)[\s\S]+completeStoreSale/i);
-  assert.match(actions, /if \(payment\.paymentStatus === "paid"\)[\s\S]+completeStoreSale/i);
+test("paid sales complete inventory inside the atomic RPC", () => {
+  assert.doesNotMatch(actions, /completeStoreSale/i);
+  assert.match(atomicMigration, /if v_payment_status = 'paid' then[\s\S]+complete_store_sale/i);
+  assert.match(atomicMigration, /if v_payment_result ->> 'payment_status' = 'paid' then[\s\S]+complete_store_sale/i);
 });
 
 test("overpayment is rejected in UI, action and payment RPC", () => {
   assert.match(form, /paid > total/i);
-  assert.match(actions, /enteredPayments > Number\(sale\.total\)/i);
+  assert.match(service, /ORDER_PAYMENT_OVERPAYMENT/i);
   assert.match(paymentMigration, /ORDER_PAYMENT_OVERPAYMENT/i);
 });
 
 test("partial payment recording cannot update stock or movements", () => {
   const paymentBlock = paymentMigration.slice(paymentMigration.indexOf("create or replace function record_order_payment"));
   assert.doesNotMatch(paymentBlock, /update products|insert into inventory_movements/i);
-  assert.match(actions, /paymentStatus === "paid"/i);
+  assert.match(atomicMigration, /if v_payment_status = 'paid'/i);
 });
 
 test("paid completion delegates stock work to apply_sale_inventory", () => {
   assert.match(migration, /select apply_sale_inventory\(p_order_id, p_created_by\)/i);
+  assert.match(atomicMigration, /select public\.complete_store_sale\(/i);
   assert.doesNotMatch(service, /\.from\("products"\)[\s\S]+\.update/i);
 });
 
@@ -108,11 +113,13 @@ test("double submit reuses the same order idempotently", () => {
   assert.match(migration, /orders_store_idempotency_key_unique/i);
   assert.match(migration, /pg_advisory_xact_lock/i);
   assert.match(migration, /'operation', 'already_created'/i);
+  assert.match(atomicMigration, /store_sale_request_fingerprint/i);
+  assert.match(atomicMigration, /STORE_SALE_IDEMPOTENCY_CONFLICT/i);
   assert.match(form, /const \[idempotencyKey\] = useState\(\(\) => crypto\.randomUUID\(\)\)/i);
 });
 
 test("duplicate payment references do not create duplicate entries", () => {
-  assert.match(actions, /store:\$\{idempotencyKey\}:payment:\$\{index \+ 1\}/i);
+  assert.match(atomicMigration, /format\('store:%s:payment:%s'/i);
   assert.match(paymentMigration, /order_payments_method_reference_unique/i);
   assert.match(paymentMigration, /v_operation := 'already_applied'/i);
 });
@@ -130,7 +137,8 @@ test("apply_sale_inventory remains idempotent", () => {
 test("insufficient stock at completion aborts inventory atomically and is visible", () => {
   assert.match(inventoryMigration, /SALE_INVENTORY_STOCK_INSUFFICIENT/i);
   assert.ok(inventoryMigration.indexOf("SALE_INVENTORY_STOCK_INSUFFICIENT") < inventoryMigration.indexOf("update products"));
-  assert.match(service, /El pago quedo registrado, pero ya no hay stock suficiente/i);
+  assert.match(service, /No hay stock suficiente\. El pago no fue registrado/i);
+  assert.match(atomicMigration, /record_store_sale_payment_atomic[\s\S]+complete_store_sale/i);
   assert.match(detailPage, /El pago esta completo, pero el stock no fue descontado/i);
 });
 
