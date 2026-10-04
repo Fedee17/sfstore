@@ -141,6 +141,7 @@ export async function getSupplierPurchaseSummary(supplierId: string) {
     .from("purchases")
     .select("id, supplier_id, supplier_name_snapshot, purchase_date, status, supplier_subtotal, shipping_cost, total_cost, total_units, created_at")
     .eq("supplier_id", supplierId)
+    .eq("historical_import", false)
     .order("purchase_date", { ascending: false })
     .order("created_at", { ascending: false });
 

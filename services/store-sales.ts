@@ -225,6 +225,7 @@ export async function listStoreSales(filters: StoreSaleListFilters = {}) {
     .select(
       "id, order_number, channel, status, payment_status, total, metadata, created_at, order_items(id,product_name,created_at), order_payments(amount,status)",
     )
+    .eq("historical_import", false)
     .order("created_at", { ascending: false })
     .limit(100);
 

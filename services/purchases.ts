@@ -230,6 +230,7 @@ export async function listPurchases() {
     .select(
       "id, supplier_id, supplier_name_snapshot, purchase_date, status, shipping_cost, supplier_subtotal, total_cost, total_units, notes, confirmed_at, cancelled_at, created_at, updated_at, purchase_items(count)",
     )
+    .eq("historical_import", false)
     .order("purchase_date", { ascending: false })
     .order("created_at", { ascending: false });
 

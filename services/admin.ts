@@ -239,6 +239,7 @@ export async function getAdminOrders(): Promise<AdminResult<AdminOrder[]>> {
         )
       `,
       )
+      .eq("historical_import", false)
       .order("created_at", { ascending: false });
 
     if (error) {
