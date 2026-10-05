@@ -1,0 +1,3220 @@
+{
+  "captured_at": "2026-10-05T13:35:51.060Z",
+  "mode": "READ_ONLY",
+  "apply_executed": false,
+  "head": "6abc0d6e13844472dc73f77f9934ab33b4b2ecbd",
+  "plan_sha256": "a8bbc59b25346376697c1218d047d5601affbcc93b0250a4b44a47e2e407c1db",
+  "counts": {
+    "product_images": 84,
+    "storage_objects": 85,
+    "products": 179
+  },
+  "summary": {
+    "KEEP": 55,
+    "DELETE_DB": 0,
+    "DELETE_STORAGE": 1,
+    "DELETE_BOTH": 27,
+    "REVIEW": 2
+  },
+  "invariants": {
+    "products": {
+      "count": 179,
+      "all_fields_sha256": "c2c5de94aa45be3042ead227ce5f46e8552952dc2c58e5d79b517ab33528e036"
+    },
+    "inventory_movements": {
+      "count": 21,
+      "all_fields_sha256": "3ec14921e4cc1c82d54d733015b8e55144ba5b429bb993dbf129bfc1aec2bd91"
+    },
+    "orders": {
+      "count": 132,
+      "all_fields_sha256": "b79d53e63b8b8e30fadb9a9301237d228c4c49d339320337b669b076bbd9407d"
+    },
+    "order_items": {
+      "count": 135,
+      "all_fields_sha256": "df5bd43b12cdb71b3ed0854e532c396600f5f41bdd6fcde299e665af8d3a4131"
+    },
+    "order_payments": {
+      "count": 131,
+      "all_fields_sha256": "cf6de47984733cf5a5bfc1c5d1dd0a38d83fde8804d336df8e5fa258cb809f3c"
+    },
+    "purchases": {
+      "count": 182,
+      "all_fields_sha256": "b36813000dca5595425b13ed5ef145e8530a3c5dff295f34288f3a42e5d4627e"
+    },
+    "purchase_items": {
+      "count": 185,
+      "all_fields_sha256": "942faa740db0bca943ea754a869fba21d7ab4803a7f7a12b712764fee58171a5"
+    }
+  },
+  "products_fingerprints": [
+    {
+      "id": "01e900a4-515c-43eb-9ebd-b64387d985af",
+      "all_fields_sha256": "36a7bcdd1282f00763dcdd1139aef7d7d992f72bf1bb9fb511baa8836546a72c"
+    },
+    {
+      "id": "032d8b00-dd7e-4700-b8d4-106ccf93ba1a",
+      "all_fields_sha256": "33b7b3b303f78e554f7f231b9ea0e8a0215a70b3a7496cb22c0e22009681c447"
+    },
+    {
+      "id": "03596366-fc4a-4d1a-b6f6-59eba47d2f66",
+      "all_fields_sha256": "49b87fbe65361df670e0ed6bd47525fe7855ec4a1cbea1564eaf5d1bd47a5828"
+    },
+    {
+      "id": "05a2fc29-69ae-44a0-b19e-c9ad810c3a89",
+      "all_fields_sha256": "5d376b2c6cc92f93c9aa8b099f12c16710fa67731c216c6164be07a23d1687f7"
+    },
+    {
+      "id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "all_fields_sha256": "b7e470742ec321c38d0f0d25da0a45aa6f3d0d79c367ea1374ff9a2b6b98c94f"
+    },
+    {
+      "id": "05cf6b25-7851-4a76-817f-1a704930fcc7",
+      "all_fields_sha256": "4f1d1f3fe05e8ab7442e47d0f06af3f0a2309f1c4fda7b9bcb5c572ae149596e"
+    },
+    {
+      "id": "06d245a5-6028-42dd-89d8-1e1f1b598faf",
+      "all_fields_sha256": "2fd28c5505a172e12303f466edf41a0fa3dc9ffadb6cb8e0c3ba0e3117d185ae"
+    },
+    {
+      "id": "0be4f17b-4888-466f-ad13-3643a645f730",
+      "all_fields_sha256": "74cda42198f60e072e5741021afbb7d55f1706e0e857238a7d36399d5525f87e"
+    },
+    {
+      "id": "0c177ab6-1db8-4692-8bda-2ec0dcb7156a",
+      "all_fields_sha256": "19b0c96fa9d89325e9d1d3131662ca66410f83dcfa5006f002bac13f50de77bd"
+    },
+    {
+      "id": "0c74c49c-47fd-41e4-b07b-730afc08a6cd",
+      "all_fields_sha256": "c654d36bcde48a2fb7e70981de6de159afef77ae3e6c09dace9f65a4f0b7dc72"
+    },
+    {
+      "id": "111846de-d228-438a-885b-f2a426a38489",
+      "all_fields_sha256": "fc698ba746e459400e298acc962ce113681340c89e7a46d080f02e1743af529c"
+    },
+    {
+      "id": "1354e3bc-2fa3-486d-a43a-d38da696f160",
+      "all_fields_sha256": "189c8bea021917b1f970da146466561b0d56bea1f5e8fc29ba2bf97947307480"
+    },
+    {
+      "id": "13627ebe-ca04-46e0-9d26-d2861d1ee4a5",
+      "all_fields_sha256": "69c5dba95d72481a15ce69688142aaf0c090551ef64bb8a67452546f46817c58"
+    },
+    {
+      "id": "147395ec-1a0b-4f54-9904-f27d2a88f12f",
+      "all_fields_sha256": "a878f4dba3cc95a3aef7e6dc97201ae2d003cb18c97bb6807844896b508bbe0f"
+    },
+    {
+      "id": "14fad7f8-6639-4f97-9e9c-4e2a89bbc7e7",
+      "all_fields_sha256": "42060da194eb54f3b41e830834e8a2578ff198bacab3789fcff83e000fdb299f"
+    },
+    {
+      "id": "15095452-e3cb-4ba7-b586-2b6e5e5206f3",
+      "all_fields_sha256": "0c2c7f30763f79082d02d6bf977e80701a6b3f8e951bc4a2291729144b0eeb5f"
+    },
+    {
+      "id": "165c4d74-286a-4882-9370-e47001f85e95",
+      "all_fields_sha256": "26038a585783cfa3899c94cc4d5c4e28a20006e302daada11480ca1b4ef3582c"
+    },
+    {
+      "id": "1972ae36-3e41-421a-ae47-e32f8b5fc407",
+      "all_fields_sha256": "c3675438fbd15182d21976aa4125193af31ee911f089bc9769522e5fb35e6413"
+    },
+    {
+      "id": "19fba313-0653-4d9c-9e1a-f62a46652bf5",
+      "all_fields_sha256": "1c8d71ced762e2eeb1b01fb0d6ebfa61bad127a9340a0796ed343de6d9237725"
+    },
+    {
+      "id": "1a0e151a-fe10-4276-9b0e-a3db50759c41",
+      "all_fields_sha256": "a8285bd7d640cbfe6260fda2abcee175eed34f10f6723ec22c2d783d088d7b1d"
+    },
+    {
+      "id": "1a7fd59a-75ee-4255-9ae0-277b3be4bd2e",
+      "all_fields_sha256": "ad7960735155a3ccea394655295196d0496e3baa9d11164179f5515456f14cd5"
+    },
+    {
+      "id": "1ce1e6ff-2064-4290-8fea-c804cf5d44e0",
+      "all_fields_sha256": "102209e3388063d76044c197626c7754d085b50e73eccfc798000b7e13b7b16d"
+    },
+    {
+      "id": "1dc53fdd-4eb8-4b60-b8ef-5eba96dc2cb2",
+      "all_fields_sha256": "b821a49312fbd1710b97b7f39d0e27e701c0b21aa650e62c28b2e0c59323170d"
+    },
+    {
+      "id": "1e6c42e4-08af-4ed7-ad01-95fb22e13c4a",
+      "all_fields_sha256": "18d6aba3a6baf801f42077f091164fd5f417b0c9be05535cedcbd65b8b89f976"
+    },
+    {
+      "id": "1e899cee-6a4b-4edf-bf22-941952ff79af",
+      "all_fields_sha256": "99fc230fbd74cd3fdfbd5a6a7a2f310a2313309afad09106dc7d2f69a33dbaed"
+    },
+    {
+      "id": "1ec41d28-a6e0-46c8-88a2-8cfea405b9aa",
+      "all_fields_sha256": "bac3dae2bdecbdc3475e15ca069cea6a200a293958fb99cd74bc64d75b347db7"
+    },
+    {
+      "id": "20530c08-7371-4726-8a0e-0c5023e7d513",
+      "all_fields_sha256": "9f705cc00f0dbc0cfa02006aa5ad5073e40b5b6d708017322d110c8e976a249b"
+    },
+    {
+      "id": "2c39e1c9-cc23-4d4c-bb5d-8469f87e666b",
+      "all_fields_sha256": "267b7c96c0185ca8374be4302d7fba0288ccee3101b5b6e3b83c4aed0aee59bd"
+    },
+    {
+      "id": "2db3fb94-78ce-4ba3-b5f5-335c8a6d36c4",
+      "all_fields_sha256": "bda8020de7b346cbcdc952ba30fd44efa4f8327e20fd7b1df3426f15df148d06"
+    },
+    {
+      "id": "2db67b25-6e37-446a-8e98-5f626d5efc63",
+      "all_fields_sha256": "cbbd0579ddb549e971a5577d8cf476cd4867619b71faefefddedb313a2a0cfa8"
+    },
+    {
+      "id": "2e066864-97a0-4695-b484-3ef62b869dd1",
+      "all_fields_sha256": "245ea57fd39346816ceb55cbf7de445ceb1217ace095a79a653a008a60de760a"
+    },
+    {
+      "id": "2e51cf34-5c02-42ff-867e-7a06d8bf273b",
+      "all_fields_sha256": "481386531ed20034b58076c40960ae590de014037c616cd91310f9521f68bbc8"
+    },
+    {
+      "id": "314ab75f-58b3-49c5-8602-cda72295d855",
+      "all_fields_sha256": "fb877ab457bf89d2d933d3932384c1b92c209606270caa8b7877e48249161c90"
+    },
+    {
+      "id": "3159eec7-c780-4cfd-b5ed-0e503fe28934",
+      "all_fields_sha256": "cafcd6777a81f44318f48e18c4c6177e9a63d622bd54c304b9635a91257b7cbd"
+    },
+    {
+      "id": "327acf40-9888-42fc-9dee-dd94bab88db5",
+      "all_fields_sha256": "d3c822fc5687430cbf9b3d03628bc2d4c3a85b9c1052d767cb6bca1e90f4ee6e"
+    },
+    {
+      "id": "32ccb5e4-1854-4f3d-9b33-136ae2c2502a",
+      "all_fields_sha256": "dc25ba30c73db6146d4ab22c4cfb5cf5a0d3e63dc55294ef82144bfc22297860"
+    },
+    {
+      "id": "3593d659-714c-40ed-9231-8e57064c0fc3",
+      "all_fields_sha256": "3caec25e1d64b1823ffebf8eeb4d25009f71eed3ab705623259a19291ef50306"
+    },
+    {
+      "id": "360eb933-9dda-4dff-81cb-dcfc3d293484",
+      "all_fields_sha256": "0636a0c6834de6fe25209f41b1944f80a57e365d313cdff9cfea8d43fb159d67"
+    },
+    {
+      "id": "3643a08f-c0fc-4ada-8639-94ff3340ef90",
+      "all_fields_sha256": "63ab40c0eb4c678705a92e87adebdb953a86db5cf8910e309b4147ec521a81b4"
+    },
+    {
+      "id": "36c9e127-c8e7-4b14-aff2-36e021435baf",
+      "all_fields_sha256": "144ed45d721c0ea346ff4d785e7eb06f80435237d75ab055ee735b6210304029"
+    },
+    {
+      "id": "39310ff1-8765-464b-89f2-cbb245581879",
+      "all_fields_sha256": "83e457761a67ba8d7143a97636ff32b88b2233d48ca663b18c48992b8bbf46b3"
+    },
+    {
+      "id": "39dc1190-b773-4430-9bb8-9fb37cce1a21",
+      "all_fields_sha256": "daf5253ea30327d51ff53d5e7e0b3defa269d5ff7ea351ee71a1b7ac1ec80d38"
+    },
+    {
+      "id": "3e33942f-1d42-4b03-b30d-97da131b2cba",
+      "all_fields_sha256": "01b172225f2e523335cf8cade417f051aeffcb405d7921d6499b4c5b0dc14056"
+    },
+    {
+      "id": "3e52b75d-007c-4637-8ad7-3dd3a8efb159",
+      "all_fields_sha256": "a6c7a1b961770f4740c065e9a86d35ee9b897a701b457766b62608da392c0cf1"
+    },
+    {
+      "id": "3fdedd26-928d-4e2e-a1ba-3cf4c534d268",
+      "all_fields_sha256": "87f1a2c158f4bbce2dfb6bea93f3bb5fd751e4f307e8595a9311e6c5f2fe0670"
+    },
+    {
+      "id": "41cec216-c896-452a-8e38-15730ebafa35",
+      "all_fields_sha256": "becfb9a2833c9b7c88c6d8b7d2a864bb046ec6a4b2c7f61f5122b63495f8f817"
+    },
+    {
+      "id": "431f2731-783f-49b2-8af5-bb9c7cbf0c43",
+      "all_fields_sha256": "fa5d9d48d6797c7950a5315f5cf85373806f4dee7eaace07d1f51e800338d3ed"
+    },
+    {
+      "id": "44913241-9d16-4ba5-ad8a-56c34307a571",
+      "all_fields_sha256": "53ad2ae1f365370736260689d0e80947b0341fea87eff3c97b5e2f519e3ba435"
+    },
+    {
+      "id": "4615e2d5-1659-4224-a437-ad598b6510d5",
+      "all_fields_sha256": "119f5ca4696d7baef1648dcc92234fc3f8cf10178132975a7ecd16ec20bbafc0"
+    },
+    {
+      "id": "469e3f38-36cc-45fd-bc6e-5bd558d3acf1",
+      "all_fields_sha256": "5672bb1008fc9f7d179ae4d9b761d5e38bc65e8c12f2f2cbc31e0d8259f68631"
+    },
+    {
+      "id": "49d18c62-27bf-40a2-9c0e-8d2eada41759",
+      "all_fields_sha256": "88481466b09278fbac3351641c5ef177c7987fc7ff3af08daf375f685d886ee1"
+    },
+    {
+      "id": "4cfaa1d5-23ce-49a3-9866-81e24160a2dc",
+      "all_fields_sha256": "539655227ce1c4c51e6db8c8f8b7b5a9e1fecb0e34abc6b58d3f889c6695bb7a"
+    },
+    {
+      "id": "4d1af887-4b48-4be4-82e1-c0d9effb1a30",
+      "all_fields_sha256": "8bad9e4a21fd0538e7fe95be636dbc74df3629013668fab6077769b9e3f85779"
+    },
+    {
+      "id": "4d304204-8569-464a-b856-29a84bdee6c8",
+      "all_fields_sha256": "ad1d3364052c5c9956930d68b11b0c36e650a4e3fd0392c50d2b3b402055d42d"
+    },
+    {
+      "id": "4d7976ee-45ae-447a-88a7-e6f986c59d8f",
+      "all_fields_sha256": "d84f68d28d86d928d5376c06fb02af76ba1bd2a8f6db9aa442d5a3ab86c698c8"
+    },
+    {
+      "id": "4f4d04b7-f869-4b24-8cb4-9817c9d2ccef",
+      "all_fields_sha256": "8bf842572aebb6041248bc639fa0de527579cc2cbbf0dd16a9ad7d90876f556d"
+    },
+    {
+      "id": "4f905ebe-f1e2-4a83-adeb-5941adda5ec2",
+      "all_fields_sha256": "45dc414650ac52f7caf6281b223e0cbfac7b459123a6d8d1619782390f3726b7"
+    },
+    {
+      "id": "50282266-0dd6-4864-bfdb-bbc6c5aec91a",
+      "all_fields_sha256": "0bcf560f2897deb73837348320f4cc532f6be83114178e7bdf59dbd20a602e1b"
+    },
+    {
+      "id": "53dda192-fa55-4d00-8deb-592b5f8deb4e",
+      "all_fields_sha256": "7ad925530a5d54cceeac9f56bc1bb0b00f1d5d9a34ecf24e680550ffcd5ab897"
+    },
+    {
+      "id": "540bdab9-469a-4c01-b122-e3c70557251f",
+      "all_fields_sha256": "e19ef2b475b11010c47fce3b9a6b6e9f8bfc2ce873956f6132cdda35b4b26e78"
+    },
+    {
+      "id": "54295ff4-ea05-4e7d-8f53-2924ccf16f9c",
+      "all_fields_sha256": "e5b1a467d5ff771f1e244e924a121284768ae611fbd71c078979ebb9510a835c"
+    },
+    {
+      "id": "55569c44-0777-491c-9c9a-04dc621c3685",
+      "all_fields_sha256": "f19f316f013a3791087ae8ff2d058e79efedb4398918e14ffbf10a894eaf2c22"
+    },
+    {
+      "id": "5585ed23-1d19-40b0-a443-81953a999e9c",
+      "all_fields_sha256": "7f5eb0e5ccade76568873c24775537512feba38b27c1bd8ddad9a0d5b27680eb"
+    },
+    {
+      "id": "571c0dcc-4c32-4791-8170-cc0d620f85e2",
+      "all_fields_sha256": "664c83f551f2b33f309172805235817f2dc4bb9776106c18f056571415a62832"
+    },
+    {
+      "id": "5b729e4c-e54e-4e59-985f-42e3ce60e30d",
+      "all_fields_sha256": "a1ea5905a8c4fff5cbb4fce85d0f5ca45b2545c2a32148ee1ce54287ae102774"
+    },
+    {
+      "id": "5c0709ee-5299-433f-af37-628d4efa09ff",
+      "all_fields_sha256": "70d497794d6e3dcff34a10bc9a84172017bb5e68eda530c2bd35441f5835ad95"
+    },
+    {
+      "id": "5d19483f-7ab7-4073-a360-65c7eda94e57",
+      "all_fields_sha256": "e5d42f87c17db0f45566e025ddc1d20e5f6e16d5da39f31299e1a5d2a1d30dbf"
+    },
+    {
+      "id": "5f7a5f98-ef5b-447c-a9d4-49bcc840903c",
+      "all_fields_sha256": "d21f94399c7e272856f830a8fb986da26d4a45c189775ef38f27fac019f09ccb"
+    },
+    {
+      "id": "60e2067e-fae1-4180-ab6c-a83ccda2e024",
+      "all_fields_sha256": "6cbd5abcb3245e10ed870ab14e096f7a2d7f505985ef078bddeb9241b26a0998"
+    },
+    {
+      "id": "619f8ce8-d73f-4a8f-9fa5-ace42abab70e",
+      "all_fields_sha256": "281812f75174c1b8500aa1aafad909d4b3a86697e6ef06fe87244f46f2e68d6b"
+    },
+    {
+      "id": "631dc501-2496-4c4f-9900-b0b14fbd19d2",
+      "all_fields_sha256": "cfd16ee7884e65747f2bb27ed72b67eafda5194589ccb02378f60031cae5e762"
+    },
+    {
+      "id": "63350249-ae3f-457d-8e5f-e3bb60be80e3",
+      "all_fields_sha256": "2d1826bc8d49ec2f2f3a1cd930ee8b8062dedfe6144ce92957e8c1c32466e6bd"
+    },
+    {
+      "id": "64e60fa7-4bc9-4fbb-a401-d57821edc72b",
+      "all_fields_sha256": "f04d7cd37ad3269e1b96b1eabec56c2e6de96d99a670f244f72227a3d66e2981"
+    },
+    {
+      "id": "65027262-d36d-4230-a859-40a007489bfa",
+      "all_fields_sha256": "d80fe286e635f4122b149e55cf4b3537fa9c20869a9c225d0918cbf53c155c68"
+    },
+    {
+      "id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "all_fields_sha256": "538d567d5136d21d8f25e7af9565bd13b90003f8d509e529cc7d29b5dd53653e"
+    },
+    {
+      "id": "675e5b99-70f0-4f23-9af0-adb260fb3f57",
+      "all_fields_sha256": "3311ea96ab73ee699c5c341384468544f71cf1ae91d4ea8a670a2220b46c2eea"
+    },
+    {
+      "id": "68c61d33-eb0e-4078-85fd-4481f7856451",
+      "all_fields_sha256": "a3ff31031741a4e4fa2e04e37e8e8120ddf26b609a665997ef7ff231f8327a9d"
+    },
+    {
+      "id": "6ca63ce3-5694-418f-90a8-5d8043f4c2f5",
+      "all_fields_sha256": "a35944bc49c463b485de50811b0a37b3c68749c9fcae18f0925ff422343dfac5"
+    },
+    {
+      "id": "6d1059a4-9226-415a-ac5a-163b9545b04a",
+      "all_fields_sha256": "ab18ccbd8cc685d08c1ef7cf43871f368daaaea8523d3f9c17a926abb7217b89"
+    },
+    {
+      "id": "6d3eab98-fb35-4baf-9357-581f84c3dd1e",
+      "all_fields_sha256": "30e8bc117280af5c7783ddcd1c689f8de0a01d053fdb2629a412ad50b12adc54"
+    },
+    {
+      "id": "6de8ca53-7561-4353-b3f6-99b6da9a9c3c",
+      "all_fields_sha256": "02ff4baecab02838fce04398be60152a2336bf08f6bd1d2e21fd9cbb253a588a"
+    },
+    {
+      "id": "724f97e4-581a-41c9-88d4-ab3e3dbb98df",
+      "all_fields_sha256": "19b39ef52f63e07af6767efaea437d31aa62ace1c01c874a34f1aba28de46cc9"
+    },
+    {
+      "id": "72917d13-012c-4ea2-a05a-7c324ef38b3c",
+      "all_fields_sha256": "e1fd8f81c5875af4331abdbbda4ca6dd3ee7b9e8399b4def86e895e64615ed35"
+    },
+    {
+      "id": "73070e5d-763d-4d39-af59-957126199cab",
+      "all_fields_sha256": "aac9727bca4f51628b037284e895c62be76e035c50d6af39048025d1905ea3bc"
+    },
+    {
+      "id": "753fd426-1a8c-49c6-8e17-60b57ea59b8b",
+      "all_fields_sha256": "ac3b168b4f08bd8d42280b81b4924aa2c3ce43968840ab2348e5494fc9d37a9c"
+    },
+    {
+      "id": "7a76ef9b-c994-4b8d-81b4-525a0922835c",
+      "all_fields_sha256": "d48a7e3e4c41d58331a44a6bb85de7fb10a394f12a6cd2d7b6dede9b35f189d4"
+    },
+    {
+      "id": "7ccfd5dc-8ce3-4a93-9d15-9e99748f1944",
+      "all_fields_sha256": "78d8c4b4a39a0fc79bef1f5b3d49bfc22fb4bae5a3130d0da360dde1f20e71bb"
+    },
+    {
+      "id": "7d2416cf-c123-4040-8617-1fb75de38e6e",
+      "all_fields_sha256": "f3fbbc6f9ff3dcc519f6dd1582d95b7d1b50a32e16f78664e6eaba1f20cdc284"
+    },
+    {
+      "id": "7d334fd0-24b8-422a-a5bd-daa7de0e2947",
+      "all_fields_sha256": "b4a94286f8e7651118b424e8c8656c140d0326e96b1236fb8c31522d0f46bee2"
+    },
+    {
+      "id": "7e7a8a98-61c6-491e-85d8-1c13762fd6cc",
+      "all_fields_sha256": "34bd552761e9e27579254d914a9ed3dc99fc287e4b7323e0472b0adbd85fe4fb"
+    },
+    {
+      "id": "80f03c4e-601a-4297-a00a-9697e5b0348f",
+      "all_fields_sha256": "82bb86f03ba5a48fb22c145881ed64e884d26fc24777c27d2d8987df3a44a1e3"
+    },
+    {
+      "id": "8194a45a-aeed-40a5-8c76-6e92ed85ebd2",
+      "all_fields_sha256": "353d637210d3c900832e7e7f3dc2e97a839a6e3174e2a0f939199980a40ebdce"
+    },
+    {
+      "id": "819e4d65-af50-44c9-892e-969216b4ba7f",
+      "all_fields_sha256": "f0288705b3f3809c2aef162bd1530a89d6398d0f76300a6bc23dc94e798bc77b"
+    },
+    {
+      "id": "833a8d5f-cbe9-48b7-b8f2-2545dda9a0f3",
+      "all_fields_sha256": "549e96e8bf21d1b1e1ac40b489d5ce7c1b25b08a3c5be427a6478af2fcea6d61"
+    },
+    {
+      "id": "855083c2-b78c-43bc-ab32-0f2a9880ad7b",
+      "all_fields_sha256": "6612ccc0cd693135b92d1dd109c0e363d17b2d55de834afb973fbb91976fa395"
+    },
+    {
+      "id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+      "all_fields_sha256": "0728bdde0db8b79fccf33723fcaa1c8dc8cc0bb4c781535d75eb842b2d376199"
+    },
+    {
+      "id": "8ca47237-b9ae-4720-a8be-043ecd104ed7",
+      "all_fields_sha256": "6e9f87e2d4fc4040dfde9cae0f9b17412c8196260821145fe5e74cd8dc699d91"
+    },
+    {
+      "id": "8d828391-4a86-4eb9-bb6a-f384bc3e1d7d",
+      "all_fields_sha256": "db8314b5ec647c79bcfafdb0a89e9882d954298047d7a0f2bb9e3a37687b7035"
+    },
+    {
+      "id": "8ebeb6bb-d76f-415c-8cac-4e8c85cc422c",
+      "all_fields_sha256": "e3d0b710770af30e46a76c9378f5ce4a632ca44895e9d9f1aa269e102eac6d65"
+    },
+    {
+      "id": "8f06198a-0199-407d-9d5d-9e7c38bcd578",
+      "all_fields_sha256": "4da04bdbee814218d9022e3a38e8497fd88f4ffcd45a537a56b313f617518dc6"
+    },
+    {
+      "id": "900a7c30-7412-4da3-b300-7d013044e853",
+      "all_fields_sha256": "867fed06110e5ee43340307383548f16cd5216fae9e0df4a54d91222b6de359c"
+    },
+    {
+      "id": "917dd573-dc58-435a-85a4-c6b55bcd7ffc",
+      "all_fields_sha256": "cc9143f11be72e64fce114f9ede8ad86627ff2014cfb27a0eea3b2cd1c84fb14"
+    },
+    {
+      "id": "919056a3-1dc9-4ae0-9f90-fbba8cf58be9",
+      "all_fields_sha256": "8df1eb94878fd2f6a6e9de6b62439daffe5d2297e28d809262ad6a6dacaf7113"
+    },
+    {
+      "id": "91bcefba-2f03-4a0b-95a7-2d49462f270c",
+      "all_fields_sha256": "8628b207d33cc06559a45157e6d81889bc691cf3d10b406f87cd47dcfbae2fea"
+    },
+    {
+      "id": "92a1da75-72be-42ad-891f-753273b34460",
+      "all_fields_sha256": "0716181e35e4e2147caf68cd344f265aef68aa68ccca2021fb663c0e9e99822f"
+    },
+    {
+      "id": "96f90d2b-185b-4f47-a155-184619a8b6e3",
+      "all_fields_sha256": "b05dc3ca6ce325f1c7f263f7ed1b23e391ce6ee1bbfb3ef3e8abb592d86877aa"
+    },
+    {
+      "id": "9858eda6-63fb-41f7-9ba1-ab6e93d1f9b8",
+      "all_fields_sha256": "6d7112645a2e576ab94d0b403b9585d9017281906cbeb792f28c4a5b36756b0b"
+    },
+    {
+      "id": "9a56021e-9a8c-4bc6-a937-996d46faec61",
+      "all_fields_sha256": "f7d69acefc570debe4113ced93d5e8425ce6858c4c51422598e53283a457b8e6"
+    },
+    {
+      "id": "9c05ba0b-731a-4701-80e6-450c1a4552fb",
+      "all_fields_sha256": "6fc11f962d83b552bdacaa60255704959d59bed20aacf349b911b1d5c28123fb"
+    },
+    {
+      "id": "9c07ceb2-4d7a-407c-898b-e0cb43fc008e",
+      "all_fields_sha256": "c78ccac37110e0298cf417d267b6fb85c95476bd1d3b8b469fae61dd30471410"
+    },
+    {
+      "id": "a2843178-0691-4a35-bb30-b475b3e941ff",
+      "all_fields_sha256": "1615eda1d31541918747cf4c0070aad2954e68f052830b2eb4e32188806d5826"
+    },
+    {
+      "id": "a4a3caa7-6a02-40c9-9412-549e98492b12",
+      "all_fields_sha256": "a048ccb2d18f1302a21866cb2985184bb1699ce3896d427cfde947d4b367f6fc"
+    },
+    {
+      "id": "a6158818-9fa9-4762-a98f-06d6f7a8afb3",
+      "all_fields_sha256": "1e9ca316b893f12b8925835a99c007352f1f2c82ba385353685f23c0ad31a327"
+    },
+    {
+      "id": "a9f0a1e1-7acd-4bfe-a9e2-48e6f0a8354c",
+      "all_fields_sha256": "6885c172361b6cabba94907a08c08fca85008f457327f898d73f1420bc6589d3"
+    },
+    {
+      "id": "aa3a931a-ef24-40b9-b65b-d2e2acd87a2b",
+      "all_fields_sha256": "aa35e72b0cda3c6be21f70ac496dd6741ffd50a3a066ce3ecd840443087ac73c"
+    },
+    {
+      "id": "ac173fed-a2b0-43b9-9d05-36b7ebdcf902",
+      "all_fields_sha256": "79b87af5e5ee29cd9559df28f94e845ae4ae726f0120a7597f6337e4c7f3aad4"
+    },
+    {
+      "id": "ac79cfed-1855-4fc9-8bb2-de2fc01aa904",
+      "all_fields_sha256": "2a530c25151fbf3193f1b7f086d230513182c371dce56a0a1cb91c560277bd85"
+    },
+    {
+      "id": "ad228c7e-6279-424f-a436-36e85685e5b8",
+      "all_fields_sha256": "cf007bc83b2bd8450a796b2d4a3bff408e1bcdecc71592c0833c29abd88a9cf5"
+    },
+    {
+      "id": "b223e3e9-3bb6-4da9-8a62-a03a4fd994e0",
+      "all_fields_sha256": "ef4db05a0d1de1eed96de1c4f8e41426da9eb4767b2d6b0290b09ca4ef4274cb"
+    },
+    {
+      "id": "b352dd83-e0f8-4569-96e8-42acb20ae139",
+      "all_fields_sha256": "26cf2da216106c491f0d6043a362e2f31af9dc93d6a8a5902ce95d2bdba2c386"
+    },
+    {
+      "id": "b46e57f6-73f3-41c7-b1a7-4606c7e9ee13",
+      "all_fields_sha256": "ebe6c98425694510e80c03197a65fd72ebe9a18d473deb87d333b1402144191b"
+    },
+    {
+      "id": "b58d9866-5d03-4f63-994d-762108522492",
+      "all_fields_sha256": "d9231f43e7c52493f5658c21557bf4780c609fa315fdea5ae6fd9eda51efbf45"
+    },
+    {
+      "id": "b5cb8397-6821-4f8d-bc77-cb335e757ef4",
+      "all_fields_sha256": "a44f648fec9827c22e355442d1be6b29de5c4411b2be1e2d57a0551dbb71089b"
+    },
+    {
+      "id": "b6db64db-4768-43f9-aadd-e72f24d6d318",
+      "all_fields_sha256": "9c3a7c15a2a717d7a47d1e9ebfc2f6a3bde18b218ba04759e02d3e6d8cd6cbb7"
+    },
+    {
+      "id": "b8a90822-19d2-4ade-b6f9-ce834a2a68a9",
+      "all_fields_sha256": "946e36572bba2f479669c0bc47ac55cf7ac7772be2cb2cb480e1b205c11a7a92"
+    },
+    {
+      "id": "b93f703a-2a95-4167-b9ea-168c380456b3",
+      "all_fields_sha256": "0d0976ecf744d8849a7499197cc8a4a5cb43df117cd7c61721697d8c4e64c63f"
+    },
+    {
+      "id": "b99f0fd0-fa59-4635-8d26-1c3b65040923",
+      "all_fields_sha256": "4bf07b3b5d1e704cd9f19efc9a83760ee265e3cabc7669b5d5e8c372163339e3"
+    },
+    {
+      "id": "bd55d8f0-5bc3-43bb-91e4-9e1acdfdb9bf",
+      "all_fields_sha256": "2475e5da194dbfe6a456d21f4bda719bcab5e9c6055bd600e15f7d634c00fbb0"
+    },
+    {
+      "id": "bd7930a6-65c3-4e3b-b85f-1cb1b56d6835",
+      "all_fields_sha256": "7bf41f8e75f55c6c5cd6b95fcf5ff0fcb7adfbf4c163b4f7e133e597d47cee6e"
+    },
+    {
+      "id": "bdd20c4c-f7fc-45a3-95bf-0021e4a013e1",
+      "all_fields_sha256": "55cdceefadadad8522e38963b2490863c1bc713fbc1fbd20e48c0b145b7af45e"
+    },
+    {
+      "id": "be8852f0-c712-4b69-993f-dfd6e954af31",
+      "all_fields_sha256": "4f033064412971009d70f72d67f4130dc0e4736658a0d0d214ab2335418cace3"
+    },
+    {
+      "id": "bedb3ca2-68ed-4158-a00f-4b203b4d8f92",
+      "all_fields_sha256": "87d5e9e562701eb48156f9f31a57f111e3ccb49c8fb4a60fe5572efb6066b3ce"
+    },
+    {
+      "id": "c022616a-218b-4dbc-b219-6460f0ec0abc",
+      "all_fields_sha256": "dcf284e718a13fcd52d091ff7eaead083b7a381cb2de0af1949e01993f52c2b6"
+    },
+    {
+      "id": "c5a353af-8b98-4980-b317-419adeed702d",
+      "all_fields_sha256": "a55380d2592b2e75fa391a6bd929b789cbe267ca50616d9287f55ccc3477ef87"
+    },
+    {
+      "id": "c6ab646e-ea3c-4ca9-928a-3f518e49f5e6",
+      "all_fields_sha256": "294719b73b973c28a6bf008100dc2973ef9e455ff545e376a76b3ae8397346e4"
+    },
+    {
+      "id": "c7659a2a-4bb5-439c-ba18-a62d2dd0c121",
+      "all_fields_sha256": "dc5cb8752d34d9754067fed85b811b6daf4fd3e6aa9ec5aea1a023853cfd51df"
+    },
+    {
+      "id": "c79ee2ec-e006-4be2-b54a-da869542b698",
+      "all_fields_sha256": "31877d5cb21b9d591928bbef3d0550c562430278bb14d1e5bb63be59e247b257"
+    },
+    {
+      "id": "c880c7b1-61bd-44be-93c7-9c4be028bc20",
+      "all_fields_sha256": "7aa92088fdff5136cdfd835b6bfdcce6b5f4338ff505904977721aed13ce8b6a"
+    },
+    {
+      "id": "cb2f395b-d009-4358-9678-f5c892bc5c4d",
+      "all_fields_sha256": "38fe98044e25496653f675cc58c4d9f1106c91621cb93ed9110968a24b28efeb"
+    },
+    {
+      "id": "cd5debfb-af46-45a5-9c20-ecf6bbb27c53",
+      "all_fields_sha256": "f095a6d2400d7e2db066b9f06fee3308ce17775ccb48c94ac437e02a0f5bbf94"
+    },
+    {
+      "id": "ceaac81d-c72b-4231-9c92-0ed004715aae",
+      "all_fields_sha256": "a6b7fe13e4af3be1fce0ca221af5ba7834a9cbfd7e543c4338f20596f89b7835"
+    },
+    {
+      "id": "d072533f-5411-4940-bbec-d21d936ccfe0",
+      "all_fields_sha256": "6dbd2c5fcea0187ec4bedb392f0f0d31abd8cb0cc39e205c72a0c1e8d8d00003"
+    },
+    {
+      "id": "d1abf544-2493-4dab-a769-53f9faa6c4be",
+      "all_fields_sha256": "88942dd07ae25e7193346f1684c3c6705a9526cd38bad63666ac94c694f03f5e"
+    },
+    {
+      "id": "d2173255-1fa5-4432-8ccf-d55ecf0f93b8",
+      "all_fields_sha256": "0eb7712b8a59f46e08312233e40fb1b8b86746684d5579d6f1dfd6db00ed0ffc"
+    },
+    {
+      "id": "d26152c8-44cf-4db0-9dc6-b46e728f85e0",
+      "all_fields_sha256": "14b9f61d45cf99aa6835b82fceec37933d11adfff0d8fa0a40d4870a589590bd"
+    },
+    {
+      "id": "d4d1925f-333b-449d-b419-c0024e91397e",
+      "all_fields_sha256": "94c51b703f242743a8f0d76f52db23a3241b573e7d0e5cc1d55d8e2d9feca7ee"
+    },
+    {
+      "id": "d6d024ff-1804-4be5-838b-8f7af9ca363d",
+      "all_fields_sha256": "82c7ce801ddbb8c753beef9661bed508c96caa83c0722b07d0f09ec6ee845756"
+    },
+    {
+      "id": "d81b37c8-5511-4714-86ca-908d87e27b07",
+      "all_fields_sha256": "16538d56b45fda1f21ce1641fbb4ebdf5847b72a823f1098771e88252b241f19"
+    },
+    {
+      "id": "d939a0e1-0554-4ce1-bd40-bca029bf6eb6",
+      "all_fields_sha256": "1bbbe2d3b40a87ec6a453d73eae6d0e07b4e3ccfbfd9dfecc2dad98a36094bc4"
+    },
+    {
+      "id": "da8d3743-3ee5-4210-a387-49e4f87e9ec9",
+      "all_fields_sha256": "e3822cfda8470ca7aefa2bac0fd367d0301d0cbd2d472ea75cbd23e0b3ff4805"
+    },
+    {
+      "id": "db40494d-a08b-4a96-9746-70d6a3ac518b",
+      "all_fields_sha256": "bef4ec6dbbae0e02cea178406b7cea972b36c52429c9bebd7bafc9404203f0b0"
+    },
+    {
+      "id": "dcf4dcf5-1abe-4c87-8e5a-0217532b4a69",
+      "all_fields_sha256": "4d38f9efdb352086e1e3b864a80a0048a27f57e631b3010ef3396473a1c1e922"
+    },
+    {
+      "id": "e0d493ea-6aa8-4127-8199-f171e829dda1",
+      "all_fields_sha256": "055bd95c01df7f9fb7b6d2c05da4c268367c16ea3ad3343642015bfaccabdb13"
+    },
+    {
+      "id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+      "all_fields_sha256": "656417db4ad2430a3744c5ba4a6a842cb45bee531a7619a680fef60b66a736c3"
+    },
+    {
+      "id": "e53a64ad-8e1d-452f-9025-53d940215082",
+      "all_fields_sha256": "0f886bf3796db18378690c85537e439767539754f82abf4c3a34db8b48711e68"
+    },
+    {
+      "id": "e5b37a2f-ab84-4009-b8d3-1a6f307c3eda",
+      "all_fields_sha256": "1b39b4cc12a6ce785d94133f79b1f748fa165a98f81e00fdc569ce1380bf73ad"
+    },
+    {
+      "id": "e73c5890-d0a0-4805-a558-cb3b7030ab30",
+      "all_fields_sha256": "0dc476c2e7933879333b63448055dec9ace12945539eeee737aaa4b647a65a65"
+    },
+    {
+      "id": "e781712d-5839-4d63-b648-13a2dfee6a71",
+      "all_fields_sha256": "81e504e9bc2015961f79cadf6273ef0cf9956acafe0490c8f5c5e2ba4ab4f551"
+    },
+    {
+      "id": "e78d055f-9f3d-493d-b43d-da4342dc0d37",
+      "all_fields_sha256": "08b06dcea8807da59c5704cddab3480b723e3423668a5a85f0daefa1c9a42d1e"
+    },
+    {
+      "id": "e7ceb4e9-34e4-469b-b225-5de2e3cb5a8a",
+      "all_fields_sha256": "17c5ffa26410b2a76bdc32893786c5b24892c4bc6eeab04365051848d9db15b3"
+    },
+    {
+      "id": "ea5850cf-f751-422e-96d1-ca255a1e80a6",
+      "all_fields_sha256": "2b0675d1c5ea97ef5d1c1dbf1f9f760e391e5b0f99369d12c69015652015f789"
+    },
+    {
+      "id": "edb4b664-5da6-489c-94c1-b0d1deb88232",
+      "all_fields_sha256": "94a693e7e324d55bb6d27d13de5fcd6ed1e40c7af596276b4fac085d1bdc9ad8"
+    },
+    {
+      "id": "ee468a5a-10b6-4b63-9b6d-b9d4b4b50a3d",
+      "all_fields_sha256": "2b2d8a6438d3fc9ac644248d637f6ac9109979a8651846b9665a5549748565a3"
+    },
+    {
+      "id": "ef80b721-2c20-466d-8584-a9ab852dd6ca",
+      "all_fields_sha256": "73f7458366b336c023f33011c8afdde787abc895c5956007e4f621ae417ed0fa"
+    },
+    {
+      "id": "ef88ee42-4946-4544-9282-21d5d16f17ea",
+      "all_fields_sha256": "023e5366ee523c08f87bf37fb48213aaa0c374ba5ac5bddba129d20215960b32"
+    },
+    {
+      "id": "ef9c93f0-e96f-409d-a3be-2105face156a",
+      "all_fields_sha256": "5e3f19b80a12a5714d2a1391bada44a5b82c0f3e43146bcf48068791e9e96fc6"
+    },
+    {
+      "id": "f044976f-c174-445b-8349-d5c62c424a56",
+      "all_fields_sha256": "cf24b0fcc7d6f5e7725c2ac54b14cb61d5397b972f49a8af8c8c935bf90d8c11"
+    },
+    {
+      "id": "f0f14dc6-8693-4670-aeab-42cc64732b0e",
+      "all_fields_sha256": "e77b70f0b0a746dbec9fc963d36b5e000285046eb3d7f978b492d585abe72bec"
+    },
+    {
+      "id": "f13333dd-990d-4f13-a094-b0e8b93d404f",
+      "all_fields_sha256": "f2286c791e5a4e3d7e0087711ba619b609b92f6adcd41ca0b9d4f688a591e781"
+    },
+    {
+      "id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "all_fields_sha256": "d944d543691baa8921e499a455296acea2fbc2748bd6dbdf1b65fb39bcf6bfdc"
+    },
+    {
+      "id": "f57365ec-33f2-4807-aa64-18a77c00b00b",
+      "all_fields_sha256": "0f1b13bbe763b58f2ace1c0ffd5bff84c761840b26ad38cc4f6f27536705e33f"
+    },
+    {
+      "id": "f65ba129-7183-4894-bd1c-c9676df030ad",
+      "all_fields_sha256": "39f7fb1742e92cf65da35d0c569726e027b6ab1f032b88a46d2c1fa45eee564b"
+    },
+    {
+      "id": "f88b4746-0c70-421e-920f-0e066ef18a38",
+      "all_fields_sha256": "7bf782de12f8dcda293aacfb032285f864531f5e00829d1ace4bec00cae446e2"
+    },
+    {
+      "id": "f91c4caa-32bb-4450-8a87-25422095257b",
+      "all_fields_sha256": "a6add5b23dd35ae1376bc24fe153fcaf106b1426f363225be02dd628098c76d9"
+    },
+    {
+      "id": "fb74b40d-84d4-4626-b313-fa8fac9275ad",
+      "all_fields_sha256": "4f88d7f1a6b3c3934868b3da1af343633b06b3ff45ef811e76b719a130b58339"
+    },
+    {
+      "id": "fba9e477-4b03-48be-bbf1-4a7152105234",
+      "all_fields_sha256": "685f8d1aba4a1b3cd78cbdd1248f9dd190a914a484898f3a92cb327415ceb082"
+    },
+    {
+      "id": "fe29c305-f0f8-4752-855c-c785be1046ac",
+      "all_fields_sha256": "5e8cee51fb87beed23befe9ea01908149e273dea64a73aaabf8629abca7b6dc2"
+    },
+    {
+      "id": "ff56264b-c183-404b-984f-205e95eea65a",
+      "all_fields_sha256": "c693e6a9afc96690ff7ca4e731c4ce879e40d366934f6cefbdea9d79ba488f33"
+    },
+    {
+      "id": "ff75c694-06ed-4964-a744-bf2bf81e5b34",
+      "all_fields_sha256": "6b1f144474111cecb2f24145b0ec6409bacfe91da253faceb623af02a8b0890b"
+    }
+  ],
+  "affected_products": [
+    {
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "name": "Al Haramain dubai night",
+      "images": [
+        {
+          "id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 0,
+          "is_primary": true,
+          "created_at": "2026-09-12T15:41:17.356426+00:00",
+          "updated_at": "2026-09-12T15:41:17.356426+00:00"
+        },
+        {
+          "id": "9cc02b87-2304-4636-b4be-e785906e2a5d",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227684865-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 1,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:41:25.544661+00:00",
+          "updated_at": "2026-09-12T15:41:25.544661+00:00"
+        },
+        {
+          "id": "1afb8b59-23c2-4da9-9a1b-9cf7ccc2a527",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227695603-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 2,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:41:36.299861+00:00",
+          "updated_at": "2026-09-12T15:41:36.299861+00:00"
+        },
+        {
+          "id": "663a1a46-905c-4edb-9203-8243a92b4ea4",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227699441-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 3,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:41:39.785348+00:00",
+          "updated_at": "2026-09-12T15:41:39.785348+00:00"
+        },
+        {
+          "id": "509d6c9e-0d19-411f-b364-ca15a374e8fd",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227715355-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 4,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:41:55.776794+00:00",
+          "updated_at": "2026-09-12T15:41:55.776794+00:00"
+        },
+        {
+          "id": "57e579f2-1fd3-4915-9fc3-7e7c90a27c7a",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227725352-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 5,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:05.905152+00:00",
+          "updated_at": "2026-09-12T15:42:05.905152+00:00"
+        },
+        {
+          "id": "1b39d7e0-8c67-45b2-bf50-88c1697611d1",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227734435-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 6,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:14.949943+00:00",
+          "updated_at": "2026-09-12T15:42:14.949943+00:00"
+        },
+        {
+          "id": "c78d5db8-21f2-454f-9ceb-ad4bcfa547a1",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227738188-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 7,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:18.559313+00:00",
+          "updated_at": "2026-09-12T15:42:18.559313+00:00"
+        },
+        {
+          "id": "8837eafc-4118-4b1b-a10b-e6d71789f9be",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227742607-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 8,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:22.973241+00:00",
+          "updated_at": "2026-09-12T15:42:22.973241+00:00"
+        },
+        {
+          "id": "15be8cd0-e2bc-4085-9cb3-db42a9024219",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227745703-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 9,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:26.056218+00:00",
+          "updated_at": "2026-09-12T15:42:26.056218+00:00"
+        },
+        {
+          "id": "6d8a1d1d-7283-4ffe-8255-59fbe9f9d310",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227753858-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 10,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:34.334755+00:00",
+          "updated_at": "2026-09-12T15:42:34.334755+00:00"
+        },
+        {
+          "id": "9ff89b89-e76f-4166-bca3-24c821f5312f",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227756859-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 11,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:37.435484+00:00",
+          "updated_at": "2026-09-12T15:42:37.435484+00:00"
+        },
+        {
+          "id": "23e4c7d7-08fe-427f-b3ec-7625d081d9c2",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227762120-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 12,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:42.541596+00:00",
+          "updated_at": "2026-09-12T15:42:42.541596+00:00"
+        },
+        {
+          "id": "e188e3d0-4cf7-4c98-861d-2e23446ce8a1",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227766996-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 13,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:47.383444+00:00",
+          "updated_at": "2026-09-12T15:42:47.383444+00:00"
+        },
+        {
+          "id": "95686343-4c85-4394-a819-8c2273d2284b",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227769712-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 14,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:50.425388+00:00",
+          "updated_at": "2026-09-12T15:42:50.425388+00:00"
+        },
+        {
+          "id": "c0d762e5-549a-4072-94d2-6787e6fef37a",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227779302-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 15,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:42:59.686816+00:00",
+          "updated_at": "2026-09-12T15:42:59.686816+00:00"
+        },
+        {
+          "id": "de4e092a-24ea-4b86-9819-ea3fcc8dae32",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227782736-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 16,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:03.121166+00:00",
+          "updated_at": "2026-09-12T15:43:03.121166+00:00"
+        },
+        {
+          "id": "33764964-8c9f-444d-a93a-1d127173b1ab",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227786662-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 17,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:07.047024+00:00",
+          "updated_at": "2026-09-12T15:43:07.047024+00:00"
+        },
+        {
+          "id": "6c27a1ff-ab67-49a6-a227-aed5579710b9",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227791054-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 18,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:11.412343+00:00",
+          "updated_at": "2026-09-12T15:43:11.412343+00:00"
+        },
+        {
+          "id": "e11477e0-8584-4f4c-98fe-dd213aadaa83",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227793492-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 19,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:13.843618+00:00",
+          "updated_at": "2026-09-12T15:43:13.843618+00:00"
+        },
+        {
+          "id": "e1dd3fc4-586e-4618-aea8-ca96307ebdc8",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227800191-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 20,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:20.56234+00:00",
+          "updated_at": "2026-09-12T15:43:20.56234+00:00"
+        },
+        {
+          "id": "1a484d95-4ee9-414e-af15-a0cf11cbbd1b",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227804244-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 21,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:24.582947+00:00",
+          "updated_at": "2026-09-12T15:43:24.582947+00:00"
+        },
+        {
+          "id": "98d749f3-1b20-4df8-a783-ff97e6a3056f",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227806735-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 22,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:27.247989+00:00",
+          "updated_at": "2026-09-12T15:43:27.247989+00:00"
+        },
+        {
+          "id": "4ad16a75-ef19-486b-ae9c-62fb904ca31d",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227810573-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 23,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:30.953414+00:00",
+          "updated_at": "2026-09-12T15:43:30.953414+00:00"
+        },
+        {
+          "id": "c86c3610-e101-472e-8509-45fb379bbea6",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227813740-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 24,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:34.125742+00:00",
+          "updated_at": "2026-09-12T15:43:34.125742+00:00"
+        },
+        {
+          "id": "49437a22-4271-4f5c-9aae-0942a7e5b698",
+          "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227821526-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+          "alt": "Al Haramain dubai night",
+          "sort_order": 25,
+          "is_primary": false,
+          "created_at": "2026-09-12T15:43:42.029719+00:00",
+          "updated_at": "2026-09-12T15:43:42.029719+00:00"
+        }
+      ]
+    },
+    {
+      "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+      "name": "Rasasi Hawas For Him",
+      "images": [
+        {
+          "id": "2b4bf44e-e108-4849-9acb-0f6970a313ab",
+          "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978863318-img-4898-optimizada.webp",
+          "alt": "Rasasi Hawas For Him",
+          "sort_order": 0,
+          "is_primary": false,
+          "created_at": "2026-06-09T04:21:03.905674+00:00",
+          "updated_at": "2026-06-09T04:21:05.105998+00:00"
+        },
+        {
+          "id": "53912094-c090-46b7-ad2d-46ac81bde040",
+          "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978864680-img-4898-optimizada.webp",
+          "alt": "Rasasi Hawas For Him",
+          "sort_order": 0,
+          "is_primary": true,
+          "created_at": "2026-06-09T04:21:05.181944+00:00",
+          "updated_at": "2026-06-09T04:21:05.181944+00:00"
+        }
+      ]
+    },
+    {
+      "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+      "name": "Lattafa Yara Tous",
+      "images": [
+        {
+          "id": "b6a4f02b-34e0-456e-b1c5-5086fa7b6fc0",
+          "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366634997-img-4923-optimizada.webp",
+          "alt": "Lattafa Yara Tous",
+          "sort_order": 0,
+          "is_primary": false,
+          "created_at": "2026-06-13T16:03:55.429419+00:00",
+          "updated_at": "2026-06-13T16:03:56.8105+00:00"
+        },
+        {
+          "id": "fcfb0556-e18c-460c-81e3-94f95bb3572f",
+          "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+          "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366636539-img-4923-optimizada.webp",
+          "alt": "Lattafa Yara Tous",
+          "sort_order": 0,
+          "is_primary": true,
+          "created_at": "2026-06-13T16:03:56.88733+00:00",
+          "updated_at": "2026-06-13T16:03:56.88733+00:00"
+        }
+      ]
+    }
+  ],
+  "deletion_candidates": [
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+      "product_name": "Rasasi Hawas For Him",
+      "row_id": "2b4bf44e-e108-4849-9acb-0f6970a313ab",
+      "object": {
+        "id": "093f02b5-2f5f-4dd0-a6de-1db4ed29cd19",
+        "path": "products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978863318-img-4898-optimizada.webp",
+        "size": 88116,
+        "mime": "image/webp",
+        "etag": "0fc132872409cc133657335138562501",
+        "created_at": "2026-06-09T04:21:03.713Z",
+        "updated_at": "2026-06-09T04:21:03.713Z"
+      },
+      "keeper_row_id": "53912094-c090-46b7-ad2d-46ac81bde040",
+      "keeper_path": "products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978864680-img-4898-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+      "product_name": "Lattafa Yara Tous",
+      "row_id": "b6a4f02b-34e0-456e-b1c5-5086fa7b6fc0",
+      "object": {
+        "id": "568f21e9-f2a9-4da3-8406-df96eff02cf9",
+        "path": "products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366634997-img-4923-optimizada.webp",
+        "size": 68662,
+        "mime": "image/webp",
+        "etag": "7c726d805187c4fc0e3f7e4323dad654",
+        "created_at": "2026-06-13T16:03:55.228Z",
+        "updated_at": "2026-06-13T16:03:55.228Z"
+      },
+      "keeper_row_id": "fcfb0556-e18c-460c-81e3-94f95bb3572f",
+      "keeper_path": "products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366636539-img-4923-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "9cc02b87-2304-4636-b4be-e785906e2a5d",
+      "object": {
+        "id": "683ca2ee-c6a1-4e4d-bda6-cd557a1ae4c7",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227684865-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:41:25.347Z",
+        "updated_at": "2026-09-12T15:41:25.347Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "1afb8b59-23c2-4da9-9a1b-9cf7ccc2a527",
+      "object": {
+        "id": "89d4581a-de81-42c9-b191-2d2e34bedeff",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227695603-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:41:36.114Z",
+        "updated_at": "2026-09-12T15:41:36.114Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "663a1a46-905c-4edb-9203-8243a92b4ea4",
+      "object": {
+        "id": "890009a0-0bd3-43c1-a1ac-8a00ea0521b8",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227699441-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:41:39.602Z",
+        "updated_at": "2026-09-12T15:41:39.602Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "509d6c9e-0d19-411f-b364-ca15a374e8fd",
+      "object": {
+        "id": "a7580735-3e24-4c17-b98d-7c10b65d9f28",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227715355-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:41:55.570Z",
+        "updated_at": "2026-09-12T15:41:55.570Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "57e579f2-1fd3-4915-9fc3-7e7c90a27c7a",
+      "object": {
+        "id": "fd3d6ebd-fb45-4b63-9e88-c8e86d9dd9ee",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227725352-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:05.540Z",
+        "updated_at": "2026-09-12T15:42:05.540Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "1b39d7e0-8c67-45b2-bf50-88c1697611d1",
+      "object": {
+        "id": "734f1780-d15c-429a-b66d-9851425d5059",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227734435-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:14.659Z",
+        "updated_at": "2026-09-12T15:42:14.659Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "c78d5db8-21f2-454f-9ceb-ad4bcfa547a1",
+      "object": {
+        "id": "0d5bab16-152b-42e1-acdd-ff252a72369c",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227738188-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:18.378Z",
+        "updated_at": "2026-09-12T15:42:18.378Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "8837eafc-4118-4b1b-a10b-e6d71789f9be",
+      "object": {
+        "id": "4f551952-cb29-484e-9c75-06f64b5c75db",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227742607-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:22.797Z",
+        "updated_at": "2026-09-12T15:42:22.797Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "15be8cd0-e2bc-4085-9cb3-db42a9024219",
+      "object": {
+        "id": "526eef48-c098-428f-baba-3605901dbd33",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227745703-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:25.871Z",
+        "updated_at": "2026-09-12T15:42:25.871Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "6d8a1d1d-7283-4ffe-8255-59fbe9f9d310",
+      "object": {
+        "id": "d55beee9-06e3-4a8e-b725-ba37735c74f1",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227753858-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:34.121Z",
+        "updated_at": "2026-09-12T15:42:34.121Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "9ff89b89-e76f-4166-bca3-24c821f5312f",
+      "object": {
+        "id": "adf11fe2-7333-4675-a360-2f64f3ef76ce",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227756859-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:37.037Z",
+        "updated_at": "2026-09-12T15:42:37.037Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "23e4c7d7-08fe-427f-b3ec-7625d081d9c2",
+      "object": {
+        "id": "be284741-1c05-4324-b756-abc13c16b004",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227762120-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:42.334Z",
+        "updated_at": "2026-09-12T15:42:42.334Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "e188e3d0-4cf7-4c98-861d-2e23446ce8a1",
+      "object": {
+        "id": "00d4b7b2-fab1-4972-918a-5faa74395665",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227766996-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:47.170Z",
+        "updated_at": "2026-09-12T15:42:47.170Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "95686343-4c85-4394-a819-8c2273d2284b",
+      "object": {
+        "id": "e987aa3c-2231-429e-a1bc-0946d4a3ab7c",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227769712-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:50.217Z",
+        "updated_at": "2026-09-12T15:42:50.217Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "c0d762e5-549a-4072-94d2-6787e6fef37a",
+      "object": {
+        "id": "441c8509-493a-40bc-8f99-73e33843a9a1",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227779302-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:42:59.480Z",
+        "updated_at": "2026-09-12T15:42:59.480Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "de4e092a-24ea-4b86-9819-ea3fcc8dae32",
+      "object": {
+        "id": "6db7edb2-6357-4233-b77e-e19d869c21a5",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227782736-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:02.919Z",
+        "updated_at": "2026-09-12T15:43:02.919Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "33764964-8c9f-444d-a93a-1d127173b1ab",
+      "object": {
+        "id": "6f6de07c-ea2a-4424-bf6f-6dc1e1f0ad86",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227786662-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:06.849Z",
+        "updated_at": "2026-09-12T15:43:06.849Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "6c27a1ff-ab67-49a6-a227-aed5579710b9",
+      "object": {
+        "id": "f6dc4fbd-1a9e-40dc-9558-e202f05e1185",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227791054-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:11.230Z",
+        "updated_at": "2026-09-12T15:43:11.230Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "e11477e0-8584-4f4c-98fe-dd213aadaa83",
+      "object": {
+        "id": "e34e93a6-ad44-42d4-ba44-047d0bedaeeb",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227793492-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:13.653Z",
+        "updated_at": "2026-09-12T15:43:13.653Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "e1dd3fc4-586e-4618-aea8-ca96307ebdc8",
+      "object": {
+        "id": "5419ec18-a383-40f0-b043-ab2ad190b92e",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227800191-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:20.367Z",
+        "updated_at": "2026-09-12T15:43:20.367Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "1a484d95-4ee9-414e-af15-a0cf11cbbd1b",
+      "object": {
+        "id": "9d6b08e0-ffd6-4acf-9b32-976d23c7ba50",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227804244-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:24.396Z",
+        "updated_at": "2026-09-12T15:43:24.396Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "98d749f3-1b20-4df8-a783-ff97e6a3056f",
+      "object": {
+        "id": "4dc5ec37-8843-4f4b-896e-0eb0eefeebce",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227806735-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:27.075Z",
+        "updated_at": "2026-09-12T15:43:27.075Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "4ad16a75-ef19-486b-ae9c-62fb904ca31d",
+      "object": {
+        "id": "37d103ad-e006-4471-a67d-3b2fc241be73",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227810573-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:30.759Z",
+        "updated_at": "2026-09-12T15:43:30.759Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "c86c3610-e101-472e-8509-45fb379bbea6",
+      "object": {
+        "id": "c4bbdb01-9df6-4012-820b-2823ffb171bd",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227813740-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:33.928Z",
+        "updated_at": "2026-09-12T15:43:33.928Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_BOTH",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "49437a22-4271-4f5c-9aae-0942a7e5b698",
+      "object": {
+        "id": "e4f1c9b7-a512-4b02-aa84-cac93097a081",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227821526-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:43:41.831Z",
+        "updated_at": "2026-09-12T15:43:41.831Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    },
+    {
+      "action": "DELETE_STORAGE",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "product_name": "Al Haramain dubai night",
+      "row_id": "",
+      "object": {
+        "id": "16ea518d-dde3-4ab3-880f-2cc2c350d626",
+        "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227660446-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+        "size": 50728,
+        "mime": "image/webp",
+        "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+        "created_at": "2026-09-12T15:41:00.644Z",
+        "updated_at": "2026-09-12T15:41:00.644Z"
+      },
+      "keeper_row_id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "keeper_path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp"
+    }
+  ],
+  "protected_review": [
+    {
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "image": {
+        "id": "8a698d0f-96a5-4af8-bb05-4de4168bf431",
+        "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+        "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/f1cb2323-0e7f-49d6-a26f-110595c90e55/1780979018845-img-4921-optimizada.webp",
+        "alt": "Lattafa Yara Rosa",
+        "sort_order": 0,
+        "is_primary": true,
+        "created_at": "2026-06-09T04:23:39.340363+00:00",
+        "updated_at": "2026-06-09T04:23:39.340363+00:00"
+      },
+      "object": {
+        "id": "ea6e1da6-00a7-42e3-a7c8-0519b4813273",
+        "path": "products/f1cb2323-0e7f-49d6-a26f-110595c90e55/1780979018845-img-4921-optimizada.webp",
+        "size": 69834,
+        "mime": "image/webp",
+        "etag": "124bacd2b763d1c5307bd23f201186d5",
+        "created_at": "2026-06-09T04:23:39.152Z",
+        "updated_at": "2026-06-09T04:23:39.152Z"
+      }
+    },
+    {
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "image": {
+        "id": "216c5fa1-8fa8-49ec-bfbc-7091a9139045",
+        "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+        "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/05b34469-3eb8-4148-8e97-9a19f1c2df6e/1781366716520-img-4921-optimizada.webp",
+        "alt": "Lattafa Yara Rosa",
+        "sort_order": 0,
+        "is_primary": true,
+        "created_at": "2026-06-13T16:05:16.880358+00:00",
+        "updated_at": "2026-06-13T16:05:16.880358+00:00"
+      },
+      "object": {
+        "id": "26b1033f-674f-4a1b-8f8f-4d7d869ec348",
+        "path": "products/05b34469-3eb8-4148-8e97-9a19f1c2df6e/1781366716520-img-4921-optimizada.webp",
+        "size": 69834,
+        "mime": "image/webp",
+        "etag": "124bacd2b763d1c5307bd23f201186d5",
+        "created_at": "2026-06-13T16:05:16.697Z",
+        "updated_at": "2026-06-13T16:05:16.697Z"
+      }
+    }
+  ],
+  "product_images": [
+    {
+      "id": "011e4fcd-10ac-4460-9157-73b696e439a9",
+      "product_id": "edb4b664-5da6-489c-94c1-b0d1deb88232",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/edb4b664-5da6-489c-94c1-b0d1deb88232/1781481899287-img-0524-optimizada.webp",
+      "alt": "BOX LOS SIMPSON",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:04:59.890455+00:00",
+      "updated_at": "2026-06-15T00:04:59.890455+00:00"
+    },
+    {
+      "id": "0130d2dc-d430-4c37-a355-91c01a0a3490",
+      "product_id": "fe29c305-f0f8-4752-855c-c785be1046ac",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/fe29c305-f0f8-4752-855c-c785be1046ac/1781482275059-img-0197-optimizada.webp",
+      "alt": "Decant hawas tropical",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:11:15.55009+00:00",
+      "updated_at": "2026-06-15T00:11:15.55009+00:00"
+    },
+    {
+      "id": "03323eef-6142-4786-a822-26ea759c8102",
+      "product_id": "1a0e151a-fe10-4276-9b0e-a3db50759c41",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/1a0e151a-fe10-4276-9b0e-a3db50759c41/1781367416969-img-4814-optimizada.webp",
+      "alt": "Lattafa Qaed Al Fursan",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:16:57.470767+00:00",
+      "updated_at": "2026-06-13T16:16:57.470767+00:00"
+    },
+    {
+      "id": "06495fbe-aa3e-5695-b1a1-c70571ad3526",
+      "product_id": "7d2416cf-c123-4040-8617-1fb75de38e6e",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/7d2416cf-c123-4040-8617-1fb75de38e6e/be7eabe25fa6cdb03a7090c08817cc10-img-9606-optimizada.webp",
+      "alt": "CONFIDENTIAL GOLD - 100M",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-10-04T03:52:19.956849+00:00",
+      "updated_at": "2026-10-04T03:52:19.956849+00:00"
+    },
+    {
+      "id": "0839c97a-b2b1-4f1c-822e-b7437c91064e",
+      "product_id": "65027262-d36d-4230-a859-40a007489bfa",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/65027262-d36d-4230-a859-40a007489bfa/1781367352580-img-4875-optimizada.webp",
+      "alt": "Lattafa Opulent Dubai",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:15:52.950582+00:00",
+      "updated_at": "2026-06-13T16:15:52.950582+00:00"
+    },
+    {
+      "id": "0ada6952-afad-49ba-b43e-fb403ab630a5",
+      "product_id": "41cec216-c896-452a-8e38-15730ebafa35",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/41cec216-c896-452a-8e38-15730ebafa35/1781480941199-img-0434-optimizada.webp",
+      "alt": "Mate Camionero Ruta",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:49:01.77942+00:00",
+      "updated_at": "2026-06-14T23:49:01.77942+00:00"
+    },
+    {
+      "id": "10dde315-5813-52b9-a196-cfb257b350a9",
+      "product_id": "2c39e1c9-cc23-4d4c-bb5d-8469f87e666b",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/2c39e1c9-cc23-4d4c-bb5d-8469f87e666b/f79fe37f2d38749557a3f00f943868dc-img-5950-optimizada.webp",
+      "alt": "Mate Torpedo animal print 100% cuero",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-10-04T03:48:48.792075+00:00",
+      "updated_at": "2026-10-04T03:48:48.792075+00:00"
+    },
+    {
+      "id": "15be8cd0-e2bc-4085-9cb3-db42a9024219",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227745703-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 9,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:26.056218+00:00",
+      "updated_at": "2026-09-12T15:42:26.056218+00:00"
+    },
+    {
+      "id": "1600e707-0e0e-43d6-beec-c3ccaeaf82ef",
+      "product_id": "1354e3bc-2fa3-486d-a43a-d38da696f160",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/1354e3bc-2fa3-486d-a43a-d38da696f160/1781367460584-73bb2879-ccf0-4a17-a038-02154486843e-optimizada.webp",
+      "alt": "Lattafa Pride Nebras",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:17:40.964684+00:00",
+      "updated_at": "2026-06-13T16:17:40.964684+00:00"
+    },
+    {
+      "id": "1a484d95-4ee9-414e-af15-a0cf11cbbd1b",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227804244-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 21,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:24.582947+00:00",
+      "updated_at": "2026-09-12T15:43:24.582947+00:00"
+    },
+    {
+      "id": "1afb8b59-23c2-4da9-9a1b-9cf7ccc2a527",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227695603-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 2,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:41:36.299861+00:00",
+      "updated_at": "2026-09-12T15:41:36.299861+00:00"
+    },
+    {
+      "id": "1b39d7e0-8c67-45b2-bf50-88c1697611d1",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227734435-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 6,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:14.949943+00:00",
+      "updated_at": "2026-09-12T15:42:14.949943+00:00"
+    },
+    {
+      "id": "1c82f105-059c-4ea7-9044-c6036e954e10",
+      "product_id": "6ca63ce3-5694-418f-90a8-5d8043f4c2f5",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/6ca63ce3-5694-418f-90a8-5d8043f4c2f5/1789601319065-0-37e6f25d-987d-4ebd-9f61-cb46a2aaf76f-optimizada.webp",
+      "alt": "French Avenue Liquid Broun",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-09-16T23:28:39.481961+00:00",
+      "updated_at": "2026-09-16T23:28:39.481961+00:00"
+    },
+    {
+      "id": "1da7b777-8b76-57f2-9d43-45c59f17248e",
+      "product_id": "631dc501-2496-4c4f-9900-b0b14fbd19d2",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/631dc501-2496-4c4f-9900-b0b14fbd19d2/2283c3f9a52ddca980b74284862a3374-4e03dfa4-8dcf-4fdc-8c0a-c63730b0be8a-optimizada.webp",
+      "alt": "Club de Nuit Intense Man",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-10-04T03:37:08.836361+00:00",
+      "updated_at": "2026-10-04T03:37:08.836361+00:00"
+    },
+    {
+      "id": "1dbacf99-5faf-4294-9c7e-e26111d14f13",
+      "product_id": "1dc53fdd-4eb8-4b60-b8ef-5eba96dc2cb2",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/1dc53fdd-4eb8-4b60-b8ef-5eba96dc2cb2/1791041868693-0-img-1761-optimizada.webp",
+      "alt": "Vaso Cervecero Stanley",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-10-03T15:37:49.348687+00:00",
+      "updated_at": "2026-10-03T15:37:49.348687+00:00"
+    },
+    {
+      "id": "1e58c71f-16b2-4861-859a-024461d2caec",
+      "product_id": "13627ebe-ca04-46e0-9d26-d2861d1ee4a5",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/13627ebe-ca04-46e0-9d26-d2861d1ee4a5/1780979524128-img-0780-optimizada.webp",
+      "alt": "Lattafa Asad Bourbon",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-09T04:32:04.575387+00:00",
+      "updated_at": "2026-06-09T04:32:04.575387+00:00"
+    },
+    {
+      "id": "216c5fa1-8fa8-49ec-bfbc-7091a9139045",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/05b34469-3eb8-4148-8e97-9a19f1c2df6e/1781366716520-img-4921-optimizada.webp",
+      "alt": "Lattafa Yara Rosa",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:05:16.880358+00:00",
+      "updated_at": "2026-06-13T16:05:16.880358+00:00"
+    },
+    {
+      "id": "23e4c7d7-08fe-427f-b3ec-7625d081d9c2",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227762120-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 12,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:42.541596+00:00",
+      "updated_at": "2026-09-12T15:42:42.541596+00:00"
+    },
+    {
+      "id": "2b12cfc3-42ca-451a-89a0-df81260d3fc4",
+      "product_id": "0be4f17b-4888-466f-ad13-3643a645f730",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/0be4f17b-4888-466f-ad13-3643a645f730/1781483499083-img-0193-optimizada.webp",
+      "alt": "Decant hawas malibu 5ml",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:31:39.547155+00:00",
+      "updated_at": "2026-06-15T00:31:39.547155+00:00"
+    },
+    {
+      "id": "2b4bf44e-e108-4849-9acb-0f6970a313ab",
+      "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978863318-img-4898-optimizada.webp",
+      "alt": "Rasasi Hawas For Him",
+      "sort_order": 0,
+      "is_primary": false,
+      "created_at": "2026-06-09T04:21:03.905674+00:00",
+      "updated_at": "2026-06-09T04:21:05.105998+00:00"
+    },
+    {
+      "id": "2c529829-fb9c-508b-9ed9-a66abe1d2a6a",
+      "product_id": "2c39e1c9-cc23-4d4c-bb5d-8469f87e666b",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/2c39e1c9-cc23-4d4c-bb5d-8469f87e666b/923966aa646c538e7b8d67a2c0ad6696-img-5784-optimizada.webp",
+      "alt": "Mate Torpedo animal print 100% cuero",
+      "sort_order": 2,
+      "is_primary": false,
+      "created_at": "2026-10-04T03:49:00.617497+00:00",
+      "updated_at": "2026-10-04T03:49:00.617497+00:00"
+    },
+    {
+      "id": "31a33be8-4de8-4fcd-97a7-62b1f5816df6",
+      "product_id": "96f90d2b-185b-4f47-a155-184619a8b6e3",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/96f90d2b-185b-4f47-a155-184619a8b6e3/1780979127511-img-5811-optimizada.webp",
+      "alt": "Bombilla Pico de Loro",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-09T04:25:28.012038+00:00",
+      "updated_at": "2026-06-09T04:25:28.012038+00:00"
+    },
+    {
+      "id": "32481f47-fd42-4e2c-b6b6-1540f1943a3e",
+      "product_id": "b223e3e9-3bb6-4da9-8a62-a03a4fd994e0",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/b223e3e9-3bb6-4da9-8a62-a03a4fd994e0/1781480153667-img-0541-optimizada.webp",
+      "alt": "Termo media manija negro 1L",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:35:54.534623+00:00",
+      "updated_at": "2026-06-14T23:35:54.534623+00:00"
+    },
+    {
+      "id": "33764964-8c9f-444d-a93a-1d127173b1ab",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227786662-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 17,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:07.047024+00:00",
+      "updated_at": "2026-09-12T15:43:07.047024+00:00"
+    },
+    {
+      "id": "37d8f01d-a9a6-44da-be76-c380321b2dc8",
+      "product_id": "032d8b00-dd7e-4700-b8d4-106ccf93ba1a",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/032d8b00-dd7e-4700-b8d4-106ccf93ba1a/1781480545296-img-0438-optimizada.webp",
+      "alt": "Mate Imperial algarrobo con grabado BOCA JUNIORS",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:42:25.909399+00:00",
+      "updated_at": "2026-06-14T23:42:25.909399+00:00"
+    },
+    {
+      "id": "3e318597-7a47-4327-ae57-5b1ff74c4394",
+      "product_id": "be8852f0-c712-4b69-993f-dfd6e954af31",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/be8852f0-c712-4b69-993f-dfd6e954af31/1781480065580-img-0545-optimizada.webp",
+      "alt": "Bombilla de alpaca y bronce cincelada",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:34:26.261104+00:00",
+      "updated_at": "2026-06-14T23:34:26.261104+00:00"
+    },
+    {
+      "id": "49437a22-4271-4f5c-9aae-0942a7e5b698",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227821526-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 25,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:42.029719+00:00",
+      "updated_at": "2026-09-12T15:43:42.029719+00:00"
+    },
+    {
+      "id": "4ad16a75-ef19-486b-ae9c-62fb904ca31d",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227810573-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 23,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:30.953414+00:00",
+      "updated_at": "2026-09-12T15:43:30.953414+00:00"
+    },
+    {
+      "id": "4e23be90-fa02-496f-804f-479fea6300fe",
+      "product_id": "2db67b25-6e37-446a-8e98-5f626d5efc63",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/2db67b25-6e37-446a-8e98-5f626d5efc63/1781484221250-img-0191-optimizada.webp",
+      "alt": "Decant hawas elixir",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:43:41.695605+00:00",
+      "updated_at": "2026-06-15T00:43:41.695605+00:00"
+    },
+    {
+      "id": "509d6c9e-0d19-411f-b364-ca15a374e8fd",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227715355-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 4,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:41:55.776794+00:00",
+      "updated_at": "2026-09-12T15:41:55.776794+00:00"
+    },
+    {
+      "id": "5196b634-210f-4954-b698-5837e45425e5",
+      "product_id": "8ca47237-b9ae-4720-a8be-043ecd104ed7",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/8ca47237-b9ae-4720-a8be-043ecd104ed7/1781483034879-img-0211-optimizada.webp",
+      "alt": "Decant liquid brun",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:23:55.312471+00:00",
+      "updated_at": "2026-06-15T00:23:55.312471+00:00"
+    },
+    {
+      "id": "53912094-c090-46b7-ad2d-46ac81bde040",
+      "product_id": "880dfa55-41c2-4275-91e7-ca7def54ec14",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978864680-img-4898-optimizada.webp",
+      "alt": "Rasasi Hawas For Him",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-09T04:21:05.181944+00:00",
+      "updated_at": "2026-06-09T04:21:05.181944+00:00"
+    },
+    {
+      "id": "54d000d2-a14c-4fee-9f27-336289fbc7e9",
+      "product_id": "5585ed23-1d19-40b0-a443-81953a999e9c",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/5585ed23-1d19-40b0-a443-81953a999e9c/1781480195894-img-0538-optimizada.webp",
+      "alt": "Termo Pico System",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:36:36.548971+00:00",
+      "updated_at": "2026-06-14T23:36:36.548971+00:00"
+    },
+    {
+      "id": "57e579f2-1fd3-4915-9fc3-7e7c90a27c7a",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227725352-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 5,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:05.905152+00:00",
+      "updated_at": "2026-09-12T15:42:05.905152+00:00"
+    },
+    {
+      "id": "58d1a2c0-5355-4531-a931-e6159a8ee622",
+      "product_id": "e5b37a2f-ab84-4009-b8d3-1a6f307c3eda",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/e5b37a2f-ab84-4009-b8d3-1a6f307c3eda/1781483155525-img-0199-optimizada.webp",
+      "alt": "Decant Lattafa Kahambra",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:25:56.240177+00:00",
+      "updated_at": "2026-06-15T00:25:56.240177+00:00"
+    },
+    {
+      "id": "62c0d20f-8cf3-4b11-b35e-e61cfecba879",
+      "product_id": "b58d9866-5d03-4f63-994d-762108522492",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/b58d9866-5d03-4f63-994d-762108522492/1781367271058-whatsapp-image-2026-01-26-at-18-33-16-optimizada.webp",
+      "alt": "Lattafa Bade'e Al Oud Sublime",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:14:31.468889+00:00",
+      "updated_at": "2026-06-13T16:14:31.468889+00:00"
+    },
+    {
+      "id": "663a1a46-905c-4edb-9203-8243a92b4ea4",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227699441-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 3,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:41:39.785348+00:00",
+      "updated_at": "2026-09-12T15:41:39.785348+00:00"
+    },
+    {
+      "id": "68b5cd37-6a6f-44ca-9ee5-1f5ac89fa74f",
+      "product_id": "ff56264b-c183-404b-984f-205e95eea65a",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/ff56264b-c183-404b-984f-205e95eea65a/1781481004696-img-0439-optimizada.webp",
+      "alt": "Mate Camionero Messi",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:50:05.30132+00:00",
+      "updated_at": "2026-06-14T23:50:05.30132+00:00"
+    },
+    {
+      "id": "6c27a1ff-ab67-49a6-a227-aed5579710b9",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227791054-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 18,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:11.412343+00:00",
+      "updated_at": "2026-09-12T15:43:11.412343+00:00"
+    },
+    {
+      "id": "6d2efa36-5a43-4efa-a59c-bcbb3d591c52",
+      "product_id": "d6d024ff-1804-4be5-838b-8f7af9ca363d",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/d6d024ff-1804-4be5-838b-8f7af9ca363d/1781481032442-img-0431-optimizada.webp",
+      "alt": "Mate Camionero Harry Potter",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:50:32.992161+00:00",
+      "updated_at": "2026-06-14T23:50:32.992161+00:00"
+    },
+    {
+      "id": "6d8a1d1d-7283-4ffe-8255-59fbe9f9d310",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227753858-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 10,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:34.334755+00:00",
+      "updated_at": "2026-09-12T15:42:34.334755+00:00"
+    },
+    {
+      "id": "6fac50d0-a71b-4c2f-a007-b530f07b2997",
+      "product_id": "b6db64db-4768-43f9-aadd-e72f24d6d318",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/b6db64db-4768-43f9-aadd-e72f24d6d318/1781482234001-img-0203-optimizada.webp",
+      "alt": "Decant hawas verde",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:10:34.522028+00:00",
+      "updated_at": "2026-06-15T00:10:34.522028+00:00"
+    },
+    {
+      "id": "76833586-71f6-4903-a533-79b5e047cba7",
+      "product_id": "ac79cfed-1855-4fc9-8bb2-de2fc01aa904",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/ac79cfed-1855-4fc9-8bb2-de2fc01aa904/1781481867482-img-0531-optimizada.webp",
+      "alt": "Box Argentina",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:04:28.026181+00:00",
+      "updated_at": "2026-06-15T00:04:28.026181+00:00"
+    },
+    {
+      "id": "783d8c8c-2283-5482-9f58-c776dbe78c25",
+      "product_id": "bedb3ca2-68ed-4158-a00f-4b203b4d8f92",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/bedb3ca2-68ed-4158-a00f-4b203b4d8f92/904022a6da1fb96a0d70269d0263a39c-img-9603-optimizada.webp",
+      "alt": "Qaed Al Fursan Untamed",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-10-04T03:39:03.378186+00:00",
+      "updated_at": "2026-10-04T03:39:03.378186+00:00"
+    },
+    {
+      "id": "7c481599-a175-467f-b310-b6b357e5c530",
+      "product_id": "e53a64ad-8e1d-452f-9025-53d940215082",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/e53a64ad-8e1d-452f-9025-53d940215082/1781480726821-img-7005-optimizada.webp",
+      "alt": "Despolvillador",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:45:27.431064+00:00",
+      "updated_at": "2026-06-14T23:45:27.431064+00:00"
+    },
+    {
+      "id": "7cdb2b2b-5ab9-48c6-9169-868c3cafe456",
+      "product_id": "ac173fed-a2b0-43b9-9d05-36b7ebdcf902",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/ac173fed-a2b0-43b9-9d05-36b7ebdcf902/1781481185498-img-0544-optimizada.webp",
+      "alt": "Bombillon Premium",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:53:06.196677+00:00",
+      "updated_at": "2026-06-14T23:53:06.196677+00:00"
+    },
+    {
+      "id": "83702f3b-8666-4a32-b15f-18d49557a034",
+      "product_id": "a2843178-0691-4a35-bb30-b475b3e941ff",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/a2843178-0691-4a35-bb30-b475b3e941ff/1781480265866-img-0537-optimizada.webp",
+      "alt": "Porta mate cuero Marrón",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:37:46.499623+00:00",
+      "updated_at": "2026-06-14T23:37:46.499623+00:00"
+    },
+    {
+      "id": "8837eafc-4118-4b1b-a10b-e6d71789f9be",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227742607-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 8,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:22.973241+00:00",
+      "updated_at": "2026-09-12T15:42:22.973241+00:00"
+    },
+    {
+      "id": "8886545d-030b-4e64-99be-df1994ecfe03",
+      "product_id": "c6ab646e-ea3c-4ca9-928a-3f518e49f5e6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/c6ab646e-ea3c-4ca9-928a-3f518e49f5e6/1790812472459-0-img-0779-optimizada.webp",
+      "alt": "HOMME BLACK - 100ML",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-09-30T23:54:33.121191+00:00",
+      "updated_at": "2026-09-30T23:54:33.121191+00:00"
+    },
+    {
+      "id": "89c360f6-e194-4431-9f4c-bd98a7788acc",
+      "product_id": "4d7976ee-45ae-447a-88a7-e6f986c59d8f",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/4d7976ee-45ae-447a-88a7-e6f986c59d8f/1781480665871-img-7007-optimizada.webp",
+      "alt": "Dispenser de yerba en madera",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:44:26.539507+00:00",
+      "updated_at": "2026-06-14T23:44:26.539507+00:00"
+    },
+    {
+      "id": "8a698d0f-96a5-4af8-bb05-4de4168bf431",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/f1cb2323-0e7f-49d6-a26f-110595c90e55/1780979018845-img-4921-optimizada.webp",
+      "alt": "Lattafa Yara Rosa",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-09T04:23:39.340363+00:00",
+      "updated_at": "2026-06-09T04:23:39.340363+00:00"
+    },
+    {
+      "id": "8e0b6d1a-6133-4182-9624-55d997a42348",
+      "product_id": "8d828391-4a86-4eb9-bb6a-f384bc3e1d7d",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/8d828391-4a86-4eb9-bb6a-f384bc3e1d7d/1781482003237-img-0207-optimizada.webp",
+      "alt": "Decant Game of Spades Full House",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:06:43.773819+00:00",
+      "updated_at": "2026-06-15T00:06:43.773819+00:00"
+    },
+    {
+      "id": "91430487-38f2-472c-a556-ba3d86a0f9a6",
+      "product_id": "39310ff1-8765-464b-89f2-cbb245581879",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/39310ff1-8765-464b-89f2-cbb245581879/1781480971158-img-0433-optimizada.webp",
+      "alt": "Mate Camionero Patagónia",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:49:31.721581+00:00",
+      "updated_at": "2026-06-14T23:49:31.721581+00:00"
+    },
+    {
+      "id": "93502e82-e9ed-4fc6-9dc7-6d119b7fb9cb",
+      "product_id": "165c4d74-286a-4882-9370-e47001f85e95",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/165c4d74-286a-4882-9370-e47001f85e95/1781480345115-img-0536-optimizada.webp",
+      "alt": "Porta mate cuero Marrón Oscuro",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:39:05.776992+00:00",
+      "updated_at": "2026-06-14T23:39:05.776992+00:00"
+    },
+    {
+      "id": "95686343-4c85-4394-a819-8c2273d2284b",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227769712-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 14,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:50.425388+00:00",
+      "updated_at": "2026-09-12T15:42:50.425388+00:00"
+    },
+    {
+      "id": "98d749f3-1b20-4df8-a783-ff97e6a3056f",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227806735-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 22,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:27.247989+00:00",
+      "updated_at": "2026-09-12T15:43:27.247989+00:00"
+    },
+    {
+      "id": "995bdc15-b6a2-4bd4-bf9e-1496d5d80df7",
+      "product_id": "da8d3743-3ee5-4210-a387-49e4f87e9ec9",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/da8d3743-3ee5-4210-a387-49e4f87e9ec9/1781481332257-img-0535-optimizada.webp",
+      "alt": "Box Presentación",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:55:32.843106+00:00",
+      "updated_at": "2026-06-14T23:55:32.843106+00:00"
+    },
+    {
+      "id": "9977f02d-9dc9-468f-b179-2cd3a585d588",
+      "product_id": "19fba313-0653-4d9c-9e1a-f62a46652bf5",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/19fba313-0653-4d9c-9e1a-f62a46652bf5/1781480512488-img-0436-optimizada.webp",
+      "alt": "Mate Imperial algarrobo con grabado RIVER PLATE",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:41:53.44928+00:00",
+      "updated_at": "2026-06-14T23:41:53.44928+00:00"
+    },
+    {
+      "id": "9cc02b87-2304-4636-b4be-e785906e2a5d",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227684865-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 1,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:41:25.544661+00:00",
+      "updated_at": "2026-09-12T15:41:25.544661+00:00"
+    },
+    {
+      "id": "9daaefdc-abcf-4f00-8ece-58892784d48c",
+      "product_id": "ad228c7e-6279-424f-a436-36e85685e5b8",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/ad228c7e-6279-424f-a436-36e85685e5b8/1789229590252-0-f085659f-287f-4727-8d85-8ffc710516d3-optimizada.webp",
+      "alt": "Lattafa Eclaire",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-09-12T16:13:10.725738+00:00",
+      "updated_at": "2026-09-12T16:13:10.725738+00:00"
+    },
+    {
+      "id": "9dbec0cb-21a5-4cc3-8fee-08dc8d2a45e7",
+      "product_id": "f91c4caa-32bb-4450-8a87-25422095257b",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/f91c4caa-32bb-4450-8a87-25422095257b/1781484098968-img-0206-optimizada.webp",
+      "alt": "Decant hawas fire",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:41:39.373634+00:00",
+      "updated_at": "2026-06-15T00:41:39.373634+00:00"
+    },
+    {
+      "id": "9ff89b89-e76f-4166-bca3-24c821f5312f",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227756859-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 11,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:37.435484+00:00",
+      "updated_at": "2026-09-12T15:42:37.435484+00:00"
+    },
+    {
+      "id": "a6aa1ff4-7f14-44ed-a58d-7421cc1e813b",
+      "product_id": "900a7c30-7412-4da3-b300-7d013044e853",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/900a7c30-7412-4da3-b300-7d013044e853/1781367154390-whatsapp-image-2026-01-26-at-18-33-1-optimizada.webp",
+      "alt": "Lattafa Yara moi",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:12:34.765759+00:00",
+      "updated_at": "2026-06-13T16:12:34.765759+00:00"
+    },
+    {
+      "id": "b164973f-be36-4509-a1af-58f4e0366471",
+      "product_id": "9c07ceb2-4d7a-407c-898b-e0cb43fc008e",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/9c07ceb2-4d7a-407c-898b-e0cb43fc008e/1780978967811-whatsapp-image-2026-01-26-at-18-33-15-optimizada.webp",
+      "alt": "Afnan 9 PM Elixir",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-09T04:22:48.175065+00:00",
+      "updated_at": "2026-06-09T04:22:48.175065+00:00"
+    },
+    {
+      "id": "b21171fe-4acd-55ef-99c3-36c09cf17701",
+      "product_id": "e7ceb4e9-34e4-469b-b225-5de2e3cb5a8a",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/e7ceb4e9-34e4-469b-b225-5de2e3cb5a8a/e259eae8f29745dbebb130e872b94199-8cb700fd-11fd-4efa-9a2e-8eee0d8267d4-optimizada.webp",
+      "alt": "Mate Imperial Animal Print  virola cincelada con aplique",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-10-04T03:54:34.220733+00:00",
+      "updated_at": "2026-10-04T03:54:34.220733+00:00"
+    },
+    {
+      "id": "b6a4f02b-34e0-456e-b1c5-5086fa7b6fc0",
+      "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366634997-img-4923-optimizada.webp",
+      "alt": "Lattafa Yara Tous",
+      "sort_order": 0,
+      "is_primary": false,
+      "created_at": "2026-06-13T16:03:55.429419+00:00",
+      "updated_at": "2026-06-13T16:03:56.8105+00:00"
+    },
+    {
+      "id": "bde530cb-b888-4c4b-b294-27aaffac3c3d",
+      "product_id": "8f06198a-0199-407d-9d5d-9e7c38bcd578",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/8f06198a-0199-407d-9d5d-9e7c38bcd578/1781484545412-img-0210-optimizada.webp",
+      "alt": "Decant hawas Kobra 5ml",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:49:05.781225+00:00",
+      "updated_at": "2026-06-15T00:49:05.781225+00:00"
+    },
+    {
+      "id": "c0d762e5-549a-4072-94d2-6787e6fef37a",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227779302-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 15,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:59.686816+00:00",
+      "updated_at": "2026-09-12T15:42:59.686816+00:00"
+    },
+    {
+      "id": "c1d588f1-dbac-46d0-9857-d2edb0090788",
+      "product_id": "3e52b75d-007c-4637-8ad7-3dd3a8efb159",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/3e52b75d-007c-4637-8ad7-3dd3a8efb159/1781483326400-img-0204-optimizada.webp",
+      "alt": "Decant Rayhaan elixir",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-15T00:28:46.877912+00:00",
+      "updated_at": "2026-06-15T00:28:46.877912+00:00"
+    },
+    {
+      "id": "c78d5db8-21f2-454f-9ceb-ad4bcfa547a1",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227738188-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 7,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:18.559313+00:00",
+      "updated_at": "2026-09-12T15:42:18.559313+00:00"
+    },
+    {
+      "id": "c86c3610-e101-472e-8509-45fb379bbea6",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227813740-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 24,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:34.125742+00:00",
+      "updated_at": "2026-09-12T15:43:34.125742+00:00"
+    },
+    {
+      "id": "d4a3ae94-1018-582e-bbfd-734bf8381578",
+      "product_id": "6d1059a4-9226-415a-ac5a-163b9545b04a",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/6d1059a4-9226-415a-ac5a-163b9545b04a/8b7f880268656bbf363332c0a686f9c0-img-5794-optimizada.webp",
+      "alt": "Mate Torpedo animal print alpaca cincelada",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-10-04T03:51:30.296428+00:00",
+      "updated_at": "2026-10-04T03:51:30.296428+00:00"
+    },
+    {
+      "id": "d6a73706-eb09-42da-9e4c-0ddf7ddfb1f9",
+      "product_id": "f57365ec-33f2-4807-aa64-18a77c00b00b",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/f57365ec-33f2-4807-aa64-18a77c00b00b/1789599986328-0-img-9605-optimizada.webp",
+      "alt": "SALVO ELIXIR - 60ML",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-09-16T23:06:27.085871+00:00",
+      "updated_at": "2026-09-16T23:06:27.085871+00:00"
+    },
+    {
+      "id": "de4e092a-24ea-4b86-9819-ea3fcc8dae32",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227782736-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 16,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:03.121166+00:00",
+      "updated_at": "2026-09-12T15:43:03.121166+00:00"
+    },
+    {
+      "id": "e11477e0-8584-4f4c-98fe-dd213aadaa83",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227793492-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 19,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:13.843618+00:00",
+      "updated_at": "2026-09-12T15:43:13.843618+00:00"
+    },
+    {
+      "id": "e188e3d0-4cf7-4c98-861d-2e23446ce8a1",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227766996-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 13,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:42:47.383444+00:00",
+      "updated_at": "2026-09-12T15:42:47.383444+00:00"
+    },
+    {
+      "id": "e1dd3fc4-586e-4618-aea8-ca96307ebdc8",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227800191-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 20,
+      "is_primary": false,
+      "created_at": "2026-09-12T15:43:20.56234+00:00",
+      "updated_at": "2026-09-12T15:43:20.56234+00:00"
+    },
+    {
+      "id": "e1f8f6e1-fc81-4147-8034-c2e6c9742a38",
+      "product_id": "66c152aa-98db-4827-b4c7-fdc2721da2a6",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "alt": "Al Haramain dubai night",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-09-12T15:41:17.356426+00:00",
+      "updated_at": "2026-09-12T15:41:17.356426+00:00"
+    },
+    {
+      "id": "e44a9fe4-5367-42ce-8fe5-1431f5575bf0",
+      "product_id": "2e51cf34-5c02-42ff-867e-7a06d8bf273b",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/2e51cf34-5c02-42ff-867e-7a06d8bf273b/1789248291969-0-img-9606-optimizada.webp",
+      "alt": "CONFIDENTIAL GOLD - 100ML",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-09-12T21:24:52.62518+00:00",
+      "updated_at": "2026-09-12T21:24:52.62518+00:00"
+    },
+    {
+      "id": "e4c86835-2707-4ee8-9047-e03b4a56f89f",
+      "product_id": "314ab75f-58b3-49c5-8602-cda72295d855",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/314ab75f-58b3-49c5-8602-cda72295d855/1789600945890-0-img-1206-optimizada.webp",
+      "alt": "Uomo itense",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-09-16T23:22:26.687012+00:00",
+      "updated_at": "2026-09-16T23:22:26.687012+00:00"
+    },
+    {
+      "id": "e969a76e-2d3d-52ff-94e6-9b813ba6a3f7",
+      "product_id": "2c39e1c9-cc23-4d4c-bb5d-8469f87e666b",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/2c39e1c9-cc23-4d4c-bb5d-8469f87e666b/ac923da68727068a24b4aa4b48f0b16d-img-0718-optimizada.webp",
+      "alt": "Mate Torpedo animal print 100% cuero",
+      "sort_order": 1,
+      "is_primary": false,
+      "created_at": "2026-10-04T03:48:48.792075+00:00",
+      "updated_at": "2026-10-04T03:48:48.792075+00:00"
+    },
+    {
+      "id": "f19c0c17-bcc5-4879-a844-f6a4e22c1e67",
+      "product_id": "bd7930a6-65c3-4e3b-b85f-1cb1b56d6835",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/bd7930a6-65c3-4e3b-b85f-1cb1b56d6835/1780890845250-img-4815-optimizada.webp",
+      "alt": "Lattafa Asad",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-08T03:54:05.715113+00:00",
+      "updated_at": "2026-06-08T03:54:05.715113+00:00"
+    },
+    {
+      "id": "fcfb0556-e18c-460c-81e3-94f95bb3572f",
+      "product_id": "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366636539-img-4923-optimizada.webp",
+      "alt": "Lattafa Yara Tous",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:03:56.88733+00:00",
+      "updated_at": "2026-06-13T16:03:56.88733+00:00"
+    },
+    {
+      "id": "ff563e33-0170-4c4a-b87d-6843f71a5cfb",
+      "product_id": "06d245a5-6028-42dd-89d8-1e1f1b598faf",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/06d245a5-6028-42dd-89d8-1e1f1b598faf/1781481057349-img-0432-optimizada.webp",
+      "alt": "Mate Camionero Argentina",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-14T23:50:57.899863+00:00",
+      "updated_at": "2026-06-14T23:50:57.899863+00:00"
+    }
+  ],
+  "storage_objects": [
+    {
+      "id": "9b515ef6-5c31-434b-83fd-6c2e09fe09ce",
+      "path": "products/032d8b00-dd7e-4700-b8d4-106ccf93ba1a/1781480545296-img-0438-optimizada.webp",
+      "size": 41044,
+      "mime": "image/webp",
+      "etag": "705db25b706247b63b9c65d69897133e",
+      "created_at": "2026-06-14T23:42:25.728Z",
+      "updated_at": "2026-06-14T23:42:25.728Z"
+    },
+    {
+      "id": "26b1033f-674f-4a1b-8f8f-4d7d869ec348",
+      "path": "products/05b34469-3eb8-4148-8e97-9a19f1c2df6e/1781366716520-img-4921-optimizada.webp",
+      "size": 69834,
+      "mime": "image/webp",
+      "etag": "124bacd2b763d1c5307bd23f201186d5",
+      "created_at": "2026-06-13T16:05:16.697Z",
+      "updated_at": "2026-06-13T16:05:16.697Z"
+    },
+    {
+      "id": "74ee9655-3925-45a4-b993-7bb4525c7b1e",
+      "path": "products/06d245a5-6028-42dd-89d8-1e1f1b598faf/1781481057349-img-0432-optimizada.webp",
+      "size": 54504,
+      "mime": "image/webp",
+      "etag": "980dc9a14b91f6421520d64269b4425e",
+      "created_at": "2026-06-14T23:50:57.732Z",
+      "updated_at": "2026-06-14T23:50:57.732Z"
+    },
+    {
+      "id": "0ae959a6-7529-4c05-888d-f1062772e920",
+      "path": "products/0be4f17b-4888-466f-ad13-3643a645f730/1781483499083-img-0193-optimizada.webp",
+      "size": 41794,
+      "mime": "image/webp",
+      "etag": "a0ede90d44b4972b787e44b8914b4bb1",
+      "created_at": "2026-06-15T00:31:39.345Z",
+      "updated_at": "2026-06-15T00:31:39.345Z"
+    },
+    {
+      "id": "790638b9-3924-4619-ad95-4cae833b13d6",
+      "path": "products/1354e3bc-2fa3-486d-a43a-d38da696f160/1781367460584-73bb2879-ccf0-4a17-a038-02154486843e-optimizada.webp",
+      "size": 85710,
+      "mime": "image/webp",
+      "etag": "16cc22b23f47f7d1eb0b2f910485d368",
+      "created_at": "2026-06-13T16:17:40.771Z",
+      "updated_at": "2026-06-13T16:17:40.771Z"
+    },
+    {
+      "id": "02a16270-b6b8-4fc4-bbc5-feba0e56fa3b",
+      "path": "products/13627ebe-ca04-46e0-9d26-d2861d1ee4a5/1780979524128-img-0780-optimizada.webp",
+      "size": 57264,
+      "mime": "image/webp",
+      "etag": "6bcbbd494751cd83546ed00915d53cff",
+      "created_at": "2026-06-09T04:32:04.389Z",
+      "updated_at": "2026-06-09T04:32:04.389Z"
+    },
+    {
+      "id": "e07bcdaa-441f-4aa4-9e19-889c310fb11d",
+      "path": "products/165c4d74-286a-4882-9370-e47001f85e95/1781480345115-img-0536-optimizada.webp",
+      "size": 53604,
+      "mime": "image/webp",
+      "etag": "d86e0ca754dac2cb1a470117c5c57635",
+      "created_at": "2026-06-14T23:39:05.593Z",
+      "updated_at": "2026-06-14T23:39:05.593Z"
+    },
+    {
+      "id": "fbce7298-69c0-4426-9198-188492fdf9e3",
+      "path": "products/19fba313-0653-4d9c-9e1a-f62a46652bf5/1781480512488-img-0436-optimizada.webp",
+      "size": 55812,
+      "mime": "image/webp",
+      "etag": "7e47623f9d6281cdf623fb143fcde276",
+      "created_at": "2026-06-14T23:41:52.956Z",
+      "updated_at": "2026-06-14T23:41:52.956Z"
+    },
+    {
+      "id": "d98d787e-3bde-4380-9f7c-d0c028de841f",
+      "path": "products/1a0e151a-fe10-4276-9b0e-a3db50759c41/1781367416969-img-4814-optimizada.webp",
+      "size": 61796,
+      "mime": "image/webp",
+      "etag": "806f40344692346d1d88bff924816dac",
+      "created_at": "2026-06-13T16:16:57.292Z",
+      "updated_at": "2026-06-13T16:16:57.292Z"
+    },
+    {
+      "id": "1811411d-3c77-4c5d-95ef-796358a5f41b",
+      "path": "products/1dc53fdd-4eb8-4b60-b8ef-5eba96dc2cb2/1791041868693-0-img-1761-optimizada.webp",
+      "size": 53564,
+      "mime": "image/webp",
+      "etag": "b215b4f14e42986a2509c4f8ea775139",
+      "created_at": "2026-10-03T15:37:48.890Z",
+      "updated_at": "2026-10-03T15:37:48.890Z"
+    },
+    {
+      "id": "08cffaca-d48e-4358-b0a7-9361b08f8205",
+      "path": "products/2c39e1c9-cc23-4d4c-bb5d-8469f87e666b/923966aa646c538e7b8d67a2c0ad6696-img-5784-optimizada.webp",
+      "size": 61634,
+      "mime": "image/webp",
+      "etag": "923966aa646c538e7b8d67a2c0ad6696",
+      "created_at": "2026-10-04T03:49:00.405Z",
+      "updated_at": "2026-10-04T03:49:00.405Z"
+    },
+    {
+      "id": "89b4e2e7-ad74-40cb-919d-a8941a3c656d",
+      "path": "products/2c39e1c9-cc23-4d4c-bb5d-8469f87e666b/ac923da68727068a24b4aa4b48f0b16d-img-0718-optimizada.webp",
+      "size": 53256,
+      "mime": "image/webp",
+      "etag": "ac923da68727068a24b4aa4b48f0b16d",
+      "created_at": "2026-10-04T03:48:48.620Z",
+      "updated_at": "2026-10-04T03:48:48.620Z"
+    },
+    {
+      "id": "a6f036a9-d5c1-4791-8a5e-ffcd3c81d951",
+      "path": "products/2c39e1c9-cc23-4d4c-bb5d-8469f87e666b/f79fe37f2d38749557a3f00f943868dc-img-5950-optimizada.webp",
+      "size": 69580,
+      "mime": "image/webp",
+      "etag": "f79fe37f2d38749557a3f00f943868dc",
+      "created_at": "2026-10-04T03:48:48.250Z",
+      "updated_at": "2026-10-04T03:48:48.250Z"
+    },
+    {
+      "id": "b40c8fd6-1832-4fbf-a2bb-ce7eabd57797",
+      "path": "products/2db67b25-6e37-446a-8e98-5f626d5efc63/1781484221250-img-0191-optimizada.webp",
+      "size": 47988,
+      "mime": "image/webp",
+      "etag": "2ec94f70f5bc3c6b7f5742e922475421",
+      "created_at": "2026-06-15T00:43:41.491Z",
+      "updated_at": "2026-06-15T00:43:41.491Z"
+    },
+    {
+      "id": "155f458c-37b0-4a19-8a7f-d52723441525",
+      "path": "products/2e51cf34-5c02-42ff-867e-7a06d8bf273b/1789248291969-0-img-9606-optimizada.webp",
+      "size": 51648,
+      "mime": "image/webp",
+      "etag": "524ea0d1cf9d3ec445a373c4a090b9ac",
+      "created_at": "2026-09-12T21:24:52.176Z",
+      "updated_at": "2026-09-12T21:24:52.176Z"
+    },
+    {
+      "id": "cd71fe81-e1cd-491f-969b-21cafe2f815f",
+      "path": "products/314ab75f-58b3-49c5-8602-cda72295d855/1789600945890-0-img-1206-optimizada.webp",
+      "size": 60626,
+      "mime": "image/webp",
+      "etag": "3ece0054dc9186b8280ddd3528b5b2f4",
+      "created_at": "2026-09-16T23:22:26.487Z",
+      "updated_at": "2026-09-16T23:22:26.487Z"
+    },
+    {
+      "id": "00d08739-d523-4fd8-a66e-9bfcb5a96898",
+      "path": "products/39310ff1-8765-464b-89f2-cbb245581879/1781480971158-img-0433-optimizada.webp",
+      "size": 49704,
+      "mime": "image/webp",
+      "etag": "992c4f0353c770246419167e708e894c",
+      "created_at": "2026-06-14T23:49:31.546Z",
+      "updated_at": "2026-06-14T23:49:31.546Z"
+    },
+    {
+      "id": "5c57e7fc-6afe-4ff8-ba24-05c8db0351ef",
+      "path": "products/3e52b75d-007c-4637-8ad7-3dd3a8efb159/1781483326400-img-0204-optimizada.webp",
+      "size": 47494,
+      "mime": "image/webp",
+      "etag": "a65456491a53f2f583bfa10b1b03cd65",
+      "created_at": "2026-06-15T00:28:46.674Z",
+      "updated_at": "2026-06-15T00:28:46.674Z"
+    },
+    {
+      "id": "58cfce71-daa8-403d-be63-30ee2eb18b6a",
+      "path": "products/41cec216-c896-452a-8e38-15730ebafa35/1781480941199-img-0434-optimizada.webp",
+      "size": 50262,
+      "mime": "image/webp",
+      "etag": "9a1fa7b0909206a0f3ece4c70e97f4a1",
+      "created_at": "2026-06-14T23:49:01.605Z",
+      "updated_at": "2026-06-14T23:49:01.605Z"
+    },
+    {
+      "id": "5831ebcd-6e55-46ca-a699-c67576748cfd",
+      "path": "products/4d7976ee-45ae-447a-88a7-e6f986c59d8f/1781480665871-img-7007-optimizada.webp",
+      "size": 80550,
+      "mime": "image/webp",
+      "etag": "89be27b002950ee7433123c6a24bea56",
+      "created_at": "2026-06-14T23:44:26.329Z",
+      "updated_at": "2026-06-14T23:44:26.329Z"
+    },
+    {
+      "id": "6cd36892-54d1-4eb6-a3cf-97730787caf2",
+      "path": "products/5585ed23-1d19-40b0-a443-81953a999e9c/1781480195894-img-0538-optimizada.webp",
+      "size": 54244,
+      "mime": "image/webp",
+      "etag": "a28f8974cc8fa77b8cb3c55d03d6a09b",
+      "created_at": "2026-06-14T23:36:36.374Z",
+      "updated_at": "2026-06-14T23:36:36.374Z"
+    },
+    {
+      "id": "4f88c4e7-93a9-4226-b35c-0d98561dd6b4",
+      "path": "products/631dc501-2496-4c4f-9900-b0b14fbd19d2/2283c3f9a52ddca980b74284862a3374-4e03dfa4-8dcf-4fdc-8c0a-c63730b0be8a-optimizada.webp",
+      "size": 56102,
+      "mime": "image/webp",
+      "etag": "2283c3f9a52ddca980b74284862a3374",
+      "created_at": "2026-10-04T03:37:08.642Z",
+      "updated_at": "2026-10-04T03:37:08.642Z"
+    },
+    {
+      "id": "e5a48491-8cf6-48d6-b0d4-6381c6982820",
+      "path": "products/65027262-d36d-4230-a859-40a007489bfa/1781367352580-img-4875-optimizada.webp",
+      "size": 98212,
+      "mime": "image/webp",
+      "etag": "fba29689eb9f11927528842eff9bb34c",
+      "created_at": "2026-06-13T16:15:52.760Z",
+      "updated_at": "2026-06-13T16:15:52.760Z"
+    },
+    {
+      "id": "16ea518d-dde3-4ab3-880f-2cc2c350d626",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227660446-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:41:00.644Z",
+      "updated_at": "2026-09-12T15:41:00.644Z"
+    },
+    {
+      "id": "961cce54-30c9-4fcd-ab2d-5f5854dd10fb",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227676837-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:41:17.118Z",
+      "updated_at": "2026-09-12T15:41:17.118Z"
+    },
+    {
+      "id": "683ca2ee-c6a1-4e4d-bda6-cd557a1ae4c7",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227684865-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:41:25.347Z",
+      "updated_at": "2026-09-12T15:41:25.347Z"
+    },
+    {
+      "id": "89d4581a-de81-42c9-b191-2d2e34bedeff",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227695603-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:41:36.114Z",
+      "updated_at": "2026-09-12T15:41:36.114Z"
+    },
+    {
+      "id": "890009a0-0bd3-43c1-a1ac-8a00ea0521b8",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227699441-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:41:39.602Z",
+      "updated_at": "2026-09-12T15:41:39.602Z"
+    },
+    {
+      "id": "a7580735-3e24-4c17-b98d-7c10b65d9f28",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227715355-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:41:55.570Z",
+      "updated_at": "2026-09-12T15:41:55.570Z"
+    },
+    {
+      "id": "fd3d6ebd-fb45-4b63-9e88-c8e86d9dd9ee",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227725352-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:05.540Z",
+      "updated_at": "2026-09-12T15:42:05.540Z"
+    },
+    {
+      "id": "734f1780-d15c-429a-b66d-9851425d5059",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227734435-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:14.659Z",
+      "updated_at": "2026-09-12T15:42:14.659Z"
+    },
+    {
+      "id": "0d5bab16-152b-42e1-acdd-ff252a72369c",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227738188-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:18.378Z",
+      "updated_at": "2026-09-12T15:42:18.378Z"
+    },
+    {
+      "id": "4f551952-cb29-484e-9c75-06f64b5c75db",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227742607-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:22.797Z",
+      "updated_at": "2026-09-12T15:42:22.797Z"
+    },
+    {
+      "id": "526eef48-c098-428f-baba-3605901dbd33",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227745703-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:25.871Z",
+      "updated_at": "2026-09-12T15:42:25.871Z"
+    },
+    {
+      "id": "d55beee9-06e3-4a8e-b725-ba37735c74f1",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227753858-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:34.121Z",
+      "updated_at": "2026-09-12T15:42:34.121Z"
+    },
+    {
+      "id": "adf11fe2-7333-4675-a360-2f64f3ef76ce",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227756859-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:37.037Z",
+      "updated_at": "2026-09-12T15:42:37.037Z"
+    },
+    {
+      "id": "be284741-1c05-4324-b756-abc13c16b004",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227762120-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:42.334Z",
+      "updated_at": "2026-09-12T15:42:42.334Z"
+    },
+    {
+      "id": "00d4b7b2-fab1-4972-918a-5faa74395665",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227766996-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:47.170Z",
+      "updated_at": "2026-09-12T15:42:47.170Z"
+    },
+    {
+      "id": "e987aa3c-2231-429e-a1bc-0946d4a3ab7c",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227769712-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:50.217Z",
+      "updated_at": "2026-09-12T15:42:50.217Z"
+    },
+    {
+      "id": "441c8509-493a-40bc-8f99-73e33843a9a1",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227779302-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:42:59.480Z",
+      "updated_at": "2026-09-12T15:42:59.480Z"
+    },
+    {
+      "id": "6db7edb2-6357-4233-b77e-e19d869c21a5",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227782736-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:02.919Z",
+      "updated_at": "2026-09-12T15:43:02.919Z"
+    },
+    {
+      "id": "6f6de07c-ea2a-4424-bf6f-6dc1e1f0ad86",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227786662-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:06.849Z",
+      "updated_at": "2026-09-12T15:43:06.849Z"
+    },
+    {
+      "id": "f6dc4fbd-1a9e-40dc-9558-e202f05e1185",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227791054-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:11.230Z",
+      "updated_at": "2026-09-12T15:43:11.230Z"
+    },
+    {
+      "id": "e34e93a6-ad44-42d4-ba44-047d0bedaeeb",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227793492-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:13.653Z",
+      "updated_at": "2026-09-12T15:43:13.653Z"
+    },
+    {
+      "id": "5419ec18-a383-40f0-b043-ab2ad190b92e",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227800191-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:20.367Z",
+      "updated_at": "2026-09-12T15:43:20.367Z"
+    },
+    {
+      "id": "9d6b08e0-ffd6-4acf-9b32-976d23c7ba50",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227804244-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:24.396Z",
+      "updated_at": "2026-09-12T15:43:24.396Z"
+    },
+    {
+      "id": "4dc5ec37-8843-4f4b-896e-0eb0eefeebce",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227806735-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:27.075Z",
+      "updated_at": "2026-09-12T15:43:27.075Z"
+    },
+    {
+      "id": "37d103ad-e006-4471-a67d-3b2fc241be73",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227810573-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:30.759Z",
+      "updated_at": "2026-09-12T15:43:30.759Z"
+    },
+    {
+      "id": "c4bbdb01-9df6-4012-820b-2823ffb171bd",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227813740-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:33.928Z",
+      "updated_at": "2026-09-12T15:43:33.928Z"
+    },
+    {
+      "id": "e4f1c9b7-a512-4b02-aa84-cac93097a081",
+      "path": "products/66c152aa-98db-4827-b4c7-fdc2721da2a6/1789227821526-0-3f6799b0-aca5-4b2a-ba06-cb1d7f0e4b65-optimizada.webp",
+      "size": 50728,
+      "mime": "image/webp",
+      "etag": "a8c1635ac5153f08c7286c9fea8a3ca4",
+      "created_at": "2026-09-12T15:43:41.831Z",
+      "updated_at": "2026-09-12T15:43:41.831Z"
+    },
+    {
+      "id": "5e499244-1d75-4609-91c2-434d5b394459",
+      "path": "products/6ca63ce3-5694-418f-90a8-5d8043f4c2f5/1789601319065-0-37e6f25d-987d-4ebd-9f61-cb46a2aaf76f-optimizada.webp",
+      "size": 48090,
+      "mime": "image/webp",
+      "etag": "078bd3764d4d93b14b9bc1d00694716a",
+      "created_at": "2026-09-16T23:28:39.285Z",
+      "updated_at": "2026-09-16T23:28:39.285Z"
+    },
+    {
+      "id": "ed360bda-2992-44e2-af0d-b999ada9f295",
+      "path": "products/6d1059a4-9226-415a-ac5a-163b9545b04a/8b7f880268656bbf363332c0a686f9c0-img-5794-optimizada.webp",
+      "size": 57824,
+      "mime": "image/webp",
+      "etag": "8b7f880268656bbf363332c0a686f9c0",
+      "created_at": "2026-10-04T03:51:30.088Z",
+      "updated_at": "2026-10-04T03:51:30.088Z"
+    },
+    {
+      "id": "b41fa5a6-3791-4f34-88b9-cfcb742a5b87",
+      "path": "products/7d2416cf-c123-4040-8617-1fb75de38e6e/be7eabe25fa6cdb03a7090c08817cc10-img-9606-optimizada.webp",
+      "size": 65840,
+      "mime": "image/webp",
+      "etag": "be7eabe25fa6cdb03a7090c08817cc10",
+      "created_at": "2026-10-04T03:52:19.541Z",
+      "updated_at": "2026-10-04T03:52:19.541Z"
+    },
+    {
+      "id": "093f02b5-2f5f-4dd0-a6de-1db4ed29cd19",
+      "path": "products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978863318-img-4898-optimizada.webp",
+      "size": 88116,
+      "mime": "image/webp",
+      "etag": "0fc132872409cc133657335138562501",
+      "created_at": "2026-06-09T04:21:03.713Z",
+      "updated_at": "2026-06-09T04:21:03.713Z"
+    },
+    {
+      "id": "14138a7e-40d7-4ae9-9960-0f322cdbcd44",
+      "path": "products/880dfa55-41c2-4275-91e7-ca7def54ec14/1780978864680-img-4898-optimizada.webp",
+      "size": 88116,
+      "mime": "image/webp",
+      "etag": "0fc132872409cc133657335138562501",
+      "created_at": "2026-06-09T04:21:04.998Z",
+      "updated_at": "2026-06-09T04:21:04.998Z"
+    },
+    {
+      "id": "043ec768-3e71-4ca0-aa3c-6999c90cc032",
+      "path": "products/8ca47237-b9ae-4720-a8be-043ecd104ed7/1781483034879-img-0211-optimizada.webp",
+      "size": 46910,
+      "mime": "image/webp",
+      "etag": "90fee71fd09242048043ff101326a7d5",
+      "created_at": "2026-06-15T00:23:55.126Z",
+      "updated_at": "2026-06-15T00:23:55.126Z"
+    },
+    {
+      "id": "bf79c1d4-2cf6-4485-8918-974b8b2202eb",
+      "path": "products/8d828391-4a86-4eb9-bb6a-f384bc3e1d7d/1781482003237-img-0207-optimizada.webp",
+      "size": 45996,
+      "mime": "image/webp",
+      "etag": "5954b3fbef6a0a336722fe09027a76e5",
+      "created_at": "2026-06-15T00:06:43.599Z",
+      "updated_at": "2026-06-15T00:06:43.599Z"
+    },
+    {
+      "id": "9006313e-0887-4aed-81b1-e8b018111e95",
+      "path": "products/8f06198a-0199-407d-9d5d-9e7c38bcd578/1781484545412-img-0210-optimizada.webp",
+      "size": 47020,
+      "mime": "image/webp",
+      "etag": "738f96ae466e2a0dc29475f6c1083625",
+      "created_at": "2026-06-15T00:49:05.614Z",
+      "updated_at": "2026-06-15T00:49:05.614Z"
+    },
+    {
+      "id": "14889065-c890-4d53-9fea-68f05bb24280",
+      "path": "products/900a7c30-7412-4da3-b300-7d013044e853/1781367154390-whatsapp-image-2026-01-26-at-18-33-1-optimizada.webp",
+      "size": 55758,
+      "mime": "image/webp",
+      "etag": "4df2b7397794cafccff7727bb2c0222c",
+      "created_at": "2026-06-13T16:12:34.576Z",
+      "updated_at": "2026-06-13T16:12:34.576Z"
+    },
+    {
+      "id": "a61fe037-88ed-4474-9c7a-2cded3196bf5",
+      "path": "products/96f90d2b-185b-4f47-a155-184619a8b6e3/1780979127511-img-5811-optimizada.webp",
+      "size": 70074,
+      "mime": "image/webp",
+      "etag": "f4c1866c12c97aedc7e5596f0640607c",
+      "created_at": "2026-06-09T04:25:27.774Z",
+      "updated_at": "2026-06-09T04:25:27.774Z"
+    },
+    {
+      "id": "ea7a9dce-626d-40c1-8d52-b856b6273805",
+      "path": "products/9c07ceb2-4d7a-407c-898b-e0cb43fc008e/1780978967811-whatsapp-image-2026-01-26-at-18-33-15-optimizada.webp",
+      "size": 41898,
+      "mime": "image/webp",
+      "etag": "33f93ea906c424ea2aa5bc2a0b703976",
+      "created_at": "2026-06-09T04:22:47.993Z",
+      "updated_at": "2026-06-09T04:22:47.993Z"
+    },
+    {
+      "id": "8ecb1e57-735a-4d5f-9e86-6eb383d39e64",
+      "path": "products/a2843178-0691-4a35-bb30-b475b3e941ff/1781480265866-img-0537-optimizada.webp",
+      "size": 62202,
+      "mime": "image/webp",
+      "etag": "2bef60a9b758eca76dcd1516bb0d1f85",
+      "created_at": "2026-06-14T23:37:46.313Z",
+      "updated_at": "2026-06-14T23:37:46.313Z"
+    },
+    {
+      "id": "2f37bc6d-759e-4045-a64a-9210ad64d3b9",
+      "path": "products/ac173fed-a2b0-43b9-9d05-36b7ebdcf902/1781481185498-img-0544-optimizada.webp",
+      "size": 42376,
+      "mime": "image/webp",
+      "etag": "e0e76c0919be123887e587381210aac7",
+      "created_at": "2026-06-14T23:53:05.906Z",
+      "updated_at": "2026-06-14T23:53:05.906Z"
+    },
+    {
+      "id": "48b06722-5f00-4747-a6c4-35f0e9428ae8",
+      "path": "products/ac79cfed-1855-4fc9-8bb2-de2fc01aa904/1781481867482-img-0531-optimizada.webp",
+      "size": 109558,
+      "mime": "image/webp",
+      "etag": "dad7a5f13bc2d19bd3c7bf1002286df1",
+      "created_at": "2026-06-15T00:04:27.843Z",
+      "updated_at": "2026-06-15T00:04:27.843Z"
+    },
+    {
+      "id": "b9457889-a062-421f-919d-296a44a0da9b",
+      "path": "products/ad228c7e-6279-424f-a436-36e85685e5b8/1789229590252-0-f085659f-287f-4727-8d85-8ffc710516d3-optimizada.webp",
+      "size": 51010,
+      "mime": "image/webp",
+      "etag": "3e10629eda8f82798a361afe1599ad41",
+      "created_at": "2026-09-12T16:13:10.517Z",
+      "updated_at": "2026-09-12T16:13:10.517Z"
+    },
+    {
+      "id": "b94d17c4-429f-407e-93b9-3349bd2bcc39",
+      "path": "products/b223e3e9-3bb6-4da9-8a62-a03a4fd994e0/1781480153667-img-0541-optimizada.webp",
+      "size": 54046,
+      "mime": "image/webp",
+      "etag": "38a018bef3be811693c47e07ab69517f",
+      "created_at": "2026-06-14T23:35:54.347Z",
+      "updated_at": "2026-06-14T23:35:54.347Z"
+    },
+    {
+      "id": "41934740-9d1e-4eea-af74-266cb336394a",
+      "path": "products/b58d9866-5d03-4f63-994d-762108522492/1781367271058-whatsapp-image-2026-01-26-at-18-33-16-optimizada.webp",
+      "size": 59854,
+      "mime": "image/webp",
+      "etag": "8d8939ef4220b3b04ed518dcd5369a67",
+      "created_at": "2026-06-13T16:14:31.236Z",
+      "updated_at": "2026-06-13T16:14:31.236Z"
+    },
+    {
+      "id": "fb860893-59a7-4a58-bd96-c204f594ad6c",
+      "path": "products/b6db64db-4768-43f9-aadd-e72f24d6d318/1781482234001-img-0203-optimizada.webp",
+      "size": 45064,
+      "mime": "image/webp",
+      "etag": "8521ff63faf81ae87ba0e1582c0ca35d",
+      "created_at": "2026-06-15T00:10:34.316Z",
+      "updated_at": "2026-06-15T00:10:34.316Z"
+    },
+    {
+      "id": "24cbc71e-e4b3-4d9d-bcf5-bf6209ff5a28",
+      "path": "products/bd7930a6-65c3-4e3b-b85f-1cb1b56d6835/1780890845250-img-4815-optimizada.webp",
+      "size": 34768,
+      "mime": "image/webp",
+      "etag": "0394b2d4b4150f8f57f8c2fb347733c4",
+      "created_at": "2026-06-08T03:54:05.513Z",
+      "updated_at": "2026-06-08T03:54:05.513Z"
+    },
+    {
+      "id": "5b5314c9-859a-4705-8b2d-e3530e52ede5",
+      "path": "products/be8852f0-c712-4b69-993f-dfd6e954af31/1781480065580-img-0545-optimizada.webp",
+      "size": 42190,
+      "mime": "image/webp",
+      "etag": "53adb83f21cadd272579161c7410686a",
+      "created_at": "2026-06-14T23:34:26.083Z",
+      "updated_at": "2026-06-14T23:34:26.083Z"
+    },
+    {
+      "id": "6902cc01-ef67-4ff0-b6d6-185f2059708d",
+      "path": "products/bedb3ca2-68ed-4158-a00f-4b203b4d8f92/904022a6da1fb96a0d70269d0263a39c-img-9603-optimizada.webp",
+      "size": 60898,
+      "mime": "image/webp",
+      "etag": "904022a6da1fb96a0d70269d0263a39c",
+      "created_at": "2026-10-04T03:39:02.925Z",
+      "updated_at": "2026-10-04T03:39:02.925Z"
+    },
+    {
+      "id": "50988f63-4fb7-43a3-a1bd-fd1f58903b0c",
+      "path": "products/c6ab646e-ea3c-4ca9-928a-3f518e49f5e6/1790812472459-0-img-0779-optimizada.webp",
+      "size": 22414,
+      "mime": "image/webp",
+      "etag": "21fca3f0d5407aff224aa7a5cf07305d",
+      "created_at": "2026-09-30T23:54:32.654Z",
+      "updated_at": "2026-09-30T23:54:32.654Z"
+    },
+    {
+      "id": "7b1175ee-231f-43b6-b94c-63f0c3af2700",
+      "path": "products/d6d024ff-1804-4be5-838b-8f7af9ca363d/1781481032442-img-0431-optimizada.webp",
+      "size": 52136,
+      "mime": "image/webp",
+      "etag": "ba0b1371fb545a379ca52d65cd0996e2",
+      "created_at": "2026-06-14T23:50:32.830Z",
+      "updated_at": "2026-06-14T23:50:32.830Z"
+    },
+    {
+      "id": "59772bcc-0bf8-4351-ab98-6f537bac2dcc",
+      "path": "products/da8d3743-3ee5-4210-a387-49e4f87e9ec9/1781481332257-img-0535-optimizada.webp",
+      "size": 67668,
+      "mime": "image/webp",
+      "etag": "01f960a23603e88dae18b2b789509d77",
+      "created_at": "2026-06-14T23:55:32.662Z",
+      "updated_at": "2026-06-14T23:55:32.662Z"
+    },
+    {
+      "id": "568f21e9-f2a9-4da3-8406-df96eff02cf9",
+      "path": "products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366634997-img-4923-optimizada.webp",
+      "size": 68662,
+      "mime": "image/webp",
+      "etag": "7c726d805187c4fc0e3f7e4323dad654",
+      "created_at": "2026-06-13T16:03:55.228Z",
+      "updated_at": "2026-06-13T16:03:55.228Z"
+    },
+    {
+      "id": "a2b74f82-a21c-467c-9e5c-226779074808",
+      "path": "products/e53066cc-9c35-47e2-8d27-0fe5fb425ce8/1781366636539-img-4923-optimizada.webp",
+      "size": 68662,
+      "mime": "image/webp",
+      "etag": "7c726d805187c4fc0e3f7e4323dad654",
+      "created_at": "2026-06-13T16:03:56.689Z",
+      "updated_at": "2026-06-13T16:03:56.689Z"
+    },
+    {
+      "id": "34e20b9c-4217-45e9-b0f9-75a1dd0e76c0",
+      "path": "products/e53a64ad-8e1d-452f-9025-53d940215082/1781480726821-img-7005-optimizada.webp",
+      "size": 57302,
+      "mime": "image/webp",
+      "etag": "7fa810098ef0c925abb18c2fbb9e8862",
+      "created_at": "2026-06-14T23:45:27.256Z",
+      "updated_at": "2026-06-14T23:45:27.256Z"
+    },
+    {
+      "id": "04e9148d-b0ae-4fd2-b1a9-ab39d0de5d3b",
+      "path": "products/e5b37a2f-ab84-4009-b8d3-1a6f307c3eda/1781483155525-img-0199-optimizada.webp",
+      "size": 46304,
+      "mime": "image/webp",
+      "etag": "0a9a67ff8f282dee39e86c2ec3ea1ca5",
+      "created_at": "2026-06-15T00:25:56.060Z",
+      "updated_at": "2026-06-15T00:25:56.060Z"
+    },
+    {
+      "id": "1cd636ba-5ea2-43c3-9267-cfa2c80c773d",
+      "path": "products/e7ceb4e9-34e4-469b-b225-5de2e3cb5a8a/e259eae8f29745dbebb130e872b94199-8cb700fd-11fd-4efa-9a2e-8eee0d8267d4-optimizada.webp",
+      "size": 109994,
+      "mime": "image/webp",
+      "etag": "e259eae8f29745dbebb130e872b94199",
+      "created_at": "2026-10-04T03:54:34.041Z",
+      "updated_at": "2026-10-04T03:54:34.041Z"
+    },
+    {
+      "id": "67f3e8a3-33bc-4583-8e81-3cfe44d0551b",
+      "path": "products/edb4b664-5da6-489c-94c1-b0d1deb88232/1781481899287-img-0524-optimizada.webp",
+      "size": 214644,
+      "mime": "image/webp",
+      "etag": "51c746b57035fff4b4ac982883c011b0",
+      "created_at": "2026-06-15T00:04:59.711Z",
+      "updated_at": "2026-06-15T00:04:59.711Z"
+    },
+    {
+      "id": "ea6e1da6-00a7-42e3-a7c8-0519b4813273",
+      "path": "products/f1cb2323-0e7f-49d6-a26f-110595c90e55/1780979018845-img-4921-optimizada.webp",
+      "size": 69834,
+      "mime": "image/webp",
+      "etag": "124bacd2b763d1c5307bd23f201186d5",
+      "created_at": "2026-06-09T04:23:39.152Z",
+      "updated_at": "2026-06-09T04:23:39.152Z"
+    },
+    {
+      "id": "7de3bfc3-5d70-46aa-84ce-05571ee4fa10",
+      "path": "products/f57365ec-33f2-4807-aa64-18a77c00b00b/1789599986328-0-img-9605-optimizada.webp",
+      "size": 46768,
+      "mime": "image/webp",
+      "etag": "3c9a39d85fa2468d30358d5eab141c8a",
+      "created_at": "2026-09-16T23:06:26.879Z",
+      "updated_at": "2026-09-16T23:06:26.879Z"
+    },
+    {
+      "id": "e52d1367-16bf-41c9-a0a8-a5f1f2233598",
+      "path": "products/f91c4caa-32bb-4450-8a87-25422095257b/1781484098968-img-0206-optimizada.webp",
+      "size": 48806,
+      "mime": "image/webp",
+      "etag": "2b7a5b8eeb27c8f18dc085854ae64061",
+      "created_at": "2026-06-15T00:41:39.194Z",
+      "updated_at": "2026-06-15T00:41:39.194Z"
+    },
+    {
+      "id": "c0d37d0e-2567-4077-bb42-47f45326ee2e",
+      "path": "products/fe29c305-f0f8-4752-855c-c785be1046ac/1781482275059-img-0197-optimizada.webp",
+      "size": 45638,
+      "mime": "image/webp",
+      "etag": "4fd933be81f60aed4eeab035c9713744",
+      "created_at": "2026-06-15T00:11:15.366Z",
+      "updated_at": "2026-06-15T00:11:15.366Z"
+    },
+    {
+      "id": "3db3c66c-bcda-4452-84f0-1141eddd67ee",
+      "path": "products/ff56264b-c183-404b-984f-205e95eea65a/1781481004696-img-0439-optimizada.webp",
+      "size": 51282,
+      "mime": "image/webp",
+      "etag": "4edaa1c1e37db19e7d83493a1401342b",
+      "created_at": "2026-06-14T23:50:05.123Z",
+      "updated_at": "2026-06-14T23:50:05.123Z"
+    }
+  ]
+}

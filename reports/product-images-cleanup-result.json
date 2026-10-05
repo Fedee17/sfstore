@@ -1,0 +1,75 @@
+{
+  "status": "BLOCKED_BEFORE_APPLY",
+  "apply_executed": false,
+  "checked_at": "2026-10-05T13:35:51.060Z",
+  "head": "6abc0d6e13844472dc73f77f9934ab33b4b2ecbd",
+  "before": {
+    "product_images": 84,
+    "storage_objects": 85,
+    "products": 179
+  },
+  "after": {
+    "product_images": 84,
+    "storage_objects": 85,
+    "products": 179
+  },
+  "plan_summary": {
+    "KEEP": 55,
+    "DELETE_DB": 0,
+    "DELETE_STORAGE": 1,
+    "DELETE_BOTH": 27,
+    "REVIEW": 2
+  },
+  "deleted_rows": [],
+  "deleted_objects": [],
+  "deleted_orphans": [],
+  "affected_products": [
+    "880dfa55-41c2-4275-91e7-ca7def54ec14",
+    "e53066cc-9c35-47e2-8d27-0fe5fb425ce8",
+    "66c152aa-98db-4827-b4c7-fdc2721da2a6"
+  ],
+  "protected_review_untouched": true,
+  "blocks": [
+    {
+      "code": "MISSING_PER_OPERATION_REVALIDATION",
+      "path": "scripts/cleanup-product-images.ts",
+      "reason": "The existing script validates snapshot and object metadata once before the deletion loop; it does not revalidate each target, keeper and expected evolving state immediately before each write."
+    },
+    {
+      "code": "NO_POST_CLEANUP_DRY_RUN",
+      "path": "scripts/cleanup-product-images.ts",
+      "reason": "The existing script requires the original snapshot and fixed 55/27/1/2 summary. After successful cleanup it would abort instead of reporting 55/0/0/2."
+    }
+  ],
+  "pre_apply_report": "reports/product-images-cleanup-pre-apply.json",
+  "invariants": {
+    "products": {
+      "count": 179,
+      "all_fields_sha256": "c2c5de94aa45be3042ead227ce5f46e8552952dc2c58e5d79b517ab33528e036"
+    },
+    "inventory_movements": {
+      "count": 21,
+      "all_fields_sha256": "3ec14921e4cc1c82d54d733015b8e55144ba5b429bb993dbf129bfc1aec2bd91"
+    },
+    "orders": {
+      "count": 132,
+      "all_fields_sha256": "b79d53e63b8b8e30fadb9a9301237d228c4c49d339320337b669b076bbd9407d"
+    },
+    "order_items": {
+      "count": 135,
+      "all_fields_sha256": "df5bd43b12cdb71b3ed0854e532c396600f5f41bdd6fcde299e665af8d3a4131"
+    },
+    "order_payments": {
+      "count": 131,
+      "all_fields_sha256": "cf6de47984733cf5a5bfc1c5d1dd0a38d83fde8804d336df8e5fa258cb809f3c"
+    },
+    "purchases": {
+      "count": 182,
+      "all_fields_sha256": "b36813000dca5595425b13ed5ef145e8530a3c5dff295f34288f3a42e5d4627e"
+    },
+    "purchase_items": {
+      "count": 185,
+      "all_fields_sha256": "942faa740db0bca943ea754a869fba21d7ab4803a7f7a12b712764fee58171a5"
+    }
+  }
+}
