@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   PRODUCT_IMAGES_BUCKET,
@@ -7,9 +8,11 @@ import {
   deleteProductImageWithCompensation,
   getProductImageStoragePath,
   type ProductImageMetadata,
+  type ProductImageDeleteGateway,
 } from "../lib/products/product-image-deletion.ts";
 import {
   assertProtectedProductImageReviews,
+  PROTECTED_YARA_ROSA_PRODUCT_IDS,
   parseProductImageCleanupPlanCsv,
   summarizeProductImageCleanupPlan,
   type ProductImageCleanupPlanRow,
@@ -31,6 +34,8 @@ type Snapshot = {
     sort_order: number;
     is_primary: boolean;
     created_at: string;
+    alt: string | null;
+    updated_at: string;
   }>;
   storage_objects: Array<{
     path: string;
@@ -178,95 +183,171 @@ function comparablePlan(plan: ComparablePlanInput[]) {
     );
 }
 
-function validateCurrentState(
-  snapshot: Snapshot,
-  plan: ProductImageCleanupPlanRow[],
-  images: ProductImageMetadata[],
-  objects: StorageObject[],
-) {
+function validateApprovedPlan(snapshot: Snapshot, plan: ProductImageCleanupPlanRow[]) {
   assertEqual(snapshot.mode, "READ_ONLY", "Modo del snapshot");
   assertEqual(snapshot.bucket, PRODUCT_IMAGES_BUCKET, "Bucket del snapshot");
   assertProtectedProductImageReviews(plan);
-  if (plan.some((row) => row.action === "DELETE_DB")) {
-    throw new Error("El plan contiene DELETE_DB, una accion no autorizada para esta fase.");
-  }
   assertEqual(
     JSON.stringify(comparablePlan(plan)),
     JSON.stringify(comparablePlan(snapshot.cleanup_plan)),
     "Plan CSV contra cleanup_plan del snapshot",
   );
+  const summary = summarizeProductImageCleanupPlan(plan);
+  const expectedSummary = { KEEP: 55, DELETE_DB: 0, DELETE_STORAGE: 1, DELETE_BOTH: 27, REVIEW: 2 };
+  for (const [action, expected] of Object.entries(expectedSummary)) {
+    assertEqual(summary[action as keyof typeof summary], expected, `Conteo aprobado ${action}`);
+  }
+  for (const row of plan.filter(isDestructive)) {
+    const keeper = plan.find((item) => item.row_id === row.keeper_row_id);
+    if (
+      PROTECTED_YARA_ROSA_PRODUCT_IDS.has(row.product_id) ||
+      !keeper || keeper.action !== "KEEP" ||
+      PROTECTED_YARA_ROSA_PRODUCT_IDS.has(keeper.product_id) ||
+      keeper.product_id !== row.product_id || keeper.path !== row.keeper_path ||
+      row.path === row.keeper_path || !row.path.startsWith(`products/${row.product_id}/`)
+    ) {
+      throw new Error(`Accion destructiva no autorizada o REVIEW involucrado: ${row.row_id || row.path}.`);
+    }
+  }
+}
 
-  assertEqual(images.length, snapshot.totals.product_images_rows, "Cantidad de filas DB");
-  assertEqual(objects.length, snapshot.totals.storage_objects, "Cantidad de objetos Storage");
-  assertEqual(
-    objects.reduce((total, object) => total + object.size, 0),
-    snapshot.totals.storage_bytes,
-    "Bytes en Storage",
-  );
+function isDestructive(row: ProductImageCleanupPlanRow) {
+  return row.action === "DELETE_BOTH" || row.action === "DELETE_STORAGE";
+}
 
+type CleanupProgress = { rowIds: Set<string>; paths: Set<string> };
+type CleanupState = { images: ProductImageMetadata[]; objects: StorageObject[] };
+
+function expectedState(snapshot: Snapshot, progress: CleanupProgress) {
+  let images = snapshot.product_images.map((image) => ({ ...image }));
+  const normalizedIds = new Set<string>();
+  // Model only the ordering/primary changes performed by the existing metadata RPC.
+  for (const rowId of progress.rowIds) {
+    const deleted = images.find((image) => image.id === rowId);
+    if (!deleted) throw new Error(`Progreso no autorizado: ${rowId}.`);
+    images = images.filter((image) => image.id !== rowId);
+    const remaining = images.filter((image) => image.product_id === deleted.product_id).sort(
+      (left, right) => left.sort_order - right.sort_order ||
+        left.created_at.localeCompare(right.created_at) || left.id.localeCompare(right.id),
+    );
+    remaining.forEach((image, index) => {
+      if (image.sort_order !== index || image.is_primary !== (index === 0)) normalizedIds.add(image.id);
+      image.sort_order = index;
+      image.is_primary = index === 0;
+    });
+  }
+  return {
+    images,
+    normalizedIds,
+    objects: snapshot.storage_objects.filter((object) => !progress.paths.has(object.path)),
+  };
+}
+
+function validateProgress(
+  snapshot: Snapshot,
+  plan: ProductImageCleanupPlanRow[],
+  images: ProductImageMetadata[],
+  objects: StorageObject[],
+  progress: CleanupProgress,
+) {
+  validateApprovedPlan(snapshot, plan);
+  const expected = expectedState(snapshot, progress);
   const currentImages = new Map(images.map((image) => [image.id, image]));
   const currentObjects = new Map(objects.map((object) => [object.path, object]));
-  const snapshotImageIds = new Set(snapshot.product_images.map((image) => image.id));
-  const snapshotPaths = new Set(snapshot.storage_objects.map((object) => object.path));
+  const snapshotImageIds = new Set(expected.images.map((image) => image.id));
+  const snapshotPaths = new Set(expected.objects.map((object) => object.path));
 
   for (const image of images) {
-    if (!snapshotImageIds.has(image.id)) throw new Error(`Fila DB nueva fuera del snapshot: ${image.id}.`);
+    if (!snapshotImageIds.has(image.id)) throw new Error(`Fila DB inesperada: ${image.id}.`);
   }
   for (const object of objects) {
-    if (!snapshotPaths.has(object.path)) throw new Error(`Objeto nuevo fuera del snapshot: ${object.path}.`);
+    if (!snapshotPaths.has(object.path)) throw new Error(`Objeto Storage inesperado: ${object.path}.`);
   }
 
-  for (const expected of snapshot.product_images) {
-    const current = currentImages.get(expected.id);
-    if (!current) throw new Error(`Falta la fila DB del snapshot: ${expected.id}.`);
-    assertEqual(current.product_id, expected.product_id, `${expected.id} product_id`);
-    assertEqual(current.url, expected.url, `${expected.id} url`);
-    assertEqual(current.sort_order, expected.sort_order, `${expected.id} sort_order`);
-    assertEqual(current.is_primary, expected.is_primary, `${expected.id} is_primary`);
-    assertEqual(current.created_at, expected.created_at, `${expected.id} created_at`);
-    assertEqual(getProductImageStoragePath(current.url), expected.storage_path, `${expected.id} path`);
+  for (const image of expected.images) {
+    const current = currentImages.get(image.id);
+    if (!current) throw new Error(`Falta la fila DB esperada: ${image.id}.`);
+    for (const field of ["product_id", "url", "alt", "sort_order", "is_primary", "created_at"] as const) {
+      assertEqual(current[field], image[field], `${image.id} ${field}`);
+    }
+    if (!expected.normalizedIds.has(image.id)) {
+      assertEqual(current.updated_at, image.updated_at, `${image.id} updated_at`);
+    }
+    assertEqual(getProductImageStoragePath(current.url), image.storage_path, `${image.id} path`);
   }
 
-  for (const expected of snapshot.storage_objects) {
-    const current = currentObjects.get(expected.path);
-    if (!current) throw new Error(`Falta el objeto Storage del snapshot: ${expected.path}.`);
-    assertEqual(current.size, Number(expected.size), `${expected.path} size`);
-    assertEqual(current.mime, expected.mime, `${expected.path} mime`);
-    assertEqual(current.etag, normalizeEtag(expected.etag), `${expected.path} eTag`);
+  for (const object of expected.objects) {
+    const current = currentObjects.get(object.path);
+    if (!current) throw new Error(`Falta el objeto Storage esperado: ${object.path}.`);
+    assertEqual(current.size, Number(object.size), `${object.path} size`);
+    assertEqual(current.mime, object.mime, `${object.path} MIME`);
+    assertEqual(normalizeEtag(current.etag), normalizeEtag(object.etag), `${object.path} eTag`);
   }
+  assertEqual(images.length, expected.images.length, "Cantidad de filas DB");
+  assertEqual(objects.length, expected.objects.length, "Cantidad de objetos Storage");
+  assertEqual(currentImages.size, images.length, "IDs DB unicos");
+  assertEqual(currentObjects.size, objects.length, "Paths Storage unicos");
+}
 
-  for (const row of plan) {
-    const object = row.path ? currentObjects.get(row.path) : undefined;
-    if (row.row_id) {
-      const image = currentImages.get(row.row_id);
-      if (!image) throw new Error(`Plan desactualizado: no existe row_id ${row.row_id}.`);
-      assertEqual(image.product_id, row.product_id, `${row.row_id} product_id del plan`);
-      assertEqual(image.url, row.url, `${row.row_id} url del plan`);
-      assertEqual(image.sort_order, row.sort_order, `${row.row_id} sort_order del plan`);
-      assertEqual(image.is_primary, row.is_primary, `${row.row_id} is_primary del plan`);
-    }
-    if (row.path) {
-      if (!object) throw new Error(`Plan desactualizado: no existe ${row.path} en Storage.`);
-      assertEqual(object.size, Number(row.size), `${row.path} size del plan`);
-      assertEqual(object.mime, row.mime, `${row.path} mime del plan`);
-      assertEqual(object.etag, normalizeEtag(row.content_hash), `${row.path} eTag del plan`);
-    }
-    if (row.action === "DELETE_BOTH") {
-      const keeper = currentImages.get(row.keeper_row_id);
-      const keeperObject = currentObjects.get(row.keeper_path);
-      if (!keeper || !keeperObject) throw new Error(`Keeper ausente para ${row.row_id}.`);
-      assertEqual(keeper.product_id, row.product_id, `${row.row_id} keeper product_id`);
-      assertEqual(keeperObject.etag, normalizeEtag(row.content_hash), `${row.row_id} keeper eTag`);
-      assertEqual(keeperObject.size, Number(row.size), `${row.row_id} keeper size`);
-      assertEqual(keeperObject.mime, row.mime, `${row.row_id} keeper mime`);
-    }
-    if (row.action === "DELETE_STORAGE") {
-      const references = images.filter(
-        (image) => getProductImageStoragePath(image.url) === row.path || image.url === row.url,
-      );
-      if (references.length > 0) throw new Error(`${row.path} todavia tiene referencias DB.`);
-    }
+function validateOperation(row: ProductImageCleanupPlanRow, state: CleanupState, metadataDeleted = false) {
+  const image = state.images.find((item) => item.id === row.row_id);
+  const object = state.objects.find((item) => item.path === row.path);
+  const keeper = state.images.find((item) => item.id === row.keeper_row_id);
+  const keeperObject = state.objects.find((item) => item.path === row.keeper_path);
+  if (!isDestructive(row) || PROTECTED_YARA_ROSA_PRODUCT_IDS.has(row.product_id)) {
+    throw new Error(`REVIEW/accion no autorizada: ${row.product_id}.`);
   }
+  if (row.action === "DELETE_BOTH" && !metadataDeleted) {
+    if (!image) throw new Error(`Candidato DB ausente: ${row.row_id}.`);
+    assertEqual(image.product_id, row.product_id, `${row.row_id} product_id del plan`);
+    assertEqual(image.url, row.url, `${row.row_id} URL del plan`);
+    assertEqual(getProductImageStoragePath(image.url), row.path, `${row.row_id} path del plan`);
+  } else if (image) {
+    throw new Error(`Candidato DB inesperado despues del borrado: ${row.row_id}.`);
+  }
+  if (!object || !keeper || !keeperObject) {
+    throw new Error(`Candidato/keeper Storage o DB ausente: ${row.row_id || row.path}.`);
+  }
+  if (PROTECTED_YARA_ROSA_PRODUCT_IDS.has(keeper.product_id)) throw new Error("Keeper REVIEW protegido.");
+  assertEqual(keeper.product_id, row.product_id, `${row.row_id || row.path} keeper product_id`);
+  assertEqual(getProductImageStoragePath(keeper.url), row.keeper_path, `${row.row_id || row.path} keeper path`);
+  for (const [label, item] of [["candidato", object], ["keeper", keeperObject]] as const) {
+    assertEqual(normalizeEtag(item.etag), normalizeEtag(row.content_hash), `${row.path} ${label} eTag`);
+    assertEqual(item.size, Number(row.size), `${row.path} ${label} size`);
+    assertEqual(item.mime, row.mime, `${row.path} ${label} MIME`);
+  }
+  const references = state.images.filter((item) =>
+    (getProductImageStoragePath(item.url) === row.path || (row.url && item.url === row.url)) &&
+    (metadataDeleted || row.action === "DELETE_STORAGE" || item.id !== row.row_id),
+  );
+  if (references.length) throw new Error(`${row.path} tiene referencias DB no autorizadas.`);
+}
+
+export function validateCurrentState(
+  snapshot: Snapshot,
+  plan: ProductImageCleanupPlanRow[],
+  images: ProductImageMetadata[],
+  objects: StorageObject[],
+) {
+  validateApprovedPlan(snapshot, plan);
+  const destructive = plan.filter(isDestructive);
+  const present = destructive.map((row) => objects.some((object) => object.path === row.path) &&
+    (row.action === "DELETE_STORAGE" || images.some((image) => image.id === row.row_id)));
+  const absent = destructive.map((row) => !objects.some((object) => object.path === row.path) &&
+    (row.action === "DELETE_STORAGE" || !images.some((image) => image.id === row.row_id)));
+  const phase = present.every(Boolean) ? "PRE-CLEANUP" : absent.every(Boolean) ? "POST-CLEANUP" : null;
+  if (!phase) throw new Error("Estado parcial/inconsistente: no es PRE-CLEANUP ni POST-CLEANUP. ABORT.");
+  const progress: CleanupProgress = {
+    rowIds: new Set(phase === "POST-CLEANUP" ? destructive.filter((row) => row.row_id).map((row) => row.row_id) : []),
+    paths: new Set(phase === "POST-CLEANUP" ? destructive.map((row) => row.path) : []),
+  };
+  validateProgress(snapshot, plan, images, objects, progress);
+  if (phase === "PRE-CLEANUP") {
+    for (const row of destructive) validateOperation(row, { images, objects });
+  }
+  const summary = summarizeProductImageCleanupPlan(plan);
+  if (phase === "POST-CLEANUP") { summary.DELETE_BOTH = 0; summary.DELETE_STORAGE = 0; }
+  return { phase, summary, writesProposed: summary.DELETE_BOTH + summary.DELETE_STORAGE };
 }
 
 async function validateProductImageCoherence(client: SupabaseClient) {
@@ -290,73 +371,125 @@ async function validateProductImageCoherence(client: SupabaseClient) {
   }
 }
 
-const unknownArguments = process.argv.slice(2).filter((argument) => argument !== "--apply");
-if (unknownArguments.length > 0) throw new Error(`Argumento desconocido: ${unknownArguments[0]}.`);
-const apply = process.argv.includes("--apply");
-const client = createClient(
-  requiredEnvironment("NEXT_PUBLIC_SUPABASE_URL"),
-  requiredEnvironment("SUPABASE_SERVICE_ROLE_KEY"),
-  { auth: { persistSession: false, autoRefreshToken: false } },
-);
-const [planCsv, snapshotJson, images, objects] = await Promise.all([
-  readFile(PLAN_PATH, "utf8"),
-  readFile(SNAPSHOT_PATH, "utf8"),
-  listProductImages(client),
-  listStorageObjects(client),
-]);
-const plan = parseProductImageCleanupPlanCsv(planCsv);
-const snapshot = JSON.parse(snapshotJson) as Snapshot;
-validateCurrentState(snapshot, plan, images, objects);
-
-const summary = summarizeProductImageCleanupPlan(plan);
-const expectedSummary = {
-  KEEP: 55,
-  DELETE_DB: 0,
-  DELETE_STORAGE: 1,
-  DELETE_BOTH: 27,
-  REVIEW: 2,
-} as const;
-for (const [action, expected] of Object.entries(expectedSummary)) {
-  assertEqual(
-    summary[action as keyof typeof summary],
-    expected,
-    `Conteo ${action}`,
-  );
-}
-console.log(apply ? "Modo: APPLY" : "Modo: DRY-RUN (sin escrituras)");
-console.log(`KEEP: ${summary.KEEP}`);
-console.log(`DELETE_BOTH: ${summary.DELETE_BOTH}`);
-console.log(`DELETE_STORAGE: ${summary.DELETE_STORAGE}`);
-console.log(`REVIEW protegido/excluido: ${summary.REVIEW}`);
-console.log(`Operaciones de escritura propuestas: ${summary.DELETE_BOTH + summary.DELETE_STORAGE}`);
-
-if (!apply) process.exit(0);
-
-const gateway = createSupabaseProductImageDeleteGateway(client);
-for (const row of plan) {
-  if (row.action === "KEEP") continue;
-  if (row.action === "REVIEW") {
-    console.log(`REVIEW RECHAZADO/EXCLUIDO: ${row.product_id} / ${row.row_id}`);
-    continue;
+export async function runProductImageCleanup(input: {
+  snapshot: Snapshot;
+  plan: ProductImageCleanupPlanRow[];
+  apply: boolean;
+  readState(): Promise<CleanupState>;
+  gateway: ProductImageDeleteGateway;
+  log(message: string): void;
+}) {
+  const { snapshot, plan, apply, readState, gateway, log } = input;
+  const { images, objects } = await readState();
+  const result = validateCurrentState(snapshot, plan, images, objects);
+  const { summary } = result;
+  log(apply ? "Modo: APPLY" : "Modo: DRY-RUN (sin escrituras)");
+  log(`Estado: ${result.phase}`);
+  log(`KEEP: ${summary.KEEP}`);
+  log(`DELETE_BOTH: ${summary.DELETE_BOTH}`);
+  log(`DELETE_STORAGE: ${summary.DELETE_STORAGE}`);
+  log(`REVIEW protegido/excluido: ${summary.REVIEW}`);
+  log(`writes proposed = ${result.writesProposed}`);
+  if (!apply || result.phase === "POST-CLEANUP") {
+    if (apply) log("NO-OP seguro: limpieza ya completada. Sin escrituras.");
+    return result;
   }
-  if (row.action === "DELETE_BOTH") {
-    await deleteProductImageWithCompensation(gateway, {
-      productId: row.product_id,
-      imageId: row.row_id,
-    });
-    console.log(`DELETE_BOTH OK: ${row.row_id} / ${row.path}`);
-    continue;
-  }
-  if (row.action === "DELETE_STORAGE") {
-    const currentImages = await listProductImages(client);
-    if (currentImages.some((image) => getProductImageStoragePath(image.url) === row.path)) {
-      throw new Error(`ABORT: ${row.path} adquirio una referencia DB.`);
+
+  const progress: CleanupProgress = { rowIds: new Set(), paths: new Set() };
+  const revalidate = async (row: ProductImageCleanupPlanRow, metadataDeleted = false) => {
+    try {
+      const state = await readState();
+      const currentProgress = { rowIds: new Set(progress.rowIds), paths: new Set(progress.paths) };
+      if (metadataDeleted) currentProgress.rowIds.add(row.row_id);
+      validateProgress(snapshot, plan, state.images, state.objects, currentProgress);
+      validateOperation(row, state, metadataDeleted);
+    } catch (error) {
+      const message = `ABORT antes de ${row.action} (${row.row_id || row.path}): ${error instanceof Error ? error.message : String(error)}`;
+      log(message);
+      throw new Error(message, { cause: error });
     }
-    const { error } = await client.storage.from(PRODUCT_IMAGES_BUCKET).remove([row.path]);
-    if (error) throw new Error(`No se pudo eliminar ${row.path}: ${error.message}`);
-    console.log(`DELETE_STORAGE OK: ${row.path}`);
+  };
+  for (const row of plan) {
+    if (row.action === "KEEP") continue;
+    if (row.action === "REVIEW") {
+      log(`REVIEW RECHAZADO/EXCLUIDO: ${row.product_id} / ${row.row_id}`);
+      continue;
+    }
+    await revalidate(row);
+    if (row.action === "DELETE_BOTH") {
+      let deletedMetadata: ProductImageMetadata | null = null;
+      const guardedGateway: ProductImageDeleteGateway = {
+        ...gateway,
+        async deleteMetadata(productId, imageId) {
+          assertEqual(productId, row.product_id, "Operacion product_id");
+          assertEqual(imageId, row.row_id, "Operacion row_id");
+          await revalidate(row);
+          const deleted = await gateway.deleteMetadata(productId, imageId);
+          deletedMetadata = deleted;
+          return deleted;
+        },
+        async removeStorageObject(path) {
+          assertEqual(path, row.path, "Operacion Storage path");
+          await revalidate(row, true);
+          return gateway.removeStorageObject(path);
+        },
+      };
+      try {
+        const deleted = await deleteProductImageWithCompensation(guardedGateway, {
+          productId: row.product_id, imageId: row.row_id,
+        });
+        if (!deleted.storageDeleted) {
+          if (deletedMetadata) await gateway.restoreMetadata(deletedMetadata);
+          throw new Error(`${row.path} adquirio una referencia compartida; metadata restaurada, Storage conservado.`);
+        }
+      } catch (error) {
+        log(`ABORT ${row.action} (${row.row_id}): ${error instanceof Error ? error.message : String(error)}`);
+        throw error;
+      }
+      progress.rowIds.add(row.row_id);
+    } else if (row.action === "DELETE_STORAGE") {
+      try {
+        await gateway.removeStorageObject(row.path);
+      } catch (error) {
+        log(`ABORT ${row.action} (${row.path}): ${error instanceof Error ? error.message : String(error)}`);
+        throw error;
+      }
+    }
+    progress.paths.add(row.path);
+    log(`${row.action} OK: ${row.row_id || row.path}`);
   }
+  const final = await readState();
+  const post = validateCurrentState(snapshot, plan, final.images, final.objects);
+  assertEqual(post.phase, "POST-CLEANUP", "Estado final");
+  log("Limpieza aplicada; POST-CLEANUP verificado, sin nuevas acciones destructivas.");
+  return post;
 }
 
-await validateProductImageCoherence(client);
-console.log("Limpieza aplicada y coherencia final verificada.");
+async function main() {
+  const unknownArguments = process.argv.slice(2).filter((argument) => argument !== "--apply");
+  if (unknownArguments.length > 0) throw new Error(`Argumento desconocido: ${unknownArguments[0]}.`);
+  const apply = process.argv.includes("--apply");
+  const client = createClient(
+    requiredEnvironment("NEXT_PUBLIC_SUPABASE_URL"), requiredEnvironment("SUPABASE_SERVICE_ROLE_KEY"),
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+  const [planCsv, snapshotJson] = await Promise.all([
+    readFile(PLAN_PATH, "utf8"), readFile(SNAPSHOT_PATH, "utf8"),
+  ]);
+  const result = await runProductImageCleanup({
+    snapshot: JSON.parse(snapshotJson) as Snapshot,
+    plan: parseProductImageCleanupPlanCsv(planCsv),
+    apply,
+    async readState() {
+      const [images, objects] = await Promise.all([listProductImages(client), listStorageObjects(client)]);
+      return { images, objects };
+    },
+    gateway: createSupabaseProductImageDeleteGateway(client),
+    log: console.log,
+  });
+  if (apply && result.phase === "POST-CLEANUP") await validateProductImageCoherence(client);
+}
+
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+  await main();
+}
