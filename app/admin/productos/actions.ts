@@ -25,6 +25,11 @@ import {
   findMatchingStoredProductImage,
 } from "@/lib/products/product-image-files";
 import {
+  PRODUCT_IMAGES_BUCKET,
+  createSupabaseProductImageDeleteGateway,
+  deleteProductImageWithCompensation,
+} from "@/lib/products/product-image-deletion";
+import {
   PRODUCT_STATUSES,
   assertProductStatusTransition,
   shouldClearCostSource,
@@ -32,8 +37,6 @@ import {
 } from "@/lib/products/admin-product-policy";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { adjustInventoryStock } from "@/services/inventory";
-
-const PRODUCT_IMAGES_BUCKET = "product-images";
 
 type PersistedProductState = {
   id: string;
@@ -49,6 +52,12 @@ export type ProductFormActionState = {
   productId?: string;
   submissionId?: string;
   persistedProduct?: PersistedProductState;
+};
+
+export type ProductImageActionState = {
+  status: "idle" | "success" | "error";
+  message: string;
+  submissionId?: string;
 };
 
 function productFormErrorState(error: unknown): ProductFormActionState {
@@ -1019,100 +1028,45 @@ export async function moveProductImage(formData: FormData) {
   redirect(returnTo);
 }
 
-function getStoragePathFromPublicUrl(url: string) {
-  const marker = `/${PRODUCT_IMAGES_BUCKET}/`;
-  const markerIndex = url.indexOf(marker);
+export async function deleteProductImage(
+  _previousState: ProductImageActionState,
+  formData: FormData,
+): Promise<ProductImageActionState> {
+  try {
+    await requireAdminActionSession();
 
-  if (markerIndex === -1) {
-    return null;
-  }
+    const productId = String(formData.get("productId") ?? "");
+    const imageId = String(formData.get("imageId") ?? "");
 
-  return decodeURIComponent(url.slice(markerIndex + marker.length));
-}
-
-export async function deleteProductImage(formData: FormData) {
-  await requireAdminActionSession();
-
-  const productId = String(formData.get("productId") ?? "");
-  const imageId = String(formData.get("imageId") ?? "");
-  const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
-
-  if (!productId || !imageId) {
-    throw new Error("Faltan datos para eliminar la imagen.");
-  }
-
-  const existingProduct = await assertOperationalProduct(productId);
-
-  const supabase = getSupabaseAdminClient();
-  const { data: image, error: readError } = await supabase
-    .from("product_images")
-    .select("id, url, is_primary")
-    .eq("id", imageId)
-    .eq("product_id", productId)
-    .maybeSingle();
-
-  if (readError) {
-    throw new Error(readError.message);
-  }
-
-  if (!image) {
-    throw new Error("La imagen no pertenece a este producto.");
-  }
-
-  const { error: deleteError } = await supabase
-    .from("product_images")
-    .delete()
-    .eq("id", imageId)
-    .eq("product_id", productId);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-
-  const storagePath = getStoragePathFromPublicUrl(String(image.url ?? ""));
-
-  if (storagePath) {
-    const { error: storageError } = await supabase.storage
-      .from(PRODUCT_IMAGES_BUCKET)
-      .remove([storagePath]);
-
-    if (storageError) {
-      console.warn("[product-images] No se pudo eliminar el archivo del bucket", {
-        productId,
-        imageId,
-        message: storageError.message,
-      });
-    }
-  }
-
-  if (image.is_primary) {
-    const { data: remainingImages, error: remainingError } = await supabase
-      .from("product_images")
-      .select("id")
-      .eq("product_id", productId)
-      .order("sort_order", { ascending: true })
-      .limit(1);
-
-    if (remainingError) {
-      throw new Error(remainingError.message);
+    if (!productId || !imageId) {
+      throw new Error("Faltan datos para eliminar la imagen.");
     }
 
-    const nextPrimary = remainingImages?.[0];
+    const existingProduct = await assertOperationalProduct(productId);
+    const supabase = getSupabaseAdminClient();
+    const result = await deleteProductImageWithCompensation(
+      createSupabaseProductImageDeleteGateway(supabase),
+      { productId, imageId },
+    );
 
-    if (nextPrimary) {
-      const { error: primaryError } = await supabase
-        .from("product_images")
-        .update({ is_primary: true })
-        .eq("id", nextPrimary.id)
-        .eq("product_id", productId);
+    await revalidateOperationalProductPaths(existingProduct);
 
-      if (primaryError) {
-        throw new Error(primaryError.message);
-      }
-    }
+    return {
+      status: "success",
+      message: result.storagePreservedForSharedReference
+        ? "La imagen se quito del producto. El archivo compartido se conservo."
+        : "La imagen se elimino correctamente.",
+      submissionId: crypto.randomUUID(),
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "No se pudo eliminar la imagen.",
+      submissionId: crypto.randomUUID(),
+    };
   }
-
-  await revalidateOperationalProductPaths(existingProduct);
-  redirect(returnTo);
 }
 

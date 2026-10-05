@@ -17,6 +17,7 @@ import {
   moveProductImage,
   setPrimaryProductImage,
   type ProductFormActionState,
+  type ProductImageActionState,
 } from "@/app/admin/productos/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import {
@@ -45,6 +46,10 @@ type ProductFormProps = {
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
 const INITIAL_ACTION_STATE: ProductFormActionState = {
+  status: "idle",
+  message: "",
+};
+const INITIAL_IMAGE_ACTION_STATE: ProductImageActionState = {
   status: "idle",
   message: "",
 };
@@ -246,6 +251,58 @@ function ProductStatusControl({ initialStatus }: { initialStatus: string }) {
   );
 }
 
+function DeleteProductImageForm({
+  productId,
+  imageId,
+}: {
+  productId: string;
+  imageId: string;
+}) {
+  const router = useRouter();
+  const handledSubmissionRef = useRef<string | undefined>(undefined);
+  const [state, formAction, isPending] = useActionState(
+    deleteProductImage,
+    INITIAL_IMAGE_ACTION_STATE,
+  );
+
+  useEffect(() => {
+    if (
+      state.status !== "success" ||
+      !state.submissionId ||
+      handledSubmissionRef.current === state.submissionId
+    ) {
+      return;
+    }
+
+    handledSubmissionRef.current = state.submissionId;
+    router.refresh();
+  }, [router, state.status, state.submissionId]);
+
+  return (
+    <form action={formAction} className="grid gap-2">
+      <input type="hidden" name="productId" value={productId} />
+      <input type="hidden" name="imageId" value={imageId} />
+      <PendingSubmitButton
+        pendingLabel="Eliminando..."
+        disabled={isPending || state.status === "success"}
+        className="w-full rounded-full border border-[#8B5E3C]/35 px-4 py-2 text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        Eliminar
+      </PendingSubmitButton>
+      {state.message ? (
+        <p
+          role={state.status === "error" ? "alert" : "status"}
+          className={`text-xs font-semibold ${
+            state.status === "error" ? "text-red-700" : "text-[#556B2F]"
+          }`}
+        >
+          {state.message}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
 function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
   const images = getSortedImages(product);
   const returnTo = `/admin/productos/${product.id}/editar`;
@@ -323,18 +380,10 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                     </div>
                   )}
 
-                  <form action={deleteProductImage}>
-                    <input type="hidden" name="productId" value={product.id} />
-                    <input type="hidden" name="imageId" value={image.id} />
-                    <input type="hidden" name="slug" value={product.slug} />
-                    <input type="hidden" name="returnTo" value={returnTo} />
-                    <PendingSubmitButton
-                      pendingLabel="Eliminando..."
-                      className="w-full rounded-full border border-[#8B5E3C]/35 px-4 py-2 text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Eliminar
-                    </PendingSubmitButton>
-                  </form>
+                  <DeleteProductImageForm
+                    productId={product.id}
+                    imageId={image.id}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between gap-2 border-t border-[#8B5E3C]/15 pt-3">
