@@ -1,0 +1,561 @@
+{
+  "capturedAt": "2026-10-05T22:33:05.102Z",
+  "mode": "READ_ONLY",
+  "products": [
+    {
+      "id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "category_id": "d008cc8e-261c-4af3-9859-3a67702ff210",
+      "name": "Lattafa Yara Rosa",
+      "slug": "perfume-yara-rosa",
+      "short_description": "Lattafa Yara Rosa de Lattafa es una opcion ideal para quienes buscan un aroma con presencia, pensado para uso diario, salida o regalo.",
+      "description": "Lattafa Yara Rosa de Lattafa combina estilo, presencia y una sensación de calidad desde el primer uso. Es una alternativa ideal si buscás un perfume para regalar bien, probar algo distinto o sumar a tu rutina un aroma que acompañe tu estilo. En SFSTORE te ayudamos a elegir según tus gustos, ocasión y presupuesto.",
+      "price": 71763,
+      "compare_at_price": null,
+      "cost": 32504,
+      "stock": 1,
+      "sku": null,
+      "featured": true,
+      "status": "active",
+      "created_at": "2026-06-03T03:11:16.595882+00:00",
+      "updated_at": "2026-06-13T16:05:16.010876+00:00",
+      "transfer_price": 55257,
+      "cost_source_purchase_item_id": null,
+      "historical_identity": false,
+      "historical_group_key": null
+    },
+    {
+      "id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "category_id": "d008cc8e-261c-4af3-9859-3a67702ff210",
+      "name": "Lattafa Yara Rosa",
+      "slug": "lattafa-yara-rosa",
+      "short_description": "Lattafa Yara Rosa disponible en SFSTORE. Te ayudamos a elegir según tus gustos, ocasión y presupuesto.",
+      "description": "Lattafa Yara Rosa forma parte del catálogo de perfumes de SFSTORE. Si tenés dudas, te acompañamos para elegir una opción útil, linda y adecuada para comprar o regalar.",
+      "price": 87077.92,
+      "compare_at_price": null,
+      "cost": 44700,
+      "stock": 0,
+      "sku": null,
+      "featured": false,
+      "status": "active",
+      "created_at": "2026-06-03T03:11:16.595882+00:00",
+      "updated_at": "2026-09-09T23:24:57.910314+00:00",
+      "transfer_price": 67050,
+      "cost_source_purchase_item_id": null,
+      "historical_identity": false,
+      "historical_group_key": null
+    }
+  ],
+  "attributes": [
+    {
+      "id": "102f3819-137d-4efb-8717-857054b83d9c",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "occasion",
+      "value": "diario",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "1966f7ea-9a83-497c-bb3e-6d4b75c40335",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "olfactory_family",
+      "value": "floral",
+      "sort_order": 1,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "2b7ba15c-036e-4deb-bdc7-03676b75dbb4",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "olfactory_family",
+      "value": "floral",
+      "sort_order": 1,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "2d3455e1-a9a6-430e-ac1a-3dd0e0346eea",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "Marca",
+      "value": "Lattafa",
+      "sort_order": 10,
+      "created_at": "2026-06-09T04:50:17.684278+00:00",
+      "updated_at": "2026-06-09T04:50:17.684278+00:00"
+    },
+    {
+      "id": "2e571a83-4cf2-4ff1-b687-491a338b6cc0",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "Tipo",
+      "value": "Perfumes",
+      "sort_order": 20,
+      "created_at": "2026-09-09T00:01:31.302249+00:00",
+      "updated_at": "2026-09-09T00:01:31.302249+00:00"
+    },
+    {
+      "id": "2fd4eba3-a946-4d84-a235-2fa59797d7f7",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "gender",
+      "value": "femenino",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "4aa60c9c-f5cb-43d8-a0fa-ca2cb25b877a",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "occasion",
+      "value": "salida",
+      "sort_order": 1,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "4b63d1da-b5b4-4103-af5b-b9371ccc6f9f",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "olfactory_family",
+      "value": "frutal",
+      "sort_order": 2,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "5ac66e2c-d711-475f-a203-9d6219968afe",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "commercial_category",
+      "value": "arabe",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "5cc07096-5b21-4e05-b9a3-6d8af95ac231",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "intensity",
+      "value": "media",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "65a238c0-ee60-48ba-972b-dfd09b68f017",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "olfactory_family",
+      "value": "dulce",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "7709224d-cb30-4013-a20d-3ae992881e35",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "gender",
+      "value": "femenino",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "91f8bd28-f2ae-49ce-a148-2fb99e26ac7e",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "occasion",
+      "value": "cita",
+      "sort_order": 2,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "9585ee4e-a757-465e-9862-9ae4ebc4936a",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "occasion",
+      "value": "salida",
+      "sort_order": 1,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "a456a6a1-da1a-45aa-8cb6-0243df238213",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "olfactory_family",
+      "value": "gourmand",
+      "sort_order": 3,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "a69aaa9f-a119-49dc-bfe0-4fb4ab33e1f2",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "commercial_category",
+      "value": "arabe",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "a705db63-19ad-4c71-8cda-06774cffa5ef",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "occasion",
+      "value": "cita",
+      "sort_order": 2,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "b226876d-4f93-4ea3-9381-890eddc54664",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "olfactory_family",
+      "value": "gourmand",
+      "sort_order": 3,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "b2726f4f-5899-470b-b9c2-646aaf0fd9a5",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "name": "intensity",
+      "value": "media",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "b540d45b-8352-4331-a872-56908f01843b",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "olfactory_family",
+      "value": "frutal",
+      "sort_order": 2,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "cbf36835-947a-49db-803e-0df912bc7cb7",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "occasion",
+      "value": "diario",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "ce2fca4f-b0c2-4a80-9dfa-82e1b11ed331",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "olfactory_family",
+      "value": "dulce",
+      "sort_order": 0,
+      "created_at": "2026-09-12T00:14:39.209854+00:00",
+      "updated_at": "2026-09-12T00:14:39.209854+00:00"
+    },
+    {
+      "id": "ea6a71f7-e235-4ac7-a6c2-7c69d8607a3a",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "Marca",
+      "value": "Lattafa",
+      "sort_order": 10,
+      "created_at": "2026-06-13T16:05:16.200525+00:00",
+      "updated_at": "2026-06-13T16:05:16.200525+00:00"
+    },
+    {
+      "id": "f81d8de1-faf0-4da8-9d60-484485b77563",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "name": "Tipo",
+      "value": "Perfume",
+      "sort_order": 20,
+      "created_at": "2026-06-13T16:05:16.200525+00:00",
+      "updated_at": "2026-06-13T16:05:16.200525+00:00"
+    }
+  ],
+  "images": [
+    {
+      "id": "216c5fa1-8fa8-49ec-bfbc-7091a9139045",
+      "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/05b34469-3eb8-4148-8e97-9a19f1c2df6e/1781366716520-img-4921-optimizada.webp",
+      "alt": "Lattafa Yara Rosa",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-13T16:05:16.880358+00:00",
+      "updated_at": "2026-06-13T16:05:16.880358+00:00"
+    },
+    {
+      "id": "8a698d0f-96a5-4af8-bb05-4de4168bf431",
+      "product_id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "url": "https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/f1cb2323-0e7f-49d6-a26f-110595c90e55/1780979018845-img-4921-optimizada.webp",
+      "alt": "Lattafa Yara Rosa",
+      "sort_order": 0,
+      "is_primary": true,
+      "created_at": "2026-06-09T04:23:39.340363+00:00",
+      "updated_at": "2026-06-09T04:23:39.340363+00:00"
+    }
+  ],
+  "storage": [
+    {
+      "rowId": "216c5fa1-8fa8-49ec-bfbc-7091a9139045",
+      "productId": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "path": "products/05b34469-3eb8-4148-8e97-9a19f1c2df6e/1781366716520-img-4921-optimizada.webp",
+      "object": {
+        "name": "1781366716520-img-4921-optimizada.webp",
+        "version": "5e086621-0189-477a-a174-6f54d4399e4c",
+        "id": "26b1033f-674f-4a1b-8f8f-4d7d869ec348",
+        "updated_at": "2026-06-13T16:05:16.697Z",
+        "created_at": "2026-06-13T16:05:16.697Z",
+        "last_accessed_at": "2026-06-13T16:05:16.697Z",
+        "metadata": {
+          "eTag": "\"124bacd2b763d1c5307bd23f201186d5\"",
+          "size": 69834,
+          "mimetype": "image/webp",
+          "cacheControl": "max-age=3600",
+          "lastModified": "2026-06-13T16:05:17.000Z",
+          "contentLength": 69834,
+          "httpStatusCode": 200
+        },
+        "archived_at": null,
+        "is_delete_marker": false,
+        "is_versioned": false
+      },
+      "httpStatus": 200,
+      "sha256": "fbd16d47fd34145084f17767363f59309eb6f5f684f193850ea894913ea44182",
+      "size": 69834
+    },
+    {
+      "rowId": "8a698d0f-96a5-4af8-bb05-4de4168bf431",
+      "productId": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "path": "products/f1cb2323-0e7f-49d6-a26f-110595c90e55/1780979018845-img-4921-optimizada.webp",
+      "object": {
+        "name": "1780979018845-img-4921-optimizada.webp",
+        "version": "a027680e-4f16-462b-b7c2-d212c19d2e1c",
+        "id": "ea6e1da6-00a7-42e3-a7c8-0519b4813273",
+        "updated_at": "2026-06-09T04:23:39.152Z",
+        "created_at": "2026-06-09T04:23:39.152Z",
+        "last_accessed_at": "2026-06-09T04:23:39.152Z",
+        "metadata": {
+          "eTag": "\"124bacd2b763d1c5307bd23f201186d5\"",
+          "size": 69834,
+          "mimetype": "image/webp",
+          "cacheControl": "max-age=3600",
+          "lastModified": "2026-06-09T04:23:40.000Z",
+          "contentLength": 69834,
+          "httpStatusCode": 200
+        },
+        "archived_at": null,
+        "is_delete_marker": false,
+        "is_versioned": false
+      },
+      "httpStatus": 200,
+      "sha256": "fbd16d47fd34145084f17767363f59309eb6f5f684f193850ea894913ea44182",
+      "size": 69834
+    }
+  ],
+  "references": {
+    "purchases": [
+      {
+        "id": "0298056c-e6b2-4e90-a9a6-01dd7a09b141",
+        "supplier_id": null,
+        "supplier_name_snapshot": null,
+        "purchase_date": "2025-12-17",
+        "status": "historical",
+        "shipping_cost": 0,
+        "supplier_subtotal": 35740,
+        "total_cost": 35740,
+        "total_units": 1,
+        "notes": "Fila válida y producto resuelto; candidata a compra histórica sin proveedor y sin efecto de inventario/costo.",
+        "confirmed_at": null,
+        "cancelled_at": null,
+        "created_by": null,
+        "created_at": "2026-10-02T13:16:08.25145+00:00",
+        "updated_at": "2026-10-02T13:16:08.25145+00:00",
+        "historical_import": true,
+        "historical_occurred_on": "2025-12-17",
+        "affects_inventory": false
+      },
+      {
+        "id": "15750ec7-9a97-43fd-8fb5-6729660ff58b",
+        "supplier_id": null,
+        "supplier_name_snapshot": null,
+        "purchase_date": "2026-07-30",
+        "status": "historical",
+        "shipping_cost": 0,
+        "supplier_subtotal": 44700,
+        "total_cost": 44700,
+        "total_units": 1,
+        "notes": "Fila válida y producto resuelto; candidata a compra histórica sin proveedor y sin efecto de inventario/costo.",
+        "confirmed_at": null,
+        "cancelled_at": null,
+        "created_by": null,
+        "created_at": "2026-10-02T13:16:23.119754+00:00",
+        "updated_at": "2026-10-02T13:16:23.119754+00:00",
+        "historical_import": true,
+        "historical_occurred_on": "2026-07-30",
+        "affects_inventory": false
+      },
+      {
+        "id": "2b5881be-813e-4dac-8306-6c0bef8f8d4c",
+        "supplier_id": null,
+        "supplier_name_snapshot": null,
+        "purchase_date": "2026-01-22",
+        "status": "historical",
+        "shipping_cost": 0,
+        "supplier_subtotal": 32504.3,
+        "total_cost": 32504.3,
+        "total_units": 1,
+        "notes": "Fila válida y producto resuelto; candidata a compra histórica sin proveedor y sin efecto de inventario/costo.",
+        "confirmed_at": null,
+        "cancelled_at": null,
+        "created_by": null,
+        "created_at": "2026-10-02T13:16:10.298071+00:00",
+        "updated_at": "2026-10-02T13:16:10.298071+00:00",
+        "historical_import": true,
+        "historical_occurred_on": "2026-01-22",
+        "affects_inventory": false
+      }
+    ],
+    "purchaseItems": [
+      {
+        "id": "7f267b08-e5d0-472c-84ef-f82b5cfc578f",
+        "purchase_id": "2b5881be-813e-4dac-8306-6c0bef8f8d4c",
+        "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+        "product_name_snapshot": "Lattafa Yara Rosa",
+        "product_slug_snapshot": "perfume-yara-rosa",
+        "sku_snapshot": null,
+        "quantity": 1,
+        "unit_purchase_cost": 32504.3,
+        "supplier_line_total": 32504.3,
+        "allocated_shipping_total": 0,
+        "allocated_shipping_per_unit": 0,
+        "effective_unit_cost": 32504.3,
+        "effective_line_total": 32504.3,
+        "created_at": "2026-10-02T13:16:10.298071+00:00",
+        "updated_at": "2026-10-02T13:16:10.298071+00:00"
+      },
+      {
+        "id": "b52cc618-2399-498d-908a-15c1d8903d23",
+        "purchase_id": "15750ec7-9a97-43fd-8fb5-6729660ff58b",
+        "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+        "product_name_snapshot": "Lattafa Yara Rosa",
+        "product_slug_snapshot": "perfume-yara-rosa",
+        "sku_snapshot": null,
+        "quantity": 1,
+        "unit_purchase_cost": 44700,
+        "supplier_line_total": 44700,
+        "allocated_shipping_total": 0,
+        "allocated_shipping_per_unit": 0,
+        "effective_unit_cost": 44700,
+        "effective_line_total": 44700,
+        "created_at": "2026-10-02T13:16:23.119754+00:00",
+        "updated_at": "2026-10-02T13:16:23.119754+00:00"
+      },
+      {
+        "id": "ca24655a-3c8f-4156-90d4-c406ba9a35c9",
+        "purchase_id": "0298056c-e6b2-4e90-a9a6-01dd7a09b141",
+        "product_id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+        "product_name_snapshot": "Lattafa Yara Rosa",
+        "product_slug_snapshot": "perfume-yara-rosa",
+        "sku_snapshot": null,
+        "quantity": 1,
+        "unit_purchase_cost": 35740,
+        "supplier_line_total": 35740,
+        "allocated_shipping_total": 0,
+        "allocated_shipping_per_unit": 0,
+        "effective_unit_cost": 35740,
+        "effective_line_total": 35740,
+        "created_at": "2026-10-02T13:16:08.25145+00:00",
+        "updated_at": "2026-10-02T13:16:08.25145+00:00"
+      }
+    ],
+    "orders": [],
+    "orderItems": [],
+    "orderPayments": [],
+    "movements": [],
+    "records": [
+      {
+        "id": "05c33e0c-f9a6-4591-8de3-d5a2362a549e",
+        "batch_id": "dc3c0509-4eb4-4808-aedc-c426e5773d7d",
+        "source_sheet": "Control de compras",
+        "source_row": 172,
+        "fingerprint": "47fc9ae87b81f9c1da23bec0120d4bffd20c9f960117b775e70d88f318eee3ed",
+        "record_type": "purchase",
+        "target_table": "purchases",
+        "target_id": "15750ec7-9a97-43fd-8fb5-6729660ff58b",
+        "result": {
+          "items": 1,
+          "source_total": 44700,
+          "affects_inventory": false
+        },
+        "notes": "Fila válida y producto resuelto; candidata a compra histórica sin proveedor y sin efecto de inventario/costo.",
+        "created_at": "2026-10-02T13:16:23.119754+00:00"
+      },
+      {
+        "id": "2a5b387a-fab8-474d-877a-32de1b2790c1",
+        "batch_id": "dc3c0509-4eb4-4808-aedc-c426e5773d7d",
+        "source_sheet": "Control de compras",
+        "source_row": 72,
+        "fingerprint": "cd99d8ad06a4db65e4c196cd2273949c0e577cb4b7a04865fa3450ae9a3285fe",
+        "record_type": "purchase",
+        "target_table": "purchases",
+        "target_id": "2b5881be-813e-4dac-8306-6c0bef8f8d4c",
+        "result": {
+          "items": 1,
+          "source_total": 32504.3,
+          "affects_inventory": false
+        },
+        "notes": "Fila válida y producto resuelto; candidata a compra histórica sin proveedor y sin efecto de inventario/costo.",
+        "created_at": "2026-10-02T13:16:10.298071+00:00"
+      },
+      {
+        "id": "a899972e-4799-4ec5-9c6d-233b4f6a9cd6",
+        "batch_id": "dc3c0509-4eb4-4808-aedc-c426e5773d7d",
+        "source_sheet": "Control de compras",
+        "source_row": 56,
+        "fingerprint": "2bddfd4f1cccbb7befca3b5164fd22281fa8c23eac0c55cf11ecae04b054f6d9",
+        "record_type": "purchase",
+        "target_table": "purchases",
+        "target_id": "0298056c-e6b2-4e90-a9a6-01dd7a09b141",
+        "result": {
+          "items": 1,
+          "source_total": 35740,
+          "affects_inventory": false
+        },
+        "notes": "Fila válida y producto resuelto; candidata a compra histórica sin proveedor y sin efecto de inventario/costo.",
+        "created_at": "2026-10-02T13:16:08.25145+00:00"
+      }
+    ],
+    "analytics": []
+  },
+  "invariants": {
+    "productsCount": 179,
+    "stockTotal": 101,
+    "inventorySha256": "404ce1e18cf0bebc1329d190f4fd0f65350cefc57be0e616717d0aac05729715",
+    "inventoryMovementCount": 24
+  },
+  "pages": [
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "location": null,
+      "sha256": "2c042dcb3145073d087b4b9bd71184653edb1ec6d8985dadd44728c6c91e2bb3",
+      "canonicalPresent": true,
+      "duplicatedPresent": true
+    },
+    {
+      "path": "/perfumes",
+      "status": 200,
+      "location": null,
+      "sha256": "0911e99d81abe0dfcad3385e2b253661d2d8f53cfd0533af81829e4df84f3966",
+      "canonicalPresent": true,
+      "duplicatedPresent": true
+    },
+    {
+      "path": "/producto/lattafa-yara-rosa",
+      "status": 200,
+      "location": null,
+      "sha256": "7a702878975f4ea8b4fda33563220ae9a0c99491450c7eae09f444d7f839894f",
+      "canonicalPresent": true,
+      "duplicatedPresent": false
+    },
+    {
+      "path": "/producto/perfume-yara-rosa",
+      "status": 200,
+      "location": null,
+      "sha256": "374c5408abc427ecc478850db7e556ca9c3274cb3a5e294352a002495eedb394",
+      "canonicalPresent": true,
+      "duplicatedPresent": true
+    }
+  ]
+}

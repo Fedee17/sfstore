@@ -1,0 +1,73 @@
+{
+  "snapshot": "reports/yara-rosa-consolidation-pre.json",
+  "mode": "PRE_APPLY_ONLY",
+  "productUpdates": [
+    {
+      "id": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "before": {
+        "price": 87077.92,
+        "transfer_price": 67050,
+        "cost": 44700,
+        "featured": false,
+        "status": "active"
+      },
+      "patch": {
+        "price": 87000,
+        "transfer_price": 67050,
+        "cost": 44700,
+        "featured": true,
+        "status": "active"
+      }
+    },
+    {
+      "id": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "before": {
+        "status": "active",
+        "featured": true
+      },
+      "patch": {
+        "status": "archived",
+        "featured": false
+      }
+    }
+  ],
+  "inventoryAdjustments": [
+    {
+      "productId": "05b34469-3eb8-4148-8e97-9a19f1c2df6e",
+      "previousStock": 1,
+      "newStock": 0,
+      "rpc": "adjust_inventory_stock",
+      "reason": "Consolidacion Yara Rosa: reasignacion de la unidad fisica a la identidad comercial lattafa-yara-rosa."
+    },
+    {
+      "productId": "f1cb2323-0e7f-49d6-a26f-110595c90e55",
+      "previousStock": 0,
+      "newStock": 1,
+      "rpc": "adjust_inventory_stock",
+      "reason": "Consolidacion Yara Rosa: recepcion de la unidad fisica desde perfume-yara-rosa, sin compra ni venta."
+    }
+  ],
+  "executionRequirement": "One PostgreSQL transaction: lock both products, revalidate complete snapshot and references, identify the administrator, run both existing inventory RPC calls, apply only approved patches, verify stock total, commit or rollback everything.",
+  "expected": {
+    "canonicalStock": 1,
+    "archivedStock": 0,
+    "stockTotalDelta": 0,
+    "newAdjustmentMovements": 2
+  },
+  "preserve": [
+    "historical purchase items and snapshots",
+    "historical import records and mappings",
+    "all attributes",
+    "both image rows and Storage objects",
+    "historical_identity=false",
+    "cost_source_purchase_item_id",
+    "other products"
+  ],
+  "imageAction": "KEEP_BOTH_FOR_TECHNICAL_TRACEABILITY_NO_STORAGE_DELETE",
+  "redirect": {
+    "source": "/producto/perfume-yara-rosa",
+    "destination": "/producto/lattafa-yara-rosa",
+    "permanent": true,
+    "status": 308
+  }
+}
