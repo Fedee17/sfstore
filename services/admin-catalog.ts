@@ -5,6 +5,8 @@ import type {
   QuickCatalogProduct,
 } from "@/lib/admin/quick-catalog";
 
+import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
+
 type RelationOne<T> = T | T[] | null;
 
 type QuickCatalogRow = {
@@ -53,6 +55,7 @@ export async function getQuickCatalogProducts(): Promise<{
       `,
       )
       .eq("historical_identity", false)
+      .neq("id", YARA_ROSA.archivedId)
       .order("name", { ascending: true });
 
     if (error) throw new Error(error.message);

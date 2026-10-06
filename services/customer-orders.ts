@@ -13,6 +13,8 @@ import {
   type OrderPaymentStatus,
 } from "@/services/order-payments";
 
+import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
+
 export type CustomerOrderProduct = {
   id: string;
   name: string;
@@ -131,6 +133,7 @@ export async function listCustomerOrderProducts() {
     .from("products")
     .select("id, name, slug, sku, price, transfer_price, stock, status, categories(name)")
     .eq("historical_identity", false)
+    .neq("id", YARA_ROSA.archivedId)
     .eq("status", "active")
     .order("name", { ascending: true });
 

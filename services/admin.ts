@@ -1,5 +1,7 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
+import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
+
 export type AdminCustomer = {
   id: string;
   full_name: string;
@@ -287,6 +289,7 @@ export async function getAdminProducts(
       `,
       )
       .eq("historical_identity", false)
+      .neq("id", YARA_ROSA.archivedId)
       .order("created_at", { ascending: false });
 
     const search = filters.search?.trim();

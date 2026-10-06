@@ -18,6 +18,7 @@ import {
   type ProductCategoryInfo,
 } from "@/lib/products/auto-descriptions";
 import { slugifyProductValue } from "@/lib/products/slug";
+import { isSupersededYaraRosa } from "@/lib/products/yara-rosa-consolidation";
 import {
   MAX_PRODUCT_IMAGE_UPLOAD_BYTES,
   PRODUCT_IMAGE_OUTPUT_MIME_TYPES,
@@ -616,6 +617,10 @@ async function assertOperationalProduct(productId: string) {
 
   if (data.historical_identity) {
     throw new Error("Las identidades historicas no admiten modificaciones operativas.");
+  }
+
+  if (isSupersededYaraRosa(data)) {
+    throw new Error("Esta identidad de Yara Rosa se conserva solo para trazabilidad. Usar lattafa-yara-rosa.");
   }
 
   return data as OperationalProductSnapshot;

@@ -8,6 +8,7 @@ import {
   type PurchaseStatus,
 } from "@/lib/purchases/lifecycle";
 import { slugifyProductValue } from "@/lib/products/slug";
+import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 export type PurchaseProduct = {
@@ -88,6 +89,7 @@ export async function listPurchaseProducts(includeProductIds: string[] = []) {
     .from("products")
     .select("id, name, slug, sku, cost, status")
     .eq("historical_identity", false)
+    .neq("id", YARA_ROSA.archivedId)
     .eq("status", "active")
     .order("name", { ascending: true });
 
@@ -148,6 +150,7 @@ async function findPurchaseProductByName(name: string) {
     .from("products")
     .select("id, name, slug, sku, cost, status")
     .eq("historical_identity", false)
+    .neq("id", YARA_ROSA.archivedId)
     .ilike("name", name)
     .limit(1)
     .maybeSingle();

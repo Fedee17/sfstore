@@ -8,6 +8,7 @@ import {
 } from "@/lib/product-import/core";
 import {
   getProductImportLookupSlugs,
+  preserveCanonicalImportIdentity,
   selectExistingProductForImport,
 } from "@/lib/product-import/aliases";
 import { parseGoogleVisualizationRows } from "@/lib/product-import/google-visualization";
@@ -32,6 +33,7 @@ import type {
   SupportedProductSheet,
 } from "@/lib/product-import/types";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getYaraRosaCanonicalId } from "@/lib/products/yara-rosa-consolidation";
 import { applyConfirmedProductImportRows } from "@/services/product-import";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -178,10 +180,11 @@ async function findExistingProducts(rows: NormalizedProductImportRow[]) {
 
 function buildPreviewState(sheetName: SupportedProductSheet, rows: NormalizedProductImportRow[], existingProducts: ExistingProduct[], source: ImportSource = "file"): ProductImportPreviewState {
   const duplicateSlugs = findDuplicateImportSlugs(rows);
-  const previewRows = rows.map((row) => {
-    const existing = row.sku
-      ? existingProducts.find((product) => product.sku === row.sku) ?? null
-      : selectExistingProductForImport(existingProducts, sheetName, row.slug);
+  const previewRows = rows.map((sourceRow) => {
+    const existing = sourceRow.sku && !getYaraRosaCanonicalId(sourceRow.slug)
+      ? existingProducts.find((product) => product.sku === sourceRow.sku) ?? null
+      : selectExistingProductForImport(existingProducts, sheetName, sourceRow.slug);
+    const row = preserveCanonicalImportIdentity(sourceRow, existing);
     const effectiveErrors =
       sheetName === "Producto Perfumes" && existing
         ? getExistingPerfumeImportErrors(row.errors)
@@ -195,7 +198,7 @@ function buildPreviewState(sheetName: SupportedProductSheet, rows: NormalizedPro
       const classification = classifyPriceImportPreview({
         source: getPriceImportSource(row),
         existing: existing ?? null,
-        duplicate: duplicateSlugs.has(row.slug),
+        duplicate: duplicateSlugs.has(sourceRow.slug),
         restricted: blocked,
         errors: hasErrors ? row.errors : [],
       });

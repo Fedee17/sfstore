@@ -1,5 +1,6 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { getStoreSaleDisplayName } from "@/lib/store-sales";
+import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
 import type {
   OrderPayment,
   OrderPaymentStatus,
@@ -109,6 +110,7 @@ export async function listStoreSaleProducts() {
     .from("products")
     .select("id, name, slug, sku, price, transfer_price, stock, status, categories(name)")
     .eq("historical_identity", false)
+    .neq("id", YARA_ROSA.archivedId)
     .eq("status", "active")
     .order("name", { ascending: true });
 

@@ -46,17 +46,6 @@ export const products: Product[] = [
     imagePlaceholder: "9P",
   },
   {
-    id: "perfume-lattafa-yara-rosa",
-    name: "Lattafa Yara Rosa",
-    slug: "lattafa-yara-rosa",
-    category: "perfumes",
-    price: 84500,
-    stock: 5,
-    featured: false,
-    shortDescription: "Fragancia femenina cremosa, suave y delicadamente dulce.",
-    imagePlaceholder: "YR",
-  },
-  {
     id: "perfume-club-de-nuit-sillage",
     name: "Club de Nuit Sillage",
     slug: "club-de-nuit-sillage",

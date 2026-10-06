@@ -9,9 +9,16 @@ const testDirectory = dirname(fileURLToPath(import.meta.url));
 
 async function importTypeScriptModule(path) {
   const source = readFileSync(path, "utf8");
-  const compiled = ts.transpileModule(source, {
+  let compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
   }).outputText;
+  if (compiled.includes('../products/yara-rosa-consolidation.ts')) {
+    const identitySource = ts.transpileModule(readFileSync(join(testDirectory, "..", "lib", "products", "yara-rosa-consolidation.ts"), "utf8"), {
+      compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+    }).outputText;
+    const identityUrl = `data:text/javascript;base64,${Buffer.from(identitySource).toString("base64")}`;
+    compiled = compiled.replace("../products/yara-rosa-consolidation.ts", identityUrl);
+  }
   return import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 }
 

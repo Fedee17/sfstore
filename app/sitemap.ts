@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { isSupersededYaraRosa } from "@/lib/products/yara-rosa-consolidation";
 
 type SitemapProduct = {
   slug: string;
@@ -23,7 +24,7 @@ async function getActiveProductUrls() {
       return [];
     }
 
-    return ((data ?? []) as SitemapProduct[]).map((product) => ({
+    return ((data ?? []) as SitemapProduct[]).filter((product) => !isSupersededYaraRosa(product)).map((product) => ({
       url: `${siteUrl}/producto/${product.slug}`,
       lastModified: product.updated_at
         ? new Date(product.updated_at)

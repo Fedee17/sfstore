@@ -4,6 +4,7 @@ import {
   type PublicCatalogSection,
 } from "@/lib/catalog/public-product-visibility";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { isSupersededYaraRosa } from "@/lib/products/yara-rosa-consolidation";
 import type { Product } from "@/types/product";
 
 type SupportedPublicCategory = PublicCatalogSection;
@@ -72,6 +73,7 @@ function createImagePlaceholder(name: string) {
 }
 
 function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
+  if (isSupersededYaraRosa(row)) return null;
   const category = firstRelation(row.categories);
   const publicCategory = resolvePublicCatalogSection({
     status: row.status,

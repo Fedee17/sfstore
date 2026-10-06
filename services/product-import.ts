@@ -18,6 +18,7 @@ import {
 } from "@/lib/product-import/core";
 import {
   getProductImportLookupSlugs,
+  preserveCanonicalImportIdentity,
   selectExistingProductForImport,
 } from "@/lib/product-import/aliases";
 import {
@@ -262,7 +263,8 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
     try {
       const previousSlug = input.previousProductName ? slugifyImportedProduct(input.previousProductName) : undefined;
       const existing = await findExistingProduct(sheet, slug, previousSlug);
-      const normalized = normalizeProductImportRow(sheet, input.row, input.rowNumber);
+      const parsed = normalizeProductImportRow(sheet, input.row, input.rowNumber);
+      const normalized = parsed ? preserveCanonicalImportIdentity(parsed, existing) : null;
       if (!normalized) {
         summary.invalid += 1;
         summary.results.push(result(input.rowNumber, slug, "invalid", "No se pudo normalizar la fila."));
@@ -408,7 +410,8 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
 export async function applyConfirmedProductImportRows(rows: NormalizedProductImportRow[]): Promise<ConfirmedImportResult> {
   const result: ConfirmedImportResult = { created: 0, updated: 0, unchanged: 0, review: 0, omittedErrors: 0, omittedDuplicates: 0 };
   const duplicateSlugs = findDuplicateImportSlugs(rows);
-  for (const row of rows) {
+  for (const sourceRow of rows) {
+    let row = sourceRow;
     if (duplicateSlugs.has(row.slug)) {
       result.omittedDuplicates += 1;
       continue;
@@ -419,6 +422,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
     }
     try {
       const existing = await findExistingProduct(row.sourceSheet, row.slug);
+      row = preserveCanonicalImportIdentity(row, existing);
       if (row.sourceSheet === "Precios Productos") {
         const decision = buildSafePriceImportDecision(getPriceImportSource(row), existing);
         if (decision.kind === "review") {
