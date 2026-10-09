@@ -72,7 +72,7 @@ test("historical identities cannot change operational status", () => {
 test("the product action returns and the form reconciles persisted status", () => {
   assert.match(
     productActions,
-    /select\("id, status, updated_at, slug, category_id"\)/,
+    /const persisted = result\.product/,
   );
   assert.match(productActions, /persistedProduct: persistedProductState\(persisted\)/);
   assert.match(productActions, /updatedAt: row\.updated_at/);
@@ -93,8 +93,8 @@ test("manual cost changes clear a stale purchase source only when needed", () =>
   assert.equal(shouldClearCostSource(null, null), false);
   assert.equal(shouldClearCostSource(100, null), true);
   assert.match(
-    productActions,
-    /shouldClearCostSource\([\s\S]+cost_source_purchase_item_id: null/,
+    source("supabase", "migrations", "202610060001_atomic_product_save.sql"),
+    /cost_source_purchase_item_id = case when cost is distinct from v_product\.cost[\s\S]+else cost_source_purchase_item_id end/,
   );
 });
 

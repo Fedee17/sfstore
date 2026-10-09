@@ -441,11 +441,40 @@ export function ProductForm({
   submitLabel,
 }: ProductFormProps) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const requestRef = useRef<FormData | null>(null);
+  const lastSubmissionRef = useRef<FormData | null>(null);
+  const submitLockRef = useRef(false);
+  const reservedIdRef = useRef(product?.id);
+  const versionRef = useRef(product?.save_version);
+  async function submitProduct(previousState: ProductFormActionState, data: FormData) {
+    if (!requestRef.current) {
+      reservedIdRef.current ??= crypto.randomUUID();
+      data.set("productId", reservedIdRef.current);
+      data.set("operationKey", crypto.randomUUID());
+      if (product) data.set("expectedVersion", versionRef.current ?? "");
+      requestRef.current = data;
+    }
+    lastSubmissionRef.current = requestRef.current;
+    try {
+      const result = await action(previousState, requestRef.current);
+      if (result.status === "success") versionRef.current = result.version;
+      if (result.status === "success" || result.retryMode === "new" || result.retryMode === "reload") {
+        requestRef.current = null;
+      }
+      return result;
+    } catch {
+      return { status: "error", retryMode: "retry", message: "No se recibio confirmacion. Reintenta el mismo guardado." } as ProductFormActionState;
+    } finally {
+      submitLockRef.current = false;
+    }
+  }
   const [actionState, formAction, isSubmitting] = useActionState(
-    action,
+    submitProduct,
     INITIAL_ACTION_STATE,
   );
   const handledSubmissionRef = useRef<string | undefined>(undefined);
+  const restoredActionRef = useRef<ProductFormActionState | null>(null);
   const [imageStatus, setImageStatus] = useState("");
   const [isOptimizingImage, setIsOptimizingImage] = useState(false);
   const [pendingImages, setPendingImages] = useState<
@@ -471,6 +500,22 @@ export function ProductForm({
   }, []);
 
   useEffect(() => {
+    // React resets uncontrolled inputs after an action, including a returned error.
+    // Keep the submitted values and converted files available for a safe retry.
+    const data = lastSubmissionRef.current;
+    if (data && formRef.current && actionState.status !== "idle" && restoredActionRef.current !== actionState) {
+      restoredActionRef.current = actionState;
+      for (const element of Array.from(formRef.current.elements)) {
+        if (element instanceof HTMLInputElement && element.type === "checkbox") {
+          element.checked = data.getAll(element.name).includes(element.value);
+        } else if ((element instanceof HTMLInputElement && element.type !== "file" && element.type !== "hidden") || element instanceof HTMLTextAreaElement) {
+          element.value = String(data.get(element.name) ?? "");
+        } else if (element instanceof HTMLSelectElement) {
+          for (const option of Array.from(element.options)) option.selected = data.getAll(element.name).includes(option.value);
+        }
+      }
+      syncPendingFiles(pendingImages);
+    }
     if (
       actionState.status !== "success" ||
       !actionState.submissionId ||
@@ -591,12 +636,20 @@ export function ProductForm({
       {product ? <ProductImageGalleryAdmin product={product} /> : null}
 
       <form
+        ref={formRef}
         action={formAction}
+        onSubmit={(event) => {
+          if (submitLockRef.current || isOptimizingImage || actionState.retryMode === "reload") {
+            event.preventDefault();
+            return;
+          }
+          submitLockRef.current = true;
+        }}
         className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm"
       >
         {product ? <input type="hidden" name="productId" value={product.id} /> : null}
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <fieldset disabled={isSubmitting || actionState.retryMode === "retry" || actionState.retryMode === "reload"} className="grid min-w-0 gap-5 md:grid-cols-2">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Categoria</span>
             <select
@@ -844,13 +897,12 @@ export function ProductForm({
               </section>
             ) : null}
           </div>
-        </div>
-
+        </fieldset>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <button
             type="submit"
-            disabled={isOptimizingImage || isSubmitting}
-            aria-disabled={isOptimizingImage || isSubmitting}
+            disabled={isOptimizingImage || isSubmitting || actionState.retryMode === "reload"}
+            aria-disabled={isOptimizingImage || isSubmitting || actionState.retryMode === "reload"}
             className="rounded-full bg-[#556B2F] px-6 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isOptimizingImage
@@ -859,7 +911,7 @@ export function ProductForm({
                 ? pendingImages.length > 0
                   ? "Subiendo imagenes..."
                   : "Guardando..."
-                : submitLabel}
+                : actionState.retryMode === "retry" ? "Reintentar guardado" : submitLabel}
           </button>
           <Link
             href="/admin/productos"
@@ -877,6 +929,11 @@ export function ProductForm({
           >
             {actionState.message}
           </p>
+        ) : null}
+        {actionState.retryMode === "reload" ? (
+          <button type="button" onClick={() => window.location.reload()} className="mt-3 text-sm font-semibold text-[#8B5E3C] underline">
+            Recargar producto
+          </button>
         ) : null}
       </form>
     </>

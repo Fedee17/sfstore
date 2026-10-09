@@ -13,6 +13,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const form = readFileSync(join(root, "components", "admin", "products", "product-form.tsx"), "utf8");
 const actions = readFileSync(join(root, "app", "admin", "productos", "actions.ts"), "utf8");
 const imageFiles = readFileSync(join(root, "lib", "products", "product-image-files.ts"), "utf8");
+const saveService = readFileSync(join(root, "services", "product-save.ts"), "utf8");
+const coordinator = readFileSync(join(root, "lib", "products", "atomic-save.ts"), "utf8");
 
 test("the file input supports one or several images", () => {
   assert.match(form, /name="productImages"[\s\S]*?multiple/);
@@ -82,23 +84,21 @@ test("stored and pending images are rendered in separate sections", () => {
 });
 
 test("multiple uploads append without deleting existing image rows", () => {
-  const uploadBlock = actions.slice(actions.indexOf("async function uploadProductImages"), actions.indexOf("export async function createProduct"));
-  assert.match(uploadBlock, /lastSortOrder \+ imageRows\.length \+ 1/);
-  assert.match(uploadBlock, /\.upsert\(imageRows, \{ onConflict: "id", ignoreDuplicates: true \}\)/);
-  assert.doesNotMatch(uploadBlock, /\.from\("product_images"\)[\s\S]*?\.delete\(/);
+  assert.match(saveService, /const images: AtomicProductImage\[\] = \(data \?\? \[\]\)\.map/);
+  assert.match(saveService, /images\.push\(/);
+  assert.doesNotMatch(saveService, /\.delete\(|\.upsert\(imageRows/);
 });
 
-test("a partial upload failure triggers compensating storage cleanup", () => {
-  assert.match(actions, /const uploadedPaths: string\[\] = \[\]/);
-  assert.match(actions, /uploadedPaths\.push\(filePath\)/);
-  assert.match(actions, /Fallo la limpieza compensatoria/);
-  assert.match(actions, /\.remove\(uploadedPaths\)/);
+test("a partial upload failure has durable recovery without unsafe immediate deletion", () => {
+  assert.match(coordinator, /queueReconciliation\(upload\)[\s\S]+gateway\.upload\(upload\)/);
+  assert.match(saveService, /enqueue_product_storage_task/);
+  assert.doesNotMatch(saveService, /\.remove\(/);
 });
 
 test("pending submit prevents double save and communicates image upload", () => {
-  assert.match(form, /useActionState\([\s\S]*action,[\s\S]*INITIAL_ACTION_STATE/);
+  assert.match(form, /useActionState\([\s\S]*submitProduct,[\s\S]*INITIAL_ACTION_STATE/);
   assert.match(form, /const \[actionState, formAction, isSubmitting\]/);
-  assert.match(form, /disabled=\{isOptimizingImage \|\| isSubmitting\}/);
+  assert.match(form, /disabled=\{isOptimizingImage \|\| isSubmitting/);
   assert.match(form, /isSubmitting[\s\S]*"Subiendo imagenes\.\.\."/);
   assert.match(form, /action=\{formAction\}/);
 });
@@ -157,9 +157,9 @@ test("content identity reuses an existing storage object and prevents retry dupl
     }),
     undefined,
   );
-  assert.match(actions, /existingImageUrls\.has\(data\.publicUrl\)/);
-  assert.match(actions, /getProductImageId\(productId, contentHash\)/);
-  assert.match(actions, /ignoreDuplicates: true/);
+  assert.match(saveService, /images\.some\(\(image\) => image\.url === url\)/);
+  assert.match(saveService, /imageId\(request\.productId, contentHash\)/);
+  assert.match(saveService, /upsert: false/);
 });
 
 test("saved images support explicit primary, ordering and deletion", () => {

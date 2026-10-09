@@ -1,4 +1,5 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { readVersionedProduct } from "@/lib/products/atomic-save";
 
 import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
 
@@ -47,6 +48,7 @@ export type AdminOrder = {
 };
 
 export type AdminProduct = {
+  save_version?: string;
   id: string;
   category_id?: string;
   name: string;
@@ -355,54 +357,64 @@ export async function getAdminProductById(
 ): Promise<AdminResult<AdminProduct | null>> {
   return safeRead(async () => {
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        id,
-        category_id,
-        name,
-        slug,
-        short_description,
-        description,
-        status,
-        price,
-        transfer_price,
-        compare_at_price,
-        cost,
-        stock,
-        sku,
-        featured,
-        categories (
-          name,
-          slug
-        ),
-        product_attributes (
-          id,
-          name,
-          value,
-          sort_order
-        ),
-        product_images (
-          id,
-          url,
-          alt,
-          sort_order,
-          is_primary
-        )
-      `,
-      )
-      .eq("historical_identity", false)
-      .eq("id", id)
-      .maybeSingle();
+    const { product, version } = await readVersionedProduct(
+      async () => {
+        const { data, error } = await supabase.rpc("get_product_save_version", { p_product_id: id });
+        if (error) throw new Error(error.message);
+        return data as string | null;
+      },
+      async () => {
+        const { data, error } = await supabase
+          .from("products")
+          .select(
+            `
+            id,
+            category_id,
+            name,
+            slug,
+            short_description,
+            description,
+            status,
+            price,
+            transfer_price,
+            compare_at_price,
+            cost,
+            stock,
+            sku,
+            featured,
+            categories (
+              name,
+              slug
+            ),
+            product_attributes (
+              id,
+              name,
+              value,
+              sort_order
+            ),
+            product_images (
+              id,
+              url,
+              alt,
+              sort_order,
+              is_primary
+            )
+          `,
+          )
+          .eq("historical_identity", false)
+          .eq("id", id)
+          .maybeSingle();
 
-    if (error) {
-      throw new Error(error.message);
-    }
+        if (error) {
+          throw new Error(error.message);
+        }
 
-    return data
-      ? normalizeAdminProduct(data as unknown as AdminProductRow)
-      : null;
+        return data
+          ? normalizeAdminProduct(data as unknown as AdminProductRow)
+          : null;
+      },
+    );
+    return product ? { ...product, save_version: version ?? undefined } : null;
   });
 }
 

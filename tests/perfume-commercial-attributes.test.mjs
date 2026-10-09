@@ -201,7 +201,10 @@ test("the product form uses the central managed perfume fields", () => {
   );
 
   assert.match(formSource, /getAttributeFieldsForCategory/);
-  assert.match(actionSource, /MANAGED_CATALOG_ATTRIBUTE_KEYS/);
+  assert.match(actionSource, /getAttributeFieldsForCategory\(categorySlug\)/);
+  const migration = readFileSync(join(testDirectory, "..", "supabase", "migrations", "202610060001_atomic_product_save.sql"), "utf8");
+  for (const field of PERFUME_ATTRIBUTE_FIELDS) assert.ok(migration.includes(field.key));
+  assert.match(migration, /delete from public.product_attributes where product_id = p_product_id and name = any\(v_managed\)/);
   assert.match(actionSource, /PRODUCT_ATTRIBUTE_NAMES\.brand/);
   assert.match(actionSource, /PRODUCT_ATTRIBUTE_NAMES\.type/);
   assert.doesNotMatch(

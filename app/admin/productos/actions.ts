@@ -1,6 +1,5 @@
 "use server";
 
-import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
@@ -8,8 +7,6 @@ import {
   getAllowedValuesForField,
   getAttributeFieldsForCategory,
   getCatalogAttributeInputName,
-  LEGACY_COMMERCIAL_CATEGORY_NAME,
-  MANAGED_CATALOG_ATTRIBUTE_KEYS,
 } from "@/lib/catalog/attribute-config";
 import { PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
 import {
@@ -23,21 +20,20 @@ import {
   MAX_PRODUCT_IMAGE_UPLOAD_BYTES,
   PRODUCT_IMAGE_OUTPUT_MIME_TYPES,
   detectProductImageOutputMimeType,
-  findMatchingStoredProductImage,
 } from "@/lib/products/product-image-files";
 import {
-  PRODUCT_IMAGES_BUCKET,
   createSupabaseProductImageDeleteGateway,
   deleteProductImageWithCompensation,
 } from "@/lib/products/product-image-deletion";
 import {
   PRODUCT_STATUSES,
   assertProductStatusTransition,
-  shouldClearCostSource,
   type ProductStatus,
 } from "@/lib/products/admin-product-policy";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { adjustInventoryStock } from "@/services/inventory";
+import { createProductSaveService, fingerprintProductSubmission } from "@/services/product-save";
+import { ProductSaveError } from "@/lib/products/atomic-save";
 
 type PersistedProductState = {
   id: string;
@@ -53,6 +49,8 @@ export type ProductFormActionState = {
   productId?: string;
   submissionId?: string;
   persistedProduct?: PersistedProductState;
+  version?: string;
+  retryMode?: "retry" | "new" | "reload";
 };
 
 export type ProductImageActionState = {
@@ -64,6 +62,7 @@ export type ProductImageActionState = {
 function productFormErrorState(error: unknown): ProductFormActionState {
   return {
     status: "error",
+    retryMode: error instanceof ProductSaveError ? error.retryMode : "new",
     message:
       error instanceof Error
         ? error.message
@@ -197,142 +196,25 @@ async function applyDescriptionFallbacks(
   return applyAutoDescriptionFallbacks(payload.product, autoDescriptions);
 }
 
-async function replaceSimpleAttributes(
-  productId: string,
+function buildProductAttributes(
   attributes: { brand: string; type: string },
-) {
-  type AttributeRow = {
-    id: string;
-    product_id: string;
-    name: string;
-    value: string;
-    sort_order: number;
-  };
-
-  const supabase = getSupabaseAdminClient();
-
-  const { error: deleteError } = await supabase
-    .from("product_attributes")
-    .delete()
-    .eq("product_id", productId)
-    .in("name", [
-      PRODUCT_ATTRIBUTE_NAMES.brand,
-      PRODUCT_ATTRIBUTE_NAMES.type,
-    ]);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-
-  const rows: AttributeRow[] = [];
-
-  if (attributes.brand) {
-    rows.push({
-      id: crypto.randomUUID(),
-      product_id: productId,
-      name: PRODUCT_ATTRIBUTE_NAMES.brand,
-      value: attributes.brand,
-      sort_order: 10,
-    });
-  }
-
-  if (attributes.type) {
-    rows.push({
-      id: crypto.randomUUID(),
-      product_id: productId,
-      name: PRODUCT_ATTRIBUTE_NAMES.type,
-      value: attributes.type,
-      sort_order: 20,
-    });
-  }
-
-  if (rows.length === 0) {
-    return;
-  }
-
-  const { error: insertError } = await supabase
-    .from("product_attributes")
-    .insert(rows);
-
-  if (insertError) {
-    throw new Error(insertError.message);
-  }
-}
-
-async function replaceCatalogAttributes(
-  productId: string,
   categorySlug: string,
   formData: FormData,
 ) {
-  const supabase = getSupabaseAdminClient();
-  const fields = getAttributeFieldsForCategory(categorySlug);
-  const rows: {
-    id: string;
-    product_id: string;
-    name: string;
-    value: string;
-    sort_order: number;
-  }[] = [];
-
-  for (const [fieldIndex, field] of fields.entries()) {
+  const rows: { name: string; value: string; sort_order: number }[] = [];
+  if (attributes.brand) rows.push({ name: PRODUCT_ATTRIBUTE_NAMES.brand, value: attributes.brand, sort_order: 10 });
+  if (attributes.type) rows.push({ name: PRODUCT_ATTRIBUTE_NAMES.type, value: attributes.type, sort_order: 20 });
+  for (const [fieldIndex, field] of getAttributeFieldsForCategory(categorySlug).entries()) {
     const inputName = getCatalogAttributeInputName(field.key);
-    const submittedValues = field.input === "boolean"
-      ? [formData.get(inputName) === "true" ? "true" : "false"]
-      : formData
-          .getAll(inputName)
-          .map((value) => String(value).trim())
-          .filter(Boolean);
-    const values = [...new Set(submittedValues)];
-
-    if (!field.multiple && values.length > 1) {
-      throw new Error(`El atributo ${field.label} admite un solo valor.`);
-    }
-
-    if (field.input !== "boolean") {
-      const allowedValues = getAllowedValuesForField(field);
-      const invalidValue = values.find((value) => !allowedValues.has(value));
-
-      if (invalidValue) {
-        throw new Error(`Valor inválido para ${field.label}.`);
-      }
-    }
-
-    values.forEach((value, valueIndex) => {
-      rows.push({
-        id: crypto.randomUUID(),
-        product_id: productId,
-        name: field.key,
-        value,
-        sort_order: 100 + fieldIndex * 10 + valueIndex,
-      });
-    });
+    const values = [...new Set(formData.getAll(inputName).map((value) => String(value).trim()).filter(Boolean))];
+    if (!field.multiple && values.length > 1) throw new Error(`El atributo ${field.label} admite un solo valor.`);
+    const allowed = getAllowedValuesForField(field);
+    if (values.some((value) => !allowed.has(value))) throw new Error(`Valor invalido para ${field.label}.`);
+    values.forEach((value, index) => rows.push({ name: field.key, value, sort_order: 100 + fieldIndex * 10 + index }));
   }
-
-  const { error: deleteError } = await supabase
-    .from("product_attributes")
-    .delete()
-    .eq("product_id", productId)
-    .in("name", [
-      ...MANAGED_CATALOG_ATTRIBUTE_KEYS,
-      LEGACY_COMMERCIAL_CATEGORY_NAME,
-    ]);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-
-  if (rows.length === 0) {
-    return;
-  }
-
-  const { error: insertError } = await supabase
-    .from("product_attributes")
-    .insert(rows);
-
-  if (insertError) {
-    throw new Error(insertError.message);
-  }
+  return rows;
 }
+
 function revalidateProductPaths({
   productId,
   slug,
@@ -370,31 +252,6 @@ function revalidateProductPaths({
   }
 }
 
-function sanitizeFileName(fileName: string) {
-  const extension = fileName.split(".").pop()?.toLowerCase() ?? "jpg";
-  const baseName = fileName
-    .replace(/\.[^/.]+$/, "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return `${baseName || "image"}.${extension}`;
-}
-
-function getProductImageId(productId: string, contentHash: string) {
-  const bytes = createHash("sha256")
-    .update(`${productId}:${contentHash}`)
-    .digest()
-    .subarray(0, 16);
-  bytes[6] = (bytes[6] & 0x0f) | 0x50;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = bytes.toString("hex");
-
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
-
 function getProductImageFiles(formData: FormData) {
   const files = [
     ...formData.getAll("productImages"),
@@ -430,161 +287,6 @@ async function validateProductImageContents(files: File[]) {
     if (!detectedType || detectedType !== file.type) {
       throw new Error("Una imagen no coincide con su formato JPG, PNG o WebP declarado.");
     }
-  }
-}
-
-async function ensureProductImagesBucket() {
-  const supabase = getSupabaseAdminClient();
-  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-
-  if (listError) {
-    throw new Error(listError.message);
-  }
-
-  const exists = buckets?.some((bucket) => bucket.name === PRODUCT_IMAGES_BUCKET);
-
-  if (exists) {
-    return;
-  }
-
-  const { error: createError } = await supabase.storage.createBucket(
-    PRODUCT_IMAGES_BUCKET,
-    {
-      public: true,
-      fileSizeLimit: "5MB",
-      allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
-    },
-  );
-
-  if (createError) {
-    throw new Error(createError.message);
-  }
-}
-
-async function uploadProductImages(
-  productId: string,
-  productName: string,
-  files: File[],
-) {
-  if (files.length === 0) {
-    return;
-  }
-
-  await validateProductImageContents(files);
-
-  await ensureProductImagesBucket();
-
-  const supabase = getSupabaseAdminClient();
-  const { data: currentImages, error: readError } = await supabase
-    .from("product_images")
-    .select("id, url, sort_order, is_primary")
-    .eq("product_id", productId)
-    .order("sort_order", { ascending: true });
-
-  if (readError) {
-    throw new Error(readError.message);
-  }
-
-  const existingImages = currentImages ?? [];
-  const existingImageUrls = new Set(existingImages.map((image) => image.url));
-  const hasPrimary = existingImages.some((image) => image.is_primary);
-  const lastSortOrder = existingImages.reduce(
-    (max, image) => Math.max(max, Number(image.sort_order ?? 0)),
-    -1,
-  );
-
-  const imageRows = [];
-  const uploadedPaths: string[] = [];
-  const folderPath = `products/${productId}`;
-
-  const { data: storedObjects, error: storageReadError } = await supabase.storage
-    .from(PRODUCT_IMAGES_BUCKET)
-    .list(folderPath, { limit: 1000 });
-
-  if (storageReadError) {
-    throw new Error(storageReadError.message);
-  }
-
-  try {
-    for (const file of files) {
-      const fileBytes = Buffer.from(await file.arrayBuffer());
-      const contentHash = createHash("md5").update(fileBytes).digest("hex");
-      const matchingObject = findMatchingStoredProductImage(storedObjects ?? [], {
-        contentHash,
-        mimeType: file.type as (typeof PRODUCT_IMAGE_OUTPUT_MIME_TYPES)[number],
-        size: file.size,
-      });
-      const objectName =
-        matchingObject?.name ?? `${contentHash}-${sanitizeFileName(file.name)}`;
-      const filePath = `${folderPath}/${objectName}`;
-
-      if (!matchingObject) {
-        const { error: uploadError } = await supabase.storage
-          .from(PRODUCT_IMAGES_BUCKET)
-          .upload(filePath, file, {
-            cacheControl: "3600",
-            upsert: false,
-            contentType: file.type,
-          });
-
-        if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) {
-          throw new Error(uploadError.message);
-        }
-
-        if (!uploadError) {
-          uploadedPaths.push(filePath);
-        }
-      }
-
-      const { data } = supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .getPublicUrl(filePath);
-
-      if (existingImageUrls.has(data.publicUrl)) {
-        continue;
-      }
-
-      existingImageUrls.add(data.publicUrl);
-
-      imageRows.push({
-        id: getProductImageId(productId, contentHash),
-        product_id: productId,
-        url: data.publicUrl,
-        alt: productName,
-        sort_order: lastSortOrder + imageRows.length + 1,
-        is_primary: !hasPrimary && imageRows.length === 0,
-      });
-    }
-
-    if (imageRows.length === 0) {
-      return;
-    }
-
-    const { error: imageError } = await supabase
-      .from("product_images")
-      .upsert(imageRows, { onConflict: "id", ignoreDuplicates: true });
-
-    if (imageError) {
-      throw new Error(imageError.message);
-    }
-  } catch (error) {
-    if (uploadedPaths.length > 0) {
-      const { error: cleanupError } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .remove(uploadedPaths);
-      if (cleanupError) {
-        console.warn("[product-images] Fallo la limpieza compensatoria", {
-          productId,
-          fileCount: uploadedPaths.length,
-          message: cleanupError.message,
-        });
-      }
-    }
-    throw new Error(
-      error instanceof Error
-        ? `No se pudieron guardar todas las imagenes: ${error.message}`
-        : "No se pudieron guardar todas las imagenes.",
-    );
   }
 }
 
@@ -653,54 +355,68 @@ async function revalidateOperationalProductPaths(
   });
 }
 
+async function saveProductForm(formData: FormData, operationType: "create_product" | "update_product"): Promise<ProductFormActionState> {
+  const payload = readProductForm(formData);
+  const operationKey = String(formData.get("operationKey") ?? "");
+  const productId = payload.productId;
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const expectedVersion = operationType === "update_product" ? String(formData.get("expectedVersion") ?? "") : null;
+  if (!uuid.test(operationKey) || !uuid.test(productId) ||
+    (operationType === "update_product" && !/^[0-9a-f]{64}$/.test(expectedVersion ?? ""))) {
+    throw new ProductSaveError("Recarga el formulario antes de guardar.", "reload");
+  }
+  const files = getProductImageFiles(formData);
+  await validateProductImageContents(files);
+  const requestHash = await fingerprintProductSubmission(formData, files);
+  const service = createProductSaveService({ operationKey, operationType, productId, expectedVersion, requestHash }, files);
+  const { result, plan } = await service.save(async () => {
+    const existing = operationType === "update_product" ? await assertOperationalProduct(productId) : null;
+    if (existing) {
+      assertProductStatusTransition({
+        currentStatus: existing.status, nextStatus: payload.product.status,
+        historicalIdentity: existing.historical_identity,
+      });
+      if (await service.version() !== expectedVersion) {
+        throw new ProductSaveError("El producto cambio desde que lo abriste. Recarga antes de guardar.", "reload");
+      }
+    }
+    const product = await applyDescriptionFallbacks(payload);
+    const category = await getProductCategoryInfo(product.category_id);
+    const previousCategory = existing && existing.category_id !== product.category_id
+      ? await getProductCategoryInfo(existing.category_id) : null;
+    const attributes = buildProductAttributes(payload, category?.slug ?? "", formData);
+    const { images, uploads } = await service.buildImages(product.name);
+    if (existing && await service.version() !== expectedVersion) {
+      throw new ProductSaveError("El producto cambio mientras preparabas el guardado. Recarga.", "reload");
+    }
+    return {
+      requestHash, payload: { product, attributes, images }, uploads,
+      previousSlug: existing?.slug,
+      categorySlugs: [category?.slug, previousCategory?.slug].filter((slug): slug is string => Boolean(slug)),
+    };
+  });
+  const persisted = result.product;
+  // Cache invalidation is post-commit: a failure must not turn a committed save into an error.
+  try {
+    revalidateProductPaths({ productId, slug: persisted.slug, previousSlug: plan.previousSlug, categorySlugs: plan.categorySlugs });
+  } catch {
+    console.warn("[product-save] Guardado confirmado; no se pudo actualizar la cache", { operationKey, productId });
+  }
+  return {
+    status: "success",
+    message: operationType === "create_product" ? "Producto creado correctamente." : "Producto actualizado correctamente.",
+    productId, version: result.version, submissionId: crypto.randomUUID(),
+    persistedProduct: persistedProductState(persisted),
+  };
+}
+
 export async function createProduct(
   _previousState: ProductFormActionState,
   formData: FormData,
 ): Promise<ProductFormActionState> {
   try {
     await requireAdminActionSession();
-    const payload = readProductForm(formData);
-    const productId = crypto.randomUUID();
-    const supabase = getSupabaseAdminClient();
-    const product = await applyDescriptionFallbacks(payload);
-
-    const { data: persisted, error } = await supabase
-      .from("products")
-      .insert({
-        id: productId,
-        ...product,
-      })
-      .select("id, status, updated_at, slug, category_id")
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    await replaceSimpleAttributes(productId, {
-      brand: payload.brand,
-      type: payload.type,
-    });
-    const category = await getProductCategoryInfo(payload.product.category_id);
-    await replaceCatalogAttributes(productId, category?.slug ?? "", formData);
-    await uploadProductImages(
-      productId,
-      product.name,
-      getProductImageFiles(formData),
-    );
-
-    revalidateProductPaths({
-      productId,
-      slug: persisted.slug,
-      categorySlugs: [category?.slug],
-    });
-    return {
-      status: "success",
-      message: "Producto creado correctamente.",
-      productId,
-      submissionId: crypto.randomUUID(),
-      persistedProduct: persistedProductState(persisted),
-    };
+    return await saveProductForm(formData, "create_product");
   } catch (error) {
     return productFormErrorState(error);
   }
@@ -712,72 +428,7 @@ export async function updateProduct(
 ): Promise<ProductFormActionState> {
   try {
     await requireAdminActionSession();
-    const payload = readProductForm(formData);
-
-    if (!payload.productId) {
-      throw new Error("Falta el ID del producto.");
-    }
-
-    const existingProduct = await assertOperationalProduct(payload.productId);
-    assertProductStatusTransition({
-      currentStatus: existingProduct.status,
-      nextStatus: payload.product.status,
-      historicalIdentity: existingProduct.historical_identity,
-    });
-
-    const supabase = getSupabaseAdminClient();
-    const product = await applyDescriptionFallbacks(payload);
-    const productUpdate = shouldClearCostSource(
-      existingProduct.cost,
-      product.cost,
-    )
-      ? { ...product, cost_source_purchase_item_id: null }
-      : product;
-    const { data: persisted, error } = await supabase
-      .from("products")
-      .update(productUpdate)
-      .eq("id", payload.productId)
-      .select("id, status, updated_at, slug, category_id")
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    await replaceSimpleAttributes(payload.productId, {
-      brand: payload.brand,
-      type: payload.type,
-    });
-    const [category, previousCategory] = await Promise.all([
-      getProductCategoryInfo(payload.product.category_id),
-      existingProduct.category_id === payload.product.category_id
-        ? Promise.resolve(null)
-        : getProductCategoryInfo(existingProduct.category_id),
-    ]);
-    await replaceCatalogAttributes(
-      payload.productId,
-      category?.slug ?? "",
-      formData,
-    );
-    await uploadProductImages(
-      payload.productId,
-      product.name,
-      getProductImageFiles(formData),
-    );
-
-    revalidateProductPaths({
-      productId: payload.productId,
-      slug: persisted.slug,
-      previousSlug: existingProduct.slug,
-      categorySlugs: [category?.slug, previousCategory?.slug],
-    });
-    return {
-      status: "success",
-      message: "Producto actualizado correctamente.",
-      productId: payload.productId,
-      submissionId: crypto.randomUUID(),
-      persistedProduct: persistedProductState(persisted),
-    };
+    return await saveProductForm(formData, "update_product");
   } catch (error) {
     return productFormErrorState(error);
   }
