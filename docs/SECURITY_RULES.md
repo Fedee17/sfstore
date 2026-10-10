@@ -35,3 +35,7 @@ No hubo explotación, scan dinámico del sitio real ni prueba de secretos de Pro
 ## Flujo de cambios sensibles
 
 Preparar requisitos, diff y pruebas locales revisables dentro del alcance autorizado; obtener aprobación explícita antes de ejecutar una tarea RESTRINGIDA. La aprobación de una migration no aprueba activar el procesador, limpiar Storage o desplegar. Mantener separados esos efectos y registrar autorización/evidencia sin secretos. No integrar tareas supervisadas sin revisión.
+
+## Actualización local de Fase 2
+
+SEC-02 elimina logs de correo/allowlist y mensajes libres de Auth en la rama de mantenimiento, sin modificar checks de acceso, credenciales enviadas, redirects ni signOut. Conserva eventos estáticos, códigos de error conocidos y status numérico. Siete pruebas sintéticas comprueban flujos y ausencia de datos personales/secrets en logs. Este cambio no está integrado/desplegado; el riesgo descrito en la tabla corresponde al baseline de main. Dependencias analizadas en [triage](../reports/dependency-triage-phase2-20261010.md), sin actualizaciones ni exposición productiva probada.

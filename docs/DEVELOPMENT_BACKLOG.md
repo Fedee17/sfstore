@@ -2,7 +2,7 @@
 
 Base: main `7a8a105`. Ninguna tarea de este backlog fue iniciada durante la preparación. Los cambios Storage/lint existentes se referencian para revisión, no como implementaciones pendientes a repetir. Autonomía aplica al desarrollo autorizado; integración/publicación/Production conservan sus límites propios.
 
-Prioridades: P0 = seguridad/integridad crítica; P1 = estabilidad/ventas/verificabilidad; P2 = calidad/experiencia; P3 = ampliación funcional. Complejidad baja/media/alta expresa alcance relativo, no promesa de horas. Todas las tareas están PROPUESTAS; LINT-01 y STG-01 tienen implementación externa pendiente de revisión.
+Prioridades: P0 = seguridad/integridad crítica; P1 = estabilidad/ventas/verificabilidad; P2 = calidad/experiencia; P3 = ampliación funcional. Complejidad baja/media/alta expresa alcance relativo, no promesa de horas. La preparación registró todas como PROPUESTAS; Fase 2 completó SEC-02, TXT-01 y DOC-01 en rama local sin integración. LINT-01 y STG-01 tienen implementación externa pendiente de revisión.
 
 ## Orden de ejecución propuesto
 
@@ -153,7 +153,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## SEC-02 — Reducir logs temporales de login
 
-- **Estado:** PROPUESTA.
+- **Estado:** COMPLETADA EN RAMA LOCAL `codex/autonomous-maintenance-batch-1`; pendiente de revisión/publicación/integración autorizada.
 - **Descripción:** Retirar TEMP DEBUG y registros de correo/allowlist sin modificar autenticación/autorización; conservar diagnóstico por códigos sin PII ni tokens.
 - **Prioridad:** P1.
 - **Complejidad estimada:** Baja.
@@ -165,7 +165,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## DOC-01 — Actualizar documentación histórica y README
 
-- **Estado:** PROPUESTA.
+- **Estado:** COMPLETADA EN RAMA LOCAL `codex/autonomous-maintenance-batch-1`; pendiente de revisión/publicación/integración autorizada.
 - **Descripción:** Alinear README, checklist Production, guía Storage y pendientes de marca/banners con evidencia actual; corregir ADMIN_EMAIL fallback inexistente y separar estados históricos de estados verificados. Mantener enlaces/reportes previos.
 - **Prioridad:** P2.
 - **Complejidad estimada:** Baja.
@@ -177,7 +177,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## TXT-01 — Corregir encoding en metadata pública
 
-- **Estado:** PROPUESTA.
+- **Estado:** COMPLETADA EN RAMA LOCAL `codex/autonomous-maintenance-batch-1`; pendiente de revisión/publicación/integración autorizada.
 - **Descripción:** Corregir mojibake observado en app/layout.tsx, sin cambiar claims comerciales ni reglas. Revisar contenido puntual relacionado en UTF-8 sin reescritura general.
 - **Prioridad:** P2.
 - **Complejidad estimada:** Baja.
@@ -222,3 +222,9 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 - **Nivel de autonomía:** SUPERVISADA.
 - **Criterios de aceptación:** Alcance acordado; edición validada y autorizada; fallback definido; cambios auditables; sin credenciales ni nuevas reglas de pago/envío.
 - **Validaciones necesarias:** Fixtures de valores inválidos, acceso denegado, guardado/fallo; tests y UI local; migrations reales/valores productivos se aprueban aparte.
+
+## Registro de Fase 2
+
+Seleccionadas y completadas: SEC-02 (diagnósticos acotados de login), TXT-01 (acentos metadata) y DOC-01 (README/checklist/guías históricas). Evidencia y validaciones: [informe del lote](../reports/autonomous-maintenance-phase2-20261010.md).
+
+Las 36 entradas de dependencias fueron analizadas read-only: [triage](../reports/dependency-triage-phase2-20261010.md). DEP-01/DEP-02 no comenzaron su implementación; no hubo cambios de paquetes. QA-01 queda como siguiente lote autónomo recomendado una vez definido cómo evitar el solapamiento de package.json/lock con PR #1. No iniciar automáticamente.

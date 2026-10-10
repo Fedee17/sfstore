@@ -8,7 +8,7 @@ Estado documentado el 2026-10-10 sobre `origin/main` (`7a8a105c968f84ba9f58ee1df
 - [Reglas comerciales](BUSINESS_RULES.md): comportamiento actual y decisiones pendientes.
 - [Diseño](DESIGN_SYSTEM.md): identidad existente y diferencias con admin.
 - [Seguridad](SECURITY_RULES.md): límites para trabajar y riesgos observados.
-- [Backlog](DEVELOPMENT_BACKLOG.md): tareas propuestas, todavía no iniciadas.
+- [Backlog](DEVELOPMENT_BACKLOG.md): propuestas y estado por tarea; Fase 2 completa tres en rama local, sin integración.
 - [Auditoría y validaciones](PROJECT_AUDIT_2026-10-10.md): evidencia, resultados y limitaciones.
 - [Modelo del catálogo](catalog-data-model.md), [sincronización Sheets](google-sheets-product-sync.md) y [checklist de Production](production-checklist.md) conservan su contenido histórico. Sus cifras y estados de despliegue no son una lectura actual de Production.
 
@@ -54,3 +54,9 @@ Orden propuesto: atender DEP-01 y diseñar PAY-01/PAY-02 con autorización, revi
 - Elegir prioridad de funcionalidades nuevas (configuración editable, recomendaciones públicas, categorías adicionales); no se consideran encargadas.
 - Confirmar identidad visual para admin, datos comerciales/contactos y activos finales. Los documentos históricos de marca/banners discrepan con el código actual.
 - Definir responsables de revisión, política de deploy por rama y gestión de secretos. No hace falta revelar credenciales para revisar esta documentación.
+
+## Fase 2 — mantenimiento local autorizado
+
+La preparación inicial quedó confirmada en commit de documentación `a33bce4`. El pedido posterior autoriza hasta tres tareas autónomas verificadas y commits locales; continúa prohibiendo push, merge y despliegues. SEC-02, TXT-01 y DOC-01 se completaron en `codex/autonomous-maintenance-batch-1` sin tocar archivos de PR #1, pagos, reglas de negocio o datos reales. Las descripciones anteriores de main son el baseline histórico, no el estado integrado de esta rama.
+
+Resultados: 610/610 tests, cero skips; TypeScript, lint focalizado y build aprobados. Lint global mantiene 9 errores y 11 warnings de main. El [informe de Fase 2](../reports/autonomous-maintenance-phase2-20261010.md) detalla cambios; el [triage](../reports/dependency-triage-phase2-20261010.md) analiza 36 entradas sin actualizaciones. Production no fue inspeccionada ni modificada. Decisiones sensibles anteriores siguen pendientes.
