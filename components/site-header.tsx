@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/cart-store";
@@ -131,17 +132,18 @@ export function SiteHeader() {
     <header className="sticky top-0 z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)]">
       <div className="bg-[#0072CE] text-white">
         <div className="grid w-full gap-5 px-5 py-4 sm:px-8 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:gap-6 lg:px-10 lg:items-center">
-          <a
+          <Link
             href="/"
             className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-[76px] sm:w-[76px] lg:justify-self-start"
             aria-label="Ir al inicio de SFSTORE"
+            prefetch={false}
           >
             <img
               src="/Logo%202.png"
               alt="SFSTORE Importados"
               className="h-full w-full scale-[1.08] object-cover"
             />
-          </a>
+          </Link>
 
           <form onSubmit={handleSearchSubmit} className="order-3 min-w-0 lg:order-none lg:mx-auto lg:w-full lg:max-w-[820px]" role="search">
             <label className="sr-only" htmlFor="site-search">
@@ -190,12 +192,13 @@ export function SiteHeader() {
 
       <nav className="border-t border-white/10 bg-[#003B73] text-white" aria-label="Navegación principal">
         <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-2 overflow-visible px-5 py-2.5 text-sm font-semibold sm:px-8">
-          <a
+          <Link
             href="/"
             className="shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white"
+            prefetch={false}
           >
             Inicio
-          </a>
+          </Link>
           <DropdownMenu
             id="perfumes"
             label="Perfumes"

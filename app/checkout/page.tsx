@@ -168,7 +168,7 @@ function CheckoutContent() {
         }
 
         clearCart();
-        window.location.href = preference.initPoint;
+        window.location.assign(preference.initPoint);
         return;
       }
 

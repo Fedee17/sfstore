@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  createSupabaseProductImageDeleteGateway,
   deleteProductImageWithCompensation,
   getProductImageStoragePath,
 } from "../lib/products/product-image-deletion.ts";
@@ -67,20 +68,20 @@ function gateway(overrides = {}) {
   };
 }
 
-test("deleting a secondary image removes metadata before its unshared object", async () => {
+test("deleting a secondary image removes metadata and retains its object", async () => {
   const fake = gateway();
   const result = await deleteProductImageWithCompensation(fake.value, {
     productId: image.product_id,
     imageId: image.id,
   });
 
-  assert.equal(result.storageDeleted, true);
+  assert.equal(result.storageDeleted, false);
+  assert.equal(result.storageRetainedForDeferredCleanup, true);
   assert.deepEqual(fake.calls, [
     "read",
     "references",
     "delete-metadata",
     "references",
-    "delete-storage",
   ]);
 });
 
@@ -150,25 +151,37 @@ test("a retry after a completed delete performs no second write", async () => {
     }),
     /no pertenece/,
   );
-  assert.equal(storageDeletes, 1);
+  assert.equal(storageDeletes, 0);
 });
 
-test("a Storage failure restores metadata and returns a visible failure", async () => {
+test("a concurrent reference after the final check never loses its object", async () => {
+  let checks = 0, shared = false, deletes = 0;
   const fake = gateway({
-    async removeStorageObject() {
-      fake.calls.push("delete-storage");
-      throw new Error("storage unavailable");
+    async findOtherReferences() {
+      checks += 1;
+      if (checks === 2) queueMicrotask(() => { shared = true; });
+      return [];
     },
+    async removeStorageObject() { deletes += 1; },
   });
+  const result = await deleteProductImageWithCompensation(fake.value, { productId: image.product_id, imageId: image.id });
+  assert.equal(shared, true); assert.equal(deletes, 0);
+  assert.equal(result.storageDeleted, false); assert.equal(result.storageRetainedForDeferredCleanup, true);
+});
 
-  await assert.rejects(
-    deleteProductImageWithCompensation(fake.value, {
-      productId: image.product_id,
-      imageId: image.id,
-    }),
-    /referencia fue restaurada/,
-  );
-  assert.equal(fake.calls.at(-1), "restore-metadata");
+test("Supabase gateway queues deletion through one RPC and rejects legacy direct removal", async () => {
+  const calls = [];
+  const client = { rpc: async (name, args) => {
+    calls.push({ name, args });
+    return { data: { ...image, remaining_images: 0, remaining_url_references: 0 }, error: null };
+  }, storage: { from() { throw Error("STORAGE_MUST_NOT_BE_CALLED"); } } };
+  const safe = createSupabaseProductImageDeleteGateway(client);
+  await safe.deleteMetadata(image.product_id, image.id, image);
+  assert.equal(calls[0].name, "delete_product_image_metadata_and_queue");
+  assert.equal(calls[0].args.p_expected_url, image.url);
+  assert.equal(calls[0].args.p_storage_path, "products/product-1/photo.webp");
+  await assert.rejects(safe.removeStorageObject("fixture"), /CONDITIONAL_DELETE_UNAVAILABLE/);
+  assert.equal(calls.length, 1);
 });
 
 test("a post-delete reference check failure restores metadata", async () => {
@@ -258,7 +271,7 @@ test("cleanup remains dry-run by default and validates snapshot identity before 
   assert.match(cleanupScript, /value === null \|\| value === ""/);
   assert.match(cleanupScript, /normalizedNullableNumber\(\s*row\.sort_order/);
   assert.match(cleanupScript, /normalizedNullableBoolean\([\s\S]*row\.is_primary/);
-  assert.match(cleanupScript, /REVIEW RECHAZADO\/EXCLUIDO/);
+  assert.match(cleanupScript, /STORAGE_CLEANUP_APPLY_DISABLED/);
   assert.match(cleanupScript, /KEEP: 55/);
   assert.match(cleanupScript, /if \(!apply \|\| result\.phase === "POST-CLEANUP"\)/);
   assert.match(cleanupScript, /DELETE_BOTH/);
@@ -377,87 +390,29 @@ for (const [label, mutate, reason] of [
   ["candidate eTag", (state) => { state.objects.find((row) => row.path === destructiveRows[0].path).etag = "changed"; }, /eTag/],
   ["candidate size", (state) => { state.objects.find((row) => row.path === destructiveRows[0].path).size += 1; }, /size/],
   ["candidate MIME", (state) => { state.objects.find((row) => row.path === destructiveRows[0].path).mime = "image/png"; }, /MIME/],
-  ["missing candidate row", (state) => { state.images = state.images.filter((row) => row.id !== destructiveRows[0].row_id); }, /Falta la fila DB/],
-  ["missing candidate object", (state) => { state.objects = state.objects.filter((row) => row.path !== destructiveRows[0].path); }, /Falta el objeto Storage/],
+  ["missing candidate row", (state) => { state.images = state.images.filter((row) => row.id !== destructiveRows[0].row_id); }, /Estado parcial/],
+  ["missing candidate object", (state) => { state.objects = state.objects.filter((row) => row.path !== destructiveRows[0].path); }, /Estado parcial/],
 ]) {
-  test(`fresh ${label} mismatch aborts before that operation and stops subsequent writes`, async () => {
-    const fixture = cleanupFixture({ beforeRead(state, reads) { if (reads === 2) mutate(state); } });
-    await assert.rejects(fixture.run(true), reason);
+  test(`dry-run detects ${label} mismatch without writes`, async () => {
+    const fixture = cleanupFixture({ beforeRead(state, reads) { if (reads === 1) mutate(state); } });
+    await assert.rejects(fixture.run(), reason);
     assert.deepEqual(fixture.writes, []);
-    assert.ok(fixture.logs.some((message) => message.includes("ABORT antes de DELETE_BOTH") && reason.test(message)));
   });
 }
 
-test("candidate is checked again immediately before metadata RPC, not just before helper reads", async () => {
-  const fixture = cleanupFixture({ beforeRead(state, reads) {
-    if (reads === 3) state.objects.find((row) => row.path === destructiveRows[0].path).etag = "changed";
-  } });
-  await assert.rejects(fixture.run(true), /eTag/);
-  assert.deepEqual(fixture.writes, []);
-});
-
-test("Storage drift after metadata deletion stops Storage writes and compensates metadata", async () => {
-  const fixture = cleanupFixture({ beforeRead(state, reads) {
-    if (reads === 4) state.objects.find((row) => row.path === destructiveRows[0].path).etag = "changed";
-  } });
-  await assert.rejects(fixture.run(true), /referencia fue restaurada/);
-  assert.deepEqual(fixture.writes.map((write) => write.action), ["DB", "RESTORE"]);
-  assert.ok(fixture.state.images.some((row) => row.id === destructiveRows[0].row_id));
-  assert.ok(fixture.logs.some((message) => /ABORT.*eTag/.test(message)));
-});
-
-test("a newly shared reference during deletion restores metadata and stops further operations", async () => {
+test("legacy cleanup apply rejects before any metadata or Storage write", async () => {
   const fixture = cleanupFixture();
-  const original = fixture.gateway.findOtherReferences;
-  let checks = 0;
-  fixture.gateway.findOtherReferences = async (...args) => {
-    checks += 1;
-    return checks === 2 ? ["concurrent-reference"] : original(...args);
-  };
-  await assert.rejects(fixture.run(true), /referencia compartida.*metadata restaurada/);
-  assert.deepEqual(fixture.writes.map((write) => write.action), ["DB", "RESTORE"]);
-  assert.ok(fixture.state.images.some((row) => row.id === destructiveRows[0].row_id));
+  const before = structuredClone(fixture.state);
+  await assert.rejects(fixture.run(true), /STORAGE_CLEANUP_APPLY_DISABLED/);
+  assert.deepEqual(fixture.writes, []); assert.deepEqual(fixture.state, before);
+  assert.equal((await fixture.run()).phase, "PRE-CLEANUP");
 });
 
-test("a mismatch at the next operation aborts without deleting that candidate or later ones", async () => {
-  const fixture = cleanupFixture({ beforeRead(state) {
-    if (fixture.writes.some((write) => write.action === "STORAGE")) {
-      state.objects.find((row) => row.path === destructiveRows[1].path).mime = "image/png";
-    }
-  } });
-  await assert.rejects(fixture.run(true), /MIME/);
-  assert.deepEqual(fixture.writes.map((write) => write.action), ["DB", "STORAGE"]);
-  assert.ok(fixture.state.images.some((row) => row.id === destructiveRows[1].row_id));
-});
-
-test("DELETE_STORAGE orphan is freshly checked against its keeper before removal", async () => {
-  const fixture = cleanupFixture({ beforeRead(state) {
-    if (fixture.writes.filter((write) => write.action === "STORAGE").length === 27) {
-      const orphan = fixture.plan.find((row) => row.action === "DELETE_STORAGE");
-      state.objects.find((row) => row.path === orphan.path).etag = "changed";
-    }
-  } });
-  await assert.rejects(fixture.run(true), /eTag/);
-  const orphan = fixture.plan.find((row) => row.action === "DELETE_STORAGE");
-  assert.equal(fixture.writes.some((write) => write.path === orphan.path), false);
-  assert.ok(fixture.logs.some((message) => /ABORT antes de DELETE_STORAGE/.test(message)));
-});
-
-test("mock apply deletes only approved candidates; subsequent dry-run and apply perform zero writes", async () => {
-  const fixture = cleanupFixture();
-  const reviewRows = fixture.state.images.filter((row) => approvedPlan.some((item) => item.action === "REVIEW" && item.row_id === row.id));
-  const reviewObjects = fixture.state.objects.filter((row) => approvedPlan.some((item) => item.action === "REVIEW" && item.path === row.path));
-  const first = await fixture.run(true);
-  assert.equal(first.phase, "POST-CLEANUP");
-  assert.equal(fixture.writes.filter((write) => write.action === "DB").length, 27);
-  assert.equal(fixture.writes.filter((write) => write.action === "STORAGE").length, 28);
-  assert.equal(fixture.writes.some((write) => write.action === "RESTORE"), false);
-  const count = fixture.writes.length;
-  assert.equal((await fixture.run()).writesProposed, 0);
+test("already completed cleanup remains a read-only no-op", async () => {
+  const fixture = cleanupFixture({ post: true });
+  assert.equal((await fixture.run()).phase, "POST-CLEANUP");
   assert.equal((await fixture.run(true)).writesProposed, 0);
-  assert.equal(fixture.writes.length, count);
-  for (const row of reviewRows) assert.deepEqual(fixture.state.images.find((item) => item.id === row.id), row);
-  for (const row of reviewObjects) assert.deepEqual(fixture.state.objects.find((item) => item.path === row.path), row);
+  assert.deepEqual(fixture.writes, []);
 });
 
 test("partial cleanup is not mistaken for POST and cannot start another apply", async () => {
