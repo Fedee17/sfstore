@@ -32,3 +32,7 @@ No tests were run in this automation environment because a local checkout and de
 ## Next checkpoint
 
 Inspect current branch and any parallel Codex work, obtain an isolated development checkout with dependencies, read AGENTS.md and the required local Next.js guides, inspect the storage task schema and coordinator, implement a safe reconciliation worker with tests, and record actual validation results here.
+
+## Publication status
+
+Branch and checkpoint were published successfully. A draft pull request could not be opened from this execution because the available GitHub action was blocked. No PR is currently open. Before creating one in a later run, check whether an existing PR already covers this branch; do not duplicate it.
