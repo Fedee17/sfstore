@@ -45,3 +45,25 @@ Resultados nuevos sobre este checkout; no se reutilizan como evidencia los 620 t
 ## Próximo paso
 
 Revisar una sola draft PR a main de esta rama aislada. No hacer merge ni desplegar. La habilitación de borrados reales es una tarea separada que necesita resolver las garantías anteriores; no basta con autorizar la migración result jsonb.
+## Revisión independiente de continuidad — 2026-10-10 (turno posterior)
+
+**Objetivo funcional:** mantener el catálogo y la eliminación administrativa de imágenes sin pérdida física de objetos; completar validaciones y preparar una única PR en borrador, sin merge ni Production.
+
+**Estado verificado por GitHub:** repositorio `Fedee17/sfstore`, rama principal `main`; PR #1 abierta, en borrador, base `main`, head `codex/storage-p1-safe-retention` (`be2549237667a08f7ab3618b6e41147f1ba8d684`). La rama `codex/autonomous-maintenance` estaba un commit detrás de la rama de la PR al comenzar esta revisión; `main` estaba seis commits detrás de la PR y ninguno por delante. No hay otra PR abierta.
+
+**Funcionalidades verificadas en código:** worker de reconciliación sin `remove`, CLI `--apply` deshabilitada antes de leer credenciales, eliminación administrativa de metadatos + encolado en la misma transacción, protección de URL esperada, rollback ante error de cola, retención de archivos existentes, y fallback de error cuando falta el nuevo RPC. La migración `202610100002` no realiza borrados físicos.
+
+**Backlog y prioridad:**
+- **P1 / DATA_WRITE_APPROVAL_REQUIRED:** revisar y ejecutar manualmente en SQL Editor, en orden, `supabase/migrations/202610100001_product_storage_task_results.sql` y `supabase/migrations/202610100002_durable_admin_image_delete.sql`, únicamente cuando se autorice una futura puesta en servicio. No se aplicaron en esta ejecución. Nunca desplegar el llamador del RPC antes de aplicar la segunda migración.
+- **P1 / bloqueado por garantía técnica:** mantener deshabilitada toda eliminación física hasta disponer de borrado condicional atómico por versión/identidad, o inmutabilidad completa verificada para todos los escritores, además de identidad de entorno confiable independiente del operador. No basta un nuevo `inspect`.
+- **P2 / verificable:** inspeccionar si el reporte de referencias compartidas queda incompleto por la paginación implícita de PostgREST en `findOtherReferences`; la retención física actual evita pérdida de datos, pero el indicador administrativo podría no representar todas las referencias. Reproducir con fixture de más de 1000 imágenes antes de modificar.
+- **P2 / verificable:** revisar las 11 advertencias de ESLint y corregir solo las que no cambien UX ni contratos; comprobar las suites afectadas.
+- **P3:** ampliar la documentación de despliegue/recuperación y establecer CI de lint, tipos, tests y build en GitHub, con fixtures sintéticos.
+
+**Validaciones disponibles (descubiertas en `package.json` y el reporte):** `npm run lint`, `npx tsc --noEmit`, `npm run build`, `node --test tests/*.test.mjs`, `git diff --check`. Para las pruebas PostgreSQL/Chromium se requieren los módulos locales y las variables de fixtures indicadas en `reports/product-storage-task-processor.md`.
+
+**Evidencia y límite de esta revisión:** la PR documenta 629/629 pruebas aprobadas, lint con 0 errores y 11 advertencias, tipos y build correctos en el checkout anterior. No se repitieron esas validaciones aquí: no hay checkout instalable ni documentación local de Next.js `node_modules/next/dist/docs/` accesible. Los checks visibles del commit en GitHub incluyen un estado Vercel exitoso y `Vercel Preview Comments` exitoso; ninguno acredita la ejecución de las 629 pruebas ni sustituye CI. La revisión actual fue estática sobre los archivos publicados.
+
+**Decisiones y restricciones confirmadas:** solo SFSTORE; no usar datos reales para tests; no tocar secretos ni archivos ignorados; no Production, migraciones automáticas, `supabase db push`, merge, force push, pagos ni comunicaciones. La prueba manual autenticada de Fase B no bloquea tareas independientes.
+
+**Último checkpoint y próximo paso seguro:** continuar desde la PR #1 y este documento, no reiniciar auditoría de Storage. Reproducir con fixtures la posible truncación de referencias compartidas y corregirla solo después de disponer de la documentación local requerida por `AGENTS.md` y un checkout con pruebas. Revisar la compatibilidad de las dos migraciones en PostgreSQL efímero; Production permanece sin cambios.
