@@ -1,4 +1,5 @@
-﻿import { brand } from "@/lib/brand";
+import Link from "next/link";
+import { brand } from "@/lib/brand";
 import { getWhatsAppLink } from "@/lib/whatsapp";
 
 type CheckoutFailurePageProps = {
@@ -16,12 +17,13 @@ export default async function CheckoutFailurePage({
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <section className="mx-auto max-w-3xl px-5 py-12 sm:px-8 lg:py-20">
-        <a
+        <Link
           href="/"
           className="text-sm font-semibold text-[#003B73] transition hover:text-[#0072CE]"
+          prefetch={false}
         >
           SFSTORE Importados
-        </a>
+        </Link>
 
         <div className="mt-10 rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-7 shadow-sm sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">

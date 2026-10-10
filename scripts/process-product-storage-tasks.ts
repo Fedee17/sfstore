@@ -12,6 +12,9 @@ const args = process.argv.slice(2);
 if (args.some((arg) => !["--apply", "--dry-run"].includes(arg)) ||
     (args.includes("--apply") && args.includes("--dry-run"))) throw Error("Invalid arguments");
 const dryRun = !args.includes("--apply");
+// Neither environment labels nor operator-defined host lists prove that a target
+// excludes Production. Reject all writes before reading credentials or connecting.
+if (!dryRun) throw Error("STORAGE_TASKS_APPLY_DISABLED: trusted target and conditional deletion required");
 const databaseUrl = required("STORAGE_TASKS_DATABASE_URL");
 const storageUrl = required("STORAGE_TASKS_SUPABASE_URL");
 const environment = required("STORAGE_TASKS_ENVIRONMENT");
@@ -53,10 +56,6 @@ try {
         }
         if ((data?.length ?? 0) < 1000) return null;
       }
-    },
-    async remove(path) {
-      const { error } = await bucket.remove([path]);
-      if (error) throw Error(error.message);
     },
   }, { dryRun });
   console.log(JSON.stringify({ dryRun, results }, null, 2));

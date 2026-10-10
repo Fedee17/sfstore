@@ -1,53 +1,53 @@
-# Procesamiento de product_storage_tasks
+# Procesamiento y retención de product_storage_tasks
 
-Trabajador manual por lotes (100 tareas), separado del guardado y sin scheduler ni despliegue automático. Mantiene los contratos de create_product_atomic/update_product_atomic y las reglas comerciales.
+Actualizado: 2026-10-10. Este estado reemplaza las instrucciones previas de apply.
 
-## Ejecución
+## Estado seguro
 
-Primero aplicar en un entorno local o staging la migración aditiva `202610100001_product_storage_task_results.sql`: agrega únicamente `result jsonb`. El trabajador no ejecuta migraciones. No usar `supabase db push` ni aplicar en Production como parte de esta entrega.
+El procesador existente se conserva: selección por lotes, dry-run READ ONLY, protección de referencias (incluidas rutas codificadas), operaciones prepared, bloqueos por tarea/ruta, recuperación y espera exponencial. La diferencia es que **no elimina ningún objeto existente**. La interfaz TaskStorage ya no expone remove.
 
-Configurar exclusivamente variables del trabajador, sin cargar `.env.local`:
+- Referenciado: preserved_referenced, sin borrar.
+- Ausente: already_absent, idempotente.
+- Existente sin etag/content_hash no vacío: STORAGE_IDENTITY_REQUIRED; una ruta/tamaño/MIME no identifican el objeto.
+- Existente con identidad y metadatos coincidentes: retained_requires_conditional_delete y STORAGE_CONDITIONAL_DELETE_UNAVAILABLE. En las pruebas que registran resultados, permanece failed/reintentable, nunca completed como si se hubiese eliminado.
+- Error de inspección/metadatos: failed con el error y reintento progresivo.
+- Prepared: deferred_prepared, sin modificar el intento de guardado.
 
-- `STORAGE_TASKS_ENVIRONMENT`: `local` o `staging`. Production no está habilitado por el CLI.
-- `STORAGE_TASKS_DATABASE_URL`: conexión PostgreSQL directa o pooler en modo sesión, al mismo proyecto que Storage. La conexión debe poder ejecutar `SET LOCAL ROLE service_role`; no usar pooler en modo transacción.
-- `STORAGE_TASKS_SUPABASE_URL` y `STORAGE_TASKS_SERVICE_ROLE_KEY`: Storage del mismo entorno.
-- En staging: `STORAGE_TASKS_STAGING_DB_HOST` y `STORAGE_TASKS_STAGING_STORAGE_HOST` deben coincidir con los destinos. PostgreSQL requiere `sslmode=verify-full`; Storage requiere HTTPS.
+No se infiere la identidad actual de un objeto para autorizar una tarea legacy. La inspección y bucket.remove(path) no son una operación condicional atómica. Los bloqueos PostgreSQL no protegen contra reemplazos de Storage por escritores externos.
 
-`npm run storage-tasks:dry-run` es el modo predeterminado: transacciones READ ONLY, sin modificar tareas, intentos, errores, operaciones ni archivos. Emite JSON con las decisiones. La vista es una simulación; una ejecución posterior vuelve a verificar todo.
+## CLI
 
-`npm run storage-tasks:apply` procesa y emite resultados JSON. Nunca se ejecutó contra datos reales durante esta implementación.
+`npm run storage-tasks:dry-run` continúa disponible con variables exclusivas STORAGE_TASKS_*. No cargar .env.local. Su salida informa retención, no promete borrados.
 
-## Garantías y recuperación
+`npm run storage-tasks:apply` falla con STORAGE_TASKS_APPLY_DISABLED **antes de leer credenciales o abrir conexiones**, en cualquier entorno. La allowlist de staging controlada por el operador no demuestra exclusión de Production. No hay flag alternativo para habilitar escrituras.
 
-La fila de tarea se reclama con FOR UPDATE SKIP LOCKED y un bloqueo advisory por bucket/ruta impide borrar simultáneamente desde tareas de operaciones distintas. La transacción mantiene bloqueos SHARE de product_save_operations y product_images durante la verificación y la llamada a Storage. Impide nuevas referencias y cambios de operaciones mientras elimina, incluso desde escrituras legacy. Puede demorar guardados por el tiempo de una llamada a Storage (timeout de 15 segundos por solicitud); ejecutar lotes pequeños fuera de horas de mayor actividad. La conexión dedicada debe mantenerse viva durante la llamada.
+El script legacy cleanup-product-images también rechaza --apply antes de conectar. Su función de simulación conserva validación de snapshots y detección de POST-CLEANUP previo; no puede realizar una limpieza nueva. El gateway compartido rechaza removeStorageObject sin llamar a Storage.
 
-Las operaciones prepared nunca se abortan ni se limpian automáticamente: conservan el reintento del guardado actual. También se protege un archivo utilizado por el manifiesto de otra operación prepared. Resolver/abortar esas operaciones mediante el flujo existente antes de limpiar sus archivos.
+## Eliminación administrativa durable
 
-Todas las filas product_images protegen el archivo, sin filtrar por producto, estado comercial o imagen principal. Se comparan rutas y rutas codificadas; un fallo de lectura, metadatos inesperados o una URL malformada impide borrar. Solo se usa el bucket product-images y una ruta exacta de una tarea existente. Los metadatos suministrados (hash/etag, tamaño, MIME) deben coincidir. Las escrituras externas que omiten el protocolo de guardado y reemplazan objetos directamente en Storage no participan de los bloqueos PostgreSQL.
+La acción conserva autenticación administrativa, protección de identidades históricas, normalización de galería, elección de principal y revalidación de rutas. Quita la imagen del producto, informa que el archivo se conserva y no lo elimina de Storage.
 
-No hay lease que expire mientras otro trabajador siga borrando. Si el proceso cae, PostgreSQL revierte y libera los bloqueos; pending y processing vuelven a ser elegibles. Si Storage borró pero se perdió la respuesta, el reintento detecta ausencia y completa idempotentemente. Storage y PostgreSQL no comparten una transacción distribuida: una pérdida de conexión con un DELETE remoto todavía en vuelo requiere conservar el protocolo de rutas/objetos inmutables del guardado actual.
+Nueva migración: supabase/migrations/202610100002_durable_admin_image_delete.sql. Crea únicamente el RPC service-role delete_product_image_metadata_and_queue. Al ser invocado, ejecuta el RPC de metadatos existente y encola reconcile en una sola transacción. Si cambia la URL esperada o falla el encolado, revierte la eliminación y toda normalización. URLs externas no generan tareas de Storage.
 
-Fallos de Storage se registran como failed con attempts, last_error y result; reintentos automáticos en invocaciones posteriores con espera exponencial de hasta una hora. Referenciados y ausentes terminan como completed con su motivo. Prepared queda sin modificaciones. Fallos de infraestructura de PostgreSQL provocan rollback y error del comando; no se declara éxito sin confirmar commit. Tareas completed nunca se vuelven a ejecutar.
+Para mantener el FK existente, registra una operación update_product ya cercada como aborted, con recovery_metadata.source=admin_image_delete y la imagen eliminada. No puede reanudarse como guardado; no cambia los contratos de create_product_atomic/update_product_atomic. Las imágenes legacy solo permiten registrar intención path-only: el procesador las retiene hasta contar con identidad verificable y un mecanismo de borrado seguro.
 
-## Validación sintética
+## Publicación y migraciones
 
-Las pruebas usan PostgreSQL efímero en loopback y un Map como Storage. No aceptan conexiones remotas ni borran archivos reales.
+No se ejecutó nada contra Supabase real, no se borraron archivos reales, no hubo merge ni despliegue. La migración nueva se probó exclusivamente en PostgreSQL efímero local. Aplicarla requiere autorización separada y ejecución manual en SQL Editor, antes de desplegar el nuevo llamador administrativo. Sin ese RPC, la acción falla sin cambiar metadatos: no tiene fallback al borrado antiguo. Nunca usar supabase db push.
+
+La migración anterior 202610100001_product_storage_task_results.sql sigue siendo necesaria para registrar result. Ninguna de las dos habilita automáticamente al procesador.
+
+Para habilitar borrados reales en el futuro faltan dos garantías: un destino no-Production identificado por configuración confiable independiente, y borrado atómico condicionado a la identidad/version del objeto o una inmutabilidad completa demostrada para todos los escritores. Una nueva comprobación inspect no cierra la carrera. No presentar este parche como habilitación de Production.
+
+## Validación reproducible
 
 ```sh
-SFSTORE_TEST_PG_BIN=<bin local de PostgreSQL> node --test tests/product-storage-task-processor.test.mjs
-SFSTORE_TEST_PG_BIN=<bin local de PostgreSQL> SFSTORE_TEST_PG_MODULE=<pg/lib/index.js> node --test tests/*.test.mjs
+npm ci
+SFSTORE_TEST_PG_BIN=<PostgreSQL local bin> SFSTORE_TEST_PG_MODULE=<pg/lib/index.js> SFSTORE_TEST_PLAYWRIGHT_MODULE=<Playwright con Chromium local> node --test tests/*.test.mjs
 npx tsc --noEmit
 npm run lint
 npm run build
+git diff --check
 ```
 
-Resultados ejecutados en esta entrega:
-
-- Suite completa: 621 pruebas, 620 aprobadas, 0 fallidas y 1 omitida. La omitida es la prueba opcional del formulario React en navegador, sin runtime Playwright configurado. Las pruebas de PostgreSQL sí se ejecutaron, con binarios efímeros de @embedded-postgres/linux-x64 instalados únicamente en /tmp.
-- 18 pruebas nuevas aprobadas: 15 de procesamiento y 3 de rechazo de destinos inseguros por el CLI.
-- TypeScript (`tsc --noEmit`), ESLint de los tres archivos de código/pruebas agregados y `git diff --check`: aprobados.
-- `npm run build`: aprobado.
-- `npm run lint`: falla por 9 errores y 11 advertencias preexistentes, fuera de estos cambios. Para dejar el lint global limpio, corregir enlaces HTML internos en app/checkout/{exito,fallo,pendiente}/page.tsx, app/producto/[slug]/page.tsx y components/site-header.tsx, y la asignación de window.location.href señalada por react-hooks/immutability en app/checkout/page.tsx. No bloquea las pruebas ni el build del procesador.
-- Ninguna conexión a Supabase real, eliminación de archivos reales, migración remota ni despliegue.
-
-Archivos de la entrega: lib/products/storage-task-processor.ts, scripts/process-product-storage-tasks.ts, tests/product-storage-task-processor.test.mjs, supabase/migrations/202610100001_product_storage_task_results.sql, package.json, package-lock.json y este informe.
+Se usan clusters efímeros en loopback, objetos Map y formularios con servicios simulados. Los runtimes de PostgreSQL y Playwright se instalaron en /tmp; no son dependencias nuevas del producto. Resultado final registrado en docs/AUTONOMOUS_PROGRESS.md.

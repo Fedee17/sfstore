@@ -7,7 +7,6 @@ type Task = {
 export type StorageTaskResult = { id: string; outcome: string; error?: string };
 export type TaskStorage = {
   inspect(path: string): Promise<Record<string, unknown> | null>;
-  remove(path: string): Promise<void>;
 };
 
 const marker = "/product-images/";
@@ -38,6 +37,11 @@ async function decide(db: Client, storage: TaskStorage, task: Task): Promise<str
   const actual = await storage.inspect(task.storage_path);
   if (!actual) return "already_absent";
   const expected = task.expected_metadata;
+  // Path, size and MIME identify a location/format, not the object to remove.
+  if (![expected.etag, expected.content_hash].some((value) =>
+    typeof value === "string" && hash(value).trim().length > 0)) {
+    throw Error("STORAGE_IDENTITY_REQUIRED");
+  }
   for (const key of ["etag", "content_hash", "size", "mime"]) {
     if (!(key in expected)) continue;
     const value = key === "size" ? actual.size : key === "mime" ? actual.mimetype : actual.eTag;
@@ -46,7 +50,9 @@ async function decide(db: Client, storage: TaskStorage, task: Task): Promise<str
       throw Error(`STORAGE_METADATA_MISMATCH:${key}`);
     }
   }
-  return "delete_abandoned";
+  // The Supabase API available here has no atomic version precondition. Even a
+  // matching identity can be replaced after inspect. Never issue a path-only DELETE.
+  return "retained_requires_conditional_delete";
 }
 
 /** Dedicated connection only. No remote URLs, credentials or scheduling in this module. */
@@ -66,8 +72,7 @@ export async function processStorageTasks(db: Client, storage: TaskStorage, opti
       await db.query("set local role service_role");
       await db.query("set local lock_timeout = '5s'");
       if (!dryRun) {
-        // Keep locks until Storage acknowledges removal. No expiring lease can give a
-        // second worker ownership while the first still has a DELETE in flight.
+        // Keep the inspection and task result consistent with cooperating writers.
         // SHARE conflicts with INSERT/UPDATE/DELETE, including legacy gallery writes.
         await db.query("lock table public.product_save_operations in share mode");
         await db.query("lock table public.product_images in share mode");
@@ -85,7 +90,7 @@ export async function processStorageTasks(db: Client, storage: TaskStorage, opti
       let error: string | undefined;
       try {
         outcome = await decide(db, storage, task);
-        if (!dryRun && outcome === "delete_abandoned") await storage.remove(task.storage_path);
+        if (outcome === "retained_requires_conditional_delete") error = "STORAGE_CONDITIONAL_DELETE_UNAVAILABLE";
       } catch (failure) {
         outcome = "failed";
         error = (failure instanceof Error ? failure.message : String(failure)).slice(0, 2000);

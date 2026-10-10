@@ -1,66 +1,47 @@
-# SFSTORE — autonomous maintenance checkpoint
+# SFSTORE — maintenance checkpoint
 
-Updated: 2026-10-10 UTC
-Repository: `Fedee17/sfstore`
-Default branch: `main` at `7a8a105c968f84ba9f58ee1dfd018f27bf6ac3a6`
-Working branch: `codex/autonomous-maintenance` (previous checkpoint: `6a2db23d794a98a02a921299628d3fa1f4f9e56c`)
+Fecha: 2026-10-10. Repositorio: Fedee17/sfstore.
 
-## Functional objective and current state
+Base de trabajo: codex/autonomous-maintenance en 824b555182bc44da724050572c22b9b70771eaa9.
+Rama aislada de entrega: codex/storage-p1-safe-retention. Main observado: 7a8a105c968f84ba9f58ee1dfd018f27bf6ac3a6.
 
-Stabilize product persistence and Storage cleanup without modifying Production or changing business rules.
+## Alcance continuado desde los tres checkpoints
 
-- Atomic product-save integration (Phase B) is on `main`.
-- The existing Storage-task processor from `codex/product-storage-task-processor` was consolidated into the maintenance branch by merge commit `6a2db23`. **Do not reimplement it.**
-- The processor is deliberately manual, supports dry-run and apply, rejects Production CLI targets, and is not scheduled or deployed.
-- `supabase/migrations/202610100001_product_storage_task_results.sql` adds a task result column and has **not** been applied by this automation.
-- No open PR was found when checking GitHub on 2026-10-10. Verify again before creating a PR.
+Se trataron como contexto y evidencia los checkpoints review_actual, admin_delete_P1 y P1_followup del 2026-10-10. Se continuaron sus P1 de Storage y sus validaciones/P2 de lint; no se repitieron auditorías anteriores, pagos ni catálogo.
 
-## Completed work / evidence
+Se reprodujo antes del parche la carrera administrativa con un fixture: storageDeleted=true y deletedWhileReferenced=true al crear una referencia después del último lookup. No hay evidencia de un incidente real en Production.
 
-- Product save RPCs and supporting tables documented in `reports/atomic-product-save-phase-b.md`.
-- Storage processor: `lib/products/storage-task-processor.ts`, `scripts/process-product-storage-tasks.ts`, `tests/product-storage-task-processor.test.mjs`; implementation and caveats documented in `reports/product-storage-task-processor.md`.
-- The processor report records 621 tests (620 passed, 1 skipped, 0 failed), successful TypeScript and build checks, and scoped lint/diff checks **at the time of that implementation**. These are historical, not independently rerun in this maintenance execution.
-- GitHub showed a successful Vercel commit status on `6a2db23`. This does not establish that the full local test suite or lint passed.
+## Cambio P1
 
-## Reproducible errors / unresolved verification
+- Sin borrados incondicionales: el procesador y el gateway compartido ya no llaman a Storage.remove. También se cerró el camino legacy DELETE_STORAGE/DELETE_BOTH.
+- Objetos existentes siempre retenidos; las tareas legacy sin identidad dan STORAGE_IDENTITY_REQUIRED. Una identidad coincidente no autoriza borrado sin condición atómica de versión.
+- CLI --apply deshabilitado antes de credenciales/conexiones, incluyendo hosts Production etiquetados como staging por el operador. Dry-run continúa READ ONLY.
+- Eliminación administrativa de metadatos más reconcile en una transacción mediante nuevo RPC service-only. Un fallo de cola revierte también orden/principal; una repetición no duplica tareas. El archivo se conserva y la UI lo informa.
+- create_product_atomic/update_product_atomic, uploads upsert:false, rutas por contenido, prepared y reintentos del guardado actual conservados.
+- Revisión independiente de frontera y del candidato completada: no se encontró un bypass destructivo concreto en el parche. Las pruebas PostgreSQL del padre sí se ejecutaron con runtime local.
 
-- The Storage processor report identifies 9 ESLint errors and 11 warnings in the then-current global lint run, outside its changed files. Confirm against the current checkout before fixing.
-- Suspected lint locations from the report: `app/checkout/{exito,fallo,pendiente}/page.tsx`, `app/producto/[slug]/page.tsx`, `components/site-header.tsx` (internal links) and `app/checkout/page.tsx` (react-hooks/immutability).
-- No new P1 data-loss or authorization bug has been reproduced in this execution.
-- No local checkout with installed `node_modules` and PostgreSQL test binaries is available in this task environment. Consequently **no fresh lint, TypeScript, build or test run occurred here**.
-- `AGENTS.md` requires consulting the applicable local Next.js 16 documentation under `node_modules/next/dist/docs/` before writing application code.
+## P2 confirmado y corregido
 
-## Backlog
+El lint inicial reprodujo 9 errores y 11 warnings. Se corrigieron ocho enlaces internos a inicio mediante next/link con prefetch=false y la redirección de Mercado Pago mediante window.location.assign. Se conservaron textos/destinos, lógica de pagos y reglas comerciales. Consultadas las guías locales Next.js requeridas por AGENTS.md y la guía React para los cambios TSX. Los 11 warnings existentes quedan fuera del alcance (imágenes HTML y variables sin usar).
 
-- **P1:** Reproduce and prioritize any confirmed authorization, payment, data-loss or unsafe Storage deletion issue. None newly confirmed.
-- **P2:** Run current lint, tests, `tsc --noEmit`, build and `git diff --check`; fix confirmed lint failures without altering checkout behavior.
-- **P2:** Review Storage worker on a synthetic local/staging database, including concurrent saves, legacy writers, failure recovery and migration compatibility. Preserve the existing worker.
-- **P2:** Review sales/inventory/checkout consistency with synthetic tests; fix only reproducible issues.
-- **P3:** Catalog, admin UX, SEO and documentation cleanup after P1/P2 stabilization.
+## Validación de esta ejecución
 
-## Confirmed decisions / restrictions
+Resultados nuevos sobre este checkout; no se reutilizan como evidencia los 620 tests de la implementación histórica.
 
-- No real customer, commercial or Production data in tests; no secrets committed.
-- No Production deployments, merges, payments, external communications, destructive cleanup or force pushes.
-- Supabase Production may be read safely, but migrations and sensitive SQL are **manual user actions**. Never use `supabase db push`.
-- **DATA_WRITE_APPROVAL_REQUIRED:** before using the Storage worker against any Production target, separately review and manually apply `supabase/migrations/202610100001_product_storage_task_results.sql` in the authorized SQL Editor. The current CLI intentionally does not support Production; do not bypass that safeguard without a separate approved design.
-- The Phase B authenticated manual test can remain pending; it does not block independent safe work.
-- Preserve others' changes; no automatic merging.
+- Reproducción original: pérdida sintética antes del parche; después, la prueba concurrente verifica cero llamadas a borrado y objeto conservado.
+- Pruebas focalizadas: 60 aprobadas, 0 fallidas; después se amplió la comprobación de orden/principal, rollback y allowlist etiquetada como staging.
+- Suite final completa con PostgreSQL efímero y Playwright/Chromium local: 629 aprobadas, 0 fallidas y 0 omitidas. Incluye formulario React con HEIC, reintentos, doble submit y versión obsoleta.
+- TypeScript y build aprobados. Lint posterior: 0 errores, 11 warnings. git diff --check aprobado.
 
-## Validation commands (discover current equivalents in package.json)
+## Migraciones y límites pendientes
 
-```sh
-npm run lint
-npx tsc --noEmit
-npm run build
-node --test tests/*.test.mjs
-git diff --check
-```
+- 202610100001_product_storage_task_results.sql: agrega result jsonb; estado real de Production no consultado ni asumido.
+- Nueva 202610100002_durable_admin_image_delete.sql: agrega el RPC de encolado; no reemplaza funciones ni modifica filas al aplicar el DDL. Pruebas solo en PostgreSQL sintético.
+- DATA_WRITE_APPROVAL_REQUIRED: aplicación manual en SQL Editor, con revisión/autorización separada, antes de desplegar el nuevo llamador. No supabase db push.
+- Sin ambas garantías (destino confiable independiente y borrado condicionado a versión/inmutabilidad de todos los escritores), la limpieza física permanece deshabilitada. Retener objetos puede aumentar el uso de Storage; es una limitación explícita, no una habilitación de Production.
+- No se ejecutaron migraciones, escrituras, pagos o borrados reales. No hubo merge ni despliegue.
+- Los documentos locales previos de preparación de Production en /workspace/sfstore quedaron intactos; la rama de mantenimiento original tampoco fue modificada.
 
-For PostgreSQL-backed Storage tests, follow `reports/product-storage-task-processor.md` and use ephemeral synthetic local fixtures only. The report specifies `SFSTORE_TEST_PG_BIN` and optionally `SFSTORE_TEST_PG_MODULE`.
+## Próximo paso
 
-## Latest checkpoint and next safe step
-
-Checkpoint: verified `main`, `codex/autonomous-maintenance`, no open PR, `AGENTS.md`, `package.json`, Storage worker, tests, and implementation report through the GitHub connector. A local `git clone` attempt failed because the runtime could not resolve `github.com`; this is an environment limitation, not a repository failure.
-
-Next: obtain a Codex checkout with installed dependencies; read the local Next.js guides required by `AGENTS.md`; rerun validations and reproduce lint failures. Fix small verified P2 issues with tests, update this checkpoint, commit and push without rewriting history. Keep at most one draft PR targeting `main`, with validation gaps clearly disclosed. Do not repeat the Storage implementation or touch Production.
+Revisar una sola draft PR a main de esta rama aislada. No hacer merge ni desplegar. La habilitación de borrados reales es una tarea separada que necesita resolver las garantías anteriores; no basta con autorizar la migración result jsonb.
