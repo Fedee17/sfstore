@@ -1,4 +1,5 @@
-﻿import { brand } from "@/lib/brand";
+import Link from "next/link";
+import { brand } from "@/lib/brand";
 import { transferPayment } from "@/lib/payment";
 import { getWhatsAppLink } from "@/lib/whatsapp";
 import { getCheckoutSuccessOrder } from "@/services/orders";
@@ -43,12 +44,13 @@ export default async function CheckoutSuccessPage({
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <section className="mx-auto max-w-3xl px-5 py-12 sm:px-8 lg:py-20">
-        <a
+        <Link
           href="/"
           className="text-sm font-semibold text-[#003B73] transition hover:text-[#0072CE]"
+          prefetch={false}
         >
           SFSTORE Importados
-        </a>
+        </Link>
 
         <div className="mt-10 rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-7 shadow-sm sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
@@ -113,12 +115,13 @@ export default async function CheckoutSuccessPage({
                 ? "Consultar pedido por WhatsApp"
                 : "Enviar comprobante por WhatsApp"}
             </a>
-            <a
+            <Link
               href="/"
               className="rounded-full border border-[#0072CE]/35 px-6 py-3.5 text-center text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] hover:bg-[#F7F9FC]"
+              prefetch={false}
             >
               Volver al inicio
-            </a>
+            </Link>
           </div>
 
           <p className="mt-8 text-sm leading-6 text-[#102033]/55">

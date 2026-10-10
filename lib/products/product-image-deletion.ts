@@ -21,7 +21,7 @@ type DeletedProductImageMetadata = ProductImageMetadata & {
 export type ProductImageDeleteGateway = {
   readImage(productId: string, imageId: string): Promise<ProductImageMetadata | null>;
   findOtherReferences(imageId: string, url: string, storagePath: string | null): Promise<string[]>;
-  deleteMetadata(productId: string, imageId: string): Promise<DeletedProductImageMetadata>;
+  deleteMetadata(productId: string, imageId: string, image: ProductImageMetadata): Promise<DeletedProductImageMetadata>;
   restoreMetadata(image: ProductImageMetadata): Promise<void>;
   removeStorageObject(storagePath: string): Promise<void>;
 };
@@ -32,6 +32,7 @@ export type ProductImageDeleteResult = {
   storagePath: string | null;
   storageDeleted: boolean;
   storagePreservedForSharedReference: boolean;
+  storageRetainedForDeferredCleanup: boolean;
   remainingImages: number;
 };
 
@@ -43,7 +44,9 @@ export function getProductImageStoragePath(url: string) {
     return null;
   }
 
-  return decodeURIComponent(url.slice(markerIndex + marker.length));
+  const path = decodeURIComponent(url.slice(markerIndex + marker.length).split(/[?#]/)[0]);
+  if (!path || /(^\/|(^|\/)\.\.?(\/|$)|[?#\\])/.test(path)) throw new Error("Ruta Storage invalida.");
+  return path;
 }
 
 function asDeletedMetadata(value: unknown): DeletedProductImageMetadata {
@@ -70,7 +73,7 @@ export async function deleteProductImageWithCompensation(
     image.url,
     storagePath,
   );
-  const deleted = await gateway.deleteMetadata(input.productId, input.imageId);
+  const deleted = await gateway.deleteMetadata(input.productId, input.imageId, image);
 
   if (
     deleted.id !== image.id ||
@@ -129,39 +132,20 @@ export async function deleteProductImageWithCompensation(
       storagePath,
       storageDeleted: false,
       storagePreservedForSharedReference: hasSharedReference,
+      storageRetainedForDeferredCleanup: Boolean(storagePath),
       remainingImages: Number(deleted.remaining_images),
     };
   }
 
-  try {
-    await gateway.removeStorageObject(storagePath);
-  } catch (storageError) {
-    try {
-      await gateway.restoreMetadata(image);
-    } catch (restoreError) {
-      console.error("[product-images] Reconciliacion manual requerida", {
-        productId: input.productId,
-        imageId: input.imageId,
-        storagePath,
-        storageError,
-        restoreError,
-      });
-      throw new Error(
-        "No se pudo borrar el archivo ni restaurar su referencia. Se requiere reconciliacion manual.",
-      );
-    }
-
-    throw new Error(
-      "No se pudo borrar el archivo de Storage. La referencia fue restaurada y no se completo la eliminacion.",
-    );
-  }
-
+  // The durable metadata RPC queued reconciliation in the same transaction.
+  // Retain the object: reference checks cannot make a later Storage DELETE atomic.
   return {
     imageId: image.id,
     productId: image.product_id,
     storagePath,
-    storageDeleted: true,
+    storageDeleted: false,
     storagePreservedForSharedReference: false,
+    storageRetainedForDeferredCleanup: true,
     remainingImages: Number(deleted.remaining_images),
   };
 }
@@ -202,10 +186,12 @@ export function createSupabaseProductImageDeleteGateway(
         .map((row) => String(row.id));
     },
 
-    async deleteMetadata(productId, imageId) {
-      const { data, error } = await supabase.rpc("delete_product_image_metadata", {
+    async deleteMetadata(productId, imageId, image) {
+      const { data, error } = await supabase.rpc("delete_product_image_metadata_and_queue", {
         p_product_id: productId,
         p_image_id: imageId,
+        p_expected_url: image.url,
+        p_storage_path: getProductImageStoragePath(image.url),
       });
 
       if (error) throw new Error(error.message);
@@ -227,12 +213,9 @@ export function createSupabaseProductImageDeleteGateway(
       if (error) throw new Error(error.message);
     },
 
-    async removeStorageObject(storagePath) {
-      const { error } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .remove([storagePath]);
-
-      if (error) throw new Error(error.message);
+    async removeStorageObject() {
+      // Also protects legacy cleanup callers of this shared gateway.
+      throw new Error("STORAGE_CONDITIONAL_DELETE_UNAVAILABLE");
     },
   };
 }

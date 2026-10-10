@@ -711,7 +711,9 @@ export async function deleteProductImage(
       status: "success",
       message: result.storagePreservedForSharedReference
         ? "La imagen se quito del producto. El archivo compartido se conservo."
-        : "La imagen se elimino correctamente.",
+        : result.storageRetainedForDeferredCleanup
+          ? "La imagen se quito del producto. El archivo se conservo para una limpieza segura posterior."
+          : "La imagen se quito del producto.",
       submissionId: crypto.randomUUID(),
     };
   } catch (error) {
