@@ -81,7 +81,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## STG-01 — Revisar corrección Storage existente y plan de integración
 
-- **Estado:** PROPUESTA.
+- **Estado:** REVISIÓN E INTEGRACIÓN LOCAL VALIDADAS en Fase 3; migrations reales, integración a main, deploy y activación siguen pendientes de autorizaciones separadas.
 - **Descripción:** Revisar draft PR #1 be25492 y migrations exactas de result/durable admin delete; reaprovechar evidencia y no reimplementar worker. Mantener retención de objetos existentes y apply bloqueado. Preparar rollout separado de merge/migration/deploy/activación.
 - **Prioridad:** P0.
 - **Complejidad estimada:** Media.
@@ -105,7 +105,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## QA-01 — Facilitar validaciones locales reproducibles
 
-- **Estado:** PROPUESTA.
+- **Estado:** PREPARADA, NO IMPLEMENTADA; baseline local `531d411` validado, pendiente de aceptación y encargo.
 - **Descripción:** Documentar y después encapsular runner de tests opcionales PG/Chromium sin credenciales reales, con preflight que distinga dependencias ausentes y skips; agregar scripts de tests explícitos sin alterar tests para que pasen.
 - **Prioridad:** P1.
 - **Complejidad estimada:** Media.
@@ -129,7 +129,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## LINT-01 — Incorporar corrección ya existente de nueve errores
 
-- **Estado:** PROPUESTA.
+- **Estado:** CORRECCIÓN VALIDADA EN BASELINE LOCAL `531d411`: 0 errores globales; integración/publicación todavía pendientes.
 - **Descripción:** No repetir cambios: verificar la corrección de enlaces internos y location.assign en PR #1 y decidir integración de ese trabajo antes de nuevas correcciones lint. La implementación ya está pendiente fuera de main.
 - **Prioridad:** P1.
 - **Complejidad estimada:** Baja.
@@ -228,3 +228,8 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 Seleccionadas y completadas: SEC-02 (diagnósticos acotados de login), TXT-01 (acentos metadata) y DOC-01 (README/checklist/guías históricas). Evidencia y validaciones: [informe del lote](../reports/autonomous-maintenance-phase2-20261010.md).
 
 Las 36 entradas de dependencias fueron analizadas read-only: [triage](../reports/dependency-triage-phase2-20261010.md). DEP-01/DEP-02 no comenzaron su implementación; no hubo cambios de paquetes. QA-01 queda como siguiente lote autónomo recomendado una vez definido cómo evitar el solapamiento de package.json/lock con PR #1. No iniciar automáticamente.
+
+
+## Registro de Fase 3
+
+[Propuesta validada](../reports/integration-baseline-phase3-20261010.md): PR #1 + Fase 2, merge local `531d411`, 636/636 tests, tsc/build PASS, lint global 0 errores y 11 warnings. QA-01 tiene baseline candidato sin conflictos de lock, pero no comenzó. Requiere aceptación/encargo; no exige migrations productivas para desarrollar su runner. STG-01 y LINT-01 reflejan validación local, sin afirmar integración a main/Production. No se actualizaron dependencias.

@@ -44,3 +44,8 @@ Informar objetivo, archivos/diff, verificaciones/resultados, riesgos, decisiones
 ## Fase 2 autorizada
 
 El pedido posterior autoriza revisar/confirmar la documentación inicial y ejecutar hasta tres tareas AUTÓNOMAS de bajo riesgo en ramas independientes. Pueden crearse commits locales verificados. No autoriza push, merge, despliegues, migrations, cambios de pagos/datos reales ni tareas SUPERVISADAS/RESTRINGIDAS. El análisis read-only de las entradas de npm audit está autorizado; aplicar solo correcciones compatibles de bajo riesgo sin conflicto con PR #1. Detener una tarea tras dos intentos razonables sin solución y registrar el bloqueo.
+
+
+## Fase 3 — propuesta de integración
+
+Pedido autoriza revisión de PR #1, worktree de combinación y commits locales completamente validados. Baseline candidato `codex/integration-storage-phase2` en `531d411`; requisitos en reports/integration-baseline-phase3-20261010.md. No se permite push, merge a main, deploy ni migrations reales; no implementar QA-01 en esta fase. Un baseline aceptado para desarrollo local no autoriza operaciones de Production.

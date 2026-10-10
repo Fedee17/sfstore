@@ -48,3 +48,8 @@ El esquema inicial contiene categorías, productos, imágenes, atributos, client
 ## Despliegue y deuda de documentación
 
 `next.config.ts` configura redirects Yara, orígenes de desarrollo y Server Actions hasta 8 MB. No se observó workflow CI versionado en `.github`; no se verificó conexión activa de Vercel. `README.md` es boilerplate. `supabase/storage.md` describe un flujo antiguo de imagen principal, mientras el guardado actual soporta un plan de galería: consultar código/tests antes de cambiarlo. Documentos anteriores se conservan como antecedentes.
+
+
+## Baseline local de integración — Fase 3
+
+`codex/integration-storage-phase2`, merge local `531d411`, combina PR #1 (`be25492`) y Fase 2 (`33d908a`) sin conflictos. El worker conserva objetos existentes y su CLI apply está bloqueada; galería usa el nuevo RPC transaccional delete_product_image_metadata_and_queue. Requiere migrations 202610100001 y 202610100002 antes de desplegar el caller. Main/Production siguen sin modificar. Estado y gates: [informe Fase 3](../reports/integration-baseline-phase3-20261010.md). QA-01 se evalúa contra este candidato, no contra un main asumido actualizado.
