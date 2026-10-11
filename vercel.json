@@ -2,7 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
-      "codex/sec01-pay01-staging-preparation": false
+      "codex/sec01-pay01-staging-preparation": false,
+      "codex/integration-sec01-pay01-storage-20261011": false
     }
   }
 }
