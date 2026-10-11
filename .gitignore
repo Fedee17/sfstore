@@ -50,3 +50,18 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Generated staging SQL copies and local Supabase runtime; recreate via script.
+/staging/supabase/migrations/
+/staging/supabase/.temp/
+/staging/supabase/.branches/
+
+# Private local runtime configuration, keys and credentials.
+/staging/runtime/
+
+# Local staging Python validation artifacts.
+/scripts/__pycache__/
+/tests/__pycache__/
+
+# Supabase CLI metadata is local, never part of a backup.
+/supabase/.temp/

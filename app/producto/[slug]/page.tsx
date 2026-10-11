@@ -172,7 +172,7 @@ function PricePanel({
               Pagando por transferencia o efectivo accedÃ©s al mejor precio.
             </p>
             <p className="mt-2 break-words text-sm text-[#102033]/55">
-              Mercado Pago y tarjeta usan precio lista.
+              Podés pagar por transferencia o en efectivo al retirar.
             </p>
           </div>
           <div className="min-w-0 rounded-2xl border border-[#003B73]/15 bg-white/70 p-4">

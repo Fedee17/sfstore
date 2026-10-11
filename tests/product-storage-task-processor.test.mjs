@@ -46,6 +46,7 @@ describe("Storage task worker with isolated PostgreSQL and synthetic Storage", {
     db = new Client(connection); await db.connect();
     await db.query("create role anon; create role authenticated; create role service_role bypassrls");
     await db.query(readFileSync(join(root, "supabase/schema.sql"), "utf8"));
+    await db.query(readFileSync(join(root, "tests/fixtures/storage-permissions.sql"), "utf8"));
     for (const file of readdirSync(join(root, "supabase/migrations")).filter((f) => f.endsWith(".sql")).sort()) {
       await db.query(readFileSync(join(root, "supabase/migrations", file), "utf8"));
     }

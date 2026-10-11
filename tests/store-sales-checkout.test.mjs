@@ -18,8 +18,7 @@ const newPage = source("app", "admin", "ventas", "nueva", "page.tsx");
 const form = source("components", "admin", "sales", "store-sale-form.tsx");
 const paymentForm = source("components", "admin", "sales", "store-sale-payment-form.tsx");
 const service = source("services", "store-sales.ts");
-const checkoutService = source("services", "orders.ts");
-const webhook = source("app", "api", "mercadopago", "webhook", "route.ts");
+const webhook = source("lib", "payments", "legacy-mercadopago", "webhook.ts");
 const model = await import(pathToFileURL(join(root, "lib", "store-sales.ts")).href);
 
 test("store sale mutations require an authorized admin", () => {
@@ -143,11 +142,11 @@ test("insufficient stock at completion aborts inventory atomically and is visibl
 });
 
 test("existing web checkout remains explicitly channel web", () => {
-  assert.match(checkoutService, /channel: "web"/i);
+  assert.match(readFileSync(new URL("../supabase/migrations/202610110002_pay01_atomic_checkout.sql", import.meta.url), "utf8"), /values\(order_id,customer_id,order_number,'web'/i);
   assert.doesNotMatch(migration, /update orders[\s\S]+channel = 'store'/i);
 });
 
-test("Mercado Pago continues using the shared payment and inventory services", () => {
+test("archived Mercado Pago code preserves the shared payment and inventory services", () => {
   assert.match(webhook, /addOrderPayment/i);
   assert.match(webhook, /decreaseStockForOrder/i);
   assert.doesNotMatch(migration, /create or replace function record_order_payment/i);

@@ -6,6 +6,7 @@ import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 const adminLinks = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/analytics", label: "Analytics" },
+  { href: "/admin/checkout", label: "Pedidos web" },
   { href: "/admin/pedidos", label: "Pedidos" },
   { href: "/admin/ventas", label: "Ventas" },
   { href: "/admin/compras", label: "Compras" },

@@ -2,14 +2,14 @@ import Link from "next/link";
 import { brand } from "@/lib/brand";
 import { transferPayment } from "@/lib/payment";
 import { getWhatsAppLink } from "@/lib/whatsapp";
-import { getCheckoutSuccessOrder } from "@/services/orders";
+import { getBuyerCheckoutReceipt } from "@/services/checkout-buyer-receipt";
+import { getCheckoutSuccessOrder } from "@/services/checkout-order-read";
 
 type CheckoutSuccessPageProps = {
   searchParams: Promise<{
     order?: string;
     number?: string;
     total?: string;
-    pending_mp?: string;
   }>;
 };
 
@@ -19,26 +19,23 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 0,
 });
 
-function parseTotal(total: string | undefined) {
-  const value = Number(total);
-
-  return Number.isFinite(value) ? value : null;
-}
-
 export default async function CheckoutSuccessPage({
   searchParams,
 }: CheckoutSuccessPageProps) {
   const params = await searchParams;
   const orderId = params.order ?? "";
-  const pendingMercadoPago = params.pending_mp === "true";
-  const order = parseTotal(params.total)
-    ? null
-    : await getCheckoutSuccessOrder(orderId);
-  const orderNumber = params.number ?? order?.order_number ?? orderId;
-  const total = parseTotal(params.total) ?? order?.total ?? null;
+  const buyerReceipt = await getBuyerCheckoutReceipt(orderId);
+  const order = buyerReceipt ?? await getCheckoutSuccessOrder(orderId);
+  if (!order || !["transfer","cash"].includes(order.payment_method) || (buyerReceipt && (!["pending","confirmed"].includes(buyerReceipt.state) || (buyerReceipt.state === "pending" && buyerReceipt.expired)))) {
+    return <main className="mx-auto max-w-3xl p-8"><h1 className="text-2xl font-semibold">Revisá el estado de tu pedido</h1>
+      <p className="mt-4">No hay un pedido pendiente autorizado para mostrar. No realices una transferencia sin confirmar su estado con la tienda.</p>
+      <Link href="/carrito">Volver al carrito</Link></main>;
+  }
+  const orderNumber = order.order_number;
+  const total = order.total;
   const formattedTotal = total !== null ? currencyFormatter.format(total) : "-";
-  const isMercadoPagoOrder =
-    pendingMercadoPago || order?.payment_method === "mercadopago";
+  const isPaid = buyerReceipt?.payment_status === "paid";
+  const isCashOrder = order.payment_method === "cash";
   const transferMessage = `Hola SFSTORE, ya realicé la transferencia del pedido ${orderNumber} por ${formattedTotal}. Te envío el comprobante.`;
 
   return (
@@ -57,7 +54,7 @@ export default async function CheckoutSuccessPage({
             Pedido creado
           </p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
-            Orden recibida
+            {isPaid ? "Pago acreditado manualmente" : "Orden recibida"}
           </h1>
           <p className="mt-5 text-base leading-7 text-[#102033]/70">
             Tu pedido fue creado correctamente. Guardá este número para
@@ -73,10 +70,12 @@ export default async function CheckoutSuccessPage({
             </p>
           </div>
 
-          {isMercadoPagoOrder ? (
+          {isPaid || buyerReceipt?.state === "confirmed" ? (
+            <p className="mt-6">{isPaid ? "La tienda acreditó tu pago manualmente. Coordiná el seguimiento de tu pedido." : "Pedido confirmado; el pago sigue pendiente de acreditación. Consultá su estado con la tienda."}</p>
+          ) : isCashOrder ? (
             <div className="mt-6 rounded-3xl border border-[#003B73]/20 bg-[#EEF2F6] p-5 text-sm leading-6 text-[#102033]/75">
-              Recibimos la vuelta de Mercado Pago. Si necesitás confirmar el
-              estado del pago, escribinos por WhatsApp con tu número de orden.
+              Elegiste efectivo al retirar en el local. El pago está pendiente de
+              confirmación manual por la tienda. Total: {formattedTotal}.
             </div>
           ) : (
             <div className="mt-6 grid gap-4">
@@ -103,15 +102,15 @@ export default async function CheckoutSuccessPage({
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             <a
               href={getWhatsAppLink(
-                isMercadoPagoOrder
-                  ? `Hola SFSTORE, realicé un pedido por Mercado Pago. Mi número de orden es: ${orderNumber}`
+                isPaid || isCashOrder
+                  ? `Hola SFSTORE, quiero coordinar el seguimiento del pedido ${orderNumber}.`
                   : transferMessage,
               )}
               target="_blank"
               rel="noreferrer"
               className="rounded-full bg-[#0072CE] px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-[#003B73]"
             >
-              {isMercadoPagoOrder
+              {isPaid || isCashOrder
                 ? "Consultar pedido por WhatsApp"
                 : "Enviar comprobante por WhatsApp"}
             </a>

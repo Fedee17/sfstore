@@ -45,7 +45,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## PAY-01 — Checkout autoritativo, atómico e idempotente
 
-- **Estado:** PROPUESTA.
+- **Estado:** IMPLEMENTACIÓN LOCAL EN REVISIÓN en `codex/pay01-guest-national-shipping`, preservando PAY-01/SEC-01 locales. Reservas de 24 horas, descuento único de 25% y precio congelado implementados. Checkout atómico/idempotente con transferencia y efectivo al retirar; acreditación manual administrativa y liberación explícita de reservas preparadas; pasarelas públicas bloqueadas. Habilitación pendiente de configuración efectiva de entrega/acceso del comprador y revisión humana; sin cambios de Production. [Contrato](CHECKOUT_PAY01.md) y [evidencia manual](../reports/pay01-manual-payments-20261011.md), [reglas aprobadas](../reports/pay01-approved-rules-20261011.md), [preparación de integración](../reports/sec01-pay01-integration-readiness-20261011.md) con grant mínimo de lifecycle pendiente. Compra invitada verificada y tarifas nacionales/cotización privada implementadas localmente; configuración Auth/CAPTCHA, tarifas reales y revisión pendientes. [Evidencia](../reports/pay01-guest-national-shipping-20261011.md). Paquete de staging local con historial único y pruebas funcionales preparado; Auth/PostgREST/CAPTCHA reales pendientes de configuración. [Procedimiento](../staging/README.md). Clasificación RESTRINGIDA conservada.
 - **Descripción:** Sustituir confianza en precios/carrito e inserts anon separados por un contrato servidor que valide catálogo vigente, cantidades, totales, permisos e idempotencia. Preparar primero decisiones de precio/envío/reserva; conservar UX aprobada.
 - **Prioridad:** P0.
 - **Complejidad estimada:** Alta.
@@ -57,7 +57,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## PAY-02 — Verificar y fortalecer conciliación Mercado Pago
 
-- **Estado:** PROPUESTA.
+- **Estado:** DIFERIDA POR DECISIÓN COMERCIAL. Mercado Pago permanece deshabilitado globalmente; cualquier habilitación requiere autorización comercial explícita y una implementación de seguridad independiente. No desarrollada en la adaptación manual PAY-01.
 - **Descripción:** Revisar firma, asociación cuenta/moneda/importe/order, ownership y límites de preferencia; preservar consulta autoritativa Payment. Diseñar reconciliación ante fallo de inventario, replays y pagos tardíos. No asumir que la firma por sí sola resuelve el ledger.
 - **Prioridad:** P0.
 - **Complejidad estimada:** Alta.
@@ -69,7 +69,7 @@ No habilitar una automatización recurrente ni pasar a otra tarea sin encargo. C
 
 ## SEC-01 — Versionar y comprobar permisos de tablas públicas
 
-- **Estado:** PROPUESTA.
+- **Estado:** IMPLEMENTACIÓN LOCAL EN REVISIÓN en `codex/sec-01-supabase-permissions`, base integrada `69049e2`: matriz, migration candidata y lookup privado autorizado. [Evidencia](../reports/sec01-execution-20261010.md) y [matriz](SUPABASE_PERMISSIONS_SEC01.md). Permisos de Production sin comprobar; aplicación/integración bloqueadas hasta contrato PAY-01 y revisión del esquema. Clasificación RESTRINGIDA sin cambios.
 - **Descripción:** Preparar matriz de RLS/grants y acceso anon/authenticated/service_role para tablas originales y Storage; comparar con un entorno autorizado. No dar por seguro Production desde migrations parciales; cualquier corrección exige revisión explícita.
 - **Prioridad:** P0.
 - **Complejidad estimada:** Alta.

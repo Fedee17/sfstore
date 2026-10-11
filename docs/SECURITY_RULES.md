@@ -39,3 +39,17 @@ Preparar requisitos, diff y pruebas locales revisables dentro del alcance autori
 ## Actualización local de Fase 2
 
 SEC-02 elimina logs de correo/allowlist y mensajes libres de Auth en la rama de mantenimiento, sin modificar checks de acceso, credenciales enviadas, redirects ni signOut. Conserva eventos estáticos, códigos de error conocidos y status numérico. Siete pruebas sintéticas comprueban flujos y ausencia de datos personales/secrets en logs. Este cambio no está integrado/desplegado; el riesgo descrito en la tabla corresponde al baseline de main. Dependencias analizadas en [triage](../reports/dependency-triage-phase2-20261010.md), sin actualizaciones ni exposición productiva probada.
+
+## SEC-01 — Candidato local autorizado
+
+El pedido posterior autoriza correcciones SEC-01 en rama aislada y migrations únicamente en DB de pruebas. [Matriz](SUPABASE_PERMISSIONS_SEC01.md) y [evidencia](../reports/sec01-execution-20261010.md): RLS/ACL explícitas, columnas públicas mínimas, RPC service-only y guard de lookup privado. Esto no verifica Production ni autoriza aplicación/publicación. La migration candidata deniega inserts públicos de checkout: necesita PAY-01 antes de cualquier rollout. APIs que usan service_role requieren controles propios; pagos/ownership siguen en PAY-01/PAY-02. No crear policies públicas para eludir este bloqueo.
+
+## PAY-01 — Candidato local con configuración cerrada
+
+En `codex/pay-01-atomic-checkout` se sustituyen inserts públicos por un contrato servidor autorizado, transacción service-only y recibo propio. [Contrato y matriz complementaria](CHECKOUT_PAY01.md). La configuración nace vacía, sin activación ni política comercial por defecto; no habilitar reservas/cobros con este desarrollo local. Las mutaciones y EXECUTE públicos permanecen denegados según SEC-01. La adaptación manual deshabilita globalmente los endpoints de Mercado Pago (410 incondicional, sin SDK ni llamadas); PAY-02 queda diferida por decisión comercial. Acreditación manual y liberación explícita de reservas requieren getUser + allowlist administrativa antes de construir el cliente privilegiado; sus RPC son service-only, el comprador no puede acreditar pagos y confirmed no equivale a paid. Recibos y libro del nuevo checkout tienen guards transaccionales; no se modifican pedidos históricos. No se ejecutaron migrations remotas ni se modificaron secretos.
+
+## PAY-01 invitado y cotizaciones nacionales (candidato local)
+
+Supabase Auth anónimo verificado no equivale al rol SQL anon: usa authenticated, sin nuevas escrituras directas ni EXECUTE públicos. Usuarios is_anonymous son rechazados como administradores aunque tengan email allowlisted. Recibos/cotizaciones filtran por UUID de sesión verificado antes de crear cliente privilegiado; no se autoriza con IDs del body.
+
+checkout_shipping_quote_requests: RLS activo, anon/authenticated sin privilegios; service_role SELECT/INSERT/UPDATE explícitos, sin DELETE. get_checkout_shipping_quote y request_checkout_shipping_quote: EXECUTE solo service_role, SECURITY INVOKER y search_path fijo. La cotización no modifica pedidos/stock. Sin tokens o datos personales en respuestas de bootstrap/metadata de idempotencia. Configurar y probar CAPTCHA real en Supabase antes de habilitar Anonymous Sign-ins; flag invitado cerrado por defecto.
