@@ -26,7 +26,9 @@ Mercado Pago permanece cerrado: contrato transfer/cash y UI pública sin MP; GET
 
 ## Pruebas ejecutadas
 
-Runtime: Node 24.19.0, PostgreSQL 15.18 efímero con herramientas externas ya existentes y Chromium del entorno. No PG17 ni claves productivas. Bases nuevas de fixtures en loopback, con migrations únicamente locales, cerradas por los tests. Servidor Next sólo en 127.0.0.1:3107, detenido al terminar.
+Runtime: Node 24.19.0, PostgreSQL 15.18 efímero con herramientas externas ya existentes y Chromium del entorno. No PG17 ni claves productivas. Bases nuevas de fixtures en loopback, con migrations únicamente locales, cerradas por los tests. Servidor Next del build actualizado sólo en 127.0.0.1:3187, detenido al terminar y puerto cerrado verificado.
+
+El primer arranque en 3107 falló por EADDRINUSE, aunque ese puerto respondía desde una instancia local anterior. Por eso se repitieron navegador y las cuatro solicitudes MP en una instancia nueva 3187 del candidato actualizado; todos pasaron nuevamente. La instancia previa 3107 se conservó sin modificaciones. Para cerrar 3187 fue necesario terminar el proceso Next propio que permanecía después de interrumpir la sesión; se comprobó que el puerto dejó de aceptar conexiones.
 
 | Validación | Resultado |
 | --- | --- |
@@ -42,9 +44,9 @@ Runtime: Node 24.19.0, PostgreSQL 15.18 efímero con herramientas externas ya ex
 | Gitleaks stdin sobre archivos de código/tests modificados | PASS, sin secretos detectados. |
 | git diff --check e invariantes de archivos comerciales/migrations | PASS. |
 
-Variables de tests: LD_LIBRARY_PATH=/workspace/sfstore-test-tools/pg15/usr/lib/x86_64-linux-gnu; SFSTORE_TEST_PG_BIN=/workspace/sfstore-test-tools/pg15-test-bin; SFSTORE_TEST_PG_MODULE=<worktree>/node_modules/pg/lib/index.js; SFSTORE_TEST_PLAYWRIGHT_MODULE=/workspace/sfstore-test-tools/playwright-system.cjs. La ejecución navegador añade SFSTORE_TEST_CHECKOUT_URL=http://127.0.0.1:3107. Herramientas externas sólo adaptan sockets locales de PG15 y selección de Chromium; no implementan QA-01 ni modifican package.json/lock.
+Variables de tests: LD_LIBRARY_PATH=/workspace/sfstore-test-tools/pg15/usr/lib/x86_64-linux-gnu; SFSTORE_TEST_PG_BIN=/workspace/sfstore-test-tools/pg15-test-bin; SFSTORE_TEST_PG_MODULE=<worktree>/node_modules/pg/lib/index.js; SFSTORE_TEST_PLAYWRIGHT_MODULE=/workspace/sfstore-test-tools/playwright-system.cjs. La ejecución navegador definitiva añade SFSTORE_TEST_CHECKOUT_URL=http://127.0.0.1:3187. Herramientas externas sólo adaptan sockets locales de PG15 y selección de Chromium; no implementan QA-01 ni modifican package.json/lock.
 
-Logs de esta ejecución: /tmp/sfstore-integration-completion-tests.log, -build.log, -lint.log, -tsc.log, -browser.log, -python.log; los logs focalizados son /tmp/sfstore-integration-storage-fix-tests.log y /tmp/sfstore-integration-sec01-pg15-fix.log.
+Logs de esta ejecución: /tmp/sfstore-integration-completion-tests.log, -build.log, -lint.log, -tsc.log, -python.log; el navegador definitivo está en /tmp/sfstore-integration-completion-browser-3187.log y su instancia en /tmp/sfstore-integration-completion-server-3187.log. Los logs focalizados son /tmp/sfstore-integration-storage-fix-tests.log y /tmp/sfstore-integration-sec01-pg15-fix.log.
 
 ## Pendientes y límites
 
