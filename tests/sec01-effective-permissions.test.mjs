@@ -238,9 +238,17 @@ describe("SEC-01 effective role permissions in isolated PostgreSQL", { skip: !pr
     await apply();
   });
   test("membership in a privileged role is rejected even without inherited ACLs", async () => {
-    await db.query("create role fixture_privileged bypassrls; grant fixture_privileged to anon with inherit false");
-    try { await assert.rejects(apply(), /SEC01_PRIVILEGED_ROLE_MEMBERSHIP:anon/); }
-    finally { await db.query("revoke fixture_privileged from anon; drop role fixture_privileged"); }
+    const { rolinherit } = (await db.query("select rolinherit from pg_roles where rolname='anon'")).rows[0];
+    await db.query("create role fixture_privileged bypassrls");
+    try {
+      // PG15 configures inheritance on the member role, not on GRANT.
+      await db.query("grant select(sku) on products to fixture_privileged; alter role anon noinherit; grant fixture_privileged to anon");
+      const rights = (await db.query("select pg_has_role('anon','fixture_privileged','MEMBER') member, has_column_privilege('anon','products','sku','SELECT') inherited")).rows[0];
+      assert.deepEqual(rights, { member: true, inherited: false });
+      await assert.rejects(apply(), /SEC01_PRIVILEGED_ROLE_MEMBERSHIP:anon/);
+    } finally {
+      await db.query(`revoke fixture_privileged from anon; drop owned by fixture_privileged; drop role fixture_privileged; alter role anon ${rolinherit ? "inherit" : "noinherit"}`);
+    }
     await apply();
   });
 });

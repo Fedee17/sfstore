@@ -75,3 +75,11 @@ Revisar una sola draft PR a main de esta rama aislada. No hacer merge ni despleg
 - Pruebas focalizadas del candidato en Node: 4/4 aprobadas (referencia después de 1000 filas con servidor limitado a 100 por página; URL codificada equivalente; fallo de página intermedia; página repetida). Son pruebas de un módulo sintético aislado, NO del checkout de SFSTORE ni de la suite del repositorio.
 - El código de SFSTORE permanece sin cambios: `AGENTS.md` exige consultar las guías locales instaladas de Next 16.2.7 y el entorno actual no dispone de `node_modules/next/dist/docs/` ni de dependencias. Se consultó como referencia la guía upstream de Next 16.2.7, pero no se equipara a la guía instalada. No se publicará un parche sin validación completa.
 - Próximo paso seguro: checkout con dependencias, lectura de la guía local de Next, incorporar la paginación con pruebas al gateway y ejecutar lint, tipos, build, tests y diff check. Continuar el análisis de `content_hash` frente a `eTag` sin habilitar borrados físicos. Las migraciones 202610100001 y 202610100002 siguen en DATA_WRITE_APPROVAL_REQUIRED.
+
+## Integración SEC-01/Storage — 2026-10-11
+
+- En `codex/integration-sec01-pay01-storage-20261011` se incorporaron únicamente los checkpoints 30f6f6f/a012bf4; procesador y retención ya estaban presentes en el candidato SEC/PAY.
+- Se corrigió el fixture NOINHERIT para PG15, conservando el rechazo de membership privilegiada sin ACL heredada: 17/17 pruebas focalizadas PASS.
+- La consulta real findOtherReferences ahora pagina por id hasta página vacía y rechaza páginas sin avance; nueve regresiones cubren más de 1.000 referencias, límites del servidor, errores y compensación. Borrado físico/worker siguen sin habilitarse.
+- Suite: 766 PASS, 0 FAIL, 1 SKIP; el escenario omitido pasó separado en Chromium (767 escenarios distintos cubiertos). Build, tipos, lint y cuatro respuestas HTTP MP 410 PASS; launcher Python 4/4.
+- [Informe actualizado](../reports/integration-completion-sec01-storage-20261011.md). Sustituye los bloqueos locales de fixture/paginación del checkpoint anterior; Supabase/Turnstile reales y activación comercial siguen pendientes. QA-01, Preview y clasificador histórico quedan fuera de alcance. Sin push, merge a main, Production, migrations remotas ni despliegues.

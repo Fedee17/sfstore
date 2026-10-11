@@ -169,21 +169,36 @@ export function createSupabaseProductImageDeleteGateway(
     },
 
     async findOtherReferences(imageId, url, storagePath) {
-      const { data, error } = await supabase
-        .from("product_images")
-        .select("id, url")
-        .neq("id", imageId);
+      const references: string[] = [];
+      let cursor: string | null = null;
 
-      if (error) throw new Error(error.message);
+      // PostgREST can return fewer rows than requested. Only an empty page
+      // ends the scan; offsets or a short-page check can miss shared objects.
+      for (;;) {
+        let query = supabase
+          .from("product_images")
+          .select("id, url")
+          .neq("id", imageId)
+          .order("id", { ascending: true })
+          .limit(250);
+        if (cursor !== null) query = query.gt("id", cursor);
 
-      return (data ?? [])
-        .filter((row) => {
-          if (row.url === url) return true;
-          return Boolean(
-            storagePath && getProductImageStoragePath(String(row.url ?? "")) === storagePath,
-          );
-        })
-        .map((row) => String(row.id));
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        if (!data?.length) return references;
+
+        for (const row of data) {
+          // Refuse a repeated or unordered page rather than accepting partial
+          // results or looping forever if the cursor is not respected.
+          if (typeof row.id !== "string" || !row.id || (cursor !== null && row.id <= cursor)) {
+            throw new Error("No se pudo avanzar al verificar las referencias compartidas.");
+          }
+          cursor = row.id;
+          if (row.url === url || (storagePath && getProductImageStoragePath(String(row.url ?? "")) === storagePath)) {
+            references.push(row.id);
+          }
+        }
+      }
     },
 
     async deleteMetadata(productId, imageId, image) {
