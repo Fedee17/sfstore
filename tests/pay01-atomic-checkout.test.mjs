@@ -61,6 +61,14 @@ describe('PAY-01 real transactions against synthetic isolated PostgreSQL', {skip
     // Explicit SYNTHETIC policy, not production defaults or owner approval.
     await db.query(`insert into checkout_configuration(id,enabled,reservation_seconds,price_policy,buyer_authorization,delivery_options,approved_revision) values($1,true,86400,'manual_25_frozen','authenticated','[{"method":"pickup","fee":7.25}]','synthetic-test-only')`,[config]);
   });
+  test('unsupported zero-total checkout fails atomically without a customer, order or reservation',async()=>{
+    await db.query('update checkout_configuration set delivery_options=$1 where id=$2',[JSON.stringify([{method:'pickup',fee:0}]),config]);
+    try {
+      const f=await fixture({price:0,transfer:0}),before=await counts();
+      await assert.rejects(create(f),/CHECKOUT_UNSUPPORTED_TOTAL/);
+      assert.deepEqual(await counts(),before);assert.equal(await stock(f.product),5);
+    } finally { await db.query('update checkout_configuration set delivery_options=$1 where id=$2',[JSON.stringify([{method:'pickup',fee:7.25}]),config]); }
+  });
   test('server prices, exact numeric totals, product FK and reservation commit together',async()=>{
     const f=await fixture({price:100.01,transfer:80.03});const r=await create(f);
     assert.equal(r.total,157.27);assert.equal(r.subtotal,200.02);assert.equal(r.discount,50);assert.equal(r.shippingCost,7.25);assert.equal(r.state,'pending');assert.equal((await db.query('select channel from orders where id=$1',[r.id])).rows[0].channel,'web');assert.equal(await stock(f.product),3);

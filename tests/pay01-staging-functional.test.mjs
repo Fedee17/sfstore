@@ -14,7 +14,7 @@ test('staging history has unique versions and keeps canonical applied SQL byte-i
   const versions=manifest.applicationOrder.map(e=>e.stagingFile.split('/').at(-1).split('_')[0]);assert.equal(new Set(versions).size,versions.length);
   for(const e of manifest.applicationOrder){const sha=s=>createHash('sha256').update(s).digest('hex');assert.equal(sha(read(e.source)),e.sourceSha256);assert.equal(sha(read(e.stagingFile)),e.stagingSha256);if(e.source!=='supabase/schema.sql')assert.equal(read(e.source),read(e.stagingFile));}
   assert.match(manifest.applicationOrder.find(e=>e.source.endsWith('202609180002_suppliers_admin.sql')).stagingFile,/202609180003_suppliers_admin/);
-  assert.ok(manifest.applicationOrder.at(-1).source.endsWith('202610110006_pay01_guest_national_shipping.sql'));
+  assert.ok(manifest.applicationOrder.at(-1).source.endsWith('202610110007_checkout_storage_review_guards.sql'));
 });
 describe('synthetic staging package: complete checkout and reservation lifecycle',{skip:!process.env.SFSTORE_TEST_PG_BIN,concurrency:false},()=>{
   let dir,db,connection,started=false,paidOrder;
@@ -34,7 +34,7 @@ describe('synthetic staging package: complete checkout and reservation lifecycle
     await db.query(read('staging/supabase/seed.sql'));await db.query('set role service_role');
   });
   after(async()=>{if(db)await db.end();if(started)run('pg_ctl',['-D',join(dir,'data'),'-m','immediate','-w','stop']);if(dir)rmSync(dir,{recursive:true,force:true});});
-  test('all 23 staging migrations apply in order; 24h reservation and single 25% freeze survive retries',async()=>{
+  test('all 24 staging migrations apply in order; 24h reservation and single 25% freeze survive retries',async()=>{
     const key=randomUUID(),body=request(),first=await create(body,key);assert.equal(first.total,150);assert.equal(first.discount,50);assert.equal(first.shippingCost,0);assert.equal(await stock(),28);
     const op=(await db.query('select buyer_id,extract(epoch from expires_at-created_at)::float8 duration from checkout_operations where order_id=$1',[first.id])).rows[0];assert.equal(op.buyer_id,buyer);assert.ok(op.duration>86399 && op.duration<=86400);
     await db.query('update products set price=200,transfer_price=150 where id=$1',[product]);assert.deepEqual(await create(body,key),first);assert.equal(await stock(),28);await db.query('update products set price=100,transfer_price=75 where id=$1',[product]);paidOrder=first;

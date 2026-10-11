@@ -24,7 +24,7 @@ export async function createCheckoutOrder(buyerId: string, input: CheckoutReques
       CHECKOUT_STOCK_INSUFFICIENT: 409, CHECKOUT_IDEMPOTENCY_CONFLICT: 409,
       CHECKOUT_INVALID_REQUEST: 400, CHECKOUT_INVALID_CUSTOMER: 400,
       CHECKOUT_INVALID_ITEMS: 400, CHECKOUT_DUPLICATE_PRODUCT: 400, CHECKOUT_INVALID_SHIPPING: 400,
-      CHECKOUT_UNAUTHORIZED: 401,
+      CHECKOUT_UNAUTHORIZED: 401, CHECKOUT_UNSUPPORTED_TOTAL: 409,
     };
     const code = Object.keys(codes).find(code => error.message === code);
     throw new CheckoutError(code ?? "CHECKOUT_UNAVAILABLE", code ? codes[code] : 503);

@@ -29,6 +29,8 @@ describe('Storage/SEC-01/PAY-01 integration on preexisting synthetic rows withou
     db=new Client({host:'127.0.0.1',port,user:'postgres',database:'postgres'});await db.connect();
     await db.query('create role anon;create role authenticated;create role service_role bypassrls;');
     await db.query(readFileSync(join(root,'supabase/schema.sql'),'utf8'));await db.query(readFileSync(join(root,'tests/fixtures/storage-permissions.sql'),'utf8'));
+    // Synthetic ACL drift: TRUNCATE bypasses RLS and must be explicitly denied.
+    await db.query('grant truncate on storage.objects, storage.buckets to public, anon, authenticated');
     for(const file of readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')&&f<'202610100001').sort())await db.query(sql(file));
     await db.query("insert into categories(id,name,slug) values($1,'Synthetic','synthetic')",[category]);
     await db.query("insert into products(id,category_id,name,slug,short_description,price,transfer_price,stock,status) values($1,$2,'Synthetic','synthetic','Synthetic',100,75,20,'active')",[product,category]);
@@ -79,6 +81,37 @@ describe('Storage/SEC-01/PAY-01 integration on preexisting synthetic rows withou
     await db.query("update checkout_operations set expires_at=clock_timestamp()-interval '1 second' where order_id=$1",[order.id]);await db.query('select expire_checkout_reservations(100)');
     assert.equal((await db.query('select stock from products where id=$1',[product])).rows[0].stock,18);await db.query('reset role');
     for(const role of ['anon','authenticated'])assert.equal((await db.query("select has_any_column_privilege($1,'inventory_movements','UPDATE') permitted",[role])).rows[0].permitted,false);
+  });
+  test('legacy order items cannot be reassigned into an immutable checkout order',async()=>{
+    const item=randomUUID();
+    await db.query("insert into order_items(id,order_id,product_id,product_name,product_slug,unit_price,quantity,subtotal) values($1,$2,$3,'Synthetic legacy','synthetic',100,1,100)",[item,legacyOrder,product]);
+    await db.query('begin;set local role service_role');
+    try { await assert.rejects(db.query('update order_items set order_id=$1 where id=$2',[order.id,item]),/CHECKOUT_IMMUTABLE_ITEMS/); }
+    finally { await db.query('rollback'); }
+    assert.equal((await db.query('select order_id from order_items where id=$1',[item])).rows[0].order_id,legacyOrder);
+    await db.query('delete from order_items where id=$1',[item]);
+  });
+  test('anon and authenticated cannot bypass Storage RLS with TRUNCATE or CASCADE',async()=>{
+    const before=await snapshot();
+    for(const role of ['anon','authenticated']) for(const table of ['storage.objects','storage.buckets']) {
+      await db.query('begin;set local role '+role);
+      try { await assert.rejects(db.query('truncate '+table+' cascade'),e=>e.code==='42501'); }
+      finally { await db.query('rollback'); }
+    }
+    assert.deepEqual(await snapshot(),before);
+  });
+  test('Storage correction rolls back on NOINHERIT role membership with TRUNCATE privileges',async()=>{
+    const {rolinherit}=(await db.query("select rolinherit from pg_roles where rolname='anon'")).rows[0];
+    await db.query('create role fixture_storage_truncate; grant truncate on storage.objects to fixture_storage_truncate; alter role anon noinherit; grant fixture_storage_truncate to anon; grant truncate on storage.objects to authenticated');
+    try {
+      assert.equal((await db.query("select has_table_privilege('anon','storage.objects','TRUNCATE') allowed")).rows[0].allowed,false);
+      await assert.rejects(db.query(sql('202610110007_checkout_storage_review_guards.sql')),/REVIEW_STORAGE_TRUNCATE_MEMBERSHIP:anon:storage.objects/);
+      await db.query('rollback');
+      assert.equal((await db.query("select has_table_privilege('authenticated','storage.objects','TRUNCATE') allowed")).rows[0].allowed,true,'failed migration must roll back its revokes');
+    } finally {
+      await db.query('rollback');
+      await db.query(`revoke truncate on storage.objects from authenticated; revoke fixture_storage_truncate from anon; drop owned by fixture_storage_truncate; drop role fixture_storage_truncate; alter role anon ${rolinherit?'inherit':'noinherit'}`);
+    }
   });
   test('read-only integration verification reports service-only RPCs, final definitions and required grants',async()=>{
     const results=await db.query(readFileSync(join(root,'reports/sec01-pay01-integration-read-only.sql'),'utf8'));

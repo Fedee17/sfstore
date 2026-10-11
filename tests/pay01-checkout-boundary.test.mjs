@@ -40,7 +40,7 @@ test('actual server adapter uses verified getUser and sends idempotency key and 
  const {operationKey:key,...body}=payload;assert.deepEqual(calls,['getUser',['create_checkout_atomic',{p_buyer_id:buyer,p_operation_key:key,p_request:body}]]);
 });
 test('actual server adapter maps only recognized SQL errors and suppresses database diagnostics',async()=>{
- for(const [message,status,code] of [['CHECKOUT_NOT_CONFIGURED',503,'CHECKOUT_NOT_CONFIGURED'],['CHECKOUT_POLICY_NOT_CONFIGURED',503,'CHECKOUT_POLICY_NOT_CONFIGURED'],['CHECKOUT_IDEMPOTENCY_CONFLICT',409,'CHECKOUT_IDEMPOTENCY_CONFLICT'],['synthetic credential',503,'CHECKOUT_UNAVAILABLE']]){
+ for(const [message,status,code] of [['CHECKOUT_NOT_CONFIGURED',503,'CHECKOUT_NOT_CONFIGURED'],['CHECKOUT_POLICY_NOT_CONFIGURED',503,'CHECKOUT_POLICY_NOT_CONFIGURED'],['CHECKOUT_IDEMPOTENCY_CONFLICT',409,'CHECKOUT_IDEMPOTENCY_CONFLICT'],['CHECKOUT_UNSUPPORTED_TOTAL',409,'CHECKOUT_UNSUPPORTED_TOTAL'],['synthetic credential',503,'CHECKOUT_UNAVAILABLE']]){
   const service=load('services/checkout-server.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/lib/supabase/auth-server':{},'@/lib/supabase/server':{getSupabaseAdminClient:()=>({rpc:async()=>({data:null,error:{message}})})}});
   await assert.rejects(service.createCheckoutOrder(buyer,payload),e=>e.status===status&&e.code===code);
  }
@@ -114,6 +114,26 @@ test('actual public cart and checkout render transfer/cash only; forged legacy p
 test('cash receipt uses server method and shows pickup coordination without transfer instructions',async()=>{
   const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/lib/brand':{brand:{hours:'Synthetic',address:'Synthetic'}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:()=>'/synthetic'},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async()=>({id:result.id,order_number:'FIXTURE',total:100,payment_method:'cash',state:'pending',expired:false})},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>{throw Error('Unexpected admin read');}}};
   const page=load('app/checkout/exito/page.tsx',modules);const html=renderToStaticMarkup(await page.default({searchParams:Promise.resolve({order:result.id,total:'1'})}));assert.match(html,/efectivo al retirar/);assert.doesNotMatch(html,/Datos para transferencia|Mercado Pago/);
+});
+
+test('receipt transfer instructions and WhatsApp preserve the exact server total including cents',async()=>{
+  const messages=[];
+  const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/lib/brand':{brand:{}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:message=>{messages.push(message);return '/synthetic';}},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async()=>({id:result.id,order_number:'FIXTURE',total:157.25,payment_method:'transfer',state:'pending',expired:false,payment_status:'pending'})},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>{throw Error('Unexpected admin read');}}};
+  const page=load('app/checkout/exito/page.tsx',modules);
+  const html=renderToStaticMarkup(await page.default({searchParams:Promise.resolve({order:result.id,total:'1'})}));
+  assert.match(html,/157,25/);assert.match(messages[0],/157,25/);
+});
+
+test('a different verified buyer cannot read a receipt or even query its payment status',async()=>{
+  const other=randomUUID();let paymentReads=0;let actor=other;
+  const read=load('services/checkout-buyer-receipt.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>actor},'@/lib/supabase/server':{getSupabaseAdminClient:()=>({from(table){
+    const filters={};const query={select:()=>query,eq:(key,value)=>{filters[key]=value;return query;},maybeSingle:async()=>{
+      if(table==='orders'){paymentReads++;return{data:{payment_status:'pending'},error:null};}
+      return{data:filters.order_id===result.id&&filters.buyer_id===buyer?{result,state:'pending',expires_at:result.expiresAt}:null,error:null};
+    }};return query;
+  }})}});
+  assert.equal(await read.getBuyerCheckoutReceipt(result.id),null);assert.equal(paymentReads,0);
+  actor=buyer;assert.equal((await read.getBuyerCheckoutReceipt(result.id)).total,100);assert.equal(paymentReads,1);
 });
 
 test('buyer receipt distinguishes verified payment status from confirmed reservation and ignores forged URL paid flag',async()=>{

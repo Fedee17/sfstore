@@ -33,6 +33,10 @@
     {
       "file": "supabase/migrations/202610110006_pay01_guest_national_shipping.sql",
       "sha256": "f971bdaa528b2fe2c33490050959708a3598d370617530c4c9ea677442641bed"
+    },
+    {
+      "file": "supabase/migrations/202610110007_checkout_storage_review_guards.sql",
+      "sha256": "df84c784d36e94d5ddce3bf7b7751d1e5f747fddd5e35b56a38e4eb44f562500"
     }
   ]
 }
