@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { transferPayment } from "@/lib/payment";
+import { TransferAlias } from "@/components/transfer-alias";
 import { getBuyerCheckoutReceipt } from "@/services/checkout-buyer-receipt";
 import { CheckoutPaymentReportForm } from "@/components/checkout-payment-report-form";
 const currency=new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",minimumFractionDigits:2,maximumFractionDigits:2});
@@ -13,8 +13,8 @@ export default async function CheckoutSuccessPage({searchParams}:{searchParams:P
  return <main className="mx-auto max-w-3xl p-8"><Link href="/">SFSTORE Importados</Link><h1 className="mt-6 text-3xl font-semibold">{title}</h1><h2 className="mt-6">Número de orden</h2><p>{order.order_number}</p><p className="mt-4">Total exacto: {currency.format(order.total)}. Incluye el descuento único del 25% sobre los productos.</p>
  {paid?<p>La tienda verificó la acreditación completa de tu transferencia.</p>:reported?<p>El comprobante no constituye acreditación. Conservamos la reserva hasta la revisión administrativa; no vuelvas a transferir este importe.</p>:closed?<p>No transfieras para este pedido. {order.report?.rejection_reason?`Motivo del rechazo: ${order.report.rejection_reason}`:"El plazo de la reserva finalizó."} Consultá al local antes de preparar otro pedido.</p>:<>
  <p className="mt-4">Tenés 24 horas desde la creación para transferir el 100% del total e informar el pago en esta pantalla con comprobante. No se admiten señas ni pagos parciales.</p><p>Plazo para realizar e informar el pago: {new Date(order.expiresAt).toLocaleString("es-AR",{timeZone:"America/Argentina/Buenos_Aires"})}.</p>
- <dl className="my-6 grid gap-2"><dt>Total a transferir</dt><dd>{currency.format(order.total)}</dd><dt>Alias</dt><dd>{transferPayment.alias}</dd><dt>Titular</dt><dd>{transferPayment.holder}</dd><dt>Banco/billetera</dt><dd>{transferPayment.provider}</dd><dt>CUIT/CUIL</dt><dd>{transferPayment.taxId}</dd></dl>
+ <dl className="my-6 grid gap-2"><dt>Total a transferir</dt><dd>{currency.format(order.total)}</dd></dl><TransferAlias />
  <CheckoutPaymentReportForm orderId={order.id} operationKey={order.report?.operation_key}/></>}
  {order.report&&order.report.status!=="uploading"?<a className="block mt-6 underline" href={`/api/checkout/payment-proof/${order.id}`}>Consultar comprobante privado</a>:null}
- <p className="mt-6">Guardá esta ventana y el número de orden para el seguimiento. Un mensaje por WhatsApp no reemplaza el aviso de pago en esta pantalla.</p><Link href="/carrito">Volver al carrito</Link></main>;
+ <p>Si elegiste retiro, es sin costo. Esperá la confirmación del local antes de retirar.</p><p className="mt-6">Guardá esta ventana y el número de orden para el seguimiento. Un mensaje por WhatsApp no reemplaza el aviso de pago en esta pantalla.</p><Link href="/carrito">Volver al carrito</Link></main>;
 }

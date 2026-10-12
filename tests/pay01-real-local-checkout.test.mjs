@@ -25,7 +25,7 @@ test('real local Supabase guest checkout and authorized manual payment', {
   let browser;
   try {
     assert.equal((await db.query('select id from sfstore_staging.identity')).rows[0].id,'SFSTORE_SYNTHETIC_STAGING');
-    assert.equal((await db.query('select count(*)::int n from supabase_migrations.schema_migrations')).rows[0].n,28);
+    assert.equal((await db.query('select count(*)::int n from supabase_migrations.schema_migrations')).rows[0].n,29);
     await db.query("insert into products(id,category_id,name,slug,short_description,price,transfer_price,stock,status) values($1,'11111111-1111-4111-8111-111111111111','Synthetic Checkout Regression',$2,'Synthetic local only',100,75,30,'active')",[product,'synthetic-checkout-'+product]);
     assert.equal(Number((await db.query('select price from products where id=$1',[product])).rows[0].price),100);
     const startStock = await stock(); assert.ok(startStock>=2);

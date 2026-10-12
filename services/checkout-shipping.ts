@@ -4,7 +4,7 @@ import { authorizeCheckoutBuyer } from "@/services/checkout-server";
 import { CheckoutError, isUuid, type CheckoutRequest } from "@/lib/checkout/contract";
 import type { ShippingDestination, ShippingQuote } from "@/lib/checkout/argentina";
 function fail(message?: string): never {
-  const status: Record<string,number> = { CHECKOUT_INVALID_DESTINATION:400, CHECKOUT_NOT_CONFIGURED:503, CHECKOUT_POLICY_NOT_CONFIGURED:503, CHECKOUT_AUTHORIZATION_NOT_IMPLEMENTED:503, CHECKOUT_IDEMPOTENCY_CONFLICT:409, CHECKOUT_PRODUCT_UNAVAILABLE:409 };
+  const status: Record<string,number> = { CHECKOUT_INVALID_DESTINATION:400, CHECKOUT_NOT_CONFIGURED:503, CHECKOUT_POLICY_NOT_CONFIGURED:503, CHECKOUT_AUTHORIZATION_NOT_IMPLEMENTED:503, CHECKOUT_IDEMPOTENCY_CONFLICT:409, CHECKOUT_PRODUCT_UNAVAILABLE:409, CHECKOUT_INVALID_QUOTATION:400 };
   const code = message && status[message] ? message : "CHECKOUT_UNAVAILABLE";
   throw new CheckoutError(code,status[code]??503);
 }
@@ -23,7 +23,7 @@ export async function getBuyerShippingQuotation(id: string) {
   if (!isUuid(id)) return null;
   const buyer = await authorizeCheckoutBuyer();
   if (!buyer) return null;
-  const { data,error } = await getSupabaseAdminClient().from("checkout_shipping_quote_requests").select("id,status,created_at").eq("id",id).eq("buyer_id",buyer).maybeSingle();
+  const { data,error } = await getSupabaseAdminClient().from("checkout_shipping_quote_requests").select("id,status,created_at,shipping_fee,quoted_carrier,quoted_total,quote_key,valid_until,accepted_order_id").eq("id",id).eq("buyer_id",buyer).maybeSingle();
   if (error) return null;
   return data;
 }

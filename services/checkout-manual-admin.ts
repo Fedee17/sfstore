@@ -37,9 +37,9 @@ export async function listManualCheckoutOrders(page=0) {
 export async function listShippingQuotationRequests() {
   await requireAdminActionSession();
   const client = getSupabaseAdminClient();
-  const { data,error } = await client.from("checkout_shipping_quote_requests").select("id,request,created_at").eq("status","requested").order("created_at",{ascending:false}).limit(100);
+  const { data,error } = await client.from("checkout_shipping_quote_requests").select("id,request,created_at,status,shipping_fee,quoted_total,valid_until,accepted_order_id").in("status",["requested","resolved"]).order("created_at",{ascending:false}).limit(100);
   if (error) throw new Error("No se pudieron leer las solicitudes de cotización.");
-  const quotes = (data??[]) as {id:string;created_at:string;request:{customer:{fullName:string;phone:string;email?:string};shipping:{province:string;city:string;postalCode:string;address:string};items:{productId:string;quantity:number}[]}}[];
+  const quotes = (data??[]) as {id:string;created_at:string;status:string;shipping_fee:number|null;quoted_total:number|null;valid_until:string|null;accepted_order_id:string|null;request:{customer:{fullName:string;phone:string;email?:string};shipping:{province:string;city:string;postalCode:string;address:string;carrier?:string};items:{productId:string;quantity:number}[]}}[];
   if (!quotes.length) return [];
   const ids = [...new Set(quotes.flatMap(quote=>quote.request.items.map(item=>item.productId)))];
   const products = await client.from("products").select("id,name").in("id",ids);
@@ -73,4 +73,12 @@ export async function getCheckoutExpirationHealth(): Promise<CheckoutExpirationH
   const { data, error } = await getSupabaseAdminClient().rpc("get_checkout_expiration_health");
   if (error || !data) throw new Error("No se pudo consultar la supervisión de reservas.");
   return { ...data, backlogOverdue: data.backlogOverdue === true } as CheckoutExpirationHealth;
+}
+
+export async function approveShippingQuotation(quoteId:string,fee:number) {
+ const admin=await requireAdminActionSession();
+ if(!isUuid(quoteId)||!Number.isFinite(fee)||fee<0||fee>9999999||Math.round(fee*100)/100!==fee)throw new Error("Cotización inválida.");
+ const {data,error}=await getSupabaseAdminClient().rpc("approve_checkout_shipping_quote",{p_quote_id:quoteId,p_admin_id:admin.id,p_fee:fee});
+ if(error||!data)throw new Error("No se pudo registrar la cotización.");
+ return data as {total:number;shippingFee:number};
 }

@@ -34,7 +34,7 @@ test('private expiration executor with real local Supabase', {skip:process.env.S
  let live,paid,reported;const a=await worker(),b=await worker();
  try {
   assert.equal((await q('select id from sfstore_staging.identity'))[0].id,'SFSTORE_SYNTHETIC_STAGING');
-  assert.equal((await q('select count(*)::int n from supabase_migrations.schema_migrations'))[0].n,28);
+  assert.equal((await q('select count(*)::int n from supabase_migrations.schema_migrations'))[0].n,29);
   assert.equal((await q("select count(*)::int n from orders o where exists(select 1 from order_items i join products p on p.id=i.product_id where i.order_id=o.id and p.slug<>'staging-synthetic-product' and p.slug not like 'synthetic-%')"))[0].n,0);
   await t.test('capability is NOLOGIN, no table writes/payment RPC; public/guest monitoring denied',async()=>{
    const role=(await q("select rolcanlogin,rolsuper,rolcreaterole,rolcreatedb,rolbypassrls from pg_roles where rolname='sfstore_reservation_executor'"))[0];assert.ok(Object.values(role).every(v=>v===false));

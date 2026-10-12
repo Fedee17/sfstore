@@ -29,7 +29,7 @@ test('real local reservation expiry: authorization, exactly-once, locks, concurr
   let browser,adminPage,adminContext,publicContext,guest,paid,vigente;
   try{
     assert.equal((await db.query('select id from sfstore_staging.identity')).rows[0].id,'SFSTORE_SYNTHETIC_STAGING');
-    assert.equal((await db.query('select count(*)::int n from supabase_migrations.schema_migrations')).rows[0].n,28);
+    assert.equal((await db.query('select count(*)::int n from supabase_migrations.schema_migrations')).rows[0].n,29);
     await db.query("insert into products(id,category_id,name,slug,short_description,price,transfer_price,stock,status) values($1,'11111111-1111-4111-8111-111111111111','Synthetic Expiry Regression',$2,'Synthetic local only',100,75,30,'active')",[product,'synthetic-expiry-'+product]);
     // The unfiltered admin mechanism must never touch unrelated business rows.
     const unsafe=(await db.query(`select count(*)::int n from orders o where not exists(select 1 from checkout_operations c where c.order_id=o.id) or not exists(select 1 from order_items i where i.order_id=o.id) or exists(select 1 from order_items i join products p on p.id=i.product_id where i.order_id=o.id and p.slug<>'staging-synthetic-product' and p.slug not like 'synthetic-%')`)).rows[0].n;assert.equal(unsafe,0);

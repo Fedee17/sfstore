@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useRef, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { transferPayment } from "@/lib/payment";
+import { TransferAlias } from "@/components/transfer-alias";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
 import { ARGENTINA_PROVINCES, type ShippingQuote } from "@/lib/checkout/argentina";
@@ -62,6 +62,7 @@ function CheckoutContent() {
   const [captchaToken, setCaptchaToken] = useState<string>();
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote|null>(null);
   const [selectedQuoteKey, setSelectedQuoteKey] = useState("");
+  const [approvedTotal,setApprovedTotal] = useState<number|null>(null);
   const [quotationId, setQuotationId] = useState<string|null>(null);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,11 +76,12 @@ function CheckoutContent() {
     field: Field,
     value: CheckoutForm[Field],
   ) => {
+    if (submissionLock.current) return;
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
     setErrors((currentErrors) => ({ ...currentErrors, [field]: undefined }));
     setSubmitError("");
-    if (["province","city","postalCode","deliveryMethod"].includes(field)) { setShippingQuote(null); setSelectedQuoteKey(""); }
-    setQuotationId(null);
+    if (["province","city","postalCode","deliveryMethod","address","carrier","fullName","phone","email"].includes(field)) { setShippingQuote(null); setSelectedQuoteKey(""); }
+    setQuotationId(null); setApprovedTotal(null);
   };
 
   const validateForm = () => {
@@ -98,6 +100,7 @@ function CheckoutContent() {
     }
 
     if (shippingRequired) {
+      if (!form.carrier) nextErrors.carrier="Elegí el transporte preferido.";
       if (!form.province.trim()) {
         nextErrors.province = "Ingresá la provincia.";
       }
@@ -169,13 +172,13 @@ function CheckoutContent() {
 
   const calculateShipping = async () => {
     if (submissionLock.current) return;
-    submissionLock.current = true; setIsSubmitting(true); setSubmitError(""); setShippingQuote(null); setSelectedQuoteKey("");
+    submissionLock.current = true; setIsSubmitting(true); setSubmitError(""); setShippingQuote(null); setSelectedQuoteKey(""); setApprovedTotal(null);
     try {
       await ensureGuestCheckoutSession(captchaToken);
       const response = await fetch("/api/checkout/shipping",{ method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim() }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error??"No se pudo calcular el envío.");
-      setShippingQuote(result);
+      setShippingQuote({...result,rates:result.rates.filter((rate:{carrier:string})=>rate.carrier===form.carrier),status:result.rates.some((rate:{carrier:string})=>rate.carrier===form.carrier)?"available":"quotation_required"});
     } catch (error) { setSubmitError(error instanceof Error ? error.message : "No se pudo calcular el envío."); }
     finally { submissionLock.current = false; setIsSubmitting(false); }
   };
@@ -184,7 +187,7 @@ function CheckoutContent() {
     submissionLock.current = true; setIsSubmitting(true); setSubmitError("");
     try {
       await ensureGuestCheckoutSession(captchaToken);
-      const request = { customer:{fullName:form.fullName.trim(),phone:form.phone.trim(),email:form.email.trim()||undefined},shipping:{method:"shipping",province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim(),address:form.address.trim()},paymentMethod:"transfer",items:items.map(item=>({productId:item.productId,quantity:item.quantity})).sort((a,b)=>a.productId.localeCompare(b.productId)) };
+      const request = { customer:{fullName:form.fullName.trim(),phone:form.phone.trim(),email:form.email.trim()||undefined},shipping:{method:"shipping",carrier:form.carrier,province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim(),address:form.address.trim()},paymentMethod:"transfer",items:items.map(item=>({productId:item.productId,quantity:item.quantity})).sort((a,b)=>a.productId.localeCompare(b.productId)) };
       const operationKey = await getCheckoutOperationKey(request,"sfstore-shipping-quotation-operation");
       const response = await fetch("/api/checkout/quotation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,operationKey})});
       const result = await response.json();if (!response.ok) throw new Error(result.error??"No se pudo solicitar la cotización.");
@@ -193,6 +196,19 @@ function CheckoutContent() {
     finally { submissionLock.current = false;setIsSubmitting(false); }
   };
 
+  const refreshQuotation = async () => {
+    if (!quotationId || submissionLock.current) return;
+    submissionLock.current=true;setIsSubmitting(true);setSubmitError("");
+    try {
+      const response=await fetch("/api/checkout/quotation?id="+encodeURIComponent(quotationId),{cache:"no-store"});const data=await response.json();
+      if(!response.ok)throw new Error("No se pudo consultar la cotización. Conservá esta sesión.");
+      if(data.status==="resolved"&&!data.accepted_order_id&&Date.parse(data.valid_until)<=Date.now()){
+        setQuotationId(null);setApprovedTotal(null);setSelectedQuoteKey("");setShippingQuote({country:"AR",status:"quotation_required",rates:[]});sessionStorage.removeItem("sfstore-shipping-quotation-operation");setSubmitError("La cotización venció. Solicitá una nueva; no transfieras.");return;
+      }
+      if(data.status!=="resolved"||data.accepted_order_id||!data.quote_key){setSubmitError("La cotización todavía no está disponible para aceptar. Consultá al local; no transfieras.");return;}
+      setShippingQuote({country:"AR",status:"available",rates:[{carrier:data.quoted_carrier,fee:Number(data.shipping_fee),quoteKey:data.quote_key}]});setSelectedQuoteKey(data.quote_key);setApprovedTotal(Number(data.quoted_total));
+    }catch(error){setSubmitError(error instanceof Error?error.message:"No se pudo consultar la cotización.");}finally{submissionLock.current=false;setIsSubmitting(false);}
+  };
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">
@@ -326,10 +342,10 @@ function CheckoutContent() {
                     }`}
                   >
                     <span className="text-sm font-semibold text-[#0072CE]">
-                      Retiro en punto de entrega
+                      Retiro en el local · Sin costo
                     </span>
                     <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Coordinamos el retiro en Juan de Garay 2090.
+                      Pagás por transferencia. Esperá la confirmación del local antes de retirar; coordinaremos los detalles.
                     </p>
                   </button>
 
@@ -427,18 +443,19 @@ function CheckoutContent() {
                       </label>
                     </div>
 
-                    <p>Envíos a toda Argentina. El costo depende del destino; Este formulario no contrata transporte.</p>
+                    <label className="grid gap-2">Transporte preferido<select aria-label="Transporte preferido" value={form.carrier} onChange={event=>updateField("carrier",event.target.value as Carrier)} className="rounded-xl border p-3"><option value="">Elegí un transporte</option>{["Correo Argentino","Andreani","Via Cargo"].map(carrier=><option key={carrier}>{carrier}</option>)}</select>{errors.carrier?<span>{errors.carrier}</span>:null}</label><p>El costo depende del destino y de una tarifa aprobada por el local. Este formulario no contrata transporte.</p>
                     <button type="button" disabled={isSubmitting} onClick={calculateShipping} className="rounded-xl border p-3">Calcular envío</button>
                     {shippingQuote?.status === "available" ? <label className="grid gap-2">Tarifa disponible
                       <select aria-label="Tarifa disponible" value={selectedQuoteKey} onChange={event=>setSelectedQuoteKey(event.target.value)} className="rounded-xl border p-3">
                         <option value="">Elegí una tarifa</option>
-                        {shippingQuote.rates.map(rate=><option key={rate.quoteKey} value={rate.quoteKey}>{rate.carrier} · {currencyFormatter.format(rate.fee)}</option>)}
+                        {shippingQuote.rates.filter(rate=>rate.carrier===form.carrier).map(rate=><option key={rate.quoteKey} value={rate.quoteKey}>{rate.carrier} · {currencyFormatter.format(rate.fee)}</option>)}
                       </select>
                     </label> : null}
-                    {shippingQuote?.status === "quotation_required" ? <div><p>No hay tarifa disponible para este destino. Podés solicitar una cotización sin crear un pedido ni reservar stock.</p>
+                    {shippingQuote?.status === "quotation_required" ? <div><p>No hay tarifa aprobada para este destino y transporte. Solicitá una cotización: no se confirma un pedido ni se reserva stock hasta aceptar el total definitivo. No transfieras antes de conocerlo.</p>
                       <button type="button" disabled={isSubmitting || !!quotationId} onClick={requestQuotation} className="mt-3 rounded-xl border p-3">Solicitar cotización</button>
                     </div> : null}
-                    {quotationId ? <p role="status">Solicitud registrada: {quotationId}. Coordinaremos el costo por el teléfono indicado. No es un pedido confirmado ni una reserva.</p> : null}
+                    {approvedTotal !== null ? <p role="status">Cotización aprobada: el total incluye los productos con 25% de descuento y el envío. Al aceptar se verificará nuevamente la disponibilidad y el precio. No transfieras hasta obtener el pedido con su total final.</p> : null}
+                    {quotationId ? <div><button type="button" disabled={isSubmitting} onClick={refreshQuotation} className="rounded border p-3">Consultar cotización del local</button><p role="status">Solicitud registrada: {quotationId}. El local revisará el transporte elegido y comunicará el costo. No es un pedido confirmado ni una reserva. No transfieras todavía.</p></div> : null}
 
                   </div>
                 ) : null}
@@ -460,22 +477,7 @@ function CheckoutContent() {
                       Recomendado
                     </span>
                   </div>
-                  <ol className="mt-5 grid gap-3 text-sm leading-6 text-[#102033]/75">
-                    <li>1. Confirmás tu pedido desde este checkout.</li>
-                    <li>2. Transferís al alias {transferPayment.alias}.</li>
-                    <li>3. Enviás el comprobante por WhatsApp.</li>
-                    <li>4. Preparamos tu compra.</li>
-                  </ol>
-                  <div className="mt-5 rounded-2xl border border-[#0072CE]/20 bg-[#F7F9FC] p-4 text-sm">
-                    <p>
-                      <span className="font-semibold">Titular:</span>{" "}
-                      {transferPayment.holder}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Banco/billetera:</span>{" "}
-                      {transferPayment.provider}
-                    </p>
-                  </div>
+                  {shippingRequired && !selectedQuoteKey ? <p className="mt-4">Primero conocé y aceptá el total definitivo, incluido el envío. No transfieras ni informes un pago mientras falta la cotización.</p> : <><ol className="mt-5 grid gap-3 text-sm leading-6"><li>1. Preparás el pedido con el total final.</li><li>2. Transferís el 100% del importe exacto a Naranja X.</li><li>3. Informás el pago y adjuntás el comprobante en la pantalla del pedido.</li><li>4. El local verifica la acreditación antes de confirmar la venta.</li></ol><div className="mt-5"><TransferAlias /></div></>}
                 </section>
               ) : null}
             </div>
@@ -517,11 +519,11 @@ function CheckoutContent() {
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <p>25% de descuento en productos por transferencia. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
+                <div className="flex justify-between"><span>Productos con 25% de descuento (referencia)</span><span>{currencyFormatter.format(items.reduce((total,item)=>total+Math.round(item.price*75)/100*item.quantity,0))}</span></div><p>25% de descuento en productos por transferencia. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
                   <span className="font-semibold">Total final</span>
                   <span className="font-semibold text-[#003B73]">
-                    {"Se confirma al crear el pedido"}
+                    {shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : "Se confirma al crear el pedido"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -535,7 +537,7 @@ function CheckoutContent() {
                   <span className="font-semibold text-[#0072CE]">
                     Recomendado:
                   </span>{" "}
-                  el precio queda fijo al crear el pedido. Tenés 24 horas para transferir el 100% del total e informar el pago con comprobante. No se admiten señas ni pagos parciales.
+                  Primero aceptás el total definitivo al preparar el pedido; el precio queda fijo entonces. Tenés 24 horas para transferir el 100% del total e informar el pago con comprobante. No se admiten señas ni pagos parciales.
                 </div>
               ) : null}
 
@@ -550,7 +552,7 @@ function CheckoutContent() {
                 disabled={isSubmitting || unsupportedPayment || (shippingRequired && !selectedQuoteKey)}
                 className="mt-6 flex w-full items-center justify-center rounded-full bg-[#102033] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0072CE] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSubmitting ? "Creando pedido..." : checkoutLabel}
+                {isSubmitting ? "Creando pedido..." : approvedTotal !== null ? "Aceptar total y preparar pedido por transferencia" : checkoutLabel}
               </button>
             </aside>
           </form>

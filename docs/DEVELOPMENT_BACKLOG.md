@@ -249,3 +249,7 @@ Migración aditiva 202610120003: capacidad SQL privada de mínimo privilegio par
 [Diseño y activación futura](CHECKOUT_RESERVATION_EXECUTOR.md); [revisión agregada para PR #2](../reports/checkout-expiration-pr2-review-20261012.md). La activación real, alertas externas, retención de logs y pruebas de capacidad requieren otro encargo explícito. Auditoría transaccional se revierte con un rollback exterior: se complementará con historial de cron y alerta por ausencia de actividad.
 
 Auditoría para publicación: migración aditiva 202610120004 corrige precedencia implícita de pg_temp en el trigger legado de inventario; conserva 003 y ACL. Regresión con principal SQL sintético sin privilegios de DBA y tablas temporales del caller; el ejecutor no acredita pagos, cambia pedidos arbitrarios ni lee datos privados. Ver resultados de la revisión enlazada.
+
+## PAY-01 — Configuración comercial aprobada (2026-10-12)
+
+Naranja X y alias público aprobado con copia; retiro gratuito sin dirección/horarios inventados. Transporte preferido y cotización administrativa privada antes de aceptar total y reservar stock. Migración nueva 202610120005, sólo local, conserva SQL histórico y controles de Auth/CAPTCHA/RLS, cuotas, locks e idempotencia. No configura tarifas ficticias ni guarda credenciales bancarias. [Cambios, validaciones y pendientes](../reports/checkout-approved-commercial-local-20261012.md). Revisión y publicación en PR #2 autorizadas mediante commit/push normal; sin merge, deploy, SQL remoto ni activación de Cron.

@@ -171,6 +171,12 @@
       "stagingFile": "staging/supabase/migrations/202610120004_checkout_expiration_search_path.sql",
       "sourceSha256": "45be958740a8f9b685ddd3fc30f7aea415093ba36448be300a7ce52305624bf5",
       "stagingSha256": "45be958740a8f9b685ddd3fc30f7aea415093ba36448be300a7ce52305624bf5"
+    },
+    {
+      "source": "supabase/migrations/202610120005_checkout_approved_shipping_quotes.sql",
+      "stagingFile": "staging/supabase/migrations/202610120005_checkout_approved_shipping_quotes.sql",
+      "sourceSha256": "a46c0759e4afac347a5860a27c440280e3280892b2f1ab5d85660a62498ac48b",
+      "stagingSha256": "a46c0759e4afac347a5860a27c440280e3280892b2f1ab5d85660a62498ac48b"
     }
   ]
 }

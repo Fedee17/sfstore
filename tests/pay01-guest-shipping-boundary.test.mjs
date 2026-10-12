@@ -69,7 +69,7 @@ test('quotation lookup is session-owned, hides customer PII, and does not create
  const client={from(table){calls.push(table);return{select(columns){calls.push(columns);const builder={eq(column,value){calls.push([column,value]);return builder;},async maybeSingle(){return{data:who===buyer?{id,status:'requested'}:null,error:null};}};return builder;}};}};
  const loaded=load('services/checkout-shipping.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>who},'@/lib/supabase/server':{getSupabaseAdminClient:()=>{privileged++;return client;}}});
 
- assert.deepEqual(await loaded.getBuyerShippingQuotation(id),{id,status:'requested'});assert.ok(calls.some(v=>Array.isArray(v)&&v[0]==='buyer_id'&&v[1]===buyer));assert.ok(calls.includes('id,status,created_at'));
+ assert.deepEqual(await loaded.getBuyerShippingQuotation(id),{id,status:'requested'});assert.ok(calls.some(v=>Array.isArray(v)&&v[0]==='buyer_id'&&v[1]===buyer));assert.ok(calls.includes('id,status,created_at,shipping_fee,quoted_carrier,quoted_total,quote_key,valid_until,accepted_order_id'));
  who=other;assert.equal(await loaded.getBuyerShippingQuotation(id),null);who=null;const before=privileged;assert.equal(await loaded.getBuyerShippingQuotation(id),null);assert.equal(privileged,before);
 });
 

@@ -1,6 +1,6 @@
 "use client";
 import { useActionState, useState } from "react";
-import { confirmPayment, releaseExpired, rejectPayment, setBuyerException } from "@/app/admin/checkout/actions";
+import { confirmPayment, releaseExpired, rejectPayment, setBuyerException, approveShipping } from "@/app/admin/checkout/actions";
 import type { AdminCheckoutRow } from "@/services/checkout-manual-admin";
 const initial = { message: "", ok: false };
 export function ManualCheckoutPaymentForm({ order }: { order: AdminCheckoutRow }) {
@@ -30,4 +30,9 @@ export function RejectCheckoutPaymentForm({orderId}:{orderId:string}) {
 export function CheckoutBuyerExceptionForm({buyerId}:{buyerId:string}) {
  const [state,action,pending]=useActionState(setBuyerException,initial);
  return <details className="mt-4"><summary>Autorizar excepción temporal para este comprador</summary><form action={action} className="grid gap-3"><input type="hidden" name="buyerId" value={buyerId}/><label>Duración en horas<input name="hours" type="number" min={1} max={24} defaultValue={2} required/></label><label>Pedidos pendientes permitidos<input name="pending" type="number" min={1} max={20} defaultValue={3} required/></label><label>Unidades totales reservadas<input name="units" type="number" min={1} max={100} defaultValue={8} required/></label><label>Unidades por producto<input name="productUnits" type="number" min={1} max={100} defaultValue={4} required/></label><label>Pagos informados simultáneos<input name="reports" type="number" min={1} max={20} defaultValue={2} required/></label><label>Motivo de la excepción<input name="reason" minLength={5} maxLength={500} required/></label><p>La excepción permite revisar bloqueos por rechazos o vencimientos. Mantiene los límites de frecuencia y la verificación del stock disponible.</p><button disabled={pending}>Autorizar excepción</button>{state.message?<p role="status">{state.message}</p>:null}</form></details>;
+}
+
+export function ShippingQuotationForm({quoteId}:{quoteId:string}) {
+ const [state,action,pending]=useActionState(approveShipping,initial);
+ return <form action={action} className="mt-4 grid gap-2"><input type="hidden" name="quoteId" value={quoteId}/><label>Costo de envío aprobado<input name="shippingFee" inputMode="decimal" required/></label><p>Registrá un costo verificado con el transporte elegido. No uses tarifas de ejemplo. El comprador podrá consultar el total en su sesión; coordiná el aviso por el contacto indicado. Registrar el costo no crea un pedido ni reserva stock.</p><button disabled={pending||state.ok}>Comunicar cotización en el checkout</button>{state.message?<p role="status">{state.message}</p>:null}</form>;
 }
