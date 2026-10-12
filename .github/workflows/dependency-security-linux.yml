@@ -1,0 +1,41 @@
+name: Dependency security Linux validation
+
+on:
+  pull_request:
+    branches: [codex/integration-sec01-pay01-storage-20261011]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-security-linux-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.head_ref == 'codex/dependency-security-20261012' || github.ref == 'refs/heads/codex/dependency-security-20261012'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Clean install
+        run: npm ci --no-audit --no-fund
+      - name: Synthetic regressions including Auth and Server Actions
+        run: node scripts/validate-dependency-security.mjs
+      - name: ESLint
+        run: npm run lint
+      - name: Production build without service credentials
+        run: npm run build
+      - name: TypeScript after generated types
+        run: npx --no-install tsc --noEmit
