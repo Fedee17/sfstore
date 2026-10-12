@@ -34,10 +34,14 @@ export function testCoverage(stdout){
  const counts=Object.fromEntries(['tests','pass','fail','skipped'].map(key=>[key,Number(stdout.match(new RegExp('^# '+key+' (\\d+)','m'))?.[1]||0)]));
  return {counts,complete:counts.tests>0&&counts.skipped===0};
 }
+export function assertCleanCheckout(root){
+ const names=['.env','.env.local',...['production','development','test'].flatMap(mode=>['.env.'+mode,'.env.'+mode+'.local'])];
+ if(names.some(name=>existsSync(join(root,name))))throw Error('Use a clean checkout without local credentials');
+}
 export async function run({root,phase,scope,sha,runUrl='',day=auditDay(),output,tools={}}){
  if(!['security','quality','checkout','all'].includes(phase))throw Error('Invalid phase');
  if(!/^[a-f0-9]{40}$/.test(sha)||!scope||/[\r\n]/.test(scope))throw Error('Invalid target');
- root=resolve(root);output=resolve(output);if(existsSync(join(root,'.env.local'))||existsSync(join(root,'.env.production')))throw Error('Use a clean checkout without local credentials');
+ root=resolve(root);output=resolve(output);assertCleanCheckout(root);
  const config=JSON.parse(readFileSync(new URL('../../audit/nightly/config.json',import.meta.url)));
  const base={scope,root,runUrl},checks=[],findings=[];
  const add=async(id,bin,args,mode,parse,successCodes=[0])=>{

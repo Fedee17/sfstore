@@ -99,3 +99,32 @@ Runner checkout ejecutado sobre copia limpia de archivos versionados de f137829:
 Validación hospedada de GitHub, integración con ClickUp real y todas las activaciones quedan pendientes.
 
 Ensayo adicional del runner quality sobre la copia limpia: build, TypeScript y ESLint aprobados; 644 tests seleccionados aprobados sin skips. npm audit real al registro informó 30 asociaciones paquete/advisory, incluyendo avisos críticos; se clasifican como análisis de dependencias, no exploits verificados. Semgrep no está instalado localmente. La copia de archivos no tiene metadata Git: el runner no considera verificado su historial ni escanea implícitamente un repositorio padre. Gitleaks independiente sobre todas las fuentes nuevas: sin hallazgos. El informe de muestra queda en staging/runtime/nightly-daily-preview/report.md, ignorado por Git, con cobertura incompleta y sin enlaces Actions ficticios.
+
+## Preparación para publicación sobre PR #5
+
+Se preservó la implementación original mediante commit local y rebase sobre `d3ed42484622896e56dfb76667b1acf6e1846ec6`, cabeza actualizada de PR #5. Las mejoras de PR #2 (checkout/pagos/reservas), PR #3 (Next/PostCSS/nanoid), PR #4 (SheetJS oficial) y PR #5 (Turnstile administrativo) permanecen sin cambios en sus fuentes, SQL y dependencias.
+
+Se agregó el login CAPTCHA a las regresiones del bloque checkout. Se reforzó la prohibición de ejecutar código con cualquier variante Next de archivo `.env` y se valida el host/ruta/ID del archivo GitHub antes de enviar Authorization. `vercel.json` deshabilita despliegues de `codex/nightly-audit-clickup`. El CI de PR valida esta rama sin ejecutar los workflows nocturnos ni conectar ClickUp.
+
+### Secrets y permisos necesarios, sin configurar ni activar todavía
+
+En el environment protegido `nightly-audit-clickup`, preparar únicamente después de autorización:
+
+| GitHub Actions Secret | Valor/configuración futura |
+| --- | --- |
+| `CLICKUP_API_TOKEN` | Token de una identidad técnica con acceso mínimo a la lista dedicada; no incluirlo en repositorio, `.env`, informes o logs. |
+| `CLICKUP_LIST_ID` | `901717762349`, identificador proporcionado por el propietario; acceso y pertenencia no verificados contra la API real. |
+
+No se necesitan secretos Supabase, Vercel, Turnstile ni Mercado Pago. `GITHUB_TOKEN` es el token automático de Actions, con `contents:read` y, sólo para recolectar artifacts, `actions:read`. Las Variables `CLICKUP_SYNC_ENABLED` y `CLICKUP_ACTIVATION_APPROVED` deben permanecer ausentes/false. `audit/nightly/config.json` conserva `clickup.enabled=false`, `approvedRef=main` y `developmentRefs=[]`: auditar una rama de desarrollo requiere una allowlist revisada, no basta con publicar esta rama.
+
+Los permisos efectivos del token ClickUp dependen del usuario/Workspace; este código necesita lectura de tareas de esa lista, creación y edición de sus propias tareas de auditoría. No necesita borrar, cerrar tareas, administrar el Workspace ni Custom Fields. Usar environment con revisión humana obligatoria, restricción a rama predeterminada y prevención de autoaprobación cuando el plan lo permita. Inventario, identidad, permisos y deduplicación con API real siguen pendientes y requieren autorización separada.
+
+Los dos workflows nocturnos contienen únicamente `workflow_dispatch`; no contienen `schedule`, `push`, `pull_request_target` ni despliegues. Los cron 01:17/03:17/05:17 y reporte 08:00 Buenos Aires permanecen como fragmentos no ejecutables fuera de `.github/workflows`. La generación del informe y las pruebas del cliente son locales/sintéticas; no se crearon tareas reales ni se guardaron Secrets en GitHub.
+
+La exposición de los workflows manuales en la rama predeterminada, prueba hospedada de recolección/artifacts/días sucesivos, configuración del environment y futura activación de horarios/ClickUp son pasos separados. La publicación de una PR en borrador no los activa. La ventana horaria de GitHub no garantiza puntualidad; una falta de cobertura o mezcla de SHAs se presenta como incompleta y no resuelve hallazgos.
+
+### Evidencia de esta revisión
+
+Pruebas del sistema: 27/27 aprobadas. Instalación limpia y 693/693 regresiones sintéticas aprobadas en una copia de fuentes sin `.env`. El propio ejecutor de auditoría verificó build Next 16.3.8, TypeScript, ESLint, 693 tests generales y 129 tests del bloque checkout, todos completos y aprobados. Generó report.json/report.md, marcó correctamente la falta del bloque security en ese ensayo parcial y ejecutó ClickUp dry-run sin red ni tareas. Gitleaks sobre archivos completos e historial propio aprobó sin secretos. No se publica ese output local ni el triage histórico ajeno que sigue preservado sin versionar.
+
+Se preparó en el CI de esta PR un smoke adicional de scanners estáticos (npm audit, Semgrep/Gitleaks fijados) y reporte parcial normalizado. Un advisory es un hallazgo estático, no un fracaso del mecanismo ni prueba de explotación. El job falla si la herramienta no produce cobertura completa. No tiene Secrets ClickUp, no ejecuta workflows nocturnos, horarios, SQL ni servicios reales. El resultado remoto se registra en la descripción de la PR. La recolección real entre los dos workflows manuales y artifacts de días sucesivos sigue pendiente, ya que no se modifica la rama predeterminada en este encargo.

@@ -38,11 +38,17 @@ export async function gather({request,repository,scope,day=auditDay(),directory,
  }
  return {parts,previous};
 }
+export function validateArtifactSource(artifact){
+ const source=new URL(artifact.archive_download_url);
+ if(source.protocol!=='https:'||source.hostname!=='api.github.com'||source.port||source.username||source.password||source.search||source.hash||!Number.isSafeInteger(artifact.id)||!new RegExp('^/repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/actions/artifacts/'+artifact.id+'/zip$').test(source.pathname))throw Error('Unexpected artifact API source');
+ return source.href;
+}
 export async function downloadArtifact(artifact,member,directory,token){
+ const archiveUrl=validateArtifactSource(artifact);
  if(artifact.size_in_bytes>5000000)throw Error('Artifact exceeds budget');
  mkdirSync(directory,{recursive:true});
  // Auth header is sent only to api.github.com; signed download redirect gets no token.
- const first=await fetch(artifact.archive_download_url,{headers:{Authorization:'Bearer '+token},redirect:'manual',signal:AbortSignal.timeout(20000)});
+ const first=await fetch(archiveUrl,{headers:{Authorization:'Bearer '+token},redirect:'manual',signal:AbortSignal.timeout(20000)});
  if(first.status!==302)throw Error('Artifact unavailable');const signed=new URL(first.headers.get('location'));
  if(signed.protocol!=='https:'||!signed.hostname.endsWith('.blob.core.windows.net'))throw Error('Unexpected artifact host');
  const response=await fetch(signed,{redirect:'error',signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Artifact download failed');

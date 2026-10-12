@@ -27,7 +27,8 @@
     "admin-authorization.test.mjs",
     "inventory-audit-foundation.test.mjs",
     "store-sales-checkout.test.mjs",
-    "unified-sales-payments.test.mjs"
+    "unified-sales-payments.test.mjs",
+    "admin-login-diagnostics.test.mjs"
   ],
   "generalTestsExclude": [
     "real-local",

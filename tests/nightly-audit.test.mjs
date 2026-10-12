@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {readFileSync,mkdtempSync,rmSync} from 'node:fs';
+import {readFileSync,mkdtempSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createRequire} from 'node:module';
 import {auditDay,finding,reconcile,consolidate,markdown,redact} from '../scripts/nightly/core.mjs';
-import {cleanEnvironment,command,normalizeAudit,normalizeEslint,testCoverage} from '../scripts/nightly/run.mjs';
+import {cleanEnvironment,assertCleanCheckout,command,normalizeAudit,normalizeEslint,testCoverage} from '../scripts/nightly/run.mjs';
 import {eligible,plan,client,sync,taskDescription} from '../scripts/nightly/clickup.mjs';
-import {allowedRef,gather} from '../scripts/nightly/github.mjs';
+import {allowedRef,gather,validateArtifactSource} from '../scripts/nightly/github.mjs';
 const runUrl='https://github.com/example/sfstore/actions/runs/123';
 const f=(patch={})=>finding({scope:'main',check:'checkout',rule:'fixture-failure',title:'Synthetic checkout failure',evidence:'node --test fixture; exit 1',category:'checkout',severity:'high',runUrl,...patch});
 const config={requiredChecks:['secrets','checkout']};
@@ -48,3 +48,7 @@ test('gitleaks output is normalized; secret source/private report is never an ar
 test('report artifacts remain small and locally reproducible',async()=>{const {generate}=await import('../scripts/nightly/report.mjs');const directory=mkdtempSync(join(tmpdir(),'sfstore-night-audit-'));try{generate([part()],null,directory);const parsed=JSON.parse(readFileSync(join(directory,'report.json')));assert.equal(parsed.scope,'main');assert.match(readFileSync(join(directory,'report.md'),'utf8'),/Tres prioridades/);}finally{rmSync(directory,{recursive:true,force:true});}});
 
 test('skipped or empty TAP cannot resolve test findings',()=>{assert.equal(testCoverage('# tests 2\n# pass 1\n# skipped 1').complete,false);assert.equal(testCoverage('').complete,false);assert.equal(testCoverage('# tests 2\n# pass 2\n# skipped 0').complete,true);});
+
+test('all Next environment file variants prevent audited code execution',()=>{const directory=mkdtempSync(join(tmpdir(),'sfstore-audit-env-'));try{for(const name of ['.env','.env.local','.env.production','.env.production.local','.env.development','.env.development.local','.env.test','.env.test.local']){const path=join(directory,name);writeFileSync(path,'token=synthetic-only');assert.throws(()=>assertCleanCheckout(directory),/clean checkout/);rmSync(path);}assert.doesNotThrow(()=>assertCleanCheckout(directory));}finally{rmSync(directory,{recursive:true,force:true});}});
+
+test('artifact token is restricted to the official API and matching archive ID',()=>{const valid={id:123,archive_download_url:'https://api.github.com/repos/example/sfstore/actions/artifacts/123/zip'};assert.equal(validateArtifactSource(valid),valid.archive_download_url);for(const url of ['https://attacker.invalid/archive','http://api.github.com/repos/example/sfstore/actions/artifacts/123/zip','https://api.github.com/repos/example/sfstore/actions/artifacts/456/zip','https://private@api.github.com/repos/example/sfstore/actions/artifacts/123/zip'])assert.throws(()=>validateArtifactSource({...valid,archive_download_url:url}));});
