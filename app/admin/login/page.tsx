@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
+import { AdminLoginForm } from "@/components/admin/admin-login-form";
 import { getAdminUser } from "@/lib/admin-session";
-import { loginAdmin } from "./actions";
 
 type AdminLoginPageProps = {
   searchParams: Promise<{
@@ -44,40 +43,7 @@ export default async function AdminLoginPage({
             </div>
           ) : null}
 
-          <form action={loginAdmin} className="mt-7 grid gap-5">
-            <label className="grid gap-2">
-              <span className="text-sm font-semibold text-[#1F1F1F]/75">
-                Email
-              </span>
-              <input
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
-              />
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-sm font-semibold text-[#1F1F1F]/75">
-                Contraseña
-              </span>
-              <input
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
-              />
-            </label>
-
-            <PendingSubmitButton
-              pendingLabel="Ingresando..."
-              className="rounded-full bg-[#556B2F] px-6 py-3.5 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Entrar
-            </PendingSubmitButton>
-          </form>
+          <AdminLoginForm siteKey={(process.env.NEXT_PUBLIC_ADMIN_TURNSTILE_SITE_KEY || process.env.NEXT_PUBLIC_CHECKOUT_TURNSTILE_SITE_KEY || "").trim()} />
 
           <p className="mt-6 text-xs leading-5 text-[#1F1F1F]/50">
             No hay registro publico. Los usuarios se crean manualmente desde

@@ -85,6 +85,7 @@ test("server action submits use one reusable pending button", () => {
     "customer-order-actions.tsx",
   );
   const loginPage = source("app", "admin", "login", "page.tsx");
+  const loginForm = source("components", "admin", "admin-login-form.tsx");
 
   assert.match(pendingButton, /useFormStatus\(\)/);
   assert.match(pendingButton, /disabled=\{disabled \|\| pending\}/);
@@ -93,7 +94,9 @@ test("server action submits use one reusable pending button", () => {
   assert.match(productPage, /pendingLabel="Archivando\.\.\."/);
   assert.match(orderActions, /pendingLabel="Registrando\.\.\."/);
   assert.match(orderActions, /pendingLabel="Entregando\.\.\."/);
-  assert.match(loginPage, /pendingLabel="Ingresando\.\.\."/);
+  assert.match(loginPage, /AdminLoginForm/);
+  assert.match(loginForm, /PendingSubmitButton/);
+  assert.match(loginForm, /pendingLabel="Ingresando\.\.\."/);
 });
 
 test("admin route exposes a lightweight accessible loading state", () => {

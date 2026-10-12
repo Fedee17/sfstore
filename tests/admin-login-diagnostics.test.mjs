@@ -8,7 +8,7 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 
-async function runLogin({ error = null, user = { email: "owner@example.test" }, allowed = true, configured = true, empty = false } = {}) {
+async function runLogin({ error = null, user = { email: "owner@example.test" }, allowed = true, configured = true, empty = false, captcha = "synthetic-captcha-never-log", duplicateCaptcha = false, captchaConfigured = true } = {}) {
   const logs = [];
   const calls = [];
   const exports = {};
@@ -30,10 +30,13 @@ async function runLogin({ error = null, user = { email: "owner@example.test" }, 
     assert.ok(Object.hasOwn(modules, name), `Unexpected dependency ${name}`);
     return modules[name];
   }, exports);
-  const keys = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "ADMIN_ALLOWED_EMAILS"];
+  const keys = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "ADMIN_ALLOWED_EMAILS", "NEXT_PUBLIC_ADMIN_TURNSTILE_SITE_KEY", "NEXT_PUBLIC_CHECKOUT_TURNSTILE_SITE_KEY"];
   const previousEnv = keys.map((key) => process.env[key]);
   const previousConsole = { info: console.info, warn: console.warn, error: console.error };
   try {
+    delete process.env.NEXT_PUBLIC_CHECKOUT_TURNSTILE_SITE_KEY;
+    if (captchaConfigured) process.env.NEXT_PUBLIC_ADMIN_TURNSTILE_SITE_KEY = "synthetic-public-site-key";
+    else delete process.env.NEXT_PUBLIC_ADMIN_TURNSTILE_SITE_KEY;
     process.env.ADMIN_ALLOWED_EMAILS = "owner@example.test,private-allowlist@example.test";
     if (configured) {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://synthetic.example.test";
@@ -46,6 +49,8 @@ async function runLogin({ error = null, user = { email: "owner@example.test" }, 
     const form = new FormData();
     form.set("email", empty ? "" : " Owner@Example.Test ");
     form.set("password", empty ? "" : fixturePassword);
+    if (captcha !== undefined) form.set("captchaToken", captcha);
+    if (duplicateCaptcha) form.append("captchaToken", "another-synthetic-token");
     let destination;
     try { await exports.loginAdmin(form); } catch (result) {
       if (!result.redirect) throw result;
@@ -53,7 +58,7 @@ async function runLogin({ error = null, user = { email: "owner@example.test" }, 
     }
     assert.ok(destination, "login must redirect");
     const serialized = JSON.stringify(logs);
-    for (const secret of ["owner@example.test", "private-allowlist@example.test", fixturePassword, fixtureToken, "synthetic-anon-never-log", "synthetic.example.test", "private-error@example.test"]) {
+    for (const secret of ["owner@example.test", "private-allowlist@example.test", fixturePassword, fixtureToken, "synthetic-captcha-never-log", "synthetic-anon-never-log", "synthetic.example.test", "private-error@example.test"]) {
       assert.ok(!serialized.toLowerCase().includes(secret), `Diagnostics leaked fixture ${secret}`);
     }
     return { logs, calls, destination };
@@ -108,3 +113,13 @@ test("empty form still redirects before auth without debug logs", async () => {
   assert.deepEqual(result.calls, []);
   assert.match(decodeURIComponent(result.destination), /Ingresa email y contraseña/);
 });
+
+for (const [label,captcha] of [["missing",""],["whitespace","   "],["oversized","x".repeat(2049)],["file",new File(["synthetic"],"captcha.txt")]]) {
+  test("CAPTCHA "+label+" stops before Auth", async()=>{
+    const result=await runLogin({captcha});assert.deepEqual(result.calls,[]);assert.match(decodeURIComponent(result.destination),/Completá la verificación/);
+  });
+}
+test("duplicate CAPTCHA fields stop before Auth",async()=>{const r=await runLogin({duplicateCaptcha:true});assert.deepEqual(r.calls,[]);});
+test("unconfigured CAPTCHA stops before Auth",async()=>{const r=await runLogin({captchaConfigured:false});assert.deepEqual(r.calls,[]);assert.match(decodeURIComponent(r.destination),/no está configurada/);});
+test("CAPTCHA is forwarded once to Supabase options",async()=>{const r=await runLogin();assert.deepEqual(r.calls[0][1].options,{captchaToken:"synthetic-captcha-never-log"});});
+for(const label of ["invalid","expired"]){test("Auth rejects "+label+" CAPTCHA with sanitized message",async()=>{const r=await runLogin({error:{code:"captcha_failed",status:400,message:"synthetic-captcha-never-log"}});assert.match(decodeURIComponent(r.destination),/no es válida o venció/);assert.deepEqual(r.calls.map(([n])=>n),["signIn"]);assert.deepEqual(r.logs[0][2],{code:"captcha_failed",status:400});});}
