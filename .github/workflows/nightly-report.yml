@@ -1,0 +1,97 @@
+name: SFSTORE daily report (manual; schedule disabled)
+on:
+  workflow_dispatch:
+    inputs:
+      audit_ref:
+        type: string
+        default: main
+      sync_clickup:
+        description: Requires separate activation, secrets and protected environment
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: sfstore-nightly-report
+  cancel-in-progress: false
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - name: Collect current day and prior report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_REF: ${{ inputs.audit_ref || 'main' }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,mkdirSync,appendFileSync} from 'node:fs';
+          import {allowedRef,api,gather,downloadArtifact} from './scripts/nightly/github.mjs';
+          import {auditDay} from './scripts/nightly/core.mjs';
+          const config=JSON.parse(readFileSync('audit/nightly/config.json'));
+          const scope=allowedRef(process.env.TARGET_REF,config),day=auditDay(),token=process.env.GH_TOKEN,repository=process.env.GITHUB_REPOSITORY;
+          const data=await gather({scope,day,repository,request:api({repository,token}),directory:process.env.RUNNER_TEMP,download:(a,m,d)=>downloadArtifact(a,m,d,token)});
+          mkdirSync('audit-report',{recursive:true});writeFileSync('audit-report/input.json',JSON.stringify(data));
+          appendFileSync(process.env.GITHUB_OUTPUT,'day='+day+'\n');
+          JS
+      - name: Consolidate without external integration
+        run: |
+          node scripts/nightly/report.mjs audit-report/input.json audit-report
+          cat audit-report/report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sfstore-nightly-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            audit-report/report.json
+            audit-report/report.md
+          retention-days: 14
+  clickup:
+    needs: report
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && vars.CLICKUP_SYNC_ENABLED == 'true' && vars.CLICKUP_ACTIVATION_APPROVED == 'true' && (inputs.sync_clickup == true || github.event_name == 'schedule')
+    environment: nightly-audit-clickup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - name: Download this run's report, never execute audited branch code
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          import {writeFileSync,mkdirSync} from 'node:fs';
+          import {api,downloadArtifact} from './scripts/nightly/github.mjs';
+          const token=process.env.GH_TOKEN,request=api({repository:process.env.GITHUB_REPOSITORY,token});
+          const data=await request('/actions/runs/'+process.env.GITHUB_RUN_ID+'/artifacts');
+          const artifact=data.artifacts.find(a=>a.name==='sfstore-nightly-report-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT);
+          if(!artifact)throw Error('Missing report');
+          const report=await downloadArtifact(artifact,'report.json',process.env.RUNNER_TEMP,token);
+          mkdirSync('audit-report',{recursive:true});writeFileSync('audit-report/report.json',JSON.stringify(report));
+          JS
+      - name: Synchronize reviewed findings only
+        env:
+          CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+          CLICKUP_LIST_ID: ${{ secrets.CLICKUP_LIST_ID }}
+          CLICKUP_SYNC_ENABLED: ${{ vars.CLICKUP_SYNC_ENABLED }}
+          CLICKUP_ACTIVATION_APPROVED: ${{ vars.CLICKUP_ACTIVATION_APPROVED }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {sync,safeIntegrationError} from './scripts/nightly/clickup.mjs';
+          const report=JSON.parse(readFileSync('audit-report/report.json'));
+          try {
+            const result=await sync(report,{apply:true,enabled:process.env.CLICKUP_SYNC_ENABLED==='true',approved:process.env.CLICKUP_ACTIVATION_APPROVED==='true',token:process.env.CLICKUP_API_TOKEN,listId:process.env.CLICKUP_LIST_ID});
+            console.log(JSON.stringify(result));
+          } catch(error) { console.error(safeIntegrationError(error));process.exitCode=1; }
+          JS

@@ -1,0 +1,87 @@
+name: SFSTORE diagnostic audit (manual; schedule disabled)
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        type: choice
+        options: [all, security, quality, checkout]
+        default: all
+      audit_ref:
+        description: Exact branch from audit/nightly/config.json allowlist
+        type: string
+        default: main
+permissions:
+  contents: read
+concurrency:
+  group: sfstore-audit-${{ inputs.audit_ref || 'main' }}
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - name: Checkout trusted audit controller
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: controller
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - name: Resolve allowlisted target and phase without shell interpolation
+        id: plan
+        env:
+          AUDIT_REF: ${{ inputs.audit_ref || 'main' }}
+          AUDIT_PHASE: ${{ inputs.phase }}
+          AUDIT_SCHEDULE: ${{ github.event.schedule }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,appendFileSync} from 'node:fs';
+          import {allowedRef,api} from './controller/scripts/nightly/github.mjs';
+          const config=JSON.parse(readFileSync('controller/audit/nightly/config.json'));
+          const ref=allowedRef(process.env.AUDIT_REF,config);
+          const phase=process.env.AUDIT_PHASE||({'17 4 * * *':'security','17 6 * * *':'quality','17 8 * * *':'checkout'}[process.env.AUDIT_SCHEDULE]);
+          if(!['all','security','quality','checkout'].includes(phase))throw Error('Invalid phase');
+          const data=await api({repository:process.env.GITHUB_REPOSITORY,token:process.env.GH_TOKEN})('/git/ref/heads/'+encodeURIComponent(ref));
+          if(!/^[a-f0-9]{40}$/.test(data.object.sha))throw Error('Invalid target SHA');
+          appendFileSync(process.env.GITHUB_OUTPUT,'ref='+ref+'\nsha='+data.object.sha+'\nphase='+phase+'\n');
+          JS
+      - name: Checkout target without retained credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.plan.outputs.sha }}
+          path: target
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install locked dependencies without lifecycle scripts
+        if: steps.plan.outputs.phase != 'security'
+        working-directory: target
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned static tools (security phase only)
+        if: steps.plan.outputs.phase == 'security' || steps.plan.outputs.phase == 'all'
+        run: |
+          python -m pip install --disable-pip-version-check semgrep==1.99.0
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_checksums.txt -o "$RUNNER_TEMP/gitleaks-checksums.txt"
+          cd "$RUNNER_TEMP"
+          grep ' gitleaks_8.30.1_linux_x64.tar.gz$' gitleaks-checksums.txt | sed 's@gitleaks_8.30.1_linux_x64.tar.gz@gitleaks.tar.gz@' | sha256sum --check --strict
+          tar -xzf gitleaks.tar.gz gitleaks
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Diagnose; never load service or ClickUp credentials
+        env:
+          TARGET_REF: ${{ steps.plan.outputs.ref }}
+          TARGET_SHA: ${{ steps.plan.outputs.sha }}
+          PHASE: ${{ steps.plan.outputs.phase }}
+          AUDIT_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node controller/scripts/nightly/run.mjs target "$PHASE" "$TARGET_REF" "$TARGET_SHA" audit-output
+      - name: Upload normalized evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sfstore-nightly-part-${{ github.run_id }}-${{ github.run_attempt }}
+          path: audit-output/results.json
+          retention-days: 14
+          if-no-files-found: error

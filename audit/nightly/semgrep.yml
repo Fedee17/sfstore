@@ -1,0 +1,22 @@
+rules:
+  - id: sfstore-public-service-role
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: A privileged Supabase key is exposed using a NEXT_PUBLIC variable.
+    pattern-regex: NEXT_PUBLIC_[A-Z_]*SERVICE_ROLE[A-Z_]*
+    paths:
+      include: [app/**, components/**, lib/**, services/**]
+  - id: sfstore-dynamic-eval
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: Dynamic evaluation requires security review.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+    paths:
+      include: [app/**, components/**, lib/**, services/**]
+  - id: sfstore-private-proof-public-url
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: Payment proofs must never use a public Storage URL.
+    pattern: $CLIENT.storage.from("checkout-payment-proofs").getPublicUrl(...)

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "timezone": "America/Argentina/Buenos_Aires",
+  "approvedRef": "main",
+  "developmentRefs": [],
+  "retentionDays": 14,
+  "clickup": {
+    "enabled": false,
+    "maxChanges": 30
+  },
+  "requiredChecks": [
+    "dependencies",
+    "secrets",
+    "semgrep",
+    "typescript",
+    "eslint",
+    "build",
+    "tests",
+    "checkout"
+  ],
+  "checkoutTests": [
+    "pay01-checkout-boundary.test.mjs",
+    "pay01-guest-shipping-boundary.test.mjs",
+    "pay01-payment-report-boundary.test.mjs",
+    "pay01-shipping-approval-boundary.test.mjs",
+    "pay01-expiration-monitor-boundary.test.mjs",
+    "admin-authorization.test.mjs",
+    "inventory-audit-foundation.test.mjs",
+    "store-sales-checkout.test.mjs",
+    "unified-sales-payments.test.mjs"
+  ],
+  "generalTestsExclude": [
+    "real-local",
+    "staging-functional",
+    "atomic-checkout",
+    "sec01-pay01-integration",
+    "transfer-rules",
+    "guest-shipping-browser",
+    "atomic-product-save.test.mjs",
+    "product-form-atomic-ui",
+    "product-storage-task-processor",
+    "sec01-effective-permissions"
+  ]
+}

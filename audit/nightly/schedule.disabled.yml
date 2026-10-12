@@ -1,0 +1,9 @@
+# NON-EXECUTABLE activation fragments. Not a GitHub workflow.
+# After separate approval, insert each fragment into the matching workflow's "on".
+# America/Argentina/Buenos_Aires = UTC-03; checked 2026-10-12.
+audit_schedule:
+  - cron: '17 4 * * *' # 01:17 security
+  - cron: '17 6 * * *' # 03:17 quality
+  - cron: '17 8 * * *' # 05:17 checkout
+report_schedule:
+  - cron: '0 11 * * *' # 08:00 daily report (subject to GitHub queue delay)
