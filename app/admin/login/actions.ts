@@ -18,6 +18,9 @@ function getSupabaseEnvError() {
     return "Falta configurar NEXT_PUBLIC_SUPABASE_ANON_KEY.";
   }
 
+  if (!(process.env.NEXT_PUBLIC_ADMIN_TURNSTILE_SITE_KEY || process.env.NEXT_PUBLIC_CHECKOUT_TURNSTILE_SITE_KEY)?.trim()) {
+    return "La verificación de acceso no está configurada. Contactá al administrador.";
+  }
   return null;
 }
 
@@ -53,6 +56,10 @@ function getPublicAuthErrorMessage(error: unknown) {
   const code = getAuthErrorCode(error);
   const message = getAuthErrorMessage(error).toLowerCase();
 
+  if (code === "captcha_failed") {
+    return "La verificación de seguridad no es válida o venció. Completala nuevamente.";
+  }
+
   if (code === "email_not_confirmed" || message.includes("email not confirmed")) {
     return "El usuario existe, pero el email todavía no está confirmado en Supabase.";
   }
@@ -87,16 +94,26 @@ export async function loginAdmin(formData: FormData) {
     redirect(getLoginErrorUrl(envError));
   }
 
+  const captchaEntries = formData.getAll("captchaToken");
+  const captchaToken = captchaEntries.length === 1 && typeof captchaEntries[0] === "string"
+    ? captchaEntries[0].trim() : "";
+  if (!captchaToken || captchaToken.length > 2048) {
+    redirect(getLoginErrorUrl("Completá la verificación de seguridad antes de ingresar."));
+  }
+
+  // Supabase Auth validates Turnstile server-side, once; never redeem the token here.
   // Usa el cliente SSR de Supabase Auth con anon key. No usa service role.
   const supabase = await getSupabaseAuthServerClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
+    options: { captchaToken },
   });
 
   if (error) {
     const code = getAuthErrorCode(error);
     const diagnosticCode = [
+      "captcha_failed",
       "invalid_credentials",
       "email_not_confirmed",
       "over_request_rate_limit",
