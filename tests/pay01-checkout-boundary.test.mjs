@@ -56,7 +56,7 @@ test('browser request strips untrusted prices and persists the same operation ac
 test('buyer receipt lookup scopes a private read to the verified actor and never trusts URL totals',async()=>{
  const calls=[];const query={select:()=>query,eq:(k,v)=>{calls.push([k,v]);return query;},maybeSingle:async()=>({data:{result,state:'pending',expires_at:result.expiresAt},error:null})};
  const read=load('services/checkout-buyer-receipt.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>buyer},'@/lib/supabase/server':{getSupabaseAdminClient:()=>({from:()=>query})}});
- assert.equal((await read.getBuyerCheckoutReceipt(result.id)).total,100);assert.deepEqual(calls,[['order_id',result.id],['buyer_id',buyer],['id',result.id]]);
+ assert.equal((await read.getBuyerCheckoutReceipt(result.id)).total,100);assert.deepEqual(calls,[['order_id',result.id],['buyer_id',buyer],['id',result.id],['order_id',result.id],['buyer_id',buyer]]);
 });
 test('unauthorized buyer never constructs service client or reads receipt; storage error discloses no data',async()=>{
  for(const actor of [null,buyer]){let privileged=0;const read=load('services/checkout-buyer-receipt.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>actor},'@/lib/supabase/server':{getSupabaseAdminClient:()=>{privileged++;throw Error('synthetic database outage');}}});assert.equal(await read.getBuyerCheckoutReceipt(result.id),null);assert.equal(privileged,actor?1:0);}
@@ -84,7 +84,7 @@ test('actual admin getUser plus allowlist prevents manual accreditation and expi
     const session=load('lib/admin-session.ts',{'next/navigation':{redirect:()=>{throw Error('redirect');}},'@/lib/admin-authorization':authz,'@/lib/supabase/auth-server':{getSupabaseAuthServerClient:async()=>({auth:{getUser:async()=>({data:{user},error:authError})}})}},{process:{env:{ADMIN_ALLOWED_EMAILS:allowlist}}});
     const admin=load('services/checkout-manual-admin.ts',{'server-only':{},'@/lib/admin-session':session,'@/lib/checkout/contract':contract,'@/lib/supabase/server':{getSupabaseAdminClient:()=>{clients++;return{rpc:async(name,args)=>{calls.push([name,args]);return{data:{released:0,failures:[],payment_status:'paid'},error:null};}};}}});
     const input={orderId:result.id,operationKey,amount:100,reference:'synthetic-transfer',received:true,adminId:'forged'};
-    if(allowed){await admin.confirmManualCheckoutPayment(input);assert.equal(calls[0][1].p_admin_id,buyer);await admin.releaseExpiredCheckoutReservations();assert.equal(calls[1][0],'expire_checkout_reservations');assert.equal(calls[1][1].p_limit,100);}else{await assert.rejects(admin.confirmManualCheckoutPayment(input));await assert.rejects(admin.releaseExpiredCheckoutReservations());assert.equal(clients,0);assert.deepEqual(calls,[]);}
+    if(allowed){await admin.confirmManualCheckoutPayment(input);assert.equal(calls[0][1].p_admin_id,buyer);await admin.releaseExpiredCheckoutReservations();assert.equal(calls[1][0],'expire_checkout_reservations');assert.equal(calls[1][1].p_limit,100);}else{await assert.rejects(admin.confirmManualCheckoutPayment(input));await assert.rejects(admin.releaseExpiredCheckoutReservations());await assert.rejects(admin.rejectReportedCheckoutPayment(result.id,'Synthetic rejection'));await assert.rejects(admin.authorizeBuyerException(new FormData()));assert.equal(clients,0);assert.deepEqual(calls,[]);}
   }
 });
 test('administrator must explicitly acknowledge receipt; invalid amount and RPC errors never masquerade as credited',async()=>{
@@ -93,8 +93,8 @@ test('administrator must explicitly acknowledge receipt; invalid amount and RPC 
   for(const patch of [{received:false},{amount:1.001},{amount:NaN},{orderId:'bad-id'}])await assert.rejects(admin.confirmManualCheckoutPayment({...input,...patch}));assert.equal(calls,0);
   await assert.rejects(admin.confirmManualCheckoutPayment(input),/No se pudo acreditar/);assert.equal(calls,1);
 });
-test('cash is allowed only for pickup; payment status fields and automatic methods are not client capabilities',()=>{
-  assert.equal(contract.parseCheckoutRequest({...payload,paymentMethod:'cash'}).paymentMethod,'cash');
+test('cash is denied including pickup; payment status fields and automatic methods are not client capabilities',()=>{
+  assert.throws(()=>contract.parseCheckoutRequest({...payload,paymentMethod:'cash'}));
   for(const input of [{...payload,paymentMethod:'cash',shipping:{method:'shipping',carrier:'Andreani',province:'Synthetic',city:'Synthetic',address:'Synthetic',postalCode:'FIXTURE'}},{...payload,paid:true},{...payload,paymentStatus:'paid'},{...payload,paymentMethod:'card'}])assert.throws(()=>contract.parseCheckoutRequest(input));
 });
 test('automatic payment endpoints return 410 for every legacy/new/forged order without importing SDK or clients',async()=>{
@@ -103,25 +103,25 @@ test('automatic payment endpoints return 410 for every legacy/new/forged order w
     assert.doesNotMatch(readFileSync(new URL('../'+file,import.meta.url),'utf8'),/import|fetch\(|getSupabase|MercadoPagoConfig|request\.json/);
   }
 });
-test('actual public cart and checkout render transfer/cash only; forged legacy payment URL cannot start checkout',()=>{
+test('actual public cart and checkout render transfer only; forged legacy payment URL cannot start checkout',()=>{
   const pricing=load('lib/pricing.ts');const item={productId:product,name:'Synthetic',slug:'synthetic',category:'perfumes',quantity:1,stock:3,price:100,transferPrice:80};
   const store={useCartStore:()=>({items:[item],totalItems:1,subtotal:100,clearCart:()=>{},removeItem:()=>{},increaseQuantity:()=>{},decreaseQuantity:()=>{}})};
   const modules={'react':React,'react/jsx-runtime':jsxRuntime,'@/lib/pricing':pricing,'@/store/cart-store':store,'@/lib/payment':{transferPayment:{alias:'synthetic',holder:'Synthetic',provider:'Synthetic',taxId:'synthetic'}},'@/lib/checkout/guest-client':{ensureGuestCheckoutSession:async()=>{}},'@/lib/checkout/argentina':load('lib/checkout/argentina.ts',{'./contract':contract}),'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'@/services/orders':{createOrderFromCheckout:()=>{throw Error('Unexpected checkout');}},'next/navigation':{useRouter:()=>({push:()=>{throw Error('Unexpected navigation');}}),useSearchParams:()=>new URLSearchParams('payment=cash')}};
-  const cart=load('app/carrito/page.tsx',modules);const html=renderToStaticMarkup(React.createElement(cart.default));assert.match(html,/Transferencia bancaria/);assert.match(html,/Efectivo al retirar/);assert.doesNotMatch(html,/Mercado Pago|mercadopago/);
-  const checkout=load('app/checkout/page.tsx',modules);const cash=renderToStaticMarkup(React.createElement(checkout.default));assert.match(cash,/Efectivo al retirar en el local/);assert.doesNotMatch(cash,/Mercado Pago|mercadopago/);
+  const cart=load('app/carrito/page.tsx',modules);const html=renderToStaticMarkup(React.createElement(cart.default));assert.match(html,/Transferencia bancaria/);assert.doesNotMatch(html,/Efectivo al retirar/);assert.doesNotMatch(html,/Mercado Pago|mercadopago/);
+  const checkout=load('app/checkout/page.tsx',modules);const cash=renderToStaticMarkup(React.createElement(checkout.default));assert.doesNotMatch(cash,/Efectivo al retirar/);assert.match(cash,/método solicitado no está habilitado/);assert.doesNotMatch(cash,/Mercado Pago|mercadopago/);
   modules['next/navigation'].useSearchParams=()=>new URLSearchParams('payment=mercadopago');const denied=renderToStaticMarkup(React.createElement(checkout.default));assert.match(denied,/método solicitado no está habilitado/);assert.match(denied,/<button[^>]+type="submit"[^>]+disabled/);assert.doesNotMatch(denied,/Mercado Pago/);
 });
-test('cash receipt uses server method and shows pickup coordination without transfer instructions',async()=>{
-  const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/lib/brand':{brand:{hours:'Synthetic',address:'Synthetic'}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:()=>'/synthetic'},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async()=>({id:result.id,order_number:'FIXTURE',total:100,payment_method:'cash',state:'pending',expired:false})},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>{throw Error('Unexpected admin read');}}};
-  const page=load('app/checkout/exito/page.tsx',modules);const html=renderToStaticMarkup(await page.default({searchParams:Promise.resolve({order:result.id,total:'1'})}));assert.match(html,/efectivo al retirar/);assert.doesNotMatch(html,/Datos para transferencia|Mercado Pago/);
+test('legacy cash receipt never offers new web payment instructions',async()=>{
+  const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/components/checkout-payment-report-form':{CheckoutPaymentReportForm:()=>null},'@/lib/brand':{brand:{hours:'Synthetic',address:'Synthetic'}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:()=>'/synthetic'},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async()=>({id:result.id,order_number:'FIXTURE',total:100,payment_method:'cash',state:'pending',expired:false})},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>{throw Error('Unexpected admin read');}}};
+  const page=load('app/checkout/exito/page.tsx',modules);const html=renderToStaticMarkup(await page.default({searchParams:Promise.resolve({order:result.id,total:'1'})}));assert.match(html,/Revisá el estado de tu pedido/);assert.doesNotMatch(html,/Datos para transferencia|Mercado Pago/);
 });
 
-test('receipt transfer instructions and WhatsApp preserve the exact server total including cents',async()=>{
+test('receipt transfer instructions preserve exact server total including cents and require online report',async()=>{
   const messages=[];
-  const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/lib/brand':{brand:{}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:message=>{messages.push(message);return '/synthetic';}},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async()=>({id:result.id,order_number:'FIXTURE',total:157.25,payment_method:'transfer',state:'pending',expired:false,payment_status:'pending'})},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>{throw Error('Unexpected admin read');}}};
+  const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/components/checkout-payment-report-form':{CheckoutPaymentReportForm:()=>null},'@/lib/brand':{brand:{}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:message=>{messages.push(message);return '/synthetic';}},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async()=>({id:result.id,order_number:'FIXTURE',total:157.25,payment_method:'transfer',state:'pending',expired:false,payment_status:'pending'})},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>{throw Error('Unexpected admin read');}}};
   const page=load('app/checkout/exito/page.tsx',modules);
   const html=renderToStaticMarkup(await page.default({searchParams:Promise.resolve({order:result.id,total:'1'})}));
-  assert.match(html,/157,25/);assert.match(messages[0],/157,25/);
+  assert.match(html,/157,25/);assert.match(html,/100%/);assert.match(html,/24 horas/);assert.match(html,/no reemplaza el aviso/);
 });
 
 test('a different verified buyer cannot read a receipt or even query its payment status',async()=>{
@@ -137,11 +137,11 @@ test('a different verified buyer cannot read a receipt or even query its payment
 });
 
 test('buyer receipt distinguishes verified payment status from confirmed reservation and ignores forged URL paid flag',async()=>{
-  const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/lib/brand':{brand:{}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:()=>'/synthetic'},'@/services/checkout-buyer-receipt':{},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>null}};
+  const modules={'react/jsx-runtime':jsxRuntime,'next/link':{default:props=>React.createElement('a',props)},'@/components/checkout-payment-report-form':{CheckoutPaymentReportForm:()=>null},'@/lib/brand':{brand:{}},'@/lib/payment':{transferPayment:{}},'@/lib/whatsapp':{getWhatsAppLink:()=>'/synthetic'},'@/services/checkout-buyer-receipt':{},'@/services/checkout-order-read':{getCheckoutSuccessOrder:()=>null}};
   for(const payment_status of ['pending','paid']){
     modules['@/services/checkout-buyer-receipt'].getBuyerCheckoutReceipt=async()=>({id:result.id,order_number:'FIXTURE',total:100,payment_method:'transfer',state:'confirmed',expired:false,payment_status});
     const page=load('app/checkout/exito/page.tsx',modules);const html=renderToStaticMarkup(await page.default({searchParams:Promise.resolve({order:result.id,paid:'true'})}));
-    if(payment_status==='paid')assert.match(html,/Pago acreditado manualmente/);else{assert.match(html,/pago sigue pendiente de acreditación/);assert.doesNotMatch(html,/Pago acreditado manualmente/);}assert.doesNotMatch(html,/Datos para transferencia|Mercado Pago/);
+    if(payment_status==='paid')assert.match(html,/Pago confirmado/);else{assert.doesNotMatch(html,/Pago confirmado/);}assert.doesNotMatch(html,/Datos para transferencia|Mercado Pago/);
   }
 });
 

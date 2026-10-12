@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { randomUUID, createHash } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
+import { hashStagingSql } from '../scripts/prepare-checkout-staging.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync,readFileSync,rmSync } from 'node:fs';
 import { createServer } from 'node:net';
@@ -11,16 +12,19 @@ const root=resolve(import.meta.dirname,'..');
 const manifest=JSON.parse(readFileSync(join(root,'staging/migration-manifest.json'),'utf8'));
 const read=file=>readFileSync(join(root,file),'utf8');
 test('staging history has unique versions and keeps canonical applied SQL byte-identical',()=>{
+  assert.equal(hashStagingSql('select 1;\n'),hashStagingSql('select 1;\r\n'));
+  assert.notEqual(hashStagingSql('select 1;\n'),hashStagingSql('select 2;\n'));
   const versions=manifest.applicationOrder.map(e=>e.stagingFile.split('/').at(-1).split('_')[0]);assert.equal(new Set(versions).size,versions.length);
-  for(const e of manifest.applicationOrder){const sha=s=>createHash('sha256').update(s).digest('hex');assert.equal(sha(read(e.source)),e.sourceSha256);assert.equal(sha(read(e.stagingFile)),e.stagingSha256);if(e.source!=='supabase/schema.sql')assert.equal(read(e.source),read(e.stagingFile));}
+  for(const e of manifest.applicationOrder){assert.equal(hashStagingSql(read(e.source)),e.sourceSha256);assert.equal(hashStagingSql(read(e.stagingFile)),e.stagingSha256);if(e.source!=='supabase/schema.sql')assert.equal(read(e.source),read(e.stagingFile));}
   assert.match(manifest.applicationOrder.find(e=>e.source.endsWith('202609180002_suppliers_admin.sql')).stagingFile,/202609180003_suppliers_admin/);
-  assert.ok(manifest.applicationOrder.at(-1).source.endsWith('202610110007_checkout_storage_review_guards.sql'));
+  assert.ok(manifest.applicationOrder.at(-1).source.endsWith('202610120002_remove_global_reservation_budget.sql'));
 });
 describe('synthetic staging package: complete checkout and reservation lifecycle',{skip:!process.env.SFSTORE_TEST_PG_BIN,concurrency:false},()=>{
   let dir,db,connection,started=false,paidOrder;
   const product='22222222-2222-4222-8222-222222222222',buyer=randomUUID(),admin=randomUUID();
   const request=(method='transfer',shipping={method:'pickup'})=>({customer:{fullName:'Synthetic Guest',phone:'fixture-phone'},paymentMethod:method,shipping,items:[{productId:product,quantity:2}]});
-  const create=async(body=request(),key=randomUUID(),client=db)=>(await client.query('select create_checkout_atomic($1,$2,$3) result',[buyer,key,body])).rows[0].result;
+  const buyers=new Map();
+  const create=async(body=request(),key=randomUUID(),client=db)=>{if(!buyers.has(key))buyers.set(key,buyers.size===0?buyer:randomUUID());return(await client.query('select create_checkout_atomic($1,$2,$3) result',[buyers.get(key),key,body])).rows[0].result;};
   const stock=async()=>(await db.query('select stock from products where id=$1',[product])).rows[0].stock;
   function run(bin,args){const r=spawnSync(join(process.env.SFSTORE_TEST_PG_BIN,bin),args,{encoding:'utf8',timeout:60000});assert.equal(r.status,0,r.stderr||r.error?.message);}
   before(async()=>{
@@ -34,7 +38,7 @@ describe('synthetic staging package: complete checkout and reservation lifecycle
     await db.query(read('staging/supabase/seed.sql'));await db.query('set role service_role');
   });
   after(async()=>{if(db)await db.end();if(started)run('pg_ctl',['-D',join(dir,'data'),'-m','immediate','-w','stop']);if(dir)rmSync(dir,{recursive:true,force:true});});
-  test('all 24 staging migrations apply in order; 24h reservation and single 25% freeze survive retries',async()=>{
+  test('all 26 staging migrations apply in order; 24h reservation and single 25% freeze survive retries',async()=>{
     const key=randomUUID(),body=request(),first=await create(body,key);assert.equal(first.total,150);assert.equal(first.discount,50);assert.equal(first.shippingCost,0);assert.equal(await stock(),28);
     const op=(await db.query('select buyer_id,extract(epoch from expires_at-created_at)::float8 duration from checkout_operations where order_id=$1',[first.id])).rows[0];assert.equal(op.buyer_id,buyer);assert.ok(op.duration>86399 && op.duration<=86400);
     await db.query('update products set price=200,transfer_price=150 where id=$1',[product]);assert.deepEqual(await create(body,key),first);assert.equal(await stock(),28);await db.query('update products set price=100,transfer_price=75 where id=$1',[product]);paidOrder=first;
@@ -47,8 +51,8 @@ describe('synthetic staging package: complete checkout and reservation lifecycle
     assert.equal((await db.query('select expire_checkout_reservations(100) result')).rows[0].result.released,0);assert.equal(await stock(),28);
     assert.equal((await db.query('select count(*)::int n from checkout_manual_payments where order_id=$1',[paidOrder.id])).rows[0].n,1);
   });
-  test('cash pending reserve expires and releases exactly once without changing paid order',async()=>{
-    const order=await create(request('cash'));assert.equal(await stock(),26);
+  test('cash is denied; transfer expiry releases once without changing paid order',async()=>{
+    await assert.rejects(create(request('cash')),/CHECKOUT_INVALID_REQUEST/);const order=await create();assert.equal(await stock(),26);
     assert.equal((await db.query('select expire_checkout_reservations(100) result')).rows[0].result.released,0);
     await db.query("update checkout_operations set expires_at=clock_timestamp()-interval '1 second' where order_id=$1",[order.id]);
     assert.equal((await db.query('select expire_checkout_reservations(100) result')).rows[0].result.released,1);assert.equal(await stock(),28);

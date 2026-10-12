@@ -1,13 +1,13 @@
 import { CheckoutError, isUuid, parseCheckoutRequest, type CheckoutRequest } from "./contract";
 import { parseShippingDestination, type ShippingDestination } from "./argentina";
-import { readCheckoutBody } from "./http";
+import { assertCheckoutOrigin, readCheckoutBody } from "./http";
 export async function handleShippingAction(request: Request, dependencies: {
   authorize: () => Promise<string|null>;
   perform: (buyer: string, input: ShippingDestination | CheckoutRequest) => Promise<unknown>;
 }, mode: "rates" | "request") {
   const headers = { "Cache-Control": "no-store" };
   try {
-    if (request.headers.get("origin") !== new URL(request.url).origin) throw new CheckoutError("CHECKOUT_ORIGIN_DENIED",403);
+    assertCheckoutOrigin(request);
     if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") throw new CheckoutError("CHECKOUT_INVALID_REQUEST",415);
     const buyer = await dependencies.authorize();
     if (!isUuid(buyer)) throw new CheckoutError("CHECKOUT_UNAUTHORIZED",401);

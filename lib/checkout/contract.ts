@@ -2,7 +2,7 @@ export type CheckoutRequest = {
   operationKey: string;
   customer: { fullName: string; phone: string; email?: string };
   shipping: { method: "pickup" | "shipping"; province?: string; city?: string; address?: string; postalCode?: string; carrier?: "Correo Argentino" | "Andreani" | "Via Cargo"; quoteKey?: string };
-  paymentMethod: "transfer" | "cash";
+  paymentMethod: "transfer";
   items: { productId: string; quantity: number }[];
 };
 export type CheckoutResult = {
@@ -23,11 +23,10 @@ export function parseCheckoutRequest(value: unknown): CheckoutRequest {
   const bad = () => { throw new CheckoutError("CHECKOUT_INVALID_REQUEST", 400); };
   if (!record(value)) return bad();
   keys(value, ["operationKey", "customer", "shipping", "paymentMethod", "items"]);
-  if (!isUuid(value.operationKey) || !["transfer","cash"].includes(value.paymentMethod as string) || !record(value.customer) || !record(value.shipping)) return bad();
+  if (!isUuid(value.operationKey) || value.paymentMethod !== "transfer" || !record(value.customer) || !record(value.shipping)) return bad();
   keys(value.customer, ["fullName", "phone", "email"]);
   if (!text(value.customer.fullName,200) || !text(value.customer.phone,80) || (value.customer.email !== undefined && (!text(value.customer.email,254) || !/^\S+@\S+\.\S+$/.test(value.customer.email as string)))) return bad();
   keys(value.shipping, ["method", "province", "city", "address", "postalCode", "carrier", "quoteKey"]);
-  if (value.paymentMethod === "cash" && value.shipping.method !== "pickup") return bad();
   if (!["pickup","shipping"].includes(value.shipping.method as string)) return bad();
   for (const [key, field] of Object.entries(value.shipping)) {
     if (key !== "method" && !text(field, 300)) return bad();

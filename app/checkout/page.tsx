@@ -10,7 +10,7 @@ import { CheckoutCaptcha } from "@/components/checkout-captcha";
 import { createOrderFromCheckout, getCheckoutOperationKey } from "@/services/orders";
 import { useCartStore } from "@/store/cart-store";
 
-type PaymentMethod = "transfer" | "cash";
+
 type DeliveryMethod = "pickup" | "shipping";
 type Carrier = "Correo Argentino" | "Andreani" | "Via Cargo" | "";
 
@@ -41,8 +41,8 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedPayment = searchParams.get("payment");
-  const unsupportedPayment = !!requestedPayment && !["transfer","cash"].includes(requestedPayment);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(requestedPayment === "cash" ? "cash" : "transfer");
+  const unsupportedPayment = !!requestedPayment && requestedPayment !== "transfer";
+  const paymentMethod = "transfer";
 
   const { items, totalItems, subtotal, clearCart } = useCartStore();
   const [form, setForm] = useState<CheckoutForm>({
@@ -66,12 +66,8 @@ function CheckoutContent() {
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const checkoutLabel =
-    paymentMethod === "transfer"
-      ? "Preparar pedido por transferencia"
-      : "Preparar pedido para pagar al retirar";
-  const paymentLabel =
-    paymentMethod === "transfer" ? "Transferencia bancaria" : "Efectivo al retirar";
+  const checkoutLabel = "Preparar pedido por transferencia";
+  const paymentLabel = "Transferencia bancaria";
   const shippingRequired = form.deliveryMethod === "shipping";
 
 
@@ -125,7 +121,7 @@ function CheckoutContent() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (unsupportedPayment || (paymentMethod === "cash" && form.deliveryMethod !== "pickup") || submissionLock.current || !validateForm()) {
+    if (unsupportedPayment || submissionLock.current || !validateForm()) {
       return;
     }
 
@@ -339,7 +335,7 @@ function CheckoutContent() {
 
                   <button
                     type="button"
-                    disabled={paymentMethod === "cash"}
+
                     onClick={() => updateField("deliveryMethod", "shipping")}
                     className={`rounded-2xl border p-4 text-left transition ${
                       form.deliveryMethod === "shipping"
@@ -521,7 +517,7 @@ function CheckoutContent() {
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <p>25% de descuento en productos por transferencia y efectivo. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
+                <p>25% de descuento en productos por transferencia. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
                   <span className="font-semibold">Total final</span>
                   <span className="font-semibold text-[#003B73]">
@@ -539,25 +535,13 @@ function CheckoutContent() {
                   <span className="font-semibold text-[#0072CE]">
                     Recomendado:
                   </span>{" "}
-                  el precio queda fijo al crear el pedido. Tenés 24 horas para pagar dentro de la reserva.
+                  el precio queda fijo al crear el pedido. Tenés 24 horas para transferir el 100% del total e informar el pago con comprobante. No se admiten señas ni pagos parciales.
                 </div>
-              ) : (
-                <div className="mt-5 rounded-2xl border border-[#003B73]/20 bg-[#EEF2F6] p-4 text-sm leading-6 text-[#102033]/75">
-                  Pagás en efectivo al retirar en el local. El importe definitivo
-                  se confirma al preparar el pedido.
-                </div>
-              )}
+              ) : null}
 
               <label className="mt-5 grid gap-2 text-sm font-semibold">
                 Método de pago
-                <select value={paymentMethod} onChange={event => {
-                  const method = event.target.value as PaymentMethod;
-                  setPaymentMethod(method);
-                  if (method === "cash") updateField("deliveryMethod", "pickup");
-                }} className="rounded-xl border p-3">
-                  <option value="transfer">Transferencia bancaria</option>
-                  <option value="cash">Efectivo al retirar en el local</option>
-                </select>
+                <select value={paymentMethod} disabled className="rounded-xl border p-3"><option value="transfer">Transferencia bancaria</option></select>
               </label>
               {unsupportedPayment ? <p role="alert" className="mt-3">El método solicitado no está habilitado. Volvé al carrito para elegir un pago manual.</p> : null}
               <CheckoutCaptcha onToken={setCaptchaToken} />

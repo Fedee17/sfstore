@@ -4,6 +4,22 @@ export type CheckoutDependencies = {
   authorize: () => Promise<string | null>;
   create: (buyerId: string, request: CheckoutRequest) => Promise<CheckoutResult>;
 };
+// NextURL normalizes loopback hostnames; Host retains the browser's authority.
+// Compare the exact origin, never forwarded headers or equivalent host aliases.
+export function assertCheckoutOrigin(request: Request) {
+  const url = new URL(request.url);
+  const host = request.headers.get("host");
+  let expected = url.origin;
+  if (host !== null) {
+    let authority: URL;
+    try { authority = new URL(`${url.protocol}//${host}`); }
+    catch { throw new CheckoutError("CHECKOUT_ORIGIN_DENIED",403); }
+    if (authority.host !== host.toLowerCase() || authority.username || authority.password || authority.pathname !== "/" || authority.search || authority.hash)
+      throw new CheckoutError("CHECKOUT_ORIGIN_DENIED",403);
+    expected = authority.origin;
+  }
+  if (request.headers.get("origin") !== expected) throw new CheckoutError("CHECKOUT_ORIGIN_DENIED",403);
+}
 // Bounded streaming read; Content-Length alone is not a trustworthy limit.
 export async function readCheckoutBody(request: Request) {
   const reader = request.body?.getReader();
@@ -25,7 +41,7 @@ export async function readCheckoutBody(request: Request) {
 export async function handleCheckout(request: Request, dependencies: CheckoutDependencies): Promise<Response> {
   const headers = { "Cache-Control": "no-store" };
   try {
-    if (request.headers.get("origin") !== new URL(request.url).origin) throw new CheckoutError("CHECKOUT_ORIGIN_DENIED",403);
+    assertCheckoutOrigin(request);
     if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") throw new CheckoutError("CHECKOUT_INVALID_REQUEST",415);
     const buyer = await dependencies.authorize();
     if (!isUuid(buyer)) throw new CheckoutError("CHECKOUT_UNAUTHORIZED",401);

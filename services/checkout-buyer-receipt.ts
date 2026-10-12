@@ -14,7 +14,9 @@ export async function getBuyerCheckoutReceipt(orderId: string) {
     if (error || !data) return null;
     const { data: payment, error: paymentError } = await client.from("orders").select("payment_status").eq("id",orderId).maybeSingle();
     if (paymentError) return null;
-    return { payment_status: String(payment?.payment_status ?? "pending"), id: orderId, order_number: String(data.result.orderNumber), total: Number(data.result.total), payment_method: (data.result.paymentMethod === "cash" ? "cash" : "transfer") as "transfer" | "cash",
+    const report = await client.from("checkout_payment_reports").select("status,reported_at,operation_key,rejection_reason").eq("order_id",orderId).eq("buyer_id",buyerId).maybeSingle();
+    if(report.error) return null;
+    return { report: report.data as {status:string;reported_at:string|null;operation_key:string;rejection_reason:string|null}|null, payment_status: String(payment?.payment_status ?? "pending"), id: orderId, order_number: String(data.result.orderNumber), total: Number(data.result.total), payment_method: (data.result.paymentMethod === "cash" ? "cash" : "transfer") as "transfer" | "cash",
       state: String(data.state), expiresAt: String(data.expires_at), expired: Date.parse(String(data.expires_at)) <= Date.now() };
   } catch { return null; }
 }

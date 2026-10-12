@@ -233,3 +233,11 @@ Las 36 entradas de dependencias fueron analizadas read-only: [triage](../reports
 ## Registro de Fase 3
 
 [Propuesta validada](../reports/integration-baseline-phase3-20261010.md): PR #1 + Fase 2, merge local `531d411`, 636/636 tests, tsc/build PASS, lint global 0 errores y 11 warnings. QA-01 tiene baseline candidato sin conflictos de lock, pero no comenzó. Requiere aceptación/encargo; no exige migrations productivas para desarrollar su runner. STG-01 y LINT-01 reflejan validación local, sin afirmar integración a main/Production. No se actualizaron dependencias.
+
+## Checkout comercial PAY-01 consolidado para PR #2 — 2026-10-12
+
+Transferencia bancaria única, descuento único del 25%, acreditación manual exacta del 100%, reserva inicial de 24 horas y comprobantes privados. Un aviso oportuno conserva la reserva hasta revisión; el atraso se muestra al administrador. Rechazo con motivo y liberación atómica, auditoría y excepciones temporales autorizadas. Auth, CAPTCHA, RLS e idempotencia conservados; Mercado Pago deshabilitado.
+
+Se conserva la migración 202610120001 y se agrega 202610120002 para retirar el presupuesto global del 80%. Se puede comprar la última unidad disponible; siguen vigentes límites por comprador, frecuencia y bloqueos del stock real. Ambas migraciones se aplicaron exclusivamente al Supabase local.
+
+Resultados finales, alcance de publicación y riesgos operativos: [revisión comercial para PR #2](../reports/checkout-commercial-pr2-review-20261012.md). Los identificadores sintéticos, comprobantes, logs y evidencias detalladas permanecen privados en el entorno local. No se certifica Production; faltan operación del liberador periódico, revisiones atrasadas, retención de archivos abandonados, historial exhaustivo y pruebas de carga sostenida.

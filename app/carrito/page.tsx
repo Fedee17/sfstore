@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { transferPayment } from "@/lib/payment";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/cart-store";
 
-type PaymentMethod = "transfer" | "cash";
+
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -21,8 +20,7 @@ const categoryLabels = {
 } as const;
 
 export default function CartPage() {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<PaymentMethod>("transfer");
+  const selectedPaymentMethod = "transfer";
   const {
     items,
     totalItems,
@@ -38,13 +36,10 @@ export default function CartPage() {
   const whatsappHref = buildWhatsAppUrl([
     "Hola SFSTORE, quiero consultar por estos productos:",
     ...items.map(item => `${item.quantity} x ${item.name}`),
-    `Pago: ${selectedPaymentMethod === "cash" ? "efectivo al retirar" : "transferencia"}.`,
+    "Pago: transferencia bancaria completa.",
     "El precio final con 25% de descuento se confirma al crear el pedido.",
   ].join("\n"));
-  const checkoutLabel =
-    selectedPaymentMethod === "transfer"
-      ? "Continuar con transferencia"
-      : "Continuar con efectivo al retirar";
+  const checkoutLabel = "Continuar con transferencia";
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
@@ -175,7 +170,7 @@ export default function CartPage() {
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <p>25% de descuento por transferencia y efectivo. El servidor calcula y congela el precio final al crear el pedido.</p>
+                <p>25% de descuento por transferencia. El servidor calcula y congela el precio final al crear el pedido.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
                   <span className="font-semibold">Total final</span>
                   <span className="font-semibold text-[#003B73]">
@@ -189,14 +184,12 @@ export default function CartPage() {
                   Método de pago
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                  {selectedPaymentMethod === "transfer"
-                    ? "Transferencia con 25% de descuento sobre lista."
-                    : "Efectivo al retirar con 25% de descuento sobre lista."}
+                  Transferencia con 25% de descuento sobre lista. Pago del 100% del total.
                 </p>
                 <div className="mt-4 grid gap-3">
                   <button
                     type="button"
-                    onClick={() => setSelectedPaymentMethod("transfer")}
+
                     className={`rounded-2xl border p-4 text-left transition ${
                       selectedPaymentMethod === "transfer"
                         ? "border-[#0072CE] bg-[#0072CE]/10"
@@ -216,23 +209,6 @@ export default function CartPage() {
                     </p>
                     <p className="mt-2 text-xs font-semibold text-[#102033]/55">
                       Alias: {transferPayment.alias}
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod("cash")}
-                    className={`rounded-2xl border p-4 text-left transition ${
-                      selectedPaymentMethod === "cash"
-                        ? "border-[#003B73] bg-[#EEF2F6]"
-                        : "border-[#003B73]/15 bg-[#F7F9FC]"
-                    }`}
-                  >
-                    <span className="text-sm font-semibold text-[#003B73]">
-                      Efectivo al retirar
-                    </span>
-                    <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Pagás en efectivo cuando retirás el pedido en el local.
                     </p>
                   </button>
                 </div>

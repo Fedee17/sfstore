@@ -1,10 +1,10 @@
 import { CheckoutError } from "@/lib/checkout/contract";
-import { readCheckoutBody } from "@/lib/checkout/http";
+import { assertCheckoutOrigin, readCheckoutBody } from "@/lib/checkout/http";
 import { ensureCheckoutGuestSession } from "@/services/checkout-guest-session";
 export async function POST(request: Request) {
   const headers = { "Cache-Control": "no-store" };
   try {
-    if (request.headers.get("origin") !== new URL(request.url).origin) throw new CheckoutError("CHECKOUT_ORIGIN_DENIED",403);
+    assertCheckoutOrigin(request);
     if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") throw new CheckoutError("CHECKOUT_INVALID_REQUEST",415);
     const input = await readCheckoutBody(request) as Record<string,unknown>;
     if (!input || typeof input !== "object" || Array.isArray(input) || Object.keys(input).some(key=>!["captchaToken","hasPendingOperation"].includes(key))

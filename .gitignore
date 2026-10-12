@@ -65,3 +65,12 @@ next-env.d.ts
 
 # Supabase CLI metadata is local, never part of a backup.
 /supabase/.temp/
+
+# Private checkout validation evidence: generated local identifiers and logs.
+/reports/checkout-guest-local-diagnosis-20261012.md
+/reports/reservation-expiry-local-*.json
+/reports/reservation-expiry-local-validation-20261012.md
+/reports/transfer-rules-local-*.json
+/reports/transfer-rules-local-validation-20261012.md
+/reports/transfer-rules-*-tests-20261012.log
+/reports/transfer-rules-real-local-*.json

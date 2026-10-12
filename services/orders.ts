@@ -1,7 +1,7 @@
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutResult } from "@/lib/checkout/contract";
 
-export type PaymentMethod = "transfer" | "mercadopago" | "cash";
+export type PaymentMethod = "transfer";
 export type ShippingMethod = "pickup" | "shipping";
 
 export type CheckoutCustomer = {

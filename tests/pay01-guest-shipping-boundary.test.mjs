@@ -86,3 +86,21 @@ test('verified anonymous buyer uses its checkout cookie identity; invalid guest 
  const loaded=load('services/checkout-server.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/lib/supabase/server':{},'@/lib/supabase/auth-server':{hasCheckoutSessionCookie:async()=>true,getSupabaseAuthServerClient:async options=>{if(!options?.checkout)legacyCalls++;return{auth:{getUser:async()=>({data:{user:valid?{id:buyer,is_anonymous:true}:null},error:valid?null:Error('synthetic invalid cookie')})}};}}});
  assert.equal(await loaded.authorizeCheckoutBuyer(),buyer);valid=false;assert.equal(await loaded.authorizeCheckoutBuyer(),null);assert.equal(legacyCalls,0);
 });
+
+
+test('normalized Next loopback URL uses exact Host origin for session, checkout and shipping without accepting aliases or forwarded hosts',async()=>{
+ const url='http://localhost:3107/api/checkout/session';
+ const req=(origin,host='127.0.0.1:3107',extra={})=>new Request(url,{method:'POST',headers:{host,origin,'content-type':'application/json',...extra},body:JSON.stringify({hasPendingOperation:false})});
+ let calls=0;
+ const route=load('app/api/checkout/session/route.ts',{'@/lib/checkout/contract':contract,'@/lib/checkout/http':http,'@/services/checkout-guest-session':{ensureCheckoutGuestSession:async()=>{calls++;return{ready:true};}}});
+ assert.equal((await route.POST(req('http://127.0.0.1:3107'))).status,200);
+ assert.equal(calls,1);
+ const shipping=load('lib/checkout/shipping-http.ts',{'./contract':contract,'./argentina':argentina,'./http':http});
+ for(const r of [req('http://localhost:3107'),req('https://attacker.invalid'),req('http://127.0.0.1:3108'),req('https://127.0.0.1:3107'),req('null'),req('http://127.0.0.1:3107','attacker.invalid',{'x-forwarded-host':'127.0.0.1:3107'}),req('http://127.0.0.1:3107','127.0.0.1:3107/path'),req('http://127.0.0.1:3107','user@127.0.0.1:3107')]){
+  assert.equal((await route.POST(r.clone())).status,403);
+  const deps={authorize:async()=>{throw Error('Must reject before Auth');},create:async()=>{},perform:async()=>{}};
+  assert.equal((await http.handleCheckout(r.clone(),deps)).status,403);
+  assert.equal((await shipping.handleShippingAction(r.clone(),deps,'rates')).status,403);
+ }
+ assert.equal(calls,1);
+});
