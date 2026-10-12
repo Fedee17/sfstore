@@ -241,3 +241,11 @@ Transferencia bancaria única, descuento único del 25%, acreditación manual ex
 Se conserva la migración 202610120001 y se agrega 202610120002 para retirar el presupuesto global del 80%. Se puede comprar la última unidad disponible; siguen vigentes límites por comprador, frecuencia y bloqueos del stock real. Ambas migraciones se aplicaron exclusivamente al Supabase local.
 
 Resultados finales, alcance de publicación y riesgos operativos: [revisión comercial para PR #2](../reports/checkout-commercial-pr2-review-20261012.md). Los identificadores sintéticos, comprobantes, logs y evidencias detalladas permanecen privados en el entorno local. No se certifica Production; faltan operación del liberador periódico, revisiones atrasadas, retención de archivos abandonados, historial exhaustivo y pruebas de carga sostenida.
+
+## PAY-01 — Ejecutor de vencimientos preparado localmente (2026-10-12)
+
+Migración aditiva 202610120003: capacidad SQL privada de mínimo privilegio para reutilizar el liberador existente, auditoría por ejecución/SQLSTATE y monitoreo de backlog/heartbeat. Panel administrativo conserva la liberación manual y muestra últimos lotes, reservas demoradas, avisos protegidos y fallos de supervisión. Payload transaccional probado para Supabase Cron cada cinco minutos, sin crear/activar jobs ni instalar extensiones. Sin endpoint público ejecutor ni credencial de login del ejecutor. Publicación para revisión autorizada; sin merge, deploy o Production.
+
+[Diseño y activación futura](CHECKOUT_RESERVATION_EXECUTOR.md); [revisión agregada para PR #2](../reports/checkout-expiration-pr2-review-20261012.md). La activación real, alertas externas, retención de logs y pruebas de capacidad requieren otro encargo explícito. Auditoría transaccional se revierte con un rollback exterior: se complementará con historial de cron y alerta por ausencia de actividad.
+
+Auditoría para publicación: migración aditiva 202610120004 corrige precedencia implícita de pg_temp en el trigger legado de inventario; conserva 003 y ACL. Regresión con principal SQL sintético sin privilegios de DBA y tablas temporales del caller; el ejecutor no acredita pagos, cambia pedidos arbitrarios ni lee datos privados. Ver resultados de la revisión enlazada.

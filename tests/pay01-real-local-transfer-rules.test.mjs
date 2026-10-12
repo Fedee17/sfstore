@@ -28,7 +28,7 @@ test('transfer-only checkout, protected reports and reservation abuse controls w
  const late=async(order)=>{await db.query("update checkout_operations set expires_at=(select reported_at+interval '1 millisecond' from checkout_payment_reports where order_id=$1) where order_id=$1",[order]);};
  const releaseCount=async(order)=>Number((await q("select count(*) n from inventory_movements where order_id=$1 and movement_type='release'",[order]))[0].n);
  try{
-  assert.equal((await q('select id from sfstore_staging.identity'))[0].id,'SFSTORE_SYNTHETIC_STAGING');assert.equal((await q("select count(*)::int n from supabase_migrations.schema_migrations"))[0].n,26);
+  assert.equal((await q('select id from sfstore_staging.identity'))[0].id,'SFSTORE_SYNTHETIC_STAGING');assert.equal((await q("select count(*)::int n from supabase_migrations.schema_migrations"))[0].n,28);
   const {chromium}=createRequire(import.meta.url)(process.env.SFSTORE_TEST_PLAYWRIGHT_MODULE);browser=await chromium.launch({headless:true,channel:'msedge'});
   const g=await guest(),other=await guest();const p=await product();let first;let reportKey=randomUUID();
   await check('guest browser checkout with real Turnstile, 25 percent discount and 24 hour reservation',async()=>{

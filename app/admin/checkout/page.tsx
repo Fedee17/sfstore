@@ -1,14 +1,26 @@
 import Link from "next/link";
 import { requireAdminSession } from "@/lib/admin-session";
-import { listManualCheckoutOrders, listShippingQuotationRequests } from "@/services/checkout-manual-admin";
+import { listManualCheckoutOrders, listShippingQuotationRequests, getCheckoutExpirationHealth } from "@/services/checkout-manual-admin";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { ManualCheckoutPaymentForm, ReleaseCheckoutReservationsForm, RejectCheckoutPaymentForm, CheckoutBuyerExceptionForm } from "@/components/admin/checkout-manual-forms";
 export default async function CheckoutAdministrationPage({searchParams}:{searchParams:Promise<{page?:string}>}) {
   const rawPage=Number((await searchParams).page??0);const page=Number.isInteger(rawPage)&&rawPage>=0&&rawPage<=10000?rawPage:0;
   await requireAdminSession();
-  const [orders,quotations] = await Promise.all([listManualCheckoutOrders(page),listShippingQuotationRequests()]);
+  const [orders,quotations,health] = await Promise.all([listManualCheckoutOrders(page),listShippingQuotationRequests(),getCheckoutExpirationHealth().catch(()=>null)]);
   return <main><AdminNav /><section className="mx-auto max-w-4xl p-6">
     <h1 className="text-3xl font-semibold">Pedidos web y pagos manuales</h1>
+    <section className="my-6 rounded border p-4" aria-label="Supervisión de reservas">
+      <h2 className="text-xl font-semibold">Supervisión de reservas</h2>
+      {!health ? <p role="alert">No se pudo consultar la supervisión. Revisá el estado del ejecutor; la liberación manual sigue disponible.</p> : <>
+        <p>{health.monitoringEnabled ? "Ejecución automática esperada cada 5 minutos." : "Ejecución automática preparada, no activada."}</p>
+        <p>Vencidas sin aviso pendientes de liberar: {health.due}. Protegidas por aviso en revisión: {health.protectedReports}.</p>
+        <p>Último lote procesado: {health.lastProgressAt ?? "Sin ejecuciones registradas"}. Estado más reciente: {health.lastRunStatus ?? "Sin ejecuciones"}.</p>
+        {["partial","failed"].includes(health.lastRunStatus ?? "") ? <p role="alert">La última ejecución registró errores. Revisá el historial y los bloqueos; el siguiente lote puede reintentar las reservas pendientes.</p> : null}
+        {health.heartbeatOverdue ? <p role="alert">Ejecutor atrasado: no registró un lote procesado dentro del plazo de supervisión.</p> : null}
+        {health.backlogOverdue ? <p role="alert">Hay reservas vencidas demoradas. Revisá bloqueos, errores y la próxima ejecución o liberá manualmente.</p> : null}
+        <details><summary>Últimas 10 ejecuciones</summary><ul>{health.recentRuns.map((run,index)=><li key={index}>{run.finished_at} · {run.status} · liberadas: {run.released} · pendientes: {run.due_after} · errores: {run.failed_orders}</li>)}</ul></details>
+      </>}
+    </section>
     <ReleaseCheckoutReservationsForm />
     <p>Página {page+1}, hasta 100 pedidos. Pendientes primero, del más antiguo al más reciente. Sólo la acreditación bancaria completa confirma el pago. El aviso del comprador conserva la reserva hasta una decisión explícita.</p>
     <h2 className="mt-6 text-xl font-semibold">Solicitudes de cotización (sin pedido ni reserva)</h2>

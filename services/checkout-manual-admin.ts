@@ -62,3 +62,15 @@ export async function authorizeBuyerException(form:FormData) {
  const r=await getSupabaseAdminClient().rpc("set_checkout_buyer_exception",{p_buyer_id:buyer,p_admin_id:admin.id,p_hours:numbers[0],p_pending:numbers[1],p_units:numbers[2],p_product_units:numbers[3],p_reports:numbers[4],p_reason:String(form.get("reason")??"")});
  if(r.error)throw new Error("No se pudo autorizar la excepción.");
 }
+
+export type CheckoutExpirationHealth = {
+  monitoringEnabled: boolean; intervalSeconds: number; due: number; oldestDueAt: string | null;
+  protectedReports: number; lastProgressAt: string | null; heartbeatOverdue: boolean; backlogOverdue: boolean;
+  lastRunStatus: string | null; recentRuns: { finished_at: string; status: string; released: number; due_after: number; failed_orders: number }[];
+};
+export async function getCheckoutExpirationHealth(): Promise<CheckoutExpirationHealth> {
+  await requireAdminActionSession();
+  const { data, error } = await getSupabaseAdminClient().rpc("get_checkout_expiration_health");
+  if (error || !data) throw new Error("No se pudo consultar la supervisión de reservas.");
+  return { ...data, backlogOverdue: data.backlogOverdue === true } as CheckoutExpirationHealth;
+}

@@ -74,3 +74,6 @@ next-env.d.ts
 /reports/transfer-rules-local-validation-20261012.md
 /reports/transfer-rules-*-tests-20261012.log
 /reports/transfer-rules-real-local-*.json
+
+# Private executor preparation report; publish only the aggregated PR review.
+/reports/checkout-expiration-executor-local-20261012.md

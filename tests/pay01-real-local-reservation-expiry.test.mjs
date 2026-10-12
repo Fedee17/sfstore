@@ -29,7 +29,7 @@ test('real local reservation expiry: authorization, exactly-once, locks, concurr
   let browser,adminPage,adminContext,publicContext,guest,paid,vigente;
   try{
     assert.equal((await db.query('select id from sfstore_staging.identity')).rows[0].id,'SFSTORE_SYNTHETIC_STAGING');
-    assert.equal((await db.query('select count(*)::int n from supabase_migrations.schema_migrations')).rows[0].n,26);
+    assert.equal((await db.query('select count(*)::int n from supabase_migrations.schema_migrations')).rows[0].n,28);
     await db.query("insert into products(id,category_id,name,slug,short_description,price,transfer_price,stock,status) values($1,'11111111-1111-4111-8111-111111111111','Synthetic Expiry Regression',$2,'Synthetic local only',100,75,30,'active')",[product,'synthetic-expiry-'+product]);
     // The unfiltered admin mechanism must never touch unrelated business rows.
     const unsafe=(await db.query(`select count(*)::int n from orders o where not exists(select 1 from checkout_operations c where c.order_id=o.id) or not exists(select 1 from order_items i where i.order_id=o.id) or exists(select 1 from order_items i join products p on p.id=i.product_id where i.order_id=o.id and p.slug<>'staging-synthetic-product' and p.slug not like 'synthetic-%')`)).rows[0].n;assert.equal(unsafe,0);
@@ -44,7 +44,7 @@ test('real local reservation expiry: authorization, exactly-once, locks, concurr
     const actor=await auth.auth.getUser();assert.equal(actor.error,null);assert.equal(actor.data.user.id,adminId);assert.equal(actor.data.user.is_anonymous,false);
     const {chromium}=createRequire(import.meta.url)(process.env.SFSTORE_TEST_PLAYWRIGHT_MODULE);browser=await chromium.launch({headless:true,channel:'msedge'});
     adminContext=await browser.newContext();await adminContext.addCookies(jar.map(c=>({name:c.name,value:c.value,url:base,httpOnly:true,sameSite:'Lax'})));
-    adminPage=await adminContext.newPage();await adminPage.goto(base+'/admin/checkout');await adminPage.getByRole('heading',{name:'Pedidos web y pagos manuales'}).waitFor();
+    adminPage=await adminContext.newPage();await adminPage.goto(base+'/admin/checkout');await adminPage.getByRole('heading',{name:'Pedidos web y pagos manuales'}).waitFor();await adminPage.getByRole('heading',{name:'Supervisión de reservas',exact:true}).waitFor();await adminPage.getByText('Ejecución automática preparada, no activada.',{exact:true}).waitFor();
     publicContext=await browser.newContext();
     guest=createClient(url,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
     const signed=await guest.auth.signInAnonymously({options:{captchaToken:'XXXX.DUMMY.TOKEN.XXXX'}});assert.equal(signed.error,null);
