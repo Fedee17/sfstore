@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-10",
+  "pr": {
+    "number": 1,
+    "url": "https://github.com/Fedee17/sfstore/pull/1",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "base": "7a8a105c968f84ba9f58ee1dfd018f27bf6ac3a6",
+    "head": "be2549237667a08f7ab3618b6e41147f1ba8d684",
+    "files": [
+      "app/admin/productos/actions.ts",
+      "app/checkout/exito/page.tsx",
+      "app/checkout/fallo/page.tsx",
+      "app/checkout/page.tsx",
+      "app/checkout/pendiente/page.tsx",
+      "app/producto/[slug]/page.tsx",
+      "components/site-header.tsx",
+      "docs/AUTONOMOUS_PROGRESS.md",
+      "lib/products/product-image-deletion.ts",
+      "lib/products/storage-task-processor.ts",
+      "package-lock.json",
+      "package.json",
+      "reports/product-storage-task-processor.md",
+      "scripts/cleanup-product-images.ts",
+      "scripts/process-product-storage-tasks.ts",
+      "supabase/migrations/202610100001_product_storage_task_results.sql",
+      "supabase/migrations/202610100002_durable_admin_image_delete.sql",
+      "tests/product-image-delete-safety.test.mjs",
+      "tests/product-storage-task-processor.test.mjs"
+    ]
+  },
+  "integration": {
+    "branch": "codex/integration-storage-phase2",
+    "worktree": "/workspace/sfstore-integration-phase3",
+    "commit": "531d411c72cd22555abab02ba356a50a434abbcd",
+    "parents": [
+      "33d908a",
+      "be25492"
+    ],
+    "conflicts": [],
+    "original_blobs_preserved": true
+  },
+  "validation": {
+    "npm_ci": "406 packages, passed",
+    "focused_tests": {
+      "passed": 131,
+      "failed": 0,
+      "skipped": 0
+    },
+    "full_tests": {
+      "passed": 636,
+      "failed": 0,
+      "skipped": 0
+    },
+    "typescript": "passed",
+    "build": "passed",
+    "eslint": {
+      "errors": 0,
+      "warnings": 11
+    },
+    "sql_catalog_verification": {
+      "syntheticOnly": true,
+      "before": {
+        "tasks_table_exists": true,
+        "operations_table_exists": true,
+        "previous_delete_rpc_exists": true,
+        "enqueue_rpc_exists": true,
+        "result_nullable_jsonb_without_default": false,
+        "wrapper_invoker_jsonb": false,
+        "wrapper_search_path_expected": false,
+        "wrapper_argument_names_expected": false,
+        "service_role_execute": false,
+        "anon_execute_denied": false,
+        "authenticated_execute_denied": false,
+        "public_execute_denied": false
+      },
+      "after": {
+        "tasks_table_exists": true,
+        "operations_table_exists": true,
+        "previous_delete_rpc_exists": true,
+        "enqueue_rpc_exists": true,
+        "result_nullable_jsonb_without_default": true,
+        "wrapper_invoker_jsonb": true,
+        "wrapper_search_path_expected": true,
+        "wrapper_argument_names_expected": true,
+        "service_role_execute": true,
+        "anon_execute_denied": true,
+        "authenticated_execute_denied": true,
+        "public_execute_denied": true
+      }
+    },
+    "scope": "synthetic local PostgreSQL and Storage fixtures, no Production credentials or writes"
+  },
+  "dependencies": {
+    "unchanged_existing_versions": true,
+    "added_direct": {
+      "pg": "8.23.1",
+      "@types/pg": "8.23.1"
+    },
+    "new_audit_entries": [],
+    "current_baseline_counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 13,
+      "critical": 1,
+      "total": 15
+    },
+    "current_combined_counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 13,
+      "critical": 1,
+      "total": 15
+    },
+    "pg_chain_flagged": false,
+    "note": "Historical audit contained 36 entries; current read-only responses contain 15 on both unchanged baseline and integration. No dependency remediation performed."
+  },
+  "qa01": {
+    "state": "prepared_not_implemented",
+    "requires": [
+      "accept proposed local baseline",
+      "assign QA-01 scope"
+    ],
+    "does_not_require": [
+      "Production migration",
+      "Production deploy",
+      "real Storage access"
+    ]
+  },
+  "limitations": [
+    "Production schema, ACL, bucket policy and active deployments not inspected.",
+    "Physical cleanup remains disabled.",
+    "Migration compatibility verified on synthetic schema, not on Production drift.",
+    "Next.js/xlsx advisories remain pending independent tasks.",
+    "Codex artifact attachment failed on transport; PR metadata and diff were accessible through GitHub connector."
+  ]
+}

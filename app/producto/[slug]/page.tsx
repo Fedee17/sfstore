@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
@@ -171,7 +172,7 @@ function PricePanel({
               Pagando por transferencia o efectivo accedÃ©s al mejor precio.
             </p>
             <p className="mt-2 break-words text-sm text-[#102033]/55">
-              Mercado Pago y tarjeta usan precio lista.
+              Podés pagar por transferencia o en efectivo al retirar.
             </p>
           </div>
           <div className="min-w-0 rounded-2xl border border-[#003B73]/15 bg-white/70 p-4">
@@ -242,12 +243,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </a>
 
         <nav className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-[#102033]/60">
-          <a
+          <Link
             className="font-medium text-[#003B73] transition hover:text-[#0072CE]"
             href="/"
+            prefetch={false}
           >
             Inicio
-          </a>
+          </Link>
           <span>/</span>
           <a
             className="font-medium text-[#003B73] transition hover:text-[#0072CE]"

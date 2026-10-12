@@ -80,7 +80,7 @@ export function buildCartWhatsAppMessage(
   totals: CartWhatsAppTotals,
 ) {
   const paymentLabel =
-    paymentMethod === "transfer" ? "efectivo/transferencia" : "Mercado Pago";
+    paymentMethod === "transfer" ? "efectivo/transferencia" : paymentMethod === "cash" ? "efectivo al retirar" : "Mercado Pago";
   const lines = cartItems.map((item) => {
     const unitPrice =
       paymentMethod === "transfer" ? getTransferUnitPrice(item) : item.price;

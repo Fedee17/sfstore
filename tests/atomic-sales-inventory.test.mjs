@@ -13,7 +13,7 @@ const migration = source(
   "202609170003_atomic_sales_inventory.sql",
 );
 const inventoryService = source("services", "inventory.ts");
-const webhook = source("app", "api", "mercadopago", "webhook", "route.ts");
+const webhook = source("lib", "payments", "legacy-mercadopago", "webhook.ts");
 const orderActions = source("app", "admin", "pedidos", "actions.ts");
 const inventoryPage = source("app", "admin", "inventario", "page.tsx");
 const purchaseMigration = source(
@@ -123,7 +123,7 @@ test("the service delegates stock math and movement creation to one RPC", () => 
   assert.doesNotMatch(saleBlock, /\.from\("inventory_movements"\)[\s\S]+\.insert/i);
 });
 
-test("Mercado Pago retries keep using the idempotent inventory service", () => {
+test("archived Mercado Pago retries preserve the idempotent inventory service", () => {
   assert.match(
     webhook,
     /entryStatus === "approved"[\s\S]+paymentStatus === "paid"[\s\S]+decreaseStockForOrder\(order\.id\)/i,

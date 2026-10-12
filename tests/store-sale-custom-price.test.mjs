@@ -13,7 +13,6 @@ const actions = source("app", "admin", "ventas", "actions.ts");
 const service = source("services", "store-sales.ts");
 const detail = source("app", "admin", "ventas", "[id]", "page.tsx");
 const inventoryMigration = source("supabase", "migrations", "202609170003_atomic_sales_inventory.sql");
-const checkout = source("services", "orders.ts");
 const model = await import(pathToFileURL(join(root, "lib", "store-sales.ts")).href);
 
 test("initial unit price keeps transfer-first catalog policy", () => {
@@ -135,8 +134,8 @@ test("existing store-sale details remain snapshot-readable", () => {
   assert.match(detail, /Precio/i);
 });
 
-test("web checkout remains unchanged", () => {
-  assert.match(checkout, /channel: "web"/i);
+test("web checkout preserves its channel across the server migration", () => {
+  assert.match(readFileSync(new URL("../supabase/migrations/202610110002_pay01_atomic_checkout.sql", import.meta.url), "utf8"), /values\(order_id,customer_id,order_number,'web'/i);
   assert.doesNotMatch(migration, /channel\s*=\s*'web'|update orders[\s\S]+channel/i);
 });
 

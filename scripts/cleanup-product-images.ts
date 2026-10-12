@@ -5,7 +5,6 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   PRODUCT_IMAGES_BUCKET,
   createSupabaseProductImageDeleteGateway,
-  deleteProductImageWithCompensation,
   getProductImageStoragePath,
   type ProductImageMetadata,
   type ProductImageDeleteGateway,
@@ -379,7 +378,7 @@ export async function runProductImageCleanup(input: {
   gateway: ProductImageDeleteGateway;
   log(message: string): void;
 }) {
-  const { snapshot, plan, apply, readState, gateway, log } = input;
+  const { snapshot, plan, apply, readState, log } = input;
   const { images, objects } = await readState();
   const result = validateCurrentState(snapshot, plan, images, objects);
   const { summary } = result;
@@ -394,81 +393,17 @@ export async function runProductImageCleanup(input: {
     if (apply) log("NO-OP seguro: limpieza ya completada. Sin escrituras.");
     return result;
   }
+  // Neither a plan approval nor repeated inspection is a conditional DELETE.
+  // Fail before metadata writes as well: legacy cleanup must not leave partial work.
+  throw new Error("STORAGE_CLEANUP_APPLY_DISABLED: conditional deletion required");
 
-  const progress: CleanupProgress = { rowIds: new Set(), paths: new Set() };
-  const revalidate = async (row: ProductImageCleanupPlanRow, metadataDeleted = false) => {
-    try {
-      const state = await readState();
-      const currentProgress = { rowIds: new Set(progress.rowIds), paths: new Set(progress.paths) };
-      if (metadataDeleted) currentProgress.rowIds.add(row.row_id);
-      validateProgress(snapshot, plan, state.images, state.objects, currentProgress);
-      validateOperation(row, state, metadataDeleted);
-    } catch (error) {
-      const message = `ABORT antes de ${row.action} (${row.row_id || row.path}): ${error instanceof Error ? error.message : String(error)}`;
-      log(message);
-      throw new Error(message, { cause: error });
-    }
-  };
-  for (const row of plan) {
-    if (row.action === "KEEP") continue;
-    if (row.action === "REVIEW") {
-      log(`REVIEW RECHAZADO/EXCLUIDO: ${row.product_id} / ${row.row_id}`);
-      continue;
-    }
-    await revalidate(row);
-    if (row.action === "DELETE_BOTH") {
-      let deletedMetadata: ProductImageMetadata | null = null;
-      const guardedGateway: ProductImageDeleteGateway = {
-        ...gateway,
-        async deleteMetadata(productId, imageId) {
-          assertEqual(productId, row.product_id, "Operacion product_id");
-          assertEqual(imageId, row.row_id, "Operacion row_id");
-          await revalidate(row);
-          const deleted = await gateway.deleteMetadata(productId, imageId);
-          deletedMetadata = deleted;
-          return deleted;
-        },
-        async removeStorageObject(path) {
-          assertEqual(path, row.path, "Operacion Storage path");
-          await revalidate(row, true);
-          return gateway.removeStorageObject(path);
-        },
-      };
-      try {
-        const deleted = await deleteProductImageWithCompensation(guardedGateway, {
-          productId: row.product_id, imageId: row.row_id,
-        });
-        if (!deleted.storageDeleted) {
-          if (deletedMetadata) await gateway.restoreMetadata(deletedMetadata);
-          throw new Error(`${row.path} adquirio una referencia compartida; metadata restaurada, Storage conservado.`);
-        }
-      } catch (error) {
-        log(`ABORT ${row.action} (${row.row_id}): ${error instanceof Error ? error.message : String(error)}`);
-        throw error;
-      }
-      progress.rowIds.add(row.row_id);
-    } else if (row.action === "DELETE_STORAGE") {
-      try {
-        await gateway.removeStorageObject(row.path);
-      } catch (error) {
-        log(`ABORT ${row.action} (${row.path}): ${error instanceof Error ? error.message : String(error)}`);
-        throw error;
-      }
-    }
-    progress.paths.add(row.path);
-    log(`${row.action} OK: ${row.row_id || row.path}`);
-  }
-  const final = await readState();
-  const post = validateCurrentState(snapshot, plan, final.images, final.objects);
-  assertEqual(post.phase, "POST-CLEANUP", "Estado final");
-  log("Limpieza aplicada; POST-CLEANUP verificado, sin nuevas acciones destructivas.");
-  return post;
 }
 
 async function main() {
   const unknownArguments = process.argv.slice(2).filter((argument) => argument !== "--apply");
   if (unknownArguments.length > 0) throw new Error(`Argumento desconocido: ${unknownArguments[0]}.`);
   const apply = process.argv.includes("--apply");
+  if (apply) throw new Error("STORAGE_CLEANUP_APPLY_DISABLED: conditional deletion required");
   const client = createClient(
     requiredEnvironment("NEXT_PUBLIC_SUPABASE_URL"), requiredEnvironment("SUPABASE_SERVICE_ROLE_KEY"),
     { auth: { persistSession: false, autoRefreshToken: false } },

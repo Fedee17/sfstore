@@ -21,7 +21,7 @@ type DeletedProductImageMetadata = ProductImageMetadata & {
 export type ProductImageDeleteGateway = {
   readImage(productId: string, imageId: string): Promise<ProductImageMetadata | null>;
   findOtherReferences(imageId: string, url: string, storagePath: string | null): Promise<string[]>;
-  deleteMetadata(productId: string, imageId: string): Promise<DeletedProductImageMetadata>;
+  deleteMetadata(productId: string, imageId: string, image: ProductImageMetadata): Promise<DeletedProductImageMetadata>;
   restoreMetadata(image: ProductImageMetadata): Promise<void>;
   removeStorageObject(storagePath: string): Promise<void>;
 };
@@ -32,6 +32,7 @@ export type ProductImageDeleteResult = {
   storagePath: string | null;
   storageDeleted: boolean;
   storagePreservedForSharedReference: boolean;
+  storageRetainedForDeferredCleanup: boolean;
   remainingImages: number;
 };
 
@@ -43,7 +44,9 @@ export function getProductImageStoragePath(url: string) {
     return null;
   }
 
-  return decodeURIComponent(url.slice(markerIndex + marker.length));
+  const path = decodeURIComponent(url.slice(markerIndex + marker.length).split(/[?#]/)[0]);
+  if (!path || /(^\/|(^|\/)\.\.?(\/|$)|[?#\\])/.test(path)) throw new Error("Ruta Storage invalida.");
+  return path;
 }
 
 function asDeletedMetadata(value: unknown): DeletedProductImageMetadata {
@@ -70,7 +73,7 @@ export async function deleteProductImageWithCompensation(
     image.url,
     storagePath,
   );
-  const deleted = await gateway.deleteMetadata(input.productId, input.imageId);
+  const deleted = await gateway.deleteMetadata(input.productId, input.imageId, image);
 
   if (
     deleted.id !== image.id ||
@@ -129,39 +132,20 @@ export async function deleteProductImageWithCompensation(
       storagePath,
       storageDeleted: false,
       storagePreservedForSharedReference: hasSharedReference,
+      storageRetainedForDeferredCleanup: Boolean(storagePath),
       remainingImages: Number(deleted.remaining_images),
     };
   }
 
-  try {
-    await gateway.removeStorageObject(storagePath);
-  } catch (storageError) {
-    try {
-      await gateway.restoreMetadata(image);
-    } catch (restoreError) {
-      console.error("[product-images] Reconciliacion manual requerida", {
-        productId: input.productId,
-        imageId: input.imageId,
-        storagePath,
-        storageError,
-        restoreError,
-      });
-      throw new Error(
-        "No se pudo borrar el archivo ni restaurar su referencia. Se requiere reconciliacion manual.",
-      );
-    }
-
-    throw new Error(
-      "No se pudo borrar el archivo de Storage. La referencia fue restaurada y no se completo la eliminacion.",
-    );
-  }
-
+  // The durable metadata RPC queued reconciliation in the same transaction.
+  // Retain the object: reference checks cannot make a later Storage DELETE atomic.
   return {
     imageId: image.id,
     productId: image.product_id,
     storagePath,
-    storageDeleted: true,
+    storageDeleted: false,
     storagePreservedForSharedReference: false,
+    storageRetainedForDeferredCleanup: true,
     remainingImages: Number(deleted.remaining_images),
   };
 }
@@ -185,27 +169,44 @@ export function createSupabaseProductImageDeleteGateway(
     },
 
     async findOtherReferences(imageId, url, storagePath) {
-      const { data, error } = await supabase
-        .from("product_images")
-        .select("id, url")
-        .neq("id", imageId);
+      const references: string[] = [];
+      let cursor: string | null = null;
 
-      if (error) throw new Error(error.message);
+      // PostgREST can return fewer rows than requested. Only an empty page
+      // ends the scan; offsets or a short-page check can miss shared objects.
+      for (;;) {
+        let query = supabase
+          .from("product_images")
+          .select("id, url")
+          .neq("id", imageId)
+          .order("id", { ascending: true })
+          .limit(250);
+        if (cursor !== null) query = query.gt("id", cursor);
 
-      return (data ?? [])
-        .filter((row) => {
-          if (row.url === url) return true;
-          return Boolean(
-            storagePath && getProductImageStoragePath(String(row.url ?? "")) === storagePath,
-          );
-        })
-        .map((row) => String(row.id));
+        const { data, error } = await query;
+        if (error) throw new Error(error.message);
+        if (!data?.length) return references;
+
+        for (const row of data) {
+          // Refuse a repeated or unordered page rather than accepting partial
+          // results or looping forever if the cursor is not respected.
+          if (typeof row.id !== "string" || !row.id || (cursor !== null && row.id <= cursor)) {
+            throw new Error("No se pudo avanzar al verificar las referencias compartidas.");
+          }
+          cursor = row.id;
+          if (row.url === url || (storagePath && getProductImageStoragePath(String(row.url ?? "")) === storagePath)) {
+            references.push(row.id);
+          }
+        }
+      }
     },
 
-    async deleteMetadata(productId, imageId) {
-      const { data, error } = await supabase.rpc("delete_product_image_metadata", {
+    async deleteMetadata(productId, imageId, image) {
+      const { data, error } = await supabase.rpc("delete_product_image_metadata_and_queue", {
         p_product_id: productId,
         p_image_id: imageId,
+        p_expected_url: image.url,
+        p_storage_path: getProductImageStoragePath(image.url),
       });
 
       if (error) throw new Error(error.message);
@@ -227,12 +228,9 @@ export function createSupabaseProductImageDeleteGateway(
       if (error) throw new Error(error.message);
     },
 
-    async removeStorageObject(storagePath) {
-      const { error } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .remove([storagePath]);
-
-      if (error) throw new Error(error.message);
+    async removeStorageObject() {
+      // Also protects legacy cleanup callers of this shared gateway.
+      throw new Error("STORAGE_CONDITIONAL_DELETE_UNAVAILABLE");
     },
   };
 }

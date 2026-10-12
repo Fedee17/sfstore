@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SFSTORE Importados
 
-## Getting Started
+Tienda y administración con Next.js 16 App Router, React, TypeScript, Tailwind y Supabase. Catálogo público: Perfumes y Mates; admin: productos, consulta/recomendaciones deterministas, proveedores, compras, pedidos, ventas e inventario. Checkout y Mercado Pago están implementados con limitaciones pendientes; ver [contexto](docs/PROJECT_CONTEXT.md) y [seguridad](docs/SECURITY_RULES.md).
 
-First, run the development server:
+## Desarrollo local
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir http://localhost:3000. Para datos conectados usar un proyecto Supabase de pruebas separado; nunca credenciales productivas. El catálogo puede mostrar datos locales de respaldo cuando Supabase no está disponible: eso no demuestra conexión real. No ejecutar imports, migrations ni limpiadores para iniciar el frontend.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validaciones
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+node --test tests/*.test.mjs
+npm run lint
+npm run build
+npx tsc --noEmit
+npm ls --all --json
+npm audit --json
+```
 
-## Learn More
+Ejecutar primero checks específicos al cambio; tsc después del build evita carreras con tipos generados. Tests PostgreSQL y browser requieren runtimes opcionales: ver [auditoría](docs/PROJECT_AUDIT_2026-10-10.md); informar skips explícitamente. No hay script npm test en el baseline. npm audit no implica que todos los advisories sean explotables; no usar audit fix --force.
 
-To learn more about Next.js, take a look at the following resources:
+## Guías
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [AGENTS](AGENTS.md): autorización, autonomía y límites de trabajo.
+- [Arquitectura](docs/ARCHITECTURE.md), [negocio](docs/BUSINESS_RULES.md) y [diseño](docs/DESIGN_SYSTEM.md).
+- [Backlog](docs/DEVELOPMENT_BACKLOG.md): estado y dependencias; no autoriza ejecutar por sí solo.
+- [Modelo de catálogo](docs/catalog-data-model.md) y [sincronización Sheets](docs/google-sheets-product-sync.md).
+- [Storage](supabase/storage.md) y [checklist de Production](docs/production-checklist.md): referencias para revisión, sin autorización de escrituras o deploy.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La PR #1 contiene Storage y correcciones lint fuera de main. No repetirlas. Esta fase permite commits locales del lote autónomo; push, merge y despliegue requieren autorización separada. .env.local, secretos y logs de entorno permanecen fuera de Git.

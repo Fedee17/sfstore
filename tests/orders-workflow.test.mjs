@@ -15,9 +15,8 @@ const detailPage = source("app", "admin", "pedidos", "[id]", "page.tsx");
 const editPage = source("app", "admin", "pedidos", "[id]", "editar", "page.tsx");
 const form = source("components", "admin", "orders", "customer-order-form.tsx");
 const actionsUi = source("components", "admin", "orders", "customer-order-actions.tsx");
-const webhook = source("app", "api", "mercadopago", "webhook", "route.ts");
+const webhook = source("lib", "payments", "legacy-mercadopago", "webhook.ts");
 const storeService = source("services", "store-sales.ts");
-const checkoutService = source("services", "orders.ts");
 const workflow = await import(pathToFileURL(join(root, "lib", "orders", "workflow.ts")).href);
 
 test("all order pages and mutations require admin authorization", () => {
@@ -151,7 +150,7 @@ test("store sales remain on their existing channel and completion service", () =
 });
 
 test("web checkout remains explicitly channel web", () => {
-  assert.match(checkoutService, /channel: "web"/i);
+  assert.match(readFileSync(new URL("../supabase/migrations/202610110002_pay01_atomic_checkout.sql", import.meta.url), "utf8"), /values\(order_id,customer_id,order_number,'web'/i);
 });
 
 test("detail shows products payments balance notes and movements", () => {

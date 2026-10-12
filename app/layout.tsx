@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const siteDescription =
-  "Perfumes importados y Ã¡rabes, mates, termos, accesorios y regalos. Te ayudamos a elegir segÃºn tus gustos, ocasiÃ³n y presupuesto.";
+  "Perfumes importados y árabes, mates, termos, accesorios y regalos. Te ayudamos a elegir según tus gustos, ocasión y presupuesto.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description: siteDescription,
   keywords: [
     "perfumes importados",
-    "perfumes Ã¡rabes",
+    "perfumes árabes",
     "decants",
     "mates",
     "termos",
