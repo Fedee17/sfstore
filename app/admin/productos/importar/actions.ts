@@ -1,6 +1,7 @@
 "use server";
 
 import * as XLSX from "xlsx";
+import { readRawWorksheetRows } from "@/lib/product-import/workbook";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
   isSupportedProductSheet,
@@ -280,7 +281,7 @@ export async function previewProductImport(_previousState: ProductImportPreviewS
     if (!(file instanceof File)) throw new Error("Subí un archivo .xlsx o .csv para previsualizar.");
     const workbook = await readWorkbook(file);
     if (!workbook.SheetNames.includes(sheetName)) throw new Error(`El archivo no contiene la hoja '${sheetName}'.`);
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[sheetName], { defval: "", raw: true });
+    const rows = readRawWorksheetRows<Record<string, unknown>>(workbook.Sheets[sheetName], { defval: "", raw: true });
     const normalizedRows = normalizeProductImportRows(sheetName, rows);
     return buildPreviewState(sheetName, normalizedRows, await findExistingProducts(normalizedRows));
   } catch (error) {

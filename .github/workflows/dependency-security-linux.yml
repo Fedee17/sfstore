@@ -2,7 +2,7 @@ name: Dependency security Linux validation
 
 on:
   pull_request:
-    branches: [codex/integration-sec01-pay01-storage-20261011]
+    branches: [codex/integration-sec01-pay01-storage-20261011, codex/dependency-security-20261012]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   validate:
-    if: github.head_ref == 'codex/dependency-security-20261012' || github.ref == 'refs/heads/codex/dependency-security-20261012'
+    if: github.head_ref == 'codex/dependency-security-20261012' || github.head_ref == 'codex/xlsx-security-20261012' || github.ref == 'refs/heads/codex/dependency-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -33,6 +33,12 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Synthetic regressions including Auth and Server Actions
         run: node scripts/validate-dependency-security.mjs
+      - name: Complete XLSX candidate regressions with generated local fixtures
+        if: github.head_ref == 'codex/xlsx-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012'
+        run: |
+          # Copies fixtures locally; never executes SQL or connects to a service.
+          node scripts/prepare-checkout-staging.mjs
+          node --test tests/*.test.mjs
       - name: ESLint
         run: npm run lint
       - name: Production build without service credentials
