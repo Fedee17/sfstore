@@ -57,7 +57,7 @@ export async function run({root,phase,scope,sha,runUrl='',day=auditDay(),output,
  const npm=tools.npm||'npm',node=tools.node||process.execPath;
  const moduleBin=name=>join(root,'node_modules',...name.split('/'));
  if(phase==='security'||phase==='all'){
-  await add('dependencies',npm,[...(tools.npmArgs||[]),'audit','--json','--ignore-scripts'],'static',r=>{const d=JSON.parse(r.stdout);if(d.error||!d.vulnerabilities)throw Error('audit unavailable');return normalizeAudit(d,base);},[0,1]);
+  await add('dependencies',npm,[...(tools.npmArgs||[]),'audit','--json','--ignore-scripts','--include=dev'],'static',r=>{const d=JSON.parse(r.stdout);if(d.error||!d.vulnerabilities)throw Error('audit unavailable');return normalizeAudit(d,base);},[0,1]);
   // Only normalized location/rule survive; raw secret matches never leave the runner.
   const secretReport=join(output,'gitleaks-private.json');mkdirSync(output,{recursive:true});
   if(!existsSync(join(root,'.git')))checks.push({id:'secrets',complete:false,status:'unavailable',mode:'static',command:'gitleaks git',note:'Target has no Git metadata; do not scan a parent repository.'});

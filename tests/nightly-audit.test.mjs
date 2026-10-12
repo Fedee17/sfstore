@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createRequire} from 'node:module';
 import {auditDay,finding,reconcile,consolidate,markdown,redact} from '../scripts/nightly/core.mjs';
-import {cleanEnvironment,assertCleanCheckout,command,normalizeAudit,normalizeEslint,testCoverage} from '../scripts/nightly/run.mjs';
+import {cleanEnvironment,assertCleanCheckout,command,run,normalizeAudit,normalizeEslint,testCoverage} from '../scripts/nightly/run.mjs';
 import {eligible,plan,client,sync,taskDescription} from '../scripts/nightly/clickup.mjs';
 import {allowedRef,gather,validateArtifactSource} from '../scripts/nightly/github.mjs';
 const runUrl='https://github.com/example/sfstore/actions/runs/123';
@@ -52,3 +52,5 @@ test('skipped or empty TAP cannot resolve test findings',()=>{assert.equal(testC
 test('all Next environment file variants prevent audited code execution',()=>{const directory=mkdtempSync(join(tmpdir(),'sfstore-audit-env-'));try{for(const name of ['.env','.env.local','.env.production','.env.production.local','.env.development','.env.development.local','.env.test','.env.test.local']){const path=join(directory,name);writeFileSync(path,'token=synthetic-only');assert.throws(()=>assertCleanCheckout(directory),/clean checkout/);rmSync(path);}assert.doesNotThrow(()=>assertCleanCheckout(directory));}finally{rmSync(directory,{recursive:true,force:true});}});
 
 test('artifact token is restricted to the official API and matching archive ID',()=>{const valid={id:123,archive_download_url:'https://api.github.com/repos/example/sfstore/actions/artifacts/123/zip'};assert.equal(validateArtifactSource(valid),valid.archive_download_url);for(const url of ['https://attacker.invalid/archive','http://api.github.com/repos/example/sfstore/actions/artifacts/123/zip','https://api.github.com/repos/example/sfstore/actions/artifacts/456/zip','https://private@api.github.com/repos/example/sfstore/actions/artifacts/123/zip'])assert.throws(()=>validateArtifactSource({...valid,archive_download_url:url}));});
+
+test('dependency scanner explicitly includes dev under the isolated production environment',async()=>{const directory=mkdtempSync(join(tmpdir(),'sfstore-audit-dependencies-'));try{const script=join(directory,'fake-audit.mjs'),capture=join(directory,'args.json');writeFileSync(script,"import {writeFileSync} from 'node:fs';writeFileSync("+JSON.stringify(capture)+",JSON.stringify(process.argv));process.stdout.write(JSON.stringify({vulnerabilities:{}}));");const result=await run({root:directory,phase:'security',scope:'fixture',sha:'a'.repeat(40),output:join(directory,'output'),tools:{npm:process.execPath,npmArgs:[script],semgrep:process.execPath}});assert.equal(result.checks.find(c=>c.id==='dependencies').complete,true);assert.ok(JSON.parse(readFileSync(capture)).includes('--include=dev'));}finally{rmSync(directory,{recursive:true,force:true});}});
