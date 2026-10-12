@@ -1,10 +1,15 @@
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
+import * as nodeFs from "node:fs";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
-import XLSX from "xlsx";
+import XLSX, { set_fs } from "xlsx";
+import { readRawWorksheetRows } from "../lib/product-import/workbook.ts";
 import { PRODUCT_IMPORT_SLUG_ALIASES } from "../lib/product-import/aliases.ts";
+
+// Native ESM does not initialize filesystem access in SheetJS 0.20.3.
+set_fs(nodeFs);
 
 type Decision = "INSERT" | "OMIT" | "REVIEW" | "INVALID";
 type ReadinessStatus =
@@ -397,7 +402,7 @@ async function readPreservedMappings(): Promise<Map<string, PreservedMapping>> {
     const content = await readFile(mappingReviewPath);
     const workbook = XLSX.read(content, { type: "buffer", raw: true });
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(firstSheet, { defval: "" });
+    const rows = readRawWorksheetRows<Record<string, unknown>>(firstSheet, { defval: "" });
     return new Map(rows.map((row) => [text(row.excel_name), {
       final_product_id: text(row.final_product_id),
       final_decision: text(row.final_decision),
@@ -423,8 +428,8 @@ async function readCsvRows(filePath: string) {
 const inputStats = await stat(inputPath);
 const inputHash = await hashFile(inputPath);
 const workbook = XLSX.readFile(inputPath, { cellDates: false, cellText: true, cellNF: true });
-const salesMatrix = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets["Control de ventas"], { header: 1, raw: true, defval: null });
-const purchasesMatrix = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets["Control de compras"], { header: 1, raw: true, defval: null });
+const salesMatrix = readRawWorksheetRows<unknown[]>(workbook.Sheets["Control de ventas"], { header: 1, raw: true, defval: null });
+const purchasesMatrix = readRawWorksheetRows<unknown[]>(workbook.Sheets["Control de compras"], { header: 1, raw: true, defval: null });
 
 const [products, categories, attributes, images, suppliers, purchases, purchaseItems, orders, orderItems, orderPayments] = await Promise.all([
   readAll<ProductRow>("products", "id,category_id,name,slug,sku,status,stock,price,transfer_price,cost,historical_identity,historical_group_key,created_at"),
