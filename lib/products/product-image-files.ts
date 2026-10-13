@@ -14,7 +14,7 @@ export const PRODUCT_IMAGE_SOURCE_MIME_TYPES = [
 ] as const;
 
 export const MAX_PRODUCT_IMAGE_SOURCE_BYTES = 25 * 1024 * 1024;
-export const MAX_PRODUCT_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MAX_PRODUCT_IMAGE_UPLOAD_BYTES = 3 * 1024 * 1024;
 
 export type ProductImageOutputMimeType =
   (typeof PRODUCT_IMAGE_OUTPUT_MIME_TYPES)[number];

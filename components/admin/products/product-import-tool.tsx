@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { MAX_UPLOAD_FILE_BYTES, assertUploadFormData } from "@/lib/uploads/limits";
 import { useActionState } from "react";
 import {
   confirmProductImport,
@@ -294,6 +295,10 @@ export function ProductImportTool({
 
       <form
         action={fileFormAction}
+        onSubmit={event => {
+          try { assertUploadFormData(new FormData(event.currentTarget)); }
+          catch(error) { event.preventDefault(); event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')?.setCustomValidity(error instanceof Error ? error.message : "Archivo demasiado grande."); event.currentTarget.reportValidity(); }
+        }}
         className="overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm sm:p-6"
       >
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.5fr)] lg:items-end">
@@ -305,11 +310,12 @@ export function ProductImportTool({
               name="file"
               type="file"
               accept=".xlsx,.xls,.csv"
+              onChange={event => { const file=event.currentTarget.files?.[0]; event.currentTarget.setCustomValidity(file && file.size>MAX_UPLOAD_FILE_BYTES ? "El archivo supera el límite de 3 MiB." : ""); }}
               required
               className="min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 text-sm outline-none file:mr-4 file:rounded-full file:border-0 file:bg-[#556B2F] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#F7F4ED] focus:border-[#556B2F]"
             />
             <span className="break-words text-xs text-[#1F1F1F]/50">
-              Máximo 5 MB. No se guarda el archivo, solo se lee para previsualizar.
+              Máximo 3 MiB; hasta 2000 filas y 64 columnas. No se guarda el archivo, solo se lee para previsualizar.
             </span>
           </label>
 

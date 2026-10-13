@@ -27,17 +27,8 @@ function loadTs(relative) {
 }
 const { readRawWorksheetRows } = loadTs('lib/product-import/workbook.ts');
 const { normalizeProductImportRows } = loadTs('lib/product-import/core.ts');
-const actionSource = readFileSync(join(root, 'app/admin/productos/importar/actions.ts'), 'utf8');
-const actionAst = ts.createSourceFile('actions.ts', actionSource, ts.ScriptTarget.Latest, true);
-const readerSource = actionAst.statements.filter(node =>
-  ts.isFunctionDeclaration(node) && node.name?.text === 'readWorkbook' ||
-  ts.isVariableStatement(node) && node.declarationList.declarations.some(declaration =>
-    ['MAX_FILE_SIZE', 'IMPORTABLE_MIME_TYPES'].includes(declaration.name.getText(actionAst))))
-  .map(node => node.getText(actionAst)).join('\n');
-const readerCode = ts.transpileModule(readerSource, {
-  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
-}).outputText;
-const readWorkbook = new Function('XLSX', 'Buffer', readerCode + '\nreturn readWorkbook;')(XLSX, Buffer);
+const { parseProductImportFile } = loadTs("lib/product-import/file-parser.ts");
+const readWorkbook = file => parseProductImportFile(file, "Producto Perfumes");
 function workbook(sheetName, matrix) {
   const book = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(book, XLSX.utils.aoa_to_sheet(matrix), sheetName);
@@ -65,9 +56,7 @@ for (const [format, extension, type] of [['xlsx', 'xlsx', mime], ['biff8', 'xls'
       ['Perfume sintético Ñandú', 1234.56, 925.92, 600, null],
       ['Producto inválido sintético', -1, 5, 0, 'Prueba'],
     ]);
-    const parsed = await readWorkbook(new File([XLSX.write(book, { type: 'buffer', bookType: format })], 'synthetic.' + extension, { type }));
-    const sheet = parsed.Sheets[parsed.SheetNames[0]];
-    const rows = readRawWorksheetRows(sheet, { defval: '' });
+    const rows = await readWorkbook(new File([XLSX.write(book, { type: 'buffer', bookType: format })], 'synthetic.' + extension, { type }));
     assert.equal(rows[0].Producto, 'Perfume sintético Ñandú');
     assert.equal(Number(rows[0]['Precio de venta']), 1234.56);
     assert.equal(rows[0].Proveedor, '');
@@ -83,7 +72,7 @@ for (const [format, extension, type] of [['xlsx', 'xlsx', mime], ['biff8', 'xls'
 
 test('actual upload validation rejects empty, oversize, unsupported extension and MIME', async () => {
   await assert.rejects(readWorkbook(new File([], 'empty.xlsx', { type: mime })), /Subí/);
-  await assert.rejects(readWorkbook(new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.xlsx', { type: mime })), /5 MB/);
+  await assert.rejects(readWorkbook(new File([new Uint8Array(3 * 1024 * 1024 + 1)], 'large.xlsx', { type: mime })), /3 MiB/);
   await assert.rejects(readWorkbook(new File(['test'], 'bad.exe', { type: mime })), /Formato inválido/);
   await assert.rejects(readWorkbook(new File(['test'], 'bad.xlsx', { type: 'application/javascript' })), /Tipo de archivo/);
 });
