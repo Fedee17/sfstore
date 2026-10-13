@@ -5,6 +5,7 @@ import { assertCheckoutOrigin } from "@/lib/checkout/http";
 import { authorizeCheckoutBuyer } from "@/services/checkout-server";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { getAdminUser } from "@/lib/admin-session";
+import { MAX_UPLOAD_FILE_BYTES } from "@/lib/uploads/limits";
 const bucket = "checkout-payment-proofs";
 export function proofMime(bytes: Uint8Array): string | null {
   const hex = Buffer.from(bytes.subarray(0,8)).toString("hex");
@@ -14,11 +15,13 @@ export function proofMime(bytes: Uint8Array): string | null {
   return null;
 }
 async function readProof(request: Request) {
+  const length=request.headers.get("content-length");
+  if(length && (!/^\d+$/.test(length) || Number(length)>MAX_UPLOAD_FILE_BYTES)) throw new CheckoutError("CHECKOUT_PROOF_TOO_LARGE",413);
   const reader=request.body?.getReader();
   if (!reader) throw new CheckoutError("CHECKOUT_INVALID_PROOF",400);
   const parts: Uint8Array[]=[]; let total=0;
   try { while(true) { const {done,value}=await reader.read(); if(done) break; total+=value.length;
-    if(total>5242880) { await reader.cancel(); throw new CheckoutError("CHECKOUT_PROOF_TOO_LARGE",413); } parts.push(value);
+    if(total>MAX_UPLOAD_FILE_BYTES) { await reader.cancel(); throw new CheckoutError("CHECKOUT_PROOF_TOO_LARGE",413); } parts.push(value);
   } } finally { reader.releaseLock(); }
   if (!total) throw new CheckoutError("CHECKOUT_INVALID_PROOF",400);
   return Buffer.concat(parts,total);
@@ -52,7 +55,7 @@ export async function reportCheckoutPayment(request: Request,orderId: string) {
     if(submitted.error) rpcError(submitted.error.message);
     return Response.json(submitted.data,{headers});
   } catch(error) {
-    return Response.json({code:error instanceof CheckoutError?error.code:"CHECKOUT_REPORT_UNAVAILABLE",error:"No se pudo informar el pago. Revisá el plazo, el comprobante y tu sesión; conservá esta ventana para reintentar o contactá al local."},{status:error instanceof CheckoutError?error.status:503,headers});
+    return Response.json({code:error instanceof CheckoutError?error.code:"CHECKOUT_REPORT_UNAVAILABLE",error:error instanceof CheckoutError && error.code==="CHECKOUT_PROOF_TOO_LARGE"?"El comprobante supera el límite de 3 MiB. Reducí su tamaño y reintentá.":"No se pudo informar el pago. Revisá el plazo, el comprobante y tu sesión; conservá esta ventana para reintentar o contactá al local."},{status:error instanceof CheckoutError?error.status:503,headers});
   }
 }
 export async function downloadCheckoutProof(orderId: string) {

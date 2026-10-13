@@ -15,10 +15,14 @@ const nextConfig: NextConfig = {
     "disposition-points-arena-everything.trycloudflare.com",
   ],
 
+  serverExternalPackages: ["xlsx"],
+  outputFileTracingIncludes: {
+    "/admin/productos/importar": ["./lib/product-import/parser-worker.mjs", "./node_modules/xlsx/**/*"],
+  },
   experimental: {
     serverActions: {
-      // El importador valida archivos de hasta 5 MB; multipart agrega overhead.
-      bodySizeLimit: "8mb",
+      // 3 MiB of files + bounded fields/multipart, below Vercel 4.5 MB.
+      bodySizeLimit: "4mb",
     },
   },
 };

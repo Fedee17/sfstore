@@ -1,0 +1,51 @@
+name: Upload security Ubuntu validation
+
+on:
+  pull_request:
+    branches: [codex/nightly-audit-clickup]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upload-security-linux-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.head_ref == 'codex/vercel-upload-security-20261012' || github.ref == 'refs/heads/codex/vercel-upload-security-20261012'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Clean locked install
+        run: npm ci --no-audit --no-fund
+      - name: Synthetic regressions without services
+        run: node scripts/validate-dependency-security.mjs
+      - name: Complete regressions (real service suites remain opt-in)
+        run: |
+          node scripts/prepare-checkout-staging.mjs
+          node --test tests/*.test.mjs
+      - name: ESLint
+        run: npm run lint
+      - name: Production build without service credentials
+        run: npm run build
+      - name: TypeScript including generated types
+        run: npx --no-install tsc --noEmit
+      - name: Compiled Worker and traced dependencies, safe synthetic files
+        run: node scripts/validate-upload-compiled-worker.mjs
+      - name: Summary
+        run: |
+          echo 'Ubuntu: locked install, regressions, lint, build, TypeScript and emitted Worker passed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No real services, migrations, deployment, schedules or ClickUp integration were used.' >> "$GITHUB_STEP_SUMMARY"
