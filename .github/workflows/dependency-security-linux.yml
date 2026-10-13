@@ -9,8 +9,8 @@ on:
       integration_mode:
         description: Off runs CI; probe checks secrets; live-test touches only one synthetic task
         type: choice
-        options: [off, probe, live-test]
-        default: off
+        options: ['off', probe, live-test]
+        default: 'off'
       shadow:
         description: Full shadow audit without ClickUp; requires integration_mode=off and reviewed controller SHA
         type: boolean

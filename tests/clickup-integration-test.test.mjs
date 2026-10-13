@@ -209,7 +209,7 @@ test('comment permission denial fails validation; does not create an extra task 
 });
 test('registered workflow probe remains gated and makes no ClickUp calls',()=>{
   const source=readFileSync(new URL('../.github/workflows/dependency-security-linux.yml',import.meta.url),'utf8');
-  assert.match(source,/options: \[off, probe, live-test\]/);assert.match(source,/default: off/);
+  assert.match(source,/options: \['off', probe, live-test\]/);assert.match(source,/default: 'off'/);
   assert.match(source,/inputs.integration_mode == 'off'/);
   const probe=source.slice(source.indexOf('  integration-probe:'),source.indexOf('  integration-live-test:'));
   assert.ok(probe.includes("github.ref == 'refs/heads/codex/nightly-audit-clickup'"));
