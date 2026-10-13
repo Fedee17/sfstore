@@ -5,7 +5,23 @@
     "fitting": "contain",
     "selectedThumbnail": 2,
     "paymentLabelsVisible": true,
-    "horizontalOverflow": false
+    "horizontalOverflow": false,
+    "failedCardImageFallback": true,
+    "galleryErrorRecovery": true,
+    "pay01DecimalFixture": {
+      "listPrice": 100.01,
+      "publishedTransferPrice": 75.01,
+      "expectedServerUnitPrice": 75.01,
+      "displayed": "$ 75,01",
+      "matches": true
+    },
+    "legacyPolicyCounterexample": {
+      "listPrice": 100,
+      "publishedTransferPrice": 80,
+      "expectedPay01UnitPrice": 75,
+      "matches": false,
+      "blockedByCommercialCoordination": true
+    }
   },
   {
     "width": 1440,
@@ -13,6 +29,22 @@
     "fitting": "contain",
     "selectedThumbnail": 2,
     "paymentLabelsVisible": true,
-    "horizontalOverflow": false
+    "horizontalOverflow": false,
+    "failedCardImageFallback": true,
+    "galleryErrorRecovery": true,
+    "pay01DecimalFixture": {
+      "listPrice": 100.01,
+      "publishedTransferPrice": 75.01,
+      "expectedServerUnitPrice": 75.01,
+      "displayed": "$ 75,01",
+      "matches": true
+    },
+    "legacyPolicyCounterexample": {
+      "listPrice": 100,
+      "publishedTransferPrice": 80,
+      "expectedPay01UnitPrice": 75,
+      "matches": false,
+      "blockedByCommercialCoordination": true
+    }
   }
 ]

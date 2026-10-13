@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { useState } from "react";
 import {
   formatSavingsLabel,
   getTransferUnitPrice,
@@ -18,7 +19,8 @@ type ProductGridProps = {
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 function getAttribute(product: PublicProduct, name: string) {
@@ -29,14 +31,19 @@ function getAttribute(product: PublicProduct, name: string) {
 }
 
 function ProductImage({ product }: { product: PublicProduct }) {
-  if (product.primaryImageUrl) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  if (product.primaryImageUrl && failedUrl !== product.primaryImageUrl) {
     return (
       <div className="aspect-[4/3] overflow-hidden bg-[#102033]">
         <img
           src={product.primaryImageUrl}
+          ref={(image) => {
+            if (image?.complete && image.naturalWidth === 0) setFailedUrl(product.primaryImageUrl ?? null);
+          }}
           alt={product.primaryImageAlt ?? product.name}
           loading="lazy"
           decoding="async"
+          onError={() => setFailedUrl(product.primaryImageUrl ?? null)}
           className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.03]"
         />
       </div>
@@ -44,10 +51,11 @@ function ProductImage({ product }: { product: PublicProduct }) {
   }
 
   return (
-    <div className="flex aspect-[4/3] items-center justify-center bg-[#102033] text-[#F7F9FC]">
+    <div className="flex aspect-[4/3] flex-col items-center justify-center bg-[#102033] text-[#F7F9FC]" role="img" aria-label={`Imagen no disponible de ${product.name}`}>
       <span className="break-all px-4 text-center text-5xl font-semibold tracking-wide text-[#DCE3EA]">
         {product.imagePlaceholder}
       </span>
+      <span className="mt-2 text-sm">Imagen no disponible</span>
     </div>
   );
 }

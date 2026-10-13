@@ -1,0 +1,76 @@
+{
+  "deployment": {
+    "id": "dpl_4hFw2vWoXWZeufiUnv5CELyF6T33",
+    "sha": "d46b6832baeac50d9ffc00c2978fb5cf20babc5d",
+    "branch": "codex/ui-ux-stabilization",
+    "state": "READY",
+    "target": null,
+    "createdAt": "2026-10-13T23:32:26.660Z"
+  },
+  "inspection": {
+    "environmentValuesPrinted": false,
+    "secretsDecrypted": false,
+    "productionConfigurationModified": false,
+    "remoteWriteActionsExecuted": false,
+    "applicationEnvironmentFilesTracked": false,
+    "historicalDeploymentEnvSnapshotAvailable": false,
+    "currentEnvironmentScopes": [
+      {
+        "name": "NEXT_PUBLIC_SITE_URL",
+        "targets": [
+          "production"
+        ],
+        "updatedBeforeDeployment": true
+      },
+      {
+        "name": "ADMIN_ALLOWED_EMAILS",
+        "targets": [
+          "production"
+        ],
+        "updatedBeforeDeployment": true
+      },
+      {
+        "name": "MERCADO_PAGO_ACCESS_TOKEN",
+        "targets": [
+          "production"
+        ],
+        "updatedBeforeDeployment": true
+      },
+      {
+        "name": "GOOGLE_SHEETS_SYNC_SECRET",
+        "targets": [
+          "production"
+        ],
+        "updatedBeforeDeployment": true
+      },
+      {
+        "name": "SUPABASE_SERVICE_ROLE_KEY",
+        "targets": [
+          "production"
+        ],
+        "updatedBeforeDeployment": true
+      },
+      {
+        "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "targets": [
+          "production"
+        ],
+        "updatedBeforeDeployment": true
+      },
+      {
+        "name": "NEXT_PUBLIC_SUPABASE_URL",
+        "targets": [
+          "production"
+        ],
+        "updatedBeforeDeployment": true
+      }
+    ],
+    "previewVariablesCount": 0,
+    "branchOverrideVariablesCount": 0,
+    "ssoProtection": {
+      "enabled": true,
+      "deploymentType": "all_except_custom_domains"
+    }
+  },
+  "assessment": "No Production credentials are assigned to Preview in the inspected configuration. Historical environment snapshot could not be retrieved. Do not execute remote writes; existing protection is access control, not database isolation."
+}

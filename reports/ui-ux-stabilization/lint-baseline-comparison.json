@@ -1,6 +1,6 @@
 {
   "base": "7a8a105c968f84ba9f58ee1dfd018f27bf6ac3a6",
-  "implementationCommit": "4ee5c55ec8f4dd910a040929662d5e44c7d975f8",
+  "implementationCommit": "d46b6832baeac50d9ffc00c2978fb5cf20babc5d",
   "method": "Lint Git base sources via lintText with identical file paths, ESLint configuration and dependency lockfile; compare full diagnostics and Git blobs.",
   "configUnchanged": true,
   "lockfileUnchanged": true,

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 import { PERFUME_CATALOG_CATEGORIES } from "@/lib/catalog/perfume-filters";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/cart-store";
@@ -146,6 +146,7 @@ export function SiteHeader() {
             href="/"
             className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-[76px] sm:w-[76px] lg:justify-self-start"
             aria-label="Ir al inicio de SFSTORE"
+            prefetch={false}
           >
             <img
               src="/Logo%202.png"
@@ -205,6 +206,7 @@ export function SiteHeader() {
           <Link
             href="/"
             className="hidden shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:block"
+            prefetch={false}
           >
             Inicio
           </Link>

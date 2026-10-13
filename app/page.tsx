@@ -25,7 +25,8 @@ export const metadata: Metadata = {
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const categoryLabels: Record<PublicProduct["category"], string> = {

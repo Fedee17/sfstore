@@ -65,6 +65,8 @@ Pruebas: `tests/catalog-search.test.mjs`, `tests/ui-ux.browser.mjs`, `tests/ui-u
 
 ## Reproducir los recorridos locales
 
+Continuación de la PR #8: ver `PREVIEW_AND_PAY01_REVIEW.md` para la inspección sin secretos del Preview, bloqueo de nuevos despliegues automáticos sólo en esta rama, resolución comprobada del encabezado y discrepancia de precios PAY-01 pendiente del agente principal. Se corrigieron presentación de centavos e imágenes fallidas, con pruebas locales; estos puntos dejan de estar pendientes de UI. Las simulaciones previas de conflicto describen el HEAD anterior a la resolución preparada. No se realizó merge ni se cambió el contrato comercial.
+
 Usar una instalación existente de Playwright; no se agregó al lockfile del proyecto. Configurar `PLAYWRIGHT_MODULE_PATH` con su ubicación y `UI_BROWSER_EXECUTABLE` con Chrome/Edge instalado. Iniciar la aplicación exclusivamente con la URL Supabase ficticia y una clave sintética. `UI_BASE_URL` acepta sólo localhost o 127.0.0.1.
 
 Ejecutar `node tests/ui-ux.browser.mjs` contra dev o el build local. Ejecutar `node tests/ui-ux-components.browser.mjs` exclusivamente contra dev, ya que crea una página temporal con fixtures y la elimina en `finally`. No ejecutar estos recorridos contra Production o con credenciales reales. Las capturas se sobrescriben con datos sintéticos de cada ejecución.
