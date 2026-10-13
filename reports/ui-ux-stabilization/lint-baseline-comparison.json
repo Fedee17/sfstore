@@ -1,0 +1,160 @@
+{
+  "base": "7a8a105c968f84ba9f58ee1dfd018f27bf6ac3a6",
+  "implementationCommit": "4ee5c55ec8f4dd910a040929662d5e44c7d975f8",
+  "method": "Lint Git base sources via lintText with identical file paths, ESLint configuration and dependency lockfile; compare full diagnostics and Git blobs.",
+  "configUnchanged": true,
+  "lockfileUnchanged": true,
+  "baseline": {
+    "errors": [
+      {
+        "path": "app/checkout/exito/page.tsx",
+        "line": 46,
+        "column": 9,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      },
+      {
+        "path": "app/checkout/exito/page.tsx",
+        "line": 116,
+        "column": 13,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      },
+      {
+        "path": "app/checkout/fallo/page.tsx",
+        "line": 19,
+        "column": 9,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      },
+      {
+        "path": "app/checkout/page.tsx",
+        "line": 171,
+        "column": 9,
+        "rule": "react-hooks/immutability",
+        "message": "Error: This value cannot be modified\n\nModifying a variable defined outside a component or hook is not allowed. Consider using an effect.\n\nC:\\dev\\sfstore\\.worktrees\\ui-ux-stabilization\\app\\checkout\\page.tsx:171:9\n  169 |\n  170 |         clearCart();\n> 171 |         window.location.href = preference.initPoint;\n      |         ^^^^^^^^^^^^^^^ value cannot be modified\n  172 |         return;\n  173 |       }\n  174 |"
+      },
+      {
+        "path": "app/checkout/pendiente/page.tsx",
+        "line": 19,
+        "column": 9,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      },
+      {
+        "path": "app/checkout/pendiente/page.tsx",
+        "line": 61,
+        "column": 13,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      },
+      {
+        "path": "app/producto/[slug]/page.tsx",
+        "line": 245,
+        "column": 11,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      },
+      {
+        "path": "components/site-header.tsx",
+        "line": 134,
+        "column": 11,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      },
+      {
+        "path": "components/site-header.tsx",
+        "line": 193,
+        "column": 11,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+      }
+    ],
+    "warningCount": 11
+  },
+  "current": {
+    "errors": [
+      {
+        "path": "app/checkout/exito/page.tsx",
+        "line": 46,
+        "column": 9,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "identicalToBase": true,
+        "fileBlobUnchanged": true
+      },
+      {
+        "path": "app/checkout/exito/page.tsx",
+        "line": 116,
+        "column": 13,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "identicalToBase": true,
+        "fileBlobUnchanged": true
+      },
+      {
+        "path": "app/checkout/fallo/page.tsx",
+        "line": 19,
+        "column": 9,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "identicalToBase": true,
+        "fileBlobUnchanged": true
+      },
+      {
+        "path": "app/checkout/page.tsx",
+        "line": 171,
+        "column": 9,
+        "rule": "react-hooks/immutability",
+        "message": "Error: This value cannot be modified\n\nModifying a variable defined outside a component or hook is not allowed. Consider using an effect.\n\nC:\\dev\\sfstore\\.worktrees\\ui-ux-stabilization\\app\\checkout\\page.tsx:171:9\n  169 |\n  170 |         clearCart();\n> 171 |         window.location.href = preference.initPoint;\n      |         ^^^^^^^^^^^^^^^ value cannot be modified\n  172 |         return;\n  173 |       }\n  174 |",
+        "identicalToBase": true,
+        "fileBlobUnchanged": true
+      },
+      {
+        "path": "app/checkout/pendiente/page.tsx",
+        "line": 19,
+        "column": 9,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "identicalToBase": true,
+        "fileBlobUnchanged": true
+      },
+      {
+        "path": "app/checkout/pendiente/page.tsx",
+        "line": 61,
+        "column": 13,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "identicalToBase": true,
+        "fileBlobUnchanged": true
+      },
+      {
+        "path": "app/producto/[slug]/page.tsx",
+        "line": 245,
+        "column": 11,
+        "rule": "@next/next/no-html-link-for-pages",
+        "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages",
+        "identicalToBase": true,
+        "fileBlobUnchanged": true
+      }
+    ],
+    "warningCount": 10
+  },
+  "newErrors": [],
+  "resolvedErrors": [
+    {
+      "path": "components/site-header.tsx",
+      "line": 134,
+      "column": 11,
+      "rule": "@next/next/no-html-link-for-pages",
+      "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+    },
+    {
+      "path": "components/site-header.tsx",
+      "line": 193,
+      "column": 11,
+      "rule": "@next/next/no-html-link-for-pages",
+      "message": "Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages"
+    }
+  ]
+}

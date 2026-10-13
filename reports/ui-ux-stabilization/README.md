@@ -55,7 +55,7 @@ Los recorridos públicos usan los datos de ejemplo del repositorio, URL Supabase
 
 ## Publicación
 
-Se prepara un commit local en la rama solicitada. No se hace push ni se abre draft PR mientras el ESLint global solicitado siga fallando en archivos compartidos. Por lo tanto no hay URL de draft PR. Los cambios y la evidencia quedan listos para revisar e integrar después de resolver esa coordinación; no requieren cambios en Production para evaluarlos.
+El commit de implementación es `4ee5c55`. Inicialmente se conservó local por los errores globales de ESLint. En la continuación, el usuario autorizó publicar la rama y abrir una draft PR si se demostraba que esos errores eran heredados. La comparación reproducible confirmó 9 errores en la base, 7 en esta rama, 0 nuevos y archivos con errores idénticos a la base. Ver `lint-baseline-comparison.json` e `INTEGRATION_PLAN.md`. La draft PR puede prepararse con ese estado explícito; esto no autoriza merges, despliegues ni cambios de Production.
 
 ## Archivos de implementación
 
