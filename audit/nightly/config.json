@@ -4,9 +4,14 @@
   "approvedRef": "main",
   "developmentRefs": [],
   "retentionDays": 14,
+  "controllerRef": "codex/nightly-audit-clickup",
+  "resolutionConfirmations": 2,
+  "acceptedRisks": [],
   "clickup": {
     "enabled": false,
-    "maxChanges": 30
+    "listId": "901717762349",
+    "publishDevelopment": false,
+    "maxChanges": 5
   },
   "requiredChecks": [
     "dependencies",

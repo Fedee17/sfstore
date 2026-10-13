@@ -15,11 +15,13 @@ export function api({repository,token,fetchImpl=fetch}){
   if(!r.ok)throw Error('GitHub HTTP '+r.status);return r.json();
  };
 }
-export async function gather({request,repository,scope,day=auditDay(),directory,download}){
- const start=day+'T03:00:00Z',end=day+'T23:59:59Z';
+export async function gather({request,repository,scope,day=auditDay(),directory,download,controllerRef,includeHistory=true}){
+ const start=day+'T03:00:00Z',end=new Date(Date.parse(start)+86400000-1000).toISOString();
  const runs=await request('/actions/workflows/nightly-audit.yml/runs?per_page=30&created='+encodeURIComponent(start+'..'+end));
  if(runs.total_count>30)throw Error('Daily run budget exceeded; refusing truncated evidence');
- const parts=[];for(const run of runs.workflow_runs.filter(r=>r.status==='completed').slice(0,12)){
+ const completed=runs.workflow_runs.filter(r=>r.status==='completed'&&(!controllerRef||r.head_branch===controllerRef));
+ if(completed.length>12)throw Error('Daily completed run cap exceeded; no truncated report');
+ const parts=[];for(const run of completed){
   const data=await request('/actions/runs/'+run.id+'/artifacts?per_page=30');if(data.total_count>30)throw Error('Artifact cap exceeded');
   for(const artifact of data.artifacts.filter(a=>a.name.startsWith('sfstore-nightly-part-')&&!a.expired)){
    const p=await download(artifact,'results.json',directory);
@@ -28,15 +30,31 @@ export async function gather({request,repository,scope,day=auditDay(),directory,
    parts.push(p);
   }
  }
+ if(!includeHistory)return {parts,previous:null};
  // Previous reports are obtained only from the dedicated report workflow.
  const history=await request('/actions/workflows/nightly-report.yml/runs?status=success&per_page=20&created='+encodeURIComponent('<'+start));
- let previous=null;for(const run of history.workflow_runs.slice(0,10)){
+ let previous=null;for(const run of history.workflow_runs.filter(r=>!controllerRef||r.head_branch===controllerRef)){
   const data=await request('/actions/runs/'+run.id+'/artifacts?per_page=20');
+  if(data.total_count>20)throw Error('Previous artifact cap exceeded');
   const artifact=data.artifacts.find(a=>a.name.startsWith('sfstore-nightly-report-')&&!a.expired);
   if(!artifact)continue;const report=await download(artifact,'report.json',directory);
-  if(report.scope===scope){previous=report;break;}
+  if(report.scope===scope&&report.day<day&&report.coherent&&report.missing?.length===0&&
+    report.runUrls.every(url=>new RegExp('^https://github.com/'+repository+'/actions/runs/\\d+$').test(url))){previous=report;break;}
  }
  return {parts,previous};
+}
+export async function resolveAuditTarget({phase,scheduled=false,pinnedSha='',headSha,parts=[],checkAncestor}){
+ if(!/^[a-f0-9]{40}$/.test(headSha))throw Error('Invalid head SHA');
+ if(pinnedSha){
+  if(!/^[a-f0-9]{40}$/.test(pinnedSha)||!(await checkAncestor(pinnedSha,headSha)))throw Error('Pinned SHA is not an approved branch ancestor');
+  return pinnedSha;
+ }
+ if(['quality','checkout'].includes(phase)){
+  const frozen=parts.filter(p=>['security','all'].includes(p.phase)).sort((a,b)=>a.finishedAt.localeCompare(b.finishedAt))[0];
+  if(frozen){if(!/^[a-f0-9]{40}$/.test(frozen.sha))throw Error('Invalid daily snapshot SHA');return frozen.sha;}
+  if(scheduled)throw Error('Missing security snapshot; refusing mixed daily target');
+ }
+ return headSha;
 }
 export function validateArtifactSource(artifact){
  const source=new URL(artifact.archive_download_url);

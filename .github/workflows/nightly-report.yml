@@ -9,6 +9,10 @@ on:
         description: Requires separate activation, secrets and protected environment
         type: boolean
         default: false
+      expected_controller_sha:
+        description: Reviewed SHA required for any manual synchronization
+        type: string
+        default: ''
 permissions:
   contents: read
   actions: read
@@ -19,6 +23,8 @@ jobs:
   report:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      controller_ref: ${{ steps.collect.outputs.controller_ref }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -27,6 +33,7 @@ jobs:
         with:
           node-version: '24'
       - name: Collect current day and prior report
+        id: collect
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_REF: ${{ inputs.audit_ref || 'main' }}
@@ -37,9 +44,10 @@ jobs:
           import {auditDay} from './scripts/nightly/core.mjs';
           const config=JSON.parse(readFileSync('audit/nightly/config.json'));
           const scope=allowedRef(process.env.TARGET_REF,config),day=auditDay(),token=process.env.GH_TOKEN,repository=process.env.GITHUB_REPOSITORY;
-          const data=await gather({scope,day,repository,request:api({repository,token}),directory:process.env.RUNNER_TEMP,download:(a,m,d)=>downloadArtifact(a,m,d,token)});
+          const data=await gather({scope,day,repository,controllerRef:config.controllerRef,request:api({repository,token}),directory:process.env.RUNNER_TEMP,download:(a,m,d)=>downloadArtifact(a,m,d,token)});
           mkdirSync('audit-report',{recursive:true});writeFileSync('audit-report/input.json',JSON.stringify(data));
           appendFileSync(process.env.GITHUB_OUTPUT,'day='+day+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,'controller_ref='+allowedRef(config.controllerRef,{approvedRef:config.controllerRef,developmentRefs:[]})+'\n');
           JS
       - name: Consolidate without external integration
         run: |
@@ -54,8 +62,10 @@ jobs:
           retention-days: 14
   clickup:
     needs: report
-    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && vars.CLICKUP_SYNC_ENABLED == 'true' && vars.CLICKUP_ACTIVATION_APPROVED == 'true' && (inputs.sync_clickup == true || github.event_name == 'schedule')
-    environment: nightly-audit-clickup
+    if: github.repository == 'Fedee17/sfstore' && github.ref == format('refs/heads/{0}', needs.report.outputs.controller_ref) && vars.CLICKUP_SYNC_ENABLED == 'true' && vars.CLICKUP_ACTIVATION_APPROVED == 'true' && ((github.event_name == 'workflow_dispatch' && github.actor == 'Fedee17' && inputs.sync_clickup == true && inputs.expected_controller_sha == github.sha) || github.event_name == 'schedule')
+    environment:
+      name: nightly-audit-clickup
+      deployment: false
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

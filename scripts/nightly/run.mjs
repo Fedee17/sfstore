@@ -3,6 +3,7 @@ import {readFileSync,writeFileSync,mkdirSync,readdirSync,existsSync} from 'node:
 import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {auditDay,finding} from './core.mjs';
+import {classifyDependencies,dependencyInventory} from './dependencies.mjs';
 export function cleanEnvironment(source=process.env){
  const allowed=['PATH','Path','SystemRoot','WINDIR','COMSPEC','PATHEXT','HOME','USERPROFILE','TMP','TEMP','TMPDIR'];
  const env=Object.fromEntries(allowed.filter(k=>source[k]).map(k=>[k,source[k]]));
@@ -21,18 +22,18 @@ export async function command(bin,args,{cwd,timeout=180000,env=cleanEnvironment(
 export function normalizeAudit(data,base){
  const out=[];for(const [name,v]of Object.entries(data.vulnerabilities||{})){
   for(const via of (v.via||[]).filter(x=>typeof x==='object')){
-   out.push(finding({...base,check:'dependencies',rule:String(via.source||via.url),file:'package-lock.json:'+name,title:via.title,category:'dependencies',severity:via.severity,
-   evidence:'npm audit --json: '+name+' '+(via.range||v.range)+'; '+via.url,impact:'Dependencia vulnerable; revisar alcance y exposición de la ruta afectada.',suggestion:'Revisar el advisory y una actualización compatible; no ejecutar npm audit fix automáticamente.'}));
+   out.push({...finding({...base,check:'dependencies',rule:String(via.source||via.url),file:'package-lock.json:'+name,title:via.title,category:'dependencies',severity:via.severity,
+   evidence:'npm audit --json: '+name+' '+(via.range||v.range)+'; '+via.url,impact:'Dependencia vulnerable; revisar alcance y exposición de la ruta afectada.',suggestion:'Revisar el advisory y una actualización compatible; no ejecutar npm audit fix automáticamente.'}),affectedRanges:[via.range||v.range]});
   }
  }
- return out;
+ return classifyDependencies(out,base.lock);
 }
 export function normalizeEslint(data,base){
- return data.flatMap(file=>file.messages.filter(m=>m.severity===2).map(m=>finding({...base,check:'eslint',rule:m.ruleId||'parser',file:file.filePath.replaceAll('\\','/').replace(base.root.replaceAll('\\','/')+'/',''),title:'ESLint: '+(m.ruleId||'error de parseo'),evidence:'Línea '+m.line+': '+m.message,category:m.ruleId?.startsWith('jsx-a11y/')?'accessibility':'quality'})));
+ return data.flatMap(file=>file.messages.filter(m=>m.severity===2).map(m=>finding({...base,check:'eslint',rule:m.ruleId||'parser',file:file.filePath.replaceAll('\\','/').replace(base.root.replaceAll('\\','/')+'/',''),title:'ESLint: '+(m.ruleId||'error de parseo'),evidence:'ESLint '+(m.ruleId||'parser')+'; línea '+m.line+'. Mensaje y fragmentos de código omitidos; reproducir en el SHA y run registrados.',category:m.ruleId?.startsWith('jsx-a11y/')?'accessibility':'quality'})));
 }
 export function testCoverage(stdout){
- const counts=Object.fromEntries(['tests','pass','fail','skipped'].map(key=>[key,Number(stdout.match(new RegExp('^# '+key+' (\\d+)','m'))?.[1]||0)]));
- return {counts,complete:counts.tests>0&&counts.skipped===0};
+ const counts=Object.fromEntries(['tests','pass','fail','skipped','cancelled','todo'].map(key=>[key,Number(stdout.match(new RegExp('^# '+key+' (\\d+)','m'))?.[1]||0)]));
+ return {counts,complete:counts.tests>0&&counts.skipped===0&&counts.cancelled===0&&counts.todo===0&&counts.pass+counts.fail===counts.tests};
 }
 export function assertCleanCheckout(root){
  const names=['.env','.env.local',...['production','development','test'].flatMap(mode=>['.env.'+mode,'.env.'+mode+'.local'])];
@@ -43,9 +44,10 @@ export async function run({root,phase,scope,sha,runUrl='',day=auditDay(),output,
  if(!/^[a-f0-9]{40}$/.test(sha)||!scope||/[\r\n]/.test(scope))throw Error('Invalid target');
  root=resolve(root);output=resolve(output);assertCleanCheckout(root);
  const config=JSON.parse(readFileSync(new URL('../../audit/nightly/config.json',import.meta.url)));
- const base={scope,root,runUrl},checks=[],findings=[];
+ const lock=existsSync(join(root,'package-lock.json'))?JSON.parse(readFileSync(join(root,'package-lock.json'))):null;
+ const base={scope,root,runUrl,lock},checks=[],findings=[];
  const add=async(id,bin,args,mode,parse,successCodes=[0])=>{
-  const r=await command(bin,args,{cwd:root,timeout:id==='build'?600000:180000});
+  const r=await (tools.execute||command)(bin,args,{cwd:root,timeout:id==='build'?600000:180000,env:cleanEnvironment()});
   const available=r.code!==null&&!r.timedOut;
   const beforeCount=findings.length;let parsed=true;try{if(parse&&available)findings.push(...parse(r));}catch{parsed=false;}
   const failed=available&&!successCodes.includes(r.code);
@@ -81,7 +83,8 @@ export async function run({root,phase,scope,sha,runUrl='',day=auditDay(),output,
   if(present.length===config.checkoutTests.length)await add('checkout',node,['--test','--test-reporter=tap',...present.map(n=>join('tests',n))],'synthetic');
   else checks.push({id:'checkout',complete:false,status:'unavailable',mode:'synthetic',command:'node --test checkout allowlist',note:'Faltan tests aprobados: '+config.checkoutTests.filter(n=>!present.includes(n)).join(', ')});
  }
- const result={schemaVersion:1,scope,sha,phase,day,runUrl,finishedAt:new Date().toISOString(),checks,findings};
+ const result={schemaVersion:1,scope,sha,phase,day,runUrl,finishedAt:new Date().toISOString(),checks,findings,
+  ...(['security','all'].includes(phase)?{dependencyInventory:dependencyInventory(lock)}:{})};
  mkdirSync(output,{recursive:true});writeFileSync(join(output,'results.json'),JSON.stringify(result,null,2));return result;
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
