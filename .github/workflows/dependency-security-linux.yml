@@ -5,6 +5,20 @@ on:
     branches: [codex/integration-sec01-pay01-storage-20261011, codex/dependency-security-20261012, codex/xlsx-security-20261012, codex/admin-login-captcha-20261012]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
+    inputs:
+      integration_mode:
+        description: Off runs ordinary CI; probe checks environment without ClickUp calls
+        type: choice
+        options: [off, probe]
+        default: off
+      confirm_list:
+        description: Exact synthetic-test list ID
+        type: string
+        default: ''
+      expected_sha:
+        description: Reviewed branch SHA (40 hexadecimal characters)
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -15,7 +29,7 @@ concurrency:
 
 jobs:
   validate:
-    if: github.head_ref == 'codex/dependency-security-20261012' || github.head_ref == 'codex/xlsx-security-20261012' || github.head_ref == 'codex/admin-login-captcha-20261012' || github.head_ref == 'codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/admin-login-captcha-20261012' || github.ref == 'refs/heads/codex/dependency-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012'
+    if: (github.event_name != 'workflow_dispatch' || inputs.integration_mode == 'off') && (github.head_ref == 'codex/dependency-security-20261012' || github.head_ref == 'codex/xlsx-security-20261012' || github.head_ref == 'codex/admin-login-captcha-20261012' || github.head_ref == 'codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/admin-login-captcha-20261012' || github.ref == 'refs/heads/codex/dependency-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -78,3 +92,31 @@ jobs:
             audit-report/report.md
           retention-days: 14
           if-no-files-found: error
+
+  integration-probe:
+    if: github.repository == 'Fedee17/sfstore' && github.actor == 'Fedee17' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/nightly-audit-clickup' && inputs.integration_mode == 'probe' && inputs.confirm_list == '901717762349' && inputs.expected_sha == github.sha
+    environment:
+      name: nightly-audit-clickup
+      deployment: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Offline integration regressions with simulated API
+        run: node --test tests/clickup-integration-test.test.mjs
+      - name: Verify environment secret presence and exact list without network
+        env:
+          CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+          CLICKUP_LIST_ID: ${{ secrets.CLICKUP_LIST_ID }}
+        run: |
+          node --input-type=module <<'JS'
+          const ok=Boolean(process.env.CLICKUP_API_TOKEN)&&process.env.CLICKUP_LIST_ID==='901717762349';
+          console.log(JSON.stringify({probe:ok?'passed':'failed',secretsPresent:Boolean(process.env.CLICKUP_API_TOKEN)&&Boolean(process.env.CLICKUP_LIST_ID),expectedListMatched:process.env.CLICKUP_LIST_ID==='901717762349',clickupRequests:0}));
+          if(!ok)process.exitCode=1;
+          JS
