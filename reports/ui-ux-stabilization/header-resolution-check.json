@@ -5,6 +5,13 @@
   "applyCheck": "passed",
   "checkoutFilesModified": false,
   "mergePerformed": false,
+  "configPatchPath": "reports/ui-ux-stabilization/vercel-pr2-resolution.patch",
+  "configApplyCheck": "passed",
+  "preservedCheckoutBranches": [
+    "codex/sec01-pay01-staging-preparation",
+    "codex/integration-sec01-pay01-storage-20261011"
+  ],
+  "additionalDisabledBranch": "codex/ui-ux-stabilization",
   "preserves": [
     "Link with prefetch=false",
     "GET search",

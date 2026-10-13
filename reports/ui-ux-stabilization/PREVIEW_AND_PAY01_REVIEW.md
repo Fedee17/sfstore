@@ -18,6 +18,8 @@ El código desplegado conserva el checkout antiguo, que llama al cliente públic
 
 Esta medida previene nuevos Previews automáticos de la rama; **no retira ni modifica el deployment READY existente ni impide un deploy manual autorizado por otra persona**. La opción más sencilla para eliminar el riesgo residual de acceso a ese Preview es retirarlo desde su deployment concreto en el dashboard, previa coordinación, sin borrar el proyecto ni tocar Production. No se hace esa eliminación aquí. Si se necesita un Preview funcional, usar variables de Preview para un backend sintético separado; nunca copiar las claves Production. No se prepara ni ejecuta una migración o un proyecto Supabase desde esta tarea.
 
+El push de `f19abe0b0a68498c649518a247af8c8e7a067f60` se verificó por API: cero deployments asociados a ese SHA y sin checks de Preview en PR #8 al consultar. El deployment antiguo sigue READY; no se declara retirado.
+
 ## Encabezado: resolución concreta sin merge
 
 Se incorporan a la versión de UI los dos `Link` a inicio con `prefetch={false}` de PR #2 y se mantiene un único import de Link/useState. Se preservan búsqueda GET, categorías vigentes, botones táctiles/teclado, responsive, ARIA y `/ayuda`.
@@ -25,6 +27,8 @@ Se incorporan a la versión de UI los dos `Link` a inicio con `prefetch={false}`
 `site-header-pr2-resolution.patch` transforma exclusivamente el encabezado del HEAD de checkout indicado en `header-resolution-check.json` a la versión combinada. `git apply --check` aprobó sobre una copia temporal exacta de ese archivo. No se modificaron archivos del worktree del checkout ni se realizó merge. Reproducir con `node scripts/prepare-ui-header-resolution.mjs` después de refrescar la referencia de PR #2. El agente principal debe revisar y aplicar en su worktree de integración, considerando posibles nuevos cambios posteriores al SHA verificado; no sustituir a ciegas el archivo entero.
 
 La coordinación se envió a `LOCAL SFSTORE` por solicitud explícita del usuario. Se comunicaron el patch preparado, el fallback a demos y la discrepancia de precios. No se interpreta un mensaje enviado como aprobación recibida de reglas comerciales.
+
+La nueva simulación sobre `f19abe0` conserva conflictos textuales de encabezado y añade `vercel.json` por creación en ambas ramas. La PR #2 ya bloquea `codex/sec01-pay01-staging-preparation` y `codex/integration-sec01-pay01-storage-20261011`. `vercel-pr2-resolution.patch` conserva esas dos reglas y agrega sólo `codex/ui-ux-stabilization`; no reemplazar el archivo completo por la versión de UI. Ambos patches pasan `git apply --check` contra los archivos exactos de PR #2. No se aplican al worktree del agente principal ni a `main`.
 
 ## PAY-01: coincidencia parcial y bloqueo comercial
 

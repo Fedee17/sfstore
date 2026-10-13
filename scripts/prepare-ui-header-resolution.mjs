@@ -24,12 +24,29 @@ try {
   const patchPath = "reports/ui-ux-stabilization/site-header-pr2-resolution.patch";
   await writeFile(patchPath, patch);
   execFileSync("git", ["apply", "--check", "--directory=.ui-header-resolution-check", patchPath], { encoding: "utf8" });
+  const checkoutConfigText = execFileSync("git", ["show", `${ref}:vercel.json`], { encoding: "utf8" });
+  const checkoutConfig = JSON.parse(checkoutConfigText);
+  const uiConfig = JSON.parse(await readFile("vercel.json", "utf8"));
+  const combinedConfig = structuredClone(checkoutConfig);
+  combinedConfig.git.deploymentEnabled = { ...checkoutConfig.git.deploymentEnabled, ...uiConfig.git.deploymentEnabled };
+  for (const branch of Object.keys(checkoutConfig.git.deploymentEnabled)) {
+    assert.equal(combinedConfig.git.deploymentEnabled[branch], checkoutConfig.git.deploymentEnabled[branch]);
+  }
+  await writeFile(join(temp, "vercel.json"), checkoutConfigText);
+  await writeFile(join(temp, "resolved-vercel.json"), JSON.stringify(combinedConfig, null, 2) + "\n");
+  const configDiff = spawnSync("git", ["diff", "--no-index", "--", join(temp, "vercel.json"), join(temp, "resolved-vercel.json")], { encoding: "utf8" });
+  assert.ok([0, 1].includes(configDiff.status), configDiff.stderr);
+  const configPatch = configDiff.stdout.split("\n").map((line) => line === " " ? "" : line.startsWith("diff --git ") ? "diff --git a/vercel.json b/vercel.json" : line.startsWith("--- ") ? "--- a/vercel.json" : line.startsWith("+++ ") ? "+++ b/vercel.json" : line).join("\n");
+  const configPatchPath = "reports/ui-ux-stabilization/vercel-pr2-resolution.patch";
+  await writeFile(configPatchPath, configPatch);
+  execFileSync("git", ["apply", "--check", "--directory=.ui-header-resolution-check", configPatchPath], { encoding: "utf8" });
   await writeFile("reports/ui-ux-stabilization/header-resolution-check.json", JSON.stringify({
     checkoutHead: execFileSync("git", ["rev-parse", ref], { encoding: "utf8" }).trim(),
     target, patchPath, applyCheck: "passed", checkoutFilesModified: false, mergePerformed: false,
+    configPatchPath, configApplyCheck: "passed", preservedCheckoutBranches: Object.keys(checkoutConfig.git.deploymentEnabled), additionalDisabledBranch: "codex/ui-ux-stabilization",
     preserves: ["Link with prefetch=false", "GET search", "touch and keyboard navigation", "current categories", "mobile layout", "FAQ destination"],
   }, null, 2) + "\n");
-  console.log("PASS prepared header resolution applies to the exact PR #2 source without merging");
+  console.log("PASS header and Vercel resolution patches apply to exact PR #2 sources without merging");
 } finally {
   assert.equal(relative(root, temp), ".ui-header-resolution-check");
   await rm(temp, { recursive: true });

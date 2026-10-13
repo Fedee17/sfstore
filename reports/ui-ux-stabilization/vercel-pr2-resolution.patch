@@ -1,0 +1,14 @@
+diff --git a/vercel.json b/vercel.json
+index b0038b1..87af21f 100644
+--- a/vercel.json
++++ b/vercel.json
+@@ -3,7 +3,8 @@
+   "git": {
+     "deploymentEnabled": {
+       "codex/sec01-pay01-staging-preparation": false,
+-      "codex/integration-sec01-pay01-storage-20261011": false
++      "codex/integration-sec01-pay01-storage-20261011": false,
++      "codex/ui-ux-stabilization": false
+     }
+   }
+ }
