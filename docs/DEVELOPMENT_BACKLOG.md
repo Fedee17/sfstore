@@ -253,3 +253,7 @@ Auditoría para publicación: migración aditiva 202610120004 corrige precedenci
 ## PAY-01 — Configuración comercial aprobada (2026-10-12)
 
 Naranja X y alias público aprobado con copia; retiro gratuito sin dirección/horarios inventados. Transporte preferido y cotización administrativa privada antes de aceptar total y reservar stock. Migración nueva 202610120005, sólo local, conserva SQL histórico y controles de Auth/CAPTCHA/RLS, cuotas, locks e idempotencia. No configura tarifas ficticias ni guarda credenciales bancarias. [Cambios, validaciones y pendientes](../reports/checkout-approved-commercial-local-20261012.md). Revisión y publicación en PR #2 autorizadas mediante commit/push normal; sin merge, deploy, SQL remoto ni activación de Cron.
+
+## Auditoría nocturna preparada (2026-10-12)
+
+Rama independiente codex/nightly-audit-clickup: recolectores estáticos/sintéticos, informe diario y cliente ClickUp con deduplicación simulada. Workflows manuales; schedules y sincronización externa desactivados. No modifica PR #2 ni servicios. Arquitectura, costos, resultados y activación autorizada futura: [NIGHTLY_AUDIT.md](NIGHTLY_AUDIT.md).

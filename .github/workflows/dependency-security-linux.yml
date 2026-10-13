@@ -2,20 +2,38 @@ name: Dependency security Linux validation
 
 on:
   pull_request:
-    branches: [codex/integration-sec01-pay01-storage-20261011, codex/dependency-security-20261012, codex/xlsx-security-20261012]
+    branches: [codex/integration-sec01-pay01-storage-20261011, codex/dependency-security-20261012, codex/xlsx-security-20261012, codex/admin-login-captcha-20261012]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
+    inputs:
+      integration_mode:
+        description: Off runs CI; probe checks secrets; live-test touches only one synthetic task
+        type: choice
+        options: ['off', probe, live-test]
+        default: 'off'
+      shadow:
+        description: Full shadow audit without ClickUp; requires integration_mode=off and reviewed controller SHA
+        type: boolean
+        default: false
+      confirm_list:
+        description: Exact synthetic-test list ID
+        type: string
+        default: ''
+      expected_sha:
+        description: Reviewed branch SHA (40 hexadecimal characters)
+        type: string
+        default: ''
 
 permissions:
   contents: read
 
 concurrency:
-  group: dependency-security-linux-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.shadow == true && 'sfstore-shadow-nightly' || github.event_name == 'workflow_dispatch' && inputs.integration_mode == 'live-test' && 'sfstore-clickup-synthetic-901717762349' || format('dependency-security-linux-{0}', github.event.pull_request.number || github.ref) }}
+  cancel-in-progress: ${{ !(github.event_name == 'workflow_dispatch' && (inputs.integration_mode == 'live-test' || inputs.shadow == true)) }}
 
 jobs:
   validate:
-    if: github.head_ref == 'codex/dependency-security-20261012' || github.head_ref == 'codex/xlsx-security-20261012' || github.head_ref == 'codex/admin-login-captcha-20261012' || github.ref == 'refs/heads/codex/admin-login-captcha-20261012' || github.ref == 'refs/heads/codex/dependency-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012'
+    if: (github.event_name != 'workflow_dispatch' || (inputs.integration_mode == 'off' && inputs.shadow != true)) && (github.head_ref == 'codex/dependency-security-20261012' || github.head_ref == 'codex/xlsx-security-20261012' || github.head_ref == 'codex/admin-login-captcha-20261012' || github.head_ref == 'codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/admin-login-captcha-20261012' || github.ref == 'refs/heads/codex/dependency-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -34,7 +52,7 @@ jobs:
       - name: Synthetic regressions including Auth and Server Actions
         run: node scripts/validate-dependency-security.mjs
       - name: Complete candidate regressions with generated local fixtures
-        if: github.head_ref == 'codex/xlsx-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012' || github.head_ref == 'codex/admin-login-captcha-20261012' || github.ref == 'refs/heads/codex/admin-login-captcha-20261012'
+        if: github.head_ref == 'codex/xlsx-security-20261012' || github.ref == 'refs/heads/codex/xlsx-security-20261012' || github.head_ref == 'codex/admin-login-captcha-20261012' || github.head_ref == 'codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/admin-login-captcha-20261012'
         run: |
           # Copies fixtures locally; never executes SQL or connects to a service.
           node scripts/prepare-checkout-staging.mjs
@@ -45,3 +63,183 @@ jobs:
         run: npm run build
       - name: TypeScript after generated types
         run: npx --no-install tsc --noEmit
+      - name: Nightly static scanner smoke without schedules or ClickUp
+        if: github.head_ref == 'codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/nightly-audit-clickup'
+        env:
+          AUDIT_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          python -m pip install --disable-pip-version-check semgrep==1.99.0
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_checksums.txt -o "$RUNNER_TEMP/gitleaks-checksums.txt"
+          cd "$RUNNER_TEMP"
+          grep ' gitleaks_8.30.1_linux_x64.tar.gz$' gitleaks-checksums.txt | sed 's@gitleaks_8.30.1_linux_x64.tar.gz@gitleaks.tar.gz@' | sha256sum --check --strict
+          tar -xzf gitleaks.tar.gz gitleaks
+          cd "$GITHUB_WORKSPACE"
+          export PATH="$RUNNER_TEMP:$PATH"
+          node --input-type=module <<'JS'
+          import {run} from './scripts/nightly/run.mjs';
+          import {generate} from './scripts/nightly/report.mjs';
+          const part=await run({root:process.cwd(),phase:'security',scope:'codex/nightly-audit-clickup',sha:process.env.TARGET_SHA,runUrl:process.env.AUDIT_RUN_URL,output:'audit-output'});
+          const report=generate([part],null,'audit-report');
+          console.log(JSON.stringify({checks:part.checks.map(c=>({id:c.id,status:c.status,complete:c.complete})),findings:part.findings.length,missing:report.missing}));
+          if(part.checks.some(c=>!c.complete))process.exitCode=1;
+          JS
+      - name: Upload normalized static smoke report only
+        if: always() && (github.head_ref == 'codex/nightly-audit-clickup' || github.ref == 'refs/heads/codex/nightly-audit-clickup')
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sfstore-audit-validation-${{ github.run_id }}
+          path: |
+            audit-output/results.json
+            audit-report/report.json
+            audit-report/report.md
+          retention-days: 14
+          if-no-files-found: error
+
+  integration-probe:
+    if: github.repository == 'Fedee17/sfstore' && github.actor == 'Fedee17' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/nightly-audit-clickup' && inputs.integration_mode == 'probe' && inputs.confirm_list == '901717762349' && inputs.expected_sha == github.sha
+    environment:
+      name: nightly-audit-clickup
+      deployment: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Offline integration regressions with simulated API
+        run: node --test tests/clickup-integration-test.test.mjs
+      - name: Verify environment secret presence and exact list without network
+        env:
+          CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+          CLICKUP_LIST_ID: ${{ secrets.CLICKUP_LIST_ID }}
+        run: |
+          node --input-type=module <<'JS'
+          const ok=Boolean(process.env.CLICKUP_API_TOKEN)&&process.env.CLICKUP_LIST_ID==='901717762349';
+          console.log(JSON.stringify({probe:ok?'passed':'failed',secretsPresent:Boolean(process.env.CLICKUP_API_TOKEN)&&Boolean(process.env.CLICKUP_LIST_ID),expectedListMatched:process.env.CLICKUP_LIST_ID==='901717762349',clickupRequests:0}));
+          if(!ok)process.exitCode=1;
+          JS
+
+  integration-live-test:
+    if: github.repository == 'Fedee17/sfstore' && github.actor == 'Fedee17' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/nightly-audit-clickup' && inputs.integration_mode == 'live-test' && inputs.confirm_list == '901717762349' && inputs.expected_sha == github.sha
+    environment:
+      name: nightly-audit-clickup
+      deployment: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Offline integration regressions with simulated API
+        run: node --test tests/clickup-integration-test.test.mjs
+      - name: Single synthetic task test against approved ClickUp list
+        env:
+          CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+          CLICKUP_LIST_ID: ${{ secrets.CLICKUP_LIST_ID }}
+          CLICKUP_TEST_CONFIRM: ${{ inputs.confirm_list }}
+          CLICKUP_TEST_MODE: ${{ inputs.integration_mode }}
+          CLICKUP_TEST_SHA: ${{ inputs.expected_sha }}
+        run: node scripts/nightly/clickup-integration-test.mjs
+
+  shadow:
+    if: github.repository == 'Fedee17/sfstore' && github.actor == 'Fedee17' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/nightly-audit-clickup' && inputs.shadow == true && inputs.integration_mode == 'off' && inputs.expected_sha == github.sha
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout reviewed controller
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Check fixed audited ancestor and disabled integration
+        run: |
+          git -C controller merge-base --is-ancestor 944e4fc060d0b2c6c0b062bd6ef7ad7217d417e2 HEAD
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const config=JSON.parse(readFileSync('controller/audit/nightly/config.json'));
+          if(config.clickup.enabled)throw Error('Shadow requires disabled integration');
+          JS
+      - name: Checkout fixed audited target
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 944e4fc060d0b2c6c0b062bd6ef7ad7217d417e2
+          path: target
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install target without lifecycle scripts
+        working-directory: target
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned static tools (security phase only)
+        run: |
+          python -m pip install --disable-pip-version-check semgrep==1.99.0
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_checksums.txt -o "$RUNNER_TEMP/gitleaks-checksums.txt"
+          cd "$RUNNER_TEMP"
+          grep ' gitleaks_8.30.1_linux_x64.tar.gz$' gitleaks-checksums.txt | sed 's@gitleaks_8.30.1_linux_x64.tar.gz@gitleaks.tar.gz@' | sha256sum --check --strict
+          tar -xzf gitleaks.tar.gz gitleaks
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Local fixtures only; no SQL execution
+        run: |
+          node --input-type=module <<'JS'
+          import {prepareStaging} from './controller/scripts/prepare-checkout-staging.mjs';
+          prepareStaging('target');
+          JS
+      - name: Read prior complete shadow report only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          import {writeFileSync} from 'node:fs';
+          import {api,downloadArtifact} from './controller/scripts/nightly/github.mjs';
+          import {auditDay} from './controller/scripts/nightly/core.mjs';
+          import {validatePrevious} from './controller/scripts/nightly/shadow.mjs';
+          const day=auditDay(),token=process.env.GH_TOKEN,repository=process.env.GITHUB_REPOSITORY,request=api({repository,token});
+          const history=await request('/actions/workflows/382498450/runs?event=workflow_dispatch&status=success&branch=codex%2Fnightly-audit-clickup&per_page=20&created='+encodeURIComponent('<'+day+'T03:00:00Z'));
+          if(history.total_count>20)throw Error('Shadow history cap exceeded');
+          let previous=null;
+          for(const run of history.workflow_runs){
+            const data=await request('/actions/runs/'+run.id+'/artifacts?per_page=20');
+            if(data.total_count>20)throw Error('Artifact cap exceeded');
+            const artifact=data.artifacts.find(a=>a.name==='sfstore-shadow-report-'+run.id+'-'+run.run_attempt&&!a.expired);
+            if(!artifact)continue;
+            previous=validatePrevious(await downloadArtifact(artifact,'report.json',process.env.RUNNER_TEMP,token),{day,runUrl:'https://github.com/'+repository+'/actions/runs/'+run.id});break;
+          }
+          writeFileSync('shadow-history.json',JSON.stringify({previous}));
+          JS
+      - name: Full shadow security, quality, checkout and report without service secrets
+        env:
+          TARGET_SHA: 944e4fc060d0b2c6c0b062bd6ef7ad7217d417e2
+          CONTROLLER_SHA: ${{ github.sha }}
+          AUDIT_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node controller/scripts/nightly/shadow.mjs
+      - name: Upload normalized shadow evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sfstore-shadow-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            shadow-output/report.json
+            shadow-output/report.md
+            shadow-output/security/results.json
+            shadow-output/quality/results.json
+            shadow-output/checkout/results.json
+          retention-days: 14
+          if-no-files-found: error
