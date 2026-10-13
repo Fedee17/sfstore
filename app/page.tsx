@@ -1,7 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
-import { brand } from "@/lib/brand";
 import { getTransferUnitPrice, hasTransferPrice } from "@/lib/pricing";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getProductsByCategorySlug, type PublicProduct } from "@/services/products";
@@ -127,9 +126,14 @@ function SimplePrice({ product }: { product: PublicProduct }) {
     : product.price;
 
   return (
-    <p className="break-words text-2xl font-semibold text-[#102033]">
-      {formatCurrency(price)}
-    </p>
+    <div>
+      <p className="text-xs font-semibold text-[#003B73]">
+        {hasTransferPrice(product) ? "Efectivo / transferencia" : "Precio lista"}
+      </p>
+      <p className="mt-1 break-words text-2xl font-semibold text-[#102033]">
+        {formatCurrency(price)}
+      </p>
+    </div>
   );
 }
 

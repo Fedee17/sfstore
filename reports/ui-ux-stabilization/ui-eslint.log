@@ -1,0 +1,56 @@
+
+> sfstore@0.1.0 lint
+> eslint
+
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\admin\productos\page.tsx
+  145:7  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\checkout\exito\page.tsx
+   46:9   error  Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+  116:13  error  Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\checkout\fallo\page.tsx
+  19:9  error  Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\checkout\page.tsx
+   44:30  warning  'subtotal' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  171:9   error    Error: This value cannot be modified
+
+Modifying a variable defined outside a component or hook is not allowed. Consider using an effect.
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\checkout\page.tsx:171:9
+  169 |
+  170 |         clearCart();
+> 171 |         window.location.href = preference.initPoint;
+      |         ^^^^^^^^^^^^^^^ value cannot be modified
+  172 |         return;
+  173 |       }
+  174 |  react-hooks/immutability
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\checkout\pendiente\page.tsx
+  19:9   error  Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+  61:13  error  Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\page.tsx
+  86:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\app\producto\[slug]\page.tsx
+  119:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  245:11  error    Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages                                                                                                                                    @next/next/no-html-link-for-pages
+  347:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\components\home-hero-slider.tsx
+  40:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\components\product-grid.tsx
+  35:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\components\product-image-gallery.tsx
+  54:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  76:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\dev\sfstore\.worktrees\ui-ux-stabilization\components\site-header.tsx
+  150:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 17 problems (7 errors, 10 warnings)

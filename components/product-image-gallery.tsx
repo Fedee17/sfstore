@@ -54,7 +54,7 @@ export function ProductImageGallery({
         <img
           src={selectedImage.url}
           alt={selectedImage.alt ?? productName}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain"
         />
       </div>
 
@@ -71,6 +71,7 @@ export function ProductImageGallery({
                   : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
               }`}
               aria-label={`Ver imagen ${index + 1} de ${productName}`}
+              aria-pressed={index === selectedIndex}
             >
               <img
                 src={image.url}

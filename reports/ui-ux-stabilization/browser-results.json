@@ -1,0 +1,102 @@
+[
+  {
+    "width": 320,
+    "headerHeight": 197,
+    "checks": [
+      "home: no horizontal overflow",
+      "banner dimensions stable; controls >= 44px",
+      "categories: touch/keyboard, Escape and focus exit",
+      "search: no horizontal overflow",
+      "search matches; cart feedback, stock limit and persistence",
+      "cart: no horizontal overflow",
+      "cart decrease, remove and empty-state persistence",
+      "empty search recovery and FAQ destination",
+      "/perfumes: no horizontal overflow",
+      "/mates: no horizontal overflow",
+      "/producto/lattafa-asad: no horizontal overflow",
+      "/admin/login: no horizontal overflow",
+      "checkout presentation (no submission): no horizontal overflow"
+    ],
+    "pageErrors": []
+  },
+  {
+    "width": 390,
+    "headerHeight": 197,
+    "checks": [
+      "home: no horizontal overflow",
+      "banner dimensions stable; controls >= 44px",
+      "categories: touch/keyboard, Escape and focus exit",
+      "search: no horizontal overflow",
+      "search matches; cart feedback, stock limit and persistence",
+      "cart: no horizontal overflow",
+      "cart decrease, remove and empty-state persistence",
+      "empty search recovery and FAQ destination",
+      "/perfumes: no horizontal overflow",
+      "/mates: no horizontal overflow",
+      "/producto/lattafa-asad: no horizontal overflow",
+      "/admin/login: no horizontal overflow",
+      "checkout presentation (no submission): no horizontal overflow"
+    ],
+    "pageErrors": []
+  },
+  {
+    "width": 430,
+    "headerHeight": 197,
+    "checks": [
+      "home: no horizontal overflow",
+      "banner dimensions stable; controls >= 44px",
+      "categories: touch/keyboard, Escape and focus exit",
+      "search: no horizontal overflow",
+      "search matches; cart feedback, stock limit and persistence",
+      "cart: no horizontal overflow",
+      "cart decrease, remove and empty-state persistence",
+      "empty search recovery and FAQ destination",
+      "/perfumes: no horizontal overflow",
+      "/mates: no horizontal overflow",
+      "/producto/lattafa-asad: no horizontal overflow",
+      "/admin/login: no horizontal overflow",
+      "checkout presentation (no submission): no horizontal overflow"
+    ],
+    "pageErrors": []
+  },
+  {
+    "width": 768,
+    "headerHeight": 229,
+    "checks": [
+      "home: no horizontal overflow",
+      "banner dimensions stable; controls >= 44px",
+      "categories: touch/keyboard, Escape and focus exit",
+      "search: no horizontal overflow",
+      "search matches; cart feedback, stock limit and persistence",
+      "cart: no horizontal overflow",
+      "cart decrease, remove and empty-state persistence",
+      "empty search recovery and FAQ destination",
+      "/perfumes: no horizontal overflow",
+      "/mates: no horizontal overflow",
+      "/producto/lattafa-asad: no horizontal overflow",
+      "/admin/login: no horizontal overflow",
+      "checkout presentation (no submission): no horizontal overflow"
+    ],
+    "pageErrors": []
+  },
+  {
+    "width": 1440,
+    "headerHeight": 161,
+    "checks": [
+      "home: no horizontal overflow",
+      "banner dimensions stable; controls >= 44px",
+      "categories: touch/keyboard, Escape and focus exit",
+      "search: no horizontal overflow",
+      "search matches; cart feedback, stock limit and persistence",
+      "cart: no horizontal overflow",
+      "cart decrease, remove and empty-state persistence",
+      "empty search recovery and FAQ destination",
+      "/perfumes: no horizontal overflow",
+      "/mates: no horizontal overflow",
+      "/producto/lattafa-asad: no horizontal overflow",
+      "/admin/login: no horizontal overflow",
+      "checkout presentation (no submission): no horizontal overflow"
+    ],
+    "pageErrors": []
+  }
+]

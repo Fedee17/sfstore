@@ -1,19 +1,17 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { PERFUME_CATALOG_CATEGORIES } from "@/lib/catalog/perfume-filters";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/cart-store";
 
 const perfumeMenuItems = [
   { href: "/perfumes", label: "Todos los perfumes" },
-  { href: "/perfumes?categoria=presencia", label: "Para hacer sentir presencia" },
-  { href: "/perfumes?categoria=diario", label: "Para usar todos los días" },
-  { href: "/perfumes?categoria=frescos", label: "Frescos y versátiles" },
-  { href: "/perfumes?categoria=dulces", label: "Dulces y llamativos" },
-  { href: "/perfumes?categoria=nocturnos", label: "Elegantes y nocturnos" },
-  { href: "/perfumes?categoria=diferentes", label: "Para salir de lo habitual" },
-  { href: "/perfumes?categoria=regalo", label: "Para regalar bien" },
-  { href: "/perfumes?categoria=decants", label: "Decants para probar" },
+  ...PERFUME_CATALOG_CATEGORIES.map((category) => ({
+    href: `/perfumes?categoria=${category.hrefValue}`,
+    label: category.label,
+  })),
 ];
 
 const mateMenuItems = [
@@ -75,26 +73,44 @@ function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }:
 
   return (
     <div
-      className="relative shrink-0"
-      onMouseEnter={() => setOpenMenu(id)}
-      onMouseLeave={() => setOpenMenu(null)}
-      onFocus={() => setOpenMenu(id)}
+      className="shrink-0 lg:relative"
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") setOpenMenu(id);
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === "mouse" && !event.currentTarget.contains(document.activeElement)) setOpenMenu(null);
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpenMenu(null);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          setOpenMenu(null);
+          event.currentTarget.querySelector<HTMLButtonElement>("button")?.focus();
+        }
+      }}
     >
       <a
         href={href}
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
-        onFocus={() => setOpenMenu(id)}
-        className="block whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold text-white/88 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        className="inline-block whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold text-white/88 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:px-3"
       >
         {label}
       </a>
+      <button
+        type="button"
+        aria-label={`Categorías de ${label}`}
+        aria-expanded={isOpen}
+        aria-controls={`${id}-categories`}
+        onClick={() => setOpenMenu(isOpen ? null : id)}
+        className="min-h-11 min-w-11 rounded-full focus-visible:outline-2 focus-visible:outline-white"
+      >
+        <span aria-hidden="true">⌄</span>
+      </button>
 
       {isOpen ? (
-        <div className="absolute left-0 top-full z-50 pt-2">
+        <div id={`${id}-categories`} className="absolute left-4 right-4 top-full z-50 pt-2 lg:left-1/2 lg:right-auto lg:w-[290px] lg:-translate-x-1/2">
           <div
-            role="menu"
-            className="grid min-w-[290px] gap-1 rounded-2xl border border-[#DCE3EA] bg-white p-3 text-[#102033] shadow-2xl shadow-[#102033]/15"
+            className="grid max-h-[60vh] gap-1 overflow-y-auto rounded-2xl border border-[#DCE3EA] bg-white p-3 text-[#102033] shadow-2xl shadow-[#102033]/15"
           >
             <p className="px-3 pb-2 text-xs font-semibold leading-5 text-[#003B73]/70">
               {helper}
@@ -103,7 +119,6 @@ function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }:
               <a
                 key={item.href}
                 href={item.href}
-                role="menuitem"
                 className="rounded-xl px-3 py-2 text-sm font-semibold text-[#102033] transition hover:bg-[#EEF2F6] hover:text-[#0072CE] focus:bg-[#EEF2F6] focus:outline-none"
               >
                 {item.label}
@@ -123,17 +138,13 @@ export function SiteHeader() {
     "Hola SFSTORE, quiero hacer una consulta desde la web.",
   );
 
-  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-  }
-
   return (
-    <header className="sticky top-0 z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)]">
+    <header className="relative z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)] lg:sticky lg:top-0">
       <div className="bg-[#0072CE] text-white">
-        <div className="grid w-full gap-5 px-5 py-4 sm:px-8 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:gap-6 lg:px-10 lg:items-center">
-          <a
+        <div className="grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-5 py-3 sm:px-8 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:gap-6 lg:px-10">
+          <Link
             href="/"
-            className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-[76px] sm:w-[76px] lg:justify-self-start"
+            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-[76px] sm:w-[76px] lg:justify-self-start"
             aria-label="Ir al inicio de SFSTORE"
           >
             <img
@@ -141,21 +152,21 @@ export function SiteHeader() {
               alt="SFSTORE Importados"
               className="h-full w-full scale-[1.08] object-cover"
             />
-          </a>
+          </Link>
 
-          <form onSubmit={handleSearchSubmit} className="order-3 min-w-0 lg:order-none lg:mx-auto lg:w-full lg:max-w-[820px]" role="search">
+          <form action="/buscar" method="get" className="order-3 col-span-2 min-w-0 lg:order-none lg:col-span-1 lg:mx-auto lg:w-full lg:max-w-[820px]" role="search">
             <label className="sr-only" htmlFor="site-search">
               Buscar productos
             </label>
-            <div className="flex min-w-0 items-center rounded-full bg-white px-4 py-2.5 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
+            <div className="flex min-w-0 items-center rounded-full bg-white px-4 py-1.5 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
               <input
                 id="site-search"
                 name="buscar"
                 type="search"
                 placeholder="¿Qué estás buscando?"
-                className="min-w-0 flex-1 bg-transparent text-center text-base font-semibold outline-none placeholder:font-bold placeholder:text-[#38BDF8] sm:text-lg"
+                className="min-w-0 flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#526479] sm:text-lg"
               />
-              <button type="submit" aria-label="Buscar" className="ml-3 rounded-full p-1 text-[#0072CE] transition hover:bg-[#EEF2F6]">
+              <button type="submit" aria-label="Buscar" className="ml-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#0072CE] transition hover:bg-[#EEF2F6] focus-visible:outline-2">
                 <SearchIcon />
               </button>
             </div>
@@ -166,6 +177,7 @@ export function SiteHeader() {
               href={helpHref}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Consultar por WhatsApp"
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:px-4"
             >
               <HelpIcon />
@@ -188,19 +200,19 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <nav className="border-t border-white/10 bg-[#003B73] text-white" aria-label="Navegación principal">
-        <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-2 overflow-visible px-5 py-2.5 text-sm font-semibold sm:px-8">
-          <a
+      <nav className="relative border-t border-white/10 bg-[#003B73] text-white" aria-label="Navegación principal">
+        <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-1 overflow-visible px-3 py-2 text-sm font-semibold sm:px-8">
+          <Link
             href="/"
-            className="shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white"
+            className="hidden shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:block"
           >
             Inicio
-          </a>
+          </Link>
           <DropdownMenu
             id="perfumes"
             label="Perfumes"
             href="/perfumes"
-            helper="Elegí según cómo querés oler, no solo por marca."
+            helper="Explorá las categorías de perfumes disponibles."
             items={perfumeMenuItems}
             openMenu={openMenu}
             setOpenMenu={setOpenMenu}
@@ -218,15 +230,17 @@ export function SiteHeader() {
             href={helpHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white"
+            className="hidden shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:block"
           >
             Contacto
           </a>
           <a
-            href="#faq"
-            className="shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white"
+            href="/ayuda"
+            aria-label="Preguntas frecuentes"
+            className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-2 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:px-4"
           >
-            Preguntas frecuentes
+            <span className="sm:hidden">Ayuda</span>
+            <span className="hidden sm:inline">Preguntas frecuentes</span>
           </a>
         </div>
       </nav>
