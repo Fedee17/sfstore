@@ -7,11 +7,12 @@ import {generate} from './report.mjs';
 export const scope='codex/nightly-audit-clickup';
 export const targetSha='944e4fc060d0b2c6c0b062bd6ef7ad7217d417e2';
 export function validatePrevious(report,{day,runUrl}){
+ const runUrls=Array.isArray(report.runUrls)?[...new Set(report.runUrls)]:[];
  if(report.scope!==scope||!report.coherent||report.missing?.length!==0||report.day>=day||
-  report.runUrls?.length!==1||report.runUrls[0]!==runUrl||report.shadow?.targetSha!==targetSha||
+  runUrls.length!==1||runUrls[0]!==runUrl||report.shadow?.targetSha!==targetSha||
   !/^[a-f0-9]{40}$/.test(report.shadow.controllerSha)||report.shas?.length!==1||report.shas[0]!==targetSha)
   throw Error('Shadow history provenance mismatch');
- return report;
+ return report.runUrls.length===runUrls.length?report:{...report,runUrls};
 }
 export async function executeShadow({root,sha,controllerSha,runUrl,output,previous=null,runImpl=run,generateImpl=generate,day=auditDay()}){
  if(sha!==targetSha||!/^[a-f0-9]{40}$/.test(controllerSha)||!/^https:\/\/github\.com\/Fedee17\/sfstore\/actions\/runs\/\d+$/.test(runUrl))throw Error('Shadow scope mismatch');

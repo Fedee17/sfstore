@@ -40,6 +40,7 @@ export function consolidate(parts,previous,config){
  if(parts.some(p=>p.scope!==scope||p.day!==day||p.schemaVersion!==1))throw Error('Mixed scope/day/schema');
  const latest=new Map();for(const p of parts){const prior=latest.get(p.phase);if(!prior||p.finishedAt>prior.finishedAt)latest.set(p.phase,p);}
  const selected=[...latest.values()],shas=[...new Set(selected.map(p=>p.sha))];
+ const runUrls=[...new Set(selected.map(p=>p.runUrl))];
  const coherent=shas.length===1;
  const checks=selected.flatMap(p=>p.checks),coverage=coherent?checks.filter(c=>c.complete).map(c=>c.id):[];
  const current=canonicalFindings(selected.flatMap(p=>p.findings));
@@ -56,14 +57,15 @@ export function consolidate(parts,previous,config){
   const confirmations=changed&&(!previous?.day||previous.day<day)?(f.resolutionConfirmations||0)+1:0;
   if(f.check==='dependencies'&&!changed){groups.resolutionPending.push({...f,resolutionConfirmations:0,verifiable:false});return false;}
   if(confirmations<required){groups.resolutionPending.push({...f,resolutionConfirmations:confirmations,verifiable:false});return false;}
-  f.resolutionConfirmations=confirmations;f.resolutionEvidence||={day,sha:shas[0],runUrls:selected.map(p=>p.runUrl)};return true;
+  f.resolutionConfirmations=confirmations;f.resolutionEvidence||={day,sha:shas[0],runUrls};return true;
  });
  groups.unverified.push(...groups.resolutionPending);
  const rank={critical:0,high:1,medium:2,low:3};
  const candidates=current.filter(f=>!f.accepted).sort((a,b)=>(a.exposure==='development-only'?1:0)-(b.exposure==='development-only'?1:0)||(rank[a.severity]??9)-(rank[b.severity]??9)||(['checkout','security'].includes(a.category)?0:1)-(['checkout','security'].includes(b.category)?0:1));
  const priorities=[],components=new Set();for(const f of candidates){const key=f.category+'|'+f.file;if(!components.has(key)){priorities.push(f);components.add(key);}if(priorities.length===3)break;}
  return {schemaVersion:1,scope,day,shas,coherent,checks,coverage,missing:config.requiredChecks.filter(id=>!coverage.includes(id)),groups,priorities,
- findings:[...current,...groups.unverified],realServices:'No consultados. No se ejecutan pruebas contra servicios reales.',runUrls:selected.map(p=>p.runUrl)};
+ findings:[...current,...groups.unverified],realServices:'No consultados. No se ejecutan pruebas contra servicios reales.',runUrls,
+ phaseEvidence:selected.map(p=>({phase:p.phase,sha:p.sha,runUrl:p.runUrl,finishedAt:p.finishedAt}))};
 }
 export function markdown(report){
  const lines=['# SFSTORE — auditoría nocturna '+report.day,'','Rama: '+report.scope+' · SHA: '+report.shas.join(', '),'',report.realServices,'',
