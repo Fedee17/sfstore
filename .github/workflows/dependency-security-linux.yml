@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       integration_mode:
-        description: Off runs ordinary CI; probe checks environment without ClickUp calls
+        description: Off runs CI; probe checks secrets; live-test touches only one synthetic task
         type: choice
-        options: [off, probe]
+        options: [off, probe, live-test]
         default: off
       confirm_list:
         description: Exact synthetic-test list ID
@@ -24,8 +24,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: dependency-security-linux-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.integration_mode == 'live-test' && 'sfstore-clickup-synthetic-901717762349' || format('dependency-security-linux-{0}', github.event.pull_request.number || github.ref) }}
+  cancel-in-progress: ${{ !(github.event_name == 'workflow_dispatch' && inputs.integration_mode == 'live-test') }}
 
 jobs:
   validate:
@@ -120,3 +120,29 @@ jobs:
           console.log(JSON.stringify({probe:ok?'passed':'failed',secretsPresent:Boolean(process.env.CLICKUP_API_TOKEN)&&Boolean(process.env.CLICKUP_LIST_ID),expectedListMatched:process.env.CLICKUP_LIST_ID==='901717762349',clickupRequests:0}));
           if(!ok)process.exitCode=1;
           JS
+
+  integration-live-test:
+    if: github.repository == 'Fedee17/sfstore' && github.actor == 'Fedee17' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/nightly-audit-clickup' && inputs.integration_mode == 'live-test' && inputs.confirm_list == '901717762349' && inputs.expected_sha == github.sha
+    environment:
+      name: nightly-audit-clickup
+      deployment: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Offline integration regressions with simulated API
+        run: node --test tests/clickup-integration-test.test.mjs
+      - name: Single synthetic task test against approved ClickUp list
+        env:
+          CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+          CLICKUP_LIST_ID: ${{ secrets.CLICKUP_LIST_ID }}
+          CLICKUP_TEST_CONFIRM: ${{ inputs.confirm_list }}
+          CLICKUP_TEST_MODE: ${{ inputs.integration_mode }}
+          CLICKUP_TEST_SHA: ${{ inputs.expected_sha }}
+        run: node scripts/nightly/clickup-integration-test.mjs
