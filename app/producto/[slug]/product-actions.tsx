@@ -11,13 +11,12 @@ type ProductActionsProps = {
 
 export function ProductActions({ product }: ProductActionsProps) {
   const addItem = useCartStore((state) => state.addItem);
-  const currentQuantity = useCartStore(
-    (state) =>
-      state.items.find((item) => item.productId === product.id)?.quantity ?? 0,
-  );
+  const cartItem = useCartStore((state) => state.items.find((item) => item.productId === product.id));
+  const currentQuantity = cartItem?.quantity ?? 0;
   const [feedback, setFeedback] = useState("");
   const isAvailable = product.stock > 0;
-  const isAtMaxStock = isAvailable && currentQuantity >= product.stock;
+  const reachedCartLimit = cartItem ? cartItem.quantity >= cartItem.stock : false;
+  const isAtMaxStock = isAvailable && (reachedCartLimit || currentQuantity >= product.stock);
 
   function handleAddToCart() {
     if (!isAvailable) {
@@ -29,8 +28,10 @@ export function ProductActions({ product }: ProductActionsProps) {
       return;
     }
 
+    const before = useCartStore.getState().items.find((item) => item.productId === product.id)?.quantity ?? 0;
     addItem(product);
-    setFeedback("Producto agregado al carrito.");
+    const after = useCartStore.getState().items.find((item) => item.productId === product.id)?.quantity ?? 0;
+    setFeedback(after > before ? "Producto agregado al carrito." : "Ya agregaste el stock disponible.");
   }
 
   return (

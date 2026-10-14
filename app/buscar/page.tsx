@@ -19,7 +19,7 @@ export default async function SearchPage({ searchParams }: {
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
-      <SiteHeader />
+      <SiteHeader searchQuery={query} />
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
         <h1 className="break-words text-3xl font-semibold sm:text-4xl">
           {query ? `Resultados para “${query}”` : "Todos los productos"}

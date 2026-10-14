@@ -36,6 +36,8 @@ Los tests de PR #2 fijan precio lista **100,01**, campo legado `transferPrice` *
 
 La UI actual usa el `transferPrice` del catálogo. El caso sintético lista 100/transferencia 80 se muestra como 80, mientras PAY-01 indica 75: **no hay coincidencia general**. Corregirlo exige la decisión del agente principal sobre el contrato y la presentación del catálogo. No se cambia la política, no se sobrescriben precios y no se añade un cálculo de 25% a UI para ocultar el desacuerdo. En `component-results.json` se registra el contraejemplo como bloqueado por coordinación.
 
+Actualización de coordinación: el usuario confirmó la política de 25% en efectivo/transferencia sobre el precio de lista correspondiente y asignó al agente principal su implementación coherente en datos, catálogo y PAY-01. No falta definir la política; falta que ese agente resuelva la discrepancia. Se comunicó la decisión. UI continúa sólo con P0/P1 independientes, sin merge, despliegue, cambios de Supabase ni pruebas reales del Preview anterior.
+
 Otro problema independiente sí se corrigió: `maximumFractionDigits: 0` mostraba importes decimales redondeados. Inicio y tarjetas ahora conservan hasta dos decimales, sin modificar valores ni cálculos. El fixture donde el precio publicado ya es 75,01 muestra exactamente **$75,01**, coincidente con el precio unitario del fixture PAY-01. Este test valida presentación, no creación de pedido ni el contrato integrado completo. La ficha principal y el resumen del checkout usan archivos del agente principal: quedan señalados para revisar el mismo formato durante la integración.
 
 ## Continuidad P1 y pruebas

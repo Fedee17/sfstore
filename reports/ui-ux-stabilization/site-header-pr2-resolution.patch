@@ -1,5 +1,5 @@
 diff --git a/components/site-header.tsx b/components/site-header.tsx
-index eecac95..93298ae 100644
+index eecac95..c1ac32f 100644
 --- a/components/site-header.tsx
 +++ b/components/site-header.tsx
 @@ -1,20 +1,17 @@
@@ -93,7 +93,15 @@ index eecac95..93298ae 100644
                  className="rounded-xl px-3 py-2 text-sm font-semibold text-[#102033] transition hover:bg-[#EEF2F6] hover:text-[#0072CE] focus:bg-[#EEF2F6] focus:outline-none"
                >
                  {item.label}
-@@ -124,17 +138,13 @@ export function SiteHeader() {
+@@ -117,24 +131,20 @@ function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }:
+   );
+ }
+
+-export function SiteHeader() {
++export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
+   const totalItems = useCartStore((state) => state.totalItems);
+   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
+   const helpHref = buildWhatsAppUrl(
      "Hola SFSTORE, quiero hacer una consulta desde la web.",
    );
 
@@ -114,7 +122,7 @@ index eecac95..93298ae 100644
              aria-label="Ir al inicio de SFSTORE"
              prefetch={false}
            >
-@@ -145,19 +155,19 @@ export function SiteHeader() {
+@@ -145,19 +155,21 @@ export function SiteHeader() {
              />
            </Link>
 
@@ -126,9 +134,11 @@ index eecac95..93298ae 100644
 -            <div className="flex min-w-0 items-center rounded-full bg-white px-4 py-2.5 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
 +            <div className="flex min-w-0 items-center rounded-full bg-white px-4 py-1.5 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
                <input
++                key={searchQuery}
                  id="site-search"
                  name="buscar"
                  type="search"
++                defaultValue={searchQuery}
                  placeholder="¿Qué estás buscando?"
 -                className="min-w-0 flex-1 bg-transparent text-center text-base font-semibold outline-none placeholder:font-bold placeholder:text-[#38BDF8] sm:text-lg"
 +                className="min-w-0 flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#526479] sm:text-lg"
@@ -138,7 +148,7 @@ index eecac95..93298ae 100644
                  <SearchIcon />
                </button>
              </div>
-@@ -168,6 +178,7 @@ export function SiteHeader() {
+@@ -168,6 +180,7 @@ export function SiteHeader() {
                href={helpHref}
                target="_blank"
                rel="noopener noreferrer"
@@ -146,7 +156,7 @@ index eecac95..93298ae 100644
                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:px-4"
              >
                <HelpIcon />
-@@ -190,11 +201,11 @@ export function SiteHeader() {
+@@ -190,11 +203,11 @@ export function SiteHeader() {
          </div>
        </div>
 
@@ -161,7 +171,7 @@ index eecac95..93298ae 100644
              prefetch={false}
            >
              Inicio
-@@ -203,7 +214,7 @@ export function SiteHeader() {
+@@ -203,7 +216,7 @@ export function SiteHeader() {
              id="perfumes"
              label="Perfumes"
              href="/perfumes"
@@ -170,7 +180,7 @@ index eecac95..93298ae 100644
              items={perfumeMenuItems}
              openMenu={openMenu}
              setOpenMenu={setOpenMenu}
-@@ -221,15 +232,17 @@ export function SiteHeader() {
+@@ -221,15 +234,17 @@ export function SiteHeader() {
              href={helpHref}
              target="_blank"
              rel="noopener noreferrer"

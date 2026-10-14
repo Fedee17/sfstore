@@ -131,7 +131,7 @@ function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }:
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
   const totalItems = useCartStore((state) => state.totalItems);
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
   const helpHref = buildWhatsAppUrl(
@@ -161,9 +161,11 @@ export function SiteHeader() {
             </label>
             <div className="flex min-w-0 items-center rounded-full bg-white px-4 py-1.5 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
               <input
+                key={searchQuery}
                 id="site-search"
                 name="buscar"
                 type="search"
+                defaultValue={searchQuery}
                 placeholder="¿Qué estás buscando?"
                 className="min-w-0 flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#526479] sm:text-lg"
               />
