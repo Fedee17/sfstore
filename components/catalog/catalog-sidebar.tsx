@@ -92,7 +92,7 @@ export function CatalogSidebar({
   }
 
   return (
-    <div className="min-h-[32rem] min-w-0 transition-[opacity,transform] duration-200">
+    <div className="min-w-0 lg:min-h-[32rem] transition-[opacity,transform] duration-200">
       {!selectedCategoryItem ? (
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-[#102033]">Categorías</h2>

@@ -1,8 +1,8 @@
+import { connection } from "next/server";
 ﻿import type { Metadata } from "next";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
-import { brand } from "@/lib/brand";
-import { getTransferUnitPrice, hasTransferPrice } from "@/lib/pricing";
+import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getProductsByCategorySlug, type PublicProduct } from "@/services/products";
 
@@ -26,7 +26,8 @@ export const metadata: Metadata = {
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const categoryLabels: Record<PublicProduct["category"], string> = {
@@ -41,8 +42,8 @@ const benefits = [
     icon: "shipping",
   },
   {
-    title: "Pagá como quieras",
-    description: "Tarjetas de crédito o efectivo",
+    title: "Pago por transferencia",
+    description: "25% de descuento. Pago del 100%.",
     icon: "payment",
   },
   {
@@ -122,14 +123,17 @@ function ProductVisual({
 }
 
 function SimplePrice({ product }: { product: PublicProduct }) {
-  const price = hasTransferPrice(product)
-    ? getTransferUnitPrice(product)
-    : product.price;
+  const price = getWebTransferPrice(product.price);
 
   return (
-    <p className="break-words text-2xl font-semibold text-[#102033]">
-      {formatCurrency(price)}
-    </p>
+    <div>
+      <p className="text-xs font-semibold text-[#003B73]">
+        Transferencia bancaria
+      </p>
+      <p className="mt-1 break-words text-2xl font-semibold text-[#102033]">
+        {formatCurrency(price)}
+      </p>
+    </div>
   );
 }
 
@@ -262,6 +266,7 @@ function GuideCard({
 }
 
 export default async function Home() {
+  await connection(); // Current catalog/stock at request time, never frozen during build.
   const [perfumes, mates] = await Promise.all([
     getProductsByCategorySlug("perfumes"),
     getProductsByCategorySlug("mates"),

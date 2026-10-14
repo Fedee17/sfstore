@@ -87,6 +87,7 @@ function fakeClient(rows, error = null) {
 }
 const mockUrl = moduleUrl("export const getSupabaseClient = () => globalThis.__yaraReadOnlyClient; export const getSupabaseAdminClient = getSupabaseClient;");
 const publicService = await import(moduleUrl(source("services/products.ts")
+  .replace("@/lib/web-transfer-pricing", moduleUrl(source("lib/web-transfer-pricing.ts")))
   .replace("@/lib/products/yara-rosa-consolidation", identityUrl)
   .replace("@/lib/catalog/public-product-visibility", moduleUrl(source("lib/catalog/public-product-visibility.ts")))
   .replace("@/data/products", moduleUrl(source("data/products.ts")))

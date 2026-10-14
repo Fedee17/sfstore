@@ -1,5 +1,7 @@
 "use client";
 
+import { getWebTransferPrice, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
+
 import { SiteHeader } from "@/components/site-header";
 import { transferPayment } from "@/lib/payment";
 
@@ -11,7 +13,7 @@ import { useCartStore } from "@/store/cart-store";
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const categoryLabels = {
@@ -86,7 +88,7 @@ export default function CartPage() {
           <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
             <div className="space-y-4">
               {items.map((item) => {
-                const selectedUnitPrice = item.price;
+                const selectedUnitPrice = getWebTransferPrice(item.price);
 
                 return (
                   <article
@@ -159,6 +161,7 @@ export default function CartPage() {
 
             <aside className="h-fit rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Resumen de compra</h2>
+              <p className="mt-3 text-sm">Productos con 25% de descuento (referencia): {currencyFormatter.format(getWebTransferSubtotal(items))}. El total definitivo se confirma al preparar el pedido.</p>
               <div className="mt-6 space-y-3 border-b border-[#003B73]/15 pb-5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#102033]/65">Productos</span>

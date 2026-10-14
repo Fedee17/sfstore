@@ -1,13 +1,11 @@
 ﻿"use client";
 
-import {
-  formatSavingsLabel,
-  getTransferUnitPrice,
-  hasTransferPrice,
-} from "@/lib/pricing";
+import { useState } from "react";
+import { formatSavingsLabel } from "@/lib/pricing";
+import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
 import type { PublicProduct } from "@/services/products";
-import { useCartStore } from "@/store/cart-store";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 
 type ProductGridProps = {
   products: PublicProduct[];
@@ -18,7 +16,8 @@ type ProductGridProps = {
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 function getAttribute(product: PublicProduct, name: string) {
@@ -29,36 +28,42 @@ function getAttribute(product: PublicProduct, name: string) {
 }
 
 function ProductImage({ product }: { product: PublicProduct }) {
-  if (product.primaryImageUrl) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  if (product.primaryImageUrl && failedUrl !== product.primaryImageUrl) {
     return (
       <div className="aspect-[4/3] overflow-hidden bg-[#102033]">
         <img
           src={product.primaryImageUrl}
+          ref={(image) => {
+            if (image?.complete && image.naturalWidth === 0) setFailedUrl(product.primaryImageUrl ?? null);
+          }}
           alt={product.primaryImageAlt ?? product.name}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailedUrl(product.primaryImageUrl ?? null)}
+          className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.03]"
         />
       </div>
     );
   }
 
   return (
-    <div className="flex aspect-[4/3] items-center justify-center bg-[#102033] text-[#F7F9FC]">
+    <div className="flex aspect-[4/3] flex-col items-center justify-center bg-[#102033] text-[#F7F9FC]" role="img" aria-label={`Imagen no disponible de ${product.name}`}>
       <span className="break-all px-4 text-center text-5xl font-semibold tracking-wide text-[#DCE3EA]">
         {product.imagePlaceholder}
       </span>
+      <span className="mt-2 text-sm">Imagen no disponible</span>
     </div>
   );
 }
 
 export function ProductGrid({ products, label, priceMode = "full" }: ProductGridProps) {
-  const addItem = useCartStore((state) => state.addItem);
-
   if (products.length === 0) {
     return (
       <div className="mt-10 rounded-[2rem] border border-[#003B73]/15 bg-white/65 p-8 text-center shadow-sm">
-        <h2 className="text-2xl font-semibold">La vidriera se estÃ¡ preparando</h2>
+        <h2 className="text-2xl font-semibold">La vidriera se está preparando</h2>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-[#102033]/65">
-          TodavÃ­a no hay productos disponibles en esta categorÃ­a. Consultanos y te ayudamos a encontrar una opciÃ³n para regalar o disfrutar.
+          Todavía no hay productos disponibles en esta categoría. Consultanos y te ayudamos a encontrar una opción para regalar o disfrutar.
         </p>
       </div>
     );
@@ -68,9 +73,9 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
     <div className="mt-10 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product) => {
         const isAvailable = product.stock > 0;
-        const showTransferPrice = hasTransferPrice(product);
-        const transferPrice = getTransferUnitPrice(product);
-        const savingsLabel = formatSavingsLabel(product.price, product.transferPrice);
+        const showTransferPrice = product.price > 0;
+        const transferPrice = getWebTransferPrice(product.price);
+        const savingsLabel = formatSavingsLabel(product.price, transferPrice);
         const primaryPrice = showTransferPrice ? transferPrice : product.price;
         const brand = getAttribute(product, "Marca");
 
@@ -124,13 +129,21 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
 
                 <div className="mt-7 min-w-0 border-t border-[#003B73]/15 pt-5">
                   {priceMode === "compact" ? (
-                    <p className="break-words text-3xl font-semibold leading-tight text-[#102033]">
-                      {currencyFormatter.format(primaryPrice)}
-                    </p>
+                    <div>
+                      <p className="text-xs font-semibold text-[#003B73]">
+                        {showTransferPrice ? "Transferencia bancaria" : "Precio lista"}
+                      </p>
+                      <p className="mt-1 break-words text-3xl font-semibold leading-tight text-[#102033]">
+                        {currencyFormatter.format(primaryPrice)}
+                      </p>
+                      {showTransferPrice ? (
+                        <p className="mt-2 text-sm text-[#526479]">Lista: {currencyFormatter.format(product.price)}</p>
+                      ) : null}
+                    </div>
                   ) : showTransferPrice ? (
                     <div className="min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#EEF2F6] p-4">
                       <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
-                        Efectivo / transferencia
+                        Transferencia bancaria
                       </p>
                       <p className="mt-1 break-words text-3xl font-semibold text-[#102033]">
                         {currencyFormatter.format(transferPrice)}
@@ -161,13 +174,7 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
             <div className="min-w-0 p-5 pt-5 sm:p-6 sm:pt-5">
                 {isAvailable ? (
                   <div className="mt-5 grid min-w-0 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => addItem(product)}
-                      className="flex min-h-12 w-full min-w-0 items-center justify-center rounded-full bg-[#0072CE] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#003B73]"
-                    >
-                      Agregar al carrito
-                    </button>
+                    <AddToCartButton product={product} />
                     <a
                       href={`/producto/${product.slug}`}
                       className="flex min-h-12 w-full min-w-0 items-center justify-center rounded-full border border-[#0072CE]/35 px-5 py-3 text-center text-sm font-semibold text-[#0072CE] transition hover:border-[#0072CE] hover:bg-[#EEF2F6]"

@@ -3,11 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { SiteHeader } from "@/components/site-header";
-import {
-  formatSavingsLabel,
-  getTransferUnitPrice,
-  hasTransferPrice,
-} from "@/lib/pricing";
+import { formatSavingsLabel } from "@/lib/pricing";
+import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
@@ -71,7 +68,7 @@ export async function generateMetadata({
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const categoryLabels = {
@@ -148,9 +145,9 @@ function PricePanel({
   product: NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>;
   isAvailable: boolean;
 }) {
-  const showTransferPrice = hasTransferPrice(product);
-  const transferPrice = getTransferUnitPrice(product);
-  const savingsLabel = formatSavingsLabel(product.price, product.transferPrice);
+  const showTransferPrice = product.price > 0;
+  const transferPrice = getWebTransferPrice(product.price);
+  const savingsLabel = formatSavingsLabel(product.price, transferPrice);
 
   return (
     <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-[#003B73]/15 bg-[#F7F9FC] p-5">
@@ -158,7 +155,7 @@ function PricePanel({
         <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(180px,0.55fr)] md:items-end">
           <div className="min-w-0">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
-              Precio efectivo/transferencia
+              Precio por transferencia
             </p>
             <p className="mt-2 break-words text-4xl font-semibold leading-tight text-[#102033] sm:text-5xl">
               {currencyFormatter.format(transferPrice)}
@@ -169,10 +166,10 @@ function PricePanel({
               </span>
             ) : null}
             <p className="mt-3 break-words text-sm font-medium text-[#0072CE]">
-              Pagando por transferencia o efectivo accedÃ©s al mejor precio.
+              Transferencia con 25% de descuento sobre el precio de lista.
             </p>
             <p className="mt-2 break-words text-sm text-[#102033]/55">
-              Podés pagar por transferencia o en efectivo al retirar.
+              Aboná el 100% por transferencia. Para retirar, esperá la confirmación del local.
             </p>
           </div>
           <div className="min-w-0 rounded-2xl border border-[#003B73]/15 bg-white/70 p-4">
@@ -331,11 +328,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ) : (
           <div className="mt-8 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {relatedProducts.map((relatedProduct) => {
-            const relatedHasTransferPrice = hasTransferPrice(relatedProduct);
-            const relatedTransferPrice = getTransferUnitPrice(relatedProduct);
+            const relatedHasTransferPrice = relatedProduct.price > 0;
+            const relatedTransferPrice = getWebTransferPrice(relatedProduct.price);
             const relatedSavingsLabel = formatSavingsLabel(
               relatedProduct.price,
-              relatedProduct.transferPrice,
+              relatedTransferPrice,
             );
 
             return (
@@ -373,7 +370,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {relatedHasTransferPrice ? (
                     <div className="mt-3 min-w-0">
                       <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
-                        Efectivo / transferencia
+                        Transferencia bancaria
                       </p>
                       <p className="break-words text-lg font-semibold text-[#102033]">
                         {currencyFormatter.format(relatedTransferPrice)}

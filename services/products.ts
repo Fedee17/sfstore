@@ -1,3 +1,4 @@
+import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { products as fallbackProducts } from "@/data/products";
 import {
   resolvePublicCatalogSection,
@@ -105,10 +106,7 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
     slug: row.slug,
     category: publicCategory,
     price: Number(row.price),
-    transferPrice:
-      row.transfer_price !== null && row.transfer_price !== undefined
-        ? Number(row.transfer_price)
-        : null,
+    transferPrice: getWebTransferPrice(Number(row.price)),
     stock: row.stock,
     featured: row.featured,
     shortDescription: row.short_description,
@@ -124,8 +122,14 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
   };
 }
 
+function demoProducts(): PublicProduct[] {
+  // A production outage or empty catalog must never publish synthetic products/stock.
+  if (process.env.NODE_ENV === "production") return [];
+  return fallbackProducts.map((product) => ({ ...product, transferPrice: getWebTransferPrice(product.price) }));
+}
+
 function fallbackByCategory(categorySlug: SupportedPublicCategory): PublicProduct[] {
-  return fallbackProducts.filter((product) => product.category === categorySlug);
+  return demoProducts().filter((product) => product.category === categorySlug);
 }
 
 export async function getProductsByCategorySlug(
@@ -240,16 +244,16 @@ export async function getProductBySlug(slug: string) {
       .maybeSingle();
 
     if (error || !data) {
-      return fallbackProducts.find((product) => product.slug === slug) ?? null;
+      return demoProducts().find((product) => product.slug === slug) ?? null;
     }
 
     return (
       mapSupabaseProduct(data as unknown as SupabaseProductRow) ??
-      fallbackProducts.find((product) => product.slug === slug) ??
+      demoProducts().find((product) => product.slug === slug) ??
       null
     );
   } catch {
-    return fallbackProducts.find((product) => product.slug === slug) ?? null;
+    return demoProducts().find((product) => product.slug === slug) ?? null;
   }
 }
 
@@ -257,7 +261,7 @@ export async function getRelatedProducts(
   categoryId: string | undefined,
   currentProductId: string,
 ) {
-  const currentFallbackProduct = fallbackProducts.find(
+  const currentFallbackProduct = demoProducts().find(
     (product) => product.id === currentProductId,
   );
 
@@ -328,7 +332,7 @@ export async function getRelatedProducts(
     return [];
   }
 
-  return fallbackProducts
+  return demoProducts()
     .filter(
       (product) =>
         product.category === currentFallbackProduct.category &&

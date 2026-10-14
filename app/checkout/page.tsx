@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useRef, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
 import { TransferAlias } from "@/components/transfer-alias";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
@@ -519,7 +520,7 @@ function CheckoutContent() {
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Productos con 25% de descuento (referencia)</span><span>{currencyFormatter.format(items.reduce((total,item)=>total+Math.round(item.price*75)/100*item.quantity,0))}</span></div><p>25% de descuento en productos por transferencia. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
+                <div className="flex justify-between"><span>Productos con 25% de descuento (referencia)</span><span>{currencyFormatter.format(getWebTransferSubtotal(items))}</span></div><p>25% de descuento en productos por transferencia. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
                   <span className="font-semibold">Total final</span>
                   <span className="font-semibold text-[#003B73]">

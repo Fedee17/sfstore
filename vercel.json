@@ -8,7 +8,8 @@
       "codex/xlsx-security-20261012": false,
       "codex/admin-login-captcha-20261012": false,
       "codex/nightly-audit-clickup": false,
-      "codex/vercel-upload-security-20261012": false
+      "codex/vercel-upload-security-20261012": false,
+      "codex/ui-ux-stabilization": false
     }
   }
 }
