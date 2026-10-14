@@ -1,0 +1,24 @@
+[
+  {
+    "width": 320,
+    "searchQueryPreserved": true,
+    "refineSearch": true,
+    "emptySearchRecovery": true,
+    "resetLinkClearsEditedQuery": true,
+    "persistedCartLimitReflected": true,
+    "realAddFeedback": true,
+    "quantityPersistence": true,
+    "pageErrors": []
+  },
+  {
+    "width": 1440,
+    "searchQueryPreserved": true,
+    "refineSearch": true,
+    "emptySearchRecovery": true,
+    "resetLinkClearsEditedQuery": true,
+    "persistedCartLimitReflected": true,
+    "realAddFeedback": true,
+    "quantityPersistence": true,
+    "pageErrors": []
+  }
+]

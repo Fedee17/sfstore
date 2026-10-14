@@ -1,0 +1,74 @@
+
+> sfstore@0.1.0 build
+> next build
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\dev\sfstore\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles:
+   * C:\dev\sfstore\.worktrees\ui-ux-stabilization\package-lock.json
+
+▲ Next.js 16.2.7 (Turbopack)
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 11.4s
+  Running TypeScript ...
+  Finished TypeScript in 8.0s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/18) ...
+  Generating static pages using 11 workers (4/18)
+  Generating static pages using 11 workers (8/18)
+  Generating static pages using 11 workers (13/18)
+✓ Generating static pages using 11 workers (18/18) in 14.5s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/analytics
+├ ƒ /admin/compras
+├ ƒ /admin/compras/[id]
+├ ƒ /admin/compras/[id]/editar
+├ ƒ /admin/compras/nueva
+├ ƒ /admin/configuracion
+├ ƒ /admin/consulta
+├ ƒ /admin/inventario
+├ ƒ /admin/login
+├ ƒ /admin/pedidos
+├ ƒ /admin/pedidos/[id]
+├ ƒ /admin/pedidos/[id]/editar
+├ ƒ /admin/pedidos/nuevo
+├ ƒ /admin/productos
+├ ƒ /admin/productos/[id]/editar
+├ ƒ /admin/productos/importar
+├ ƒ /admin/productos/nuevo
+├ ƒ /admin/proveedores
+├ ƒ /admin/proveedores/[id]
+├ ƒ /admin/proveedores/[id]/editar
+├ ƒ /admin/proveedores/nuevo
+├ ƒ /admin/ventas
+├ ƒ /admin/ventas/[id]
+├ ƒ /admin/ventas/nueva
+├ ƒ /api/integrations/google-sheets/product-sync
+├ ƒ /api/mercadopago/create-preference
+├ ƒ /api/mercadopago/webhook
+├ ○ /ayuda
+├ ƒ /buscar
+├ ○ /carrito
+├ ○ /checkout
+├ ƒ /checkout/exito
+├ ƒ /checkout/fallo
+├ ƒ /checkout/pendiente
+├ ƒ /mates
+├ ƒ /perfumes
+├ ƒ /producto/[slug]
+├ ○ /robots.txt
+└ ○ /sitemap.xml
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

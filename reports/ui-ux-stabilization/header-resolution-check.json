@@ -1,0 +1,23 @@
+{
+  "checkoutHead": "f1378298a9309ea82e22842b8c8445b171e7ec44",
+  "target": "components/site-header.tsx",
+  "patchPath": "reports/ui-ux-stabilization/site-header-pr2-resolution.patch",
+  "applyCheck": "passed",
+  "checkoutFilesModified": false,
+  "mergePerformed": false,
+  "configPatchPath": "reports/ui-ux-stabilization/vercel-pr2-resolution.patch",
+  "configApplyCheck": "passed",
+  "preservedCheckoutBranches": [
+    "codex/sec01-pay01-staging-preparation",
+    "codex/integration-sec01-pay01-storage-20261011"
+  ],
+  "additionalDisabledBranch": "codex/ui-ux-stabilization",
+  "preserves": [
+    "Link with prefetch=false",
+    "GET search",
+    "touch and keyboard navigation",
+    "current categories",
+    "mobile layout",
+    "FAQ destination"
+  ]
+}
