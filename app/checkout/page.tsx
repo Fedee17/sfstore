@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useRef, type FormEvent } from "react";
+import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
 import { TransferAlias } from "@/components/transfer-alias";
@@ -67,6 +67,10 @@ function CheckoutContent() {
   const [quotationId, setQuotationId] = useState<string|null>(null);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (submitError) feedbackRef.current?.focus();
+  }, [submitError]);
 
   const checkoutLabel = "Preparar pedido por transferencia";
   const paymentLabel = "Transferencia bancaria";
@@ -117,6 +121,9 @@ function CheckoutContent() {
     }
 
     setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      setSubmitError("Revisá los datos indicados antes de preparar el pedido.");
+    }
     return Object.keys(nextErrors).length === 0;
   };
 
@@ -261,6 +268,10 @@ function CheckoutContent() {
         ) : (
           <form
             onSubmit={handleSubmit}
+            onInvalid={(event) => {
+              event.preventDefault();
+              setSubmitError("Revisá los datos indicados antes de preparar el pedido.");
+            }}
             className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]"
           >
             <div className="space-y-6">
@@ -462,12 +473,6 @@ function CheckoutContent() {
                 ) : null}
               </section>
 
-              {submitError ? (
-                <div className="rounded-3xl border border-[#003B73]/25 bg-[#EEF2F6] p-5 text-sm font-semibold text-[#003B73]">
-                  {submitError}
-                </div>
-              ) : null}
-
               {paymentMethod === "transfer" ? (
                 <section className="rounded-[2rem] border border-[#0072CE]/20 bg-[#0072CE]/10 p-6 shadow-sm">
                   <div className="flex flex-wrap items-center gap-3">
@@ -548,8 +553,20 @@ function CheckoutContent() {
               </label>
               {unsupportedPayment ? <p role="alert" className="mt-3">El método solicitado no está habilitado. Volvé al carrito para elegir un pago manual.</p> : null}
               <CheckoutCaptcha onToken={setCaptchaToken} />
+              {submitError ? (
+                <div
+                  id="checkout-feedback"
+                  ref={feedbackRef}
+                  role="alert"
+                  tabIndex={-1}
+                  className="mt-4 rounded-2xl border border-[#003B73]/25 bg-[#EEF2F6] p-4 text-sm font-semibold text-[#003B73]"
+                >
+                  {submitError}
+                </div>
+              ) : null}
               <button
                 type="submit"
+                aria-describedby={submitError ? "checkout-feedback" : undefined}
                 disabled={isSubmitting || unsupportedPayment || (shippingRequired && !selectedQuoteKey)}
                 className="mt-6 flex w-full items-center justify-center rounded-full bg-[#102033] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0072CE] disabled:cursor-not-allowed disabled:opacity-60"
               >
