@@ -1,3 +1,4 @@
+import { assertCurrentCommercialOperation } from "@/services/commercial-history-guards";
 import {
   calculatePurchaseDraft,
   centsToDatabaseMoney,
@@ -466,6 +467,7 @@ export async function confirmPurchase(
     throw new Error("Falta el ID de la compra.");
   }
 
+  await assertCurrentCommercialOperation("purchases",normalizedPurchaseId);
   const { data, error } = await getSupabaseAdminClient().rpc(
     "confirm_purchase",
     {

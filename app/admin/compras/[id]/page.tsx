@@ -1,3 +1,5 @@
+import { HistoricalDetail } from "@/components/admin/commercial-history-ui";
+import { getHistoricalCommercialRecord } from "@/services/commercial-history";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -28,6 +30,8 @@ type PurchaseDetailPageProps = { params: Promise<{ id: string }> };
 export default async function PurchaseDetailPage({ params }: PurchaseDetailPageProps) {
   await requireAdminSession();
   const { id } = await params;
+  const historical = await getHistoricalCommercialRecord("purchases",id);
+  if(historical.purchase) return <HistoricalDetail purchase={historical.purchase}/>;
   const purchase = await getPurchaseById(id);
 
   if (!purchase) {

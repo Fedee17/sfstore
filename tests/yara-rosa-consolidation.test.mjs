@@ -120,7 +120,9 @@ test("consultation catalog excludes B even before archival", async () => {
 const paymentServiceUrl = moduleUrl(source("services/order-payments.ts")
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/order-payments", moduleUrl(source("lib/order-payments.ts"))));
+const mutationGuardUrl = moduleUrl('export async function assertCurrentCommercialOperation(){throw new Error("UNEXPECTED_MUTATION_IN_READ_ONLY_TEST");}');
 const saleService = await import(moduleUrl(source("services/store-sales.ts")
+  .replace("@/services/commercial-history-guards", mutationGuardUrl)
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/store-sales", moduleUrl(source("lib/store-sales.ts")))
   .replace("@/lib/products/yara-rosa-consolidation", identityUrl)));

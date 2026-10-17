@@ -155,7 +155,7 @@ test("archived Mercado Pago code preserves the shared payment and inventory serv
 test("sales list and new sale routes require an admin session", () => {
   assert.match(listPage, /await requireAdminSession\(\)/i);
   assert.match(newPage, /await requireAdminSession\(\)/i);
-  assert.match(listPage, /listStoreSales/i);
+  assert.match(listPage, /getCommercialList/i);
 });
 
 test("sale detail is protected and only exposes additional payment for unpaid sales", () => {

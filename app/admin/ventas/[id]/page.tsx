@@ -1,3 +1,5 @@
+import { HistoricalDetail } from "@/components/admin/commercial-history-ui";
+import { getHistoricalCommercialRecord } from "@/services/commercial-history";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -15,6 +17,8 @@ const methodLabels: Record<string, string> = {
 export default async function StoreSaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminSession();
   const { id } = await params;
+  const historical = await getHistoricalCommercialRecord("sales",id);
+  if(historical.sale) return <HistoricalDetail sale={historical.sale}/>;
   const sale = await getStoreSaleById(id);
   if (!sale) notFound();
 

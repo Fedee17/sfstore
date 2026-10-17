@@ -1,3 +1,4 @@
+import { assertCurrentCommercialOperation } from "@/services/commercial-history-guards";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { type StoreSalePaymentMethod, getStoreSaleDisplayName } from "@/lib/store-sales";
 import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
@@ -192,6 +193,7 @@ export async function addStoreSalePayment(input: {
   amount: number;
   reference: string;
 }) {
+  await assertCurrentCommercialOperation("orders",input.orderId);
   const { data, error } = await getSupabaseAdminClient().rpc(
     "record_store_sale_payment_atomic",
     {
