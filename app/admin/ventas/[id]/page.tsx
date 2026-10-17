@@ -9,7 +9,8 @@ import { getStoreSaleById } from "@/services/store-sales";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 });
 const dateFormatter = new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short" });
-const methodLabels: Record<string, string> = { cash: "Efectivo", transfer: "Transferencia", card: "Tarjeta", other: "Otro", mercadopago: "Mercado Pago" };
+const methodLabels: Record<string, string> = {
+  debit: "Débito", credit: "Crédito", qr: "QR", cash: "Efectivo", transfer: "Transferencia", card: "Tarjeta", other: "Otro", mercadopago: "Mercado Pago" };
 
 export default async function StoreSaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminSession();
@@ -46,7 +47,7 @@ export default async function StoreSaleDetailPage({ params }: { params: Promise<
           </div>
           {sale.order_items.map((item) => (
             <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_5rem_8rem_9rem] gap-3 border-b border-[#8B5E3C]/10 px-5 py-4 text-sm last:border-0">
-              <span className="min-w-0 break-words font-semibold">{item.product_name}</span>
+              <span className="min-w-0 break-words font-semibold">{item.product_name}<span className="mt-1 block text-xs font-normal">Costo unitario al vender: {item.unit_cost_snapshot == null ? "Sin costo registrado" : currencyFormatter.format(Number(item.unit_cost_snapshot))}</span></span>
               <span>{item.quantity}</span>
               <span>{currencyFormatter.format(Number(item.unit_price))}</span>
               <strong>{currencyFormatter.format(Number(item.subtotal))}</strong>
@@ -54,6 +55,7 @@ export default async function StoreSaleDetailPage({ params }: { params: Promise<
           ))}
         </section>
 
+        <p className="mt-5 text-sm">Subtotal de lista: {currencyFormatter.format(Number(sale.subtotal))} · Descuento: {currencyFormatter.format(Number(sale.discount))}</p>
         <section className="mt-6 grid gap-4 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 sm:grid-cols-3">
           <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total</span><strong className="mt-1 block text-xl">{currencyFormatter.format(Number(sale.total))}</strong></div>
           <div><span className="text-xs uppercase text-[#1F1F1F]/55">Pagado</span><strong className="mt-1 block text-xl">{currencyFormatter.format(sale.totalPaid)}</strong></div>
@@ -68,7 +70,7 @@ export default async function StoreSaleDetailPage({ params }: { params: Promise<
             <div className="mt-4 grid gap-2">
               {sale.order_payments.map((payment) => (
                 <div key={payment.id} className="flex flex-wrap justify-between gap-3 rounded-2xl bg-[#F7F4ED] px-4 py-3 text-sm">
-                  <span><strong>{methodLabels[payment.method] ?? payment.method}</strong> · {payment.status}</span>
+                  <span><strong>{methodLabels[payment.store_payment_method ?? payment.method] ?? payment.method}</strong> · {payment.status}</span>
                   <strong>{currencyFormatter.format(Number(payment.amount))}</strong>
                 </div>
               ))}

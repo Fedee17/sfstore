@@ -74,8 +74,8 @@ test("multiple payment rows are submitted in one atomic call", () => {
   assert.match(atomicMigration, /jsonb_array_elements\(p_payments\) with ordinality/i);
 });
 
-test("partial payments remain partial and warn that stock is untouched", () => {
-  assert.match(actions, /paymentStatus === "partial"[\s\S]+stock todavia no fue descontado/i);
+test("new physical sales require complete payment; legacy partial sales remain readable", () => {
+  assert.match(actions, /paymentStatus !== "paid"/i);
   assert.match(detailPage, /Pago parcial: el stock no fue descontado ni reservado/i);
 });
 
@@ -165,9 +165,9 @@ test("sale detail is protected and only exposes additional payment for unpaid sa
   assert.match(paymentForm, /PendingSubmitButton/i);
 });
 
-test("store sale totals use one transfer-first snapshot price", () => {
-  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: 100 }), 100);
-  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: null }), 120);
+test("physical default price ignores stored transfer price and applies 25 percent", () => {
+  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: 100 }), 90);
+  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: null }), 90);
   assert.equal(model.calculateStoreSaleTotal([{ quantity: 2, unitPrice: 100.005 }]), 200.01);
   assert.equal(model.calculateEnteredPayments([{ method: "cash", amount: 30 }, { method: "transfer", amount: 50 }]), 80);
 });

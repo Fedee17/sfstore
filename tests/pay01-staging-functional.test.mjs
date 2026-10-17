@@ -17,7 +17,7 @@ test('staging history has unique versions and keeps canonical applied SQL byte-i
   const versions=manifest.applicationOrder.map(e=>e.stagingFile.split('/').at(-1).split('_')[0]);assert.equal(new Set(versions).size,versions.length);
   for(const e of manifest.applicationOrder){assert.equal(hashStagingSql(read(e.source)),e.sourceSha256);assert.equal(hashStagingSql(read(e.stagingFile)),e.stagingSha256);if(e.source!=='supabase/schema.sql')assert.equal(read(e.source),read(e.stagingFile));}
   assert.match(manifest.applicationOrder.find(e=>e.source.endsWith('202609180002_suppliers_admin.sql')).stagingFile,/202609180003_suppliers_admin/);
-  assert.ok(manifest.applicationOrder.at(-1).source.endsWith('202610120005_checkout_approved_shipping_quotes.sql'));
+  assert.ok(manifest.applicationOrder.at(-1).source.endsWith('202610170001_store_sales_full_payment.sql'));
 });
 describe('synthetic staging package: complete checkout and reservation lifecycle',{skip:!process.env.SFSTORE_TEST_PG_BIN,concurrency:false},()=>{
   let dir,db,connection,started=false,paidOrder;

@@ -1,5 +1,5 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
-import { getStoreSaleDisplayName } from "@/lib/store-sales";
+import { type StoreSalePaymentMethod, getStoreSaleDisplayName } from "@/lib/store-sales";
 import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
 import type {
   OrderPayment,
@@ -25,6 +25,8 @@ export type StoreSaleLine = {
   product_slug: string;
   category_name: string | null;
   unit_price: number;
+  list_unit_price_snapshot: number | null;
+  unit_cost_snapshot: number | null;
   quantity: number;
   subtotal: number;
   created_at: string;
@@ -37,12 +39,13 @@ export type StoreSale = {
   status: string;
   payment_status: string;
   subtotal: number;
+  discount: number;
   total: number;
   notes: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   order_items: StoreSaleLine[];
-  order_payments: OrderPayment[];
+  order_payments: (OrderPayment & { store_payment_method: string | null })[];
   inventory_movements?: {
     id: string;
     product_id: string;
@@ -131,7 +134,7 @@ export async function createStoreSale(input: {
   notes: string;
   items: { productId: string; quantity: number; unitPrice: number }[];
   payments: {
-    method: "cash" | "transfer" | "card" | "other";
+    method: StoreSalePaymentMethod;
     amount: number;
   }[];
 }) {
@@ -153,6 +156,8 @@ export async function createStoreSale(input: {
 
   if (error) {
     const messages: Record<string, string> = {
+      STORE_SALE_PAYMENT_TOTAL_MISMATCH: "Debés cobrar exactamente el total de la venta. No se admiten saldos ni excedentes.",
+      STORE_SALE_PRICE_CHANGED: "El precio cambió. Recargá los productos y revisá el total antes de confirmar.",
       STORE_SALE_NO_ITEMS: "La venta debe incluir al menos un producto.",
       STORE_SALE_DUPLICATE_PRODUCT: "Un producto aparece mas de una vez.",
       STORE_SALE_QUANTITY_INVALID: "Las cantidades deben ser enteras mayores que cero.",
@@ -279,15 +284,15 @@ export async function getStoreSaleById(orderId: string) {
     .from("orders")
     .select(
       `
-      id, order_number, channel, status, payment_status, subtotal, total,
+      id, order_number, channel, status, payment_status, subtotal, discount, total,
       notes, metadata, created_at,
       order_items (
         id, product_id, product_name, product_slug, category_name,
-        unit_price, quantity, subtotal, created_at
+        unit_price, list_unit_price_snapshot, unit_cost_snapshot, quantity, subtotal, created_at
       ),
       order_payments (
         id, order_id, method, amount, status, reference, notes,
-        paid_at, created_at, updated_at
+        paid_at, created_at, updated_at, store_payment_method
       )
     `,
     )

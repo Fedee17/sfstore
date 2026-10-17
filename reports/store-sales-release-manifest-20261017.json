@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-17",
+  "decision": "APTO CON CONDICIONES",
+  "production_modified": false,
+  "migration_executed_remotely": false,
+  "approved_for_execution": false,
+  "release_commit": null,
+  "branch": "codex/store-sales-release-20261017",
+  "base_published_commit": "360b6d9ffd789775ee4f0014c6dffc7dcb80a262",
+  "live_deployment_observed": "dpl_3uT3C5PGCizsSYzRC2MMRRGDXnVs",
+  "main_remote_observed": "7a8a105c968f84ba9f58ee1dfd018f27bf6ac3a6",
+  "files": {
+    "supabase/migrations/202610170001_store_sales_full_payment.sql": {
+      "sha256_bytes": "63c199bd6e072efaf3c1d089164d4f6352e69b24940da3e8ada3a4e56c722ebf",
+      "sha256_lf": "dd4130d263ea91ed4dc4d8cce173f6c2cae87db96a860e41e34ca1bc5e0fca23"
+    },
+    "reports/store-sales-release-preflight-catalog-only.sql": {
+      "sha256_bytes": "0fdfd983a8274e664a8ef41427438ce97afc6bb084ae890fbd3ee16413a865b6",
+      "sha256_lf": "96497540275ad577ff8153e92f5a24023427ede5ca8d1f25252d02dd626aa9b1"
+    },
+    "reports/store-sales-release-postcheck-catalog-only.sql": {
+      "sha256_bytes": "ba185e64e9af3c3121e507d4b005ed0b0c2133a9407c944451cecfce54675884",
+      "sha256_lf": "fe769aafc78445df62a9230f3327aa7b213ac71c393b651ead1f4c11a5d5b1d4"
+    }
+  },
+  "mandatory_gates": [
+    "fresh_targeted_production_preflight",
+    "fresh_scoped_database_backup_and_isolated_recovery",
+    "reviewed_immutable_release_commit",
+    "physical_sales_operator_pause_and_old_tab_reload",
+    "explicit_sql_and_deployment_authorizations"
+  ],
+  "implementation_branch": "codex/store-sales-full-payment-20261017",
+  "release_commit_reference": "git rev-parse codex/store-sales-release-20261017; result recorded separately to avoid self-reference"
+}

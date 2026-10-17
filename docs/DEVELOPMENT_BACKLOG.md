@@ -257,3 +257,18 @@ Naranja X y alias público aprobado con copia; retiro gratuito sin dirección/ho
 ## Auditoría nocturna preparada (2026-10-12)
 
 Rama independiente codex/nightly-audit-clickup: recolectores estáticos/sintéticos, informe diario y cliente ClickUp con deduplicación simulada. Workflows manuales; schedules y sincronización externa desactivados. No modifica PR #2 ni servicios. Arquitectura, costos, resultados y activación autorizada futura: [NIGHTLY_AUDIT.md](NIGHTLY_AUDIT.md).
+
+
+## Ventas físicas — Fase 1 encargada el 2026-10-17
+
+Implementación local en `codex/store-sales-full-payment-20261017`: cobro completo, descuento por combinación de medios, snapshots de costo y operación atómica/idempotente. Reutiliza el administrador existente; no cambia el checkout online. Ver [alcance, contrato y validación](../reports/store-sales-full-payment-20261017.md). Pendiente revisión humana y autorización de SQL/despliegue; no aplicado a Production. No iniciar fases posteriores automáticamente.
+
+
+### Ventas físicas — cierre Fase 1B (2026-10-17)
+
+Aceptación integrada en Supabase sintético local: 12/12 PASS (interfaz, sesión Auth SSR, PostgREST, RPC e inventario reales). No se cambió código funcional de Fase 1. Evidencia y alcance en [validación integrada](../reports/store-sales-integrated-validation-20261017.md). Lista para revisión de integración; SQL productivo, merge y despliegue siguen pendientes de autorización.
+
+
+### Ventas físicas — preparación Fase 1C (2026-10-17)
+
+Conclusión APTO CON CONDICIONES. Rehearsal PG17.6 sobre esquema productivo capturado + SQL01/04a, once comprobaciones de compatibilidad, locks/rollback y consultas de catálogo aprobadas. Preparados pre/postcheck y [runbook](../reports/store-sales-release-preparation-20261017.md). Se requiere lectura productiva puntual, respaldo reciente, commit revisado y corte operativo del mostrador; el formulario publicado no es plenamente compatible con la nueva RPC. Sin SQL remoto, merge o deploy.

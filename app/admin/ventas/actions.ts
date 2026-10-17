@@ -6,6 +6,8 @@ import { requireAdminActionSession } from "@/lib/admin-session";
 import {
   parseStoreSalePaymentAmount,
   parseStoreSaleUnitPrice,
+  STORE_SALE_PAYMENT_METHODS,
+  type StoreSalePaymentMethod,
 } from "@/lib/store-sales";
 import type { OrderPaymentStatus } from "@/services/order-payments";
 import {
@@ -21,13 +23,13 @@ export type StoreSaleActionState = {
 };
 
 const initialError = "No se pudo registrar la venta.";
-const allowedPaymentMethods = new Set(["cash", "transfer", "card", "other"]);
+const allowedPaymentMethods = new Set<string>(STORE_SALE_PAYMENT_METHODS);
 
 function parsePaymentAmount(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
 
   if (!raw) {
-    return 0;
+    throw new Error("Cada medio debe incluir un importe mayor que cero.");
   }
 
   return parseStoreSalePaymentAmount(raw);
@@ -64,14 +66,13 @@ function readPayments(formData: FormData) {
 
   return methods
     .map((method, index) => ({ method, amount: amounts[index] }))
-    .filter((payment) => payment.amount > 0)
     .map((payment) => {
       if (!allowedPaymentMethods.has(payment.method)) {
         throw new Error("El medio de pago no es valido.");
       }
 
       return payment as {
-        method: "cash" | "transfer" | "card" | "other";
+        method: StoreSalePaymentMethod;
         amount: number;
       };
     });
@@ -112,6 +113,9 @@ export async function createStoreSaleAction(
     });
     orderId = sale.order_id;
     const paymentStatus = sale.payment_status;
+    if (paymentStatus !== "paid" || sale.remaining_amount !== 0) {
+      throw new Error("La base no confirmó el cobro completo. Revisá la venta antes de reintentar.");
+    }
 
     revalidateStoreSale(orderId);
 
@@ -119,12 +123,7 @@ export async function createStoreSaleAction(
       status: "success",
       orderId,
       paymentStatus,
-      message:
-        paymentStatus === "paid"
-          ? "Venta completada. El stock fue actualizado."
-          : paymentStatus === "partial"
-            ? "Pago parcial registrado. El stock todavia no fue descontado."
-            : "Venta registrada sin pagos. El stock todavia no fue descontado.",
+      message: "Venta cobrada y confirmada. El stock fue actualizado.",
     };
   } catch (error) {
     if (orderId) {
@@ -159,7 +158,7 @@ export async function addStoreSalePaymentAction(
       throw new Error("El importe del pago debe ser mayor que cero.");
     }
 
-    if (!allowedPaymentMethods.has(method)) {
+    if (!["cash", "transfer", "card", "other"].includes(method)) {
       throw new Error("El medio de pago no es valido.");
     }
 
