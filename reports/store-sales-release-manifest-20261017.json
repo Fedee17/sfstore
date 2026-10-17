@@ -15,21 +15,32 @@
       "sha256_lf": "dd4130d263ea91ed4dc4d8cce173f6c2cae87db96a860e41e34ca1bc5e0fca23"
     },
     "reports/store-sales-release-preflight-catalog-only.sql": {
-      "sha256_bytes": "0fdfd983a8274e664a8ef41427438ce97afc6bb084ae890fbd3ee16413a865b6",
-      "sha256_lf": "96497540275ad577ff8153e92f5a24023427ede5ca8d1f25252d02dd626aa9b1"
+      "sha256_bytes": "da641438df9a7c87e18db2db8143fd2b33117ecb4765c707a0152da9dd8956f7",
+      "sha256_lf": "958131021bcdab63a2104b10bfdf28aa5c31469ac748e2bb9452031a82821b52"
     },
     "reports/store-sales-release-postcheck-catalog-only.sql": {
-      "sha256_bytes": "ba185e64e9af3c3121e507d4b005ed0b0c2133a9407c944451cecfce54675884",
-      "sha256_lf": "fe769aafc78445df62a9230f3327aa7b213ac71c393b651ead1f4c11a5d5b1d4"
+      "sha256_bytes": "73e6f2eb63d7b4ed465a3412f852cd5c1bbd078b7739f2561f0a1cc6ea8331a1",
+      "sha256_lf": "1935a0bbfe0a118ecaaa054f8ba5b576373398aec0a8f42ad398d8bacd731800"
     }
   },
   "mandatory_gates": [
-    "fresh_targeted_production_preflight",
-    "fresh_scoped_database_backup_and_isolated_recovery",
-    "reviewed_immutable_release_commit",
     "physical_sales_operator_pause_and_old_tab_reload",
-    "explicit_sql_and_deployment_authorizations"
+    "explicit_sql_and_deployment_authorizations",
+    "recheck_immediately_if_state_changes"
   ],
   "implementation_branch": "codex/store-sales-full-payment-20261017",
-  "release_commit_reference": "git rev-parse codex/store-sales-release-20261017; result recorded separately to avoid self-reference"
+  "release_commit_reference": "git rev-parse codex/store-sales-release-20261017; result recorded separately to avoid self-reference",
+  "completed_gates": {
+    "targeted_production_preflight": {
+      "atUTC": "2026-10-17T17:49:59.037184+00:00",
+      "checksPassed": 13,
+      "commercialRowsRead": false
+    },
+    "scoped_database_backup_and_isolated_recovery": {
+      "certifiedAtUTC": "2026-10-17T17:45:28.764542+00:00",
+      "status": "COMPLETE_SCOPED_RECOVERABLE",
+      "wholeProjectRecoveryCertified": false
+    },
+    "immutable_candidate": "Resolve release_commit_reference; tested execution evidence is separate"
+  }
 }

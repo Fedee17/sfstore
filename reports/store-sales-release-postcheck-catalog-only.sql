@@ -10,9 +10,9 @@ WITH expected_functions(identity,owner,sha256) AS (VALUES
 ('complete_store_sale(uuid,uuid)','postgres','c5a34b32e8d5ba74e597234e4ead0e5ef455c4ae0f7a46ca9222451b4c6cf11a'),
 ('create_checkout_atomic(uuid,uuid,jsonb)','postgres','bddef8b8c52355a1472d32063ec3a49b99ff1158dfb6178dc1b81a79d1caffd1'),
 ('create_store_sale_atomic(uuid,uuid,text,text,jsonb,jsonb)','postgres','4b755366f5110bee317033da5806802adbaa7d1d296a3e82b1c2d8b5815f729d'),
-('create_store_sale(uuid,uuid,text,text,jsonb)','postgres','29089df7e746d06341732759696c57622212544da41325b971b54f40391b5654'),
+('create_store_sale(uuid,uuid,text,text,jsonb)','postgres','bd1e0b69c69c1c85cb773cbeac470c1e930ea28603c64066cd8fb7cf76e20706'),
 ('record_order_payment(uuid,text,numeric,text,text,text,timestamp with time zone,boolean)','postgres','955804eda84de4632c23ba432ca6528bda9cf22686b56bd0dc6eeb4e0e76fad4'),
-('record_store_sale_payment_atomic(uuid,uuid,text,numeric,text)','postgres','ba584e5353d84052c514af5a702868d16240dbd65dbce7848fec6bcc328b07a2'),
+('record_store_sale_payment_atomic(uuid,uuid,text,numeric,text)','postgres','fe5604dc3f376ac8f16d23d962f7564b7cc7d85d962f336b46b8718afebd5f65'),
 ('transition_checkout_atomic(uuid,text)','postgres','cc38e2eaaa640c142d80464b53f48346ec0548de267ff05659332435f9bd5ade')
 ),expected_tables(identity,sha256) AS (VALUES
 ('categories','84d2c287ec6127efe5f72d58989803a3af3d52ea63699c3fb33b29867fdca828'),

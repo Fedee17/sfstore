@@ -272,3 +272,8 @@ Aceptación integrada en Supabase sintético local: 12/12 PASS (interfaz, sesió
 ### Ventas físicas — preparación Fase 1C (2026-10-17)
 
 Conclusión APTO CON CONDICIONES. Rehearsal PG17.6 sobre esquema productivo capturado + SQL01/04a, once comprobaciones de compatibilidad, locks/rollback y consultas de catálogo aprobadas. Preparados pre/postcheck y [runbook](../reports/store-sales-release-preparation-20261017.md). Se requiere lectura productiva puntual, respaldo reciente, commit revisado y corte operativo del mostrador; el formulario publicado no es plenamente compatible con la nueva RPC. Sin SQL remoto, merge o deploy.
+
+
+### Ventas físicas — preparación Fase 1D (2026-10-17)
+
+Candidato en rama de publicación basada directamente en el commit productivo. Preflight productivo puntual 13/13 aprobado; respaldo PostgreSQL nuevo y recuperación aislada certificados. Se corrigió únicamente una referencia CRCRLF y un módulo real omitido en el arnés del administrador. Ver [cierre de condiciones y límites](../reports/store-sales-release-readiness-20261017.md). Pendientes autorización SQL/deployment y coordinación del mostrador; sin ejecución productiva.

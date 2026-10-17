@@ -40,7 +40,7 @@ test('real physical-sale React form: split payments, list/25% repricing, complet
       assert.deepEqual(await page.evaluate(()=>window.lastItems),['100.00']);assert.deepEqual(await page.evaluate(()=>window.lastMethods),['cash','debit']);
       assert.equal(await page.locator('input[name="idempotencyKey"]').inputValue(),key);
       await page.locator('select[name="paymentMethod"]').nth(1).selectOption('transfer');await page.locator('input[name="paymentAmount"]').nth(1).fill('50');
-      await page.evaluate(()=>{window.rejectSynthetic=false});await submit.click();try{await page.getByRole('status').filter({hasText:'Venta confirmada sintética'}).waitFor({timeout:3000});}catch(e){throw new Error(JSON.stringify(await page.evaluate(()=>({submits:window.submitted.length,reject:window.rejectSynthetic,feedback:document.querySelector('[role=alert],[role=status]')?.textContent,invalid:[...document.querySelectorAll('input:invalid')].map(x=>({name:x.name,reason:x.validationMessage})),errors:[]}))));}
+      await page.evaluate(()=>{window.rejectSynthetic=false});await submit.click();try{await page.getByRole('status').filter({hasText:'Venta confirmada sintética'}).waitFor({timeout:3000});}catch{throw new Error(JSON.stringify(await page.evaluate(()=>({submits:window.submitted.length,reject:window.rejectSynthetic,feedback:document.querySelector('[role=alert],[role=status]')?.textContent,invalid:[...document.querySelectorAll('input:invalid')].map(x=>({name:x.name,reason:x.validationMessage})),errors:[]}))));}
       assert.equal(await submit.isDisabled(),true);assert.equal(await page.evaluate(()=>window.submitted.length),2);assert.deepEqual(errors,[]);
       await context.close();
     }

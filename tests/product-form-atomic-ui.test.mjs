@@ -23,6 +23,7 @@ function browserBundle() {
     ["@/lib/catalog/attribute-config", "../lib/catalog/attribute-config.ts"],
     ["@/lib/product-taxonomy", "../lib/product-taxonomy.ts"],
     ["@/lib/products/product-image-files", "../lib/products/product-image-files.ts"],
+    ["@/lib/uploads/limits", "../lib/uploads/limits.ts"],
   ]) {
     modules[name] = ts.transpileModule(readFileSync(new URL(path, import.meta.url), "utf8"), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
