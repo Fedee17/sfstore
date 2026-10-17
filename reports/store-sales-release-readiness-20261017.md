@@ -37,3 +37,7 @@ El nuevo SQL rechaza ciertos payloads y reintentos del formulario antiguo. No ha
 3. Autorizar por separado cualquier escritura productiva de comprobación. La verificación posterior sin escrituras y la observación de una primera venta legítima deben acordarse en el corte.
 
 No se requieren nuevas funciones, cambios comerciales, permisos públicos, Auth, Storage, Cron ni regularización del historial de migraciones para esta fase.
+
+## Sincronización del arnés integrado
+
+Una ejecución local obtuvo 11/12 PASS y agotó el tiempo al buscar el fixture reservado, antes de la solicitud online. El selector esperó sólo un encabezado SSR; se agregó espera de fin de carga de red local antes de escribir en el campo controlado. El caso aislado volvió a aprobar con todas sus aserciones de reserva, stock e idempotencia, sin modificar la aplicación, precios, permisos ni SQL. No se atribuye el timeout a un fallo productivo confirmado. La ejecución completa final sobre el commit se registra en la evidencia privada de Fase 1D.

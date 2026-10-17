@@ -46,6 +46,8 @@ describe('physical sales: real local UI + Auth + PostgREST + RPC + inventory',{s
  }
  async function pageWithProduct(suffix,id){
   const page=await adminContext.newPage();await page.goto(base+'/admin/ventas/nueva');await page.getByRole('heading',{name:'Nueva venta local',exact:true}).waitFor();
+  // SSR heading can precede hydration; wait for local JS requests before typing into the controlled search.
+  await page.waitForLoadState('networkidle');
   await page.getByRole('searchbox').fill(`${prefix}-${suffix}`);await page.getByRole('button',{name:new RegExp(`${prefix}-${suffix}`)}).click();await page.locator('[name=quantity]').fill('2');
   assert.equal(await page.locator('[name=productId]').inputValue(),id);return page;
  }
