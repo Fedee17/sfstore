@@ -112,10 +112,11 @@ function paymentSummary(total: number, payments: OrderPayment[]) {
 export async function listStoreSaleProducts() {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, name, slug, sku, price, transfer_price, stock, status, categories(name)")
+    .select("id, name, commercial_label, slug, sku, price, transfer_price, stock, status, categories(name)")
     .eq("historical_identity", false)
     .neq("id", YARA_ROSA.archivedId)
     .eq("status", "active")
+    .eq("commercial_blocked", false)
     .order("name", { ascending: true });
 
   if (error) {
@@ -124,6 +125,7 @@ export async function listStoreSaleProducts() {
 
   return (data ?? []).map((product) => ({
     ...product,
+    name: product.commercial_label ?? product.name,
     categories: firstRelation(product.categories),
   })) as StoreSaleProduct[];
 }

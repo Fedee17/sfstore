@@ -49,6 +49,7 @@ export type AdminOrder = {
 
 export type AdminProduct = {
   save_version?: string;
+  family_id?: string | null;
   id: string;
   category_id?: string;
   name: string;
@@ -370,6 +371,7 @@ export async function getAdminProductById(
             `
             id,
             category_id,
+            family_id,
             name,
             slug,
             short_description,

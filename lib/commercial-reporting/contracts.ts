@@ -10,6 +10,7 @@ export type OrderRow = {
   cost_snapshot_policy: string | null;
 };
 export type SaleLineRow = {
+  family_id_snapshot?: string | null; family_name_snapshot?: string | null; sku_snapshot?: string | null; variant_options_snapshot?: Record<string,string> | null;
   id: string; order_id: string; product_id: string | null; product_name: string;
   category_name: string | null; quantity: number; unit_price: Money; subtotal: Money;
   list_unit_price_snapshot: Money | null; unit_cost_snapshot: Money | null;

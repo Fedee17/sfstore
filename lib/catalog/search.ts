@@ -2,6 +2,7 @@ type SearchableProduct = {
   name: string;
   shortDescription: string;
   categoryName?: string;
+  variants?: {name:string;variantLabel?:string}[];
   attributes?: { name: string; value: string }[];
 };
 
@@ -16,6 +17,7 @@ export function searchProducts<T extends SearchableProduct>(products: T[], query
       product.name,
       product.shortDescription,
       product.categoryName ?? "",
+      ...(product.variants??[]).map(p=>`${p.name} ${p.variantLabel??""}`),
       ...(product.attributes ?? []).map((attribute) => attribute.value),
     ].join(" "));
     return terms.every((term) => content.includes(term));

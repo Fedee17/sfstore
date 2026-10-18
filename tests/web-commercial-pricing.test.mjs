@@ -9,16 +9,19 @@ function url(code) {
   return `data:text/javascript;base64,${Buffer.from(ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString("base64")}`;
 }
 const service = await import(url(source("services/products.ts")
+  .replace("@/lib/products/public-families", url(source("lib/products/public-families.ts")))
   .replace("@/lib/web-transfer-pricing", url(source("lib/web-transfer-pricing.ts")))
   .replace("@/data/products", url(source("data/products.ts")))
   .replace("@/lib/catalog/public-product-visibility", url(source("lib/catalog/public-product-visibility.ts")))
   .replace("@/lib/products/yara-rosa-consolidation", url(source("lib/products/yara-rosa-consolidation.ts")))
   .replace("@/lib/supabase/client", url("export const getSupabaseClient = () => globalThis.__commercialCatalogClient;"))));
-function client(rows, error = null) {
-  const result = { data: rows, error };
-  const q = { select: () => q, eq: () => q, neq: () => q, order: () => q, limit: () => q, maybeSingle: () => Promise.resolve({ data: rows[0] ?? null, error }), then: (resolve, reject) => Promise.resolve(result).then(resolve, reject) };
-  return { from: () => q };
+function client(rows,error=null) {
+ return {from(){let selected=rows.map(p=>({...p,category_slug:p.categories?.slug}));
+  const q={select:()=>q,eq:(k,v)=>{selected=selected.filter(p=>p[k]===v);return q;},neq:(k,v)=>{selected=selected.filter(p=>p[k]!==v);return q;},
+   gt:(k,v)=>{selected=selected.filter(p=>p[k]>v);return q;},order:()=>q,limit:()=>q,
+   then:(resolve,reject)=>Promise.resolve({data:selected,error}).then(resolve,reject)};return q;}};
 }
+
 const row = { id: "synthetic", name: "Synthetic", slug: "synthetic", status: "active", historical_identity: false, price: 100.01, transfer_price: 80.03, stock: 2, short_description: "Synthetic only", category_id: "synthetic", categories: { id: "synthetic", name: "Perfumes", slug: "perfumes", is_active: true } };
 
 test("web price follows 25% exactly once with PostgreSQL cent rounding", () => {
@@ -73,7 +76,7 @@ test("actual catalog cards never use a legacy 80% transfer field", async () => {
     return exports;
   };
   const add = load("components/add-to-cart-button.tsx", { react: React, "react/jsx-runtime": jsx, "@/store/cart-store": { useCartStore: (selector) => selector({ items: [], addItem() {} }) } });
-  const { ProductGrid } = load("components/product-grid.tsx", { react: React, "react/jsx-runtime": jsx, "@/lib/pricing": pricing, "@/lib/web-transfer-pricing": web, "@/lib/whatsapp": { getProductWhatsAppLink: () => "/synthetic" }, "@/components/add-to-cart-button": add });
+  const { ProductGrid } = load("components/product-grid.tsx", { react: React, "react/jsx-runtime": jsx, "@/lib/products/public-families": await import("../lib/products/public-families.ts"), "@/lib/pricing": pricing, "@/lib/web-transfer-pricing": web, "@/lib/whatsapp": { getProductWhatsAppLink: () => "/synthetic" }, "@/components/add-to-cart-button": add });
   for (const transferPrice of [80, null]) {
     const html = renderToStaticMarkup(React.createElement(ProductGrid, { products: [{ id: "synthetic", name: "Synthetic", slug: "synthetic", category: "perfumes", price: 100, transferPrice, stock: 2, imagePlaceholder: "SY" }], label: "Synthetic" }));
     assert.match(html, /75/);

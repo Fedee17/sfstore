@@ -105,10 +105,10 @@ test("purchase confirmation remains the legitimate cost source writer", () => {
   );
 });
 
-test("new purchases list active products and preserve only existing draft lines", () => {
+test("new purchases list active products and draft variants while preserving existing lines", () => {
   assert.match(
     purchaseService,
-    /listPurchaseProducts\(includeProductIds: string\[\] = \[\]\)[\s\S]+\.eq\("historical_identity", false\)[\s\S]+\.eq\("status", "active"\)/,
+    /listPurchaseProducts\(includeProductIds: string\[\] = \[\]\)[\s\S]+\.eq\("historical_identity", false\)[\s\S]+\.or\("status\.eq\.active,and\(status\.eq\.draft,family_id\.not\.is\.null\)"\)/,
   );
   assert.match(purchaseService, /\.in\("id", retainedIds\)/);
   assert.match(

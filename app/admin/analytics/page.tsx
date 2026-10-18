@@ -96,6 +96,8 @@ function Dashboard({ data: a }: { data: CommercialAnalytics }) {
       </Panel>
       <PaymentPanel title="Medios: pagos de las ventas del mes" rows={r.paymentMethodsForSales} />
       <PaymentPanel title="Medios: acreditaciones fechadas en el mes" rows={r.paymentMethodsForDatedReceipts} />
+      <RankingPanel title="Familias documentadas" rows={a.families} />
+      <p className="text-sm">Las operaciones sin snapshot de familia permanecen sin clasificar. No se asignan por el catálogo actual.</p>
       <RankingPanel title="Productos más vendidos" rows={a.products} />
       <RankingPanel title="Categorías más vendidas" rows={a.categories} />
     </div>

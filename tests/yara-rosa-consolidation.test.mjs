@@ -71,12 +71,13 @@ test("Yara fallback is removed, unrelated fallback products remain", async () =>
 });
 
 function fakeClient(rows, error = null) {
-  return { from() {
-    let selected = [...rows];
+  return { from(table) {
+    let selected = table==="public_catalog_skus"?rows.filter(p=>p.status==="active"&&!p.historical_identity&&p.web_visible&&!p.commercial_blocked&&p.categories?.is_active).map(p=>({...p,category_slug:p.categories.slug})).sort((a,b)=>a.id.localeCompare(b.id)):[...rows];
     let single = false;
     const query = {
       select() { return query; },
       eq(key, value) { selected = selected.filter((row) => key.startsWith("categories.") ? row.categories?.[key.slice(11)] === value : row[key] === value); return query; },
+      gt(key,value) { selected=selected.filter(row=>row[key]>value);return query; },
       neq(key, value) { selected = selected.filter((row) => key.startsWith("categories.") ? row.categories?.[key.slice(11)] !== value : row[key] !== value); return query; },
       order() { return query; }, limit() { return query; },
       maybeSingle() { single = true; return query; },
@@ -87,13 +88,15 @@ function fakeClient(rows, error = null) {
 }
 const mockUrl = moduleUrl("export const getSupabaseClient = () => globalThis.__yaraReadOnlyClient; export const getSupabaseAdminClient = getSupabaseClient;");
 const publicService = await import(moduleUrl(source("services/products.ts")
+  .replace("@/lib/products/public-families", moduleUrl(source("lib/products/public-families.ts")))
   .replace("@/lib/web-transfer-pricing", moduleUrl(source("lib/web-transfer-pricing.ts")))
   .replace("@/lib/products/yara-rosa-consolidation", identityUrl)
   .replace("@/lib/catalog/public-product-visibility", moduleUrl(source("lib/catalog/public-product-visibility.ts")))
   .replace("@/data/products", moduleUrl(source("data/products.ts")))
   .replace("@/lib/supabase/client", mockUrl)));
+globalThis.__sfstoreCatalogService=publicService;
 const category = { id: "perfumes", slug: "perfumes", name: "Perfumes", is_active: true };
-const publicRow = (product) => ({ ...product, category_id: category.id, categories: category, short_description: "description", product_images: [], product_attributes: [] });
+const publicRow = (product) => ({ web_visible: true, commercial_blocked: false, ...product, category_id: category.id, categories: category, short_description: "description", product_images: [], product_attributes: [] });
 test("real public service returns only A, excluding active duplicate, draft and historical", async () => {
   globalThis.__yaraReadOnlyClient = fakeClient([a, b, { ...a, id: "draft", status: "draft" }, { ...a, id: "historical", historical_identity: true }].map(publicRow));
   assert.deepEqual((await publicService.getProductsByCategorySlug("perfumes")).map((product) => product.id), [a.id]);
@@ -106,7 +109,7 @@ test("Supabase failure never revives phantom Yara fallback", async () => {
 });
 test("real sitemap filters B and keeps A", async () => {
   globalThis.__yaraReadOnlyClient = fakeClient([publicRow(a), publicRow(b)]);
-  const sitemap = await import(moduleUrl(source("app/sitemap.ts").replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/client", mockUrl)));
+  const sitemap = await import(moduleUrl(source("app/sitemap.ts").replace("@/services/products",moduleUrl("export const getCatalogPublications=()=>globalThis.__sfstoreCatalogService.getCatalogPublications();")).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/client", mockUrl)));
   const urls = (await sitemap.default()).map((entry) => entry.url);
   assert.ok(urls.some((url) => url.endsWith(`/producto/${a.slug}`)));
   assert.ok(!urls.some((url) => url.endsWith(`/producto/${b.slug}`)));
@@ -175,7 +178,11 @@ test("operational selectors and admin searches retain their guards", () => {
   assert.match(source("services/purchases.ts"), /neq\("id", YARA_ROSA.archivedId\)/);
   for (const path of ["services/store-sales.ts", "services/customer-orders.ts", "services/purchases.ts"]) {
     assert.match(source(path), /eq\("historical_identity", false\)/);
-    assert.match(source(path), /eq\("status", "active"\)/);
+    if (path === "services/purchases.ts") {
+      assert.match(source(path), /\.or\("status\.eq\.active,and\(status\.eq\.draft,family_id\.not\.is\.null\)"\)/);
+    } else {
+      assert.match(source(path), /eq\("status", "active"\)/);
+    }
   }
   assert.ok(isSupersededYaraRosa(b));
   assert.ok(!isSupersededYaraRosa(a));
@@ -192,4 +199,16 @@ test("read-only planner has no apply, update, delete, insert or RPC execution pa
   assert.match(script, /--apply is not supported/);
   assert.doesNotMatch(script, /client(?:\.storage)?[\s\S]{0,100}\.(?:insert|delete|rpc|remove)\(/);
   assert.doesNotMatch(script, /from\([^)]*\)\s*\.update\(/);
+});
+
+test("variant visibility excludes hidden and commercially blocked SKU from public services and sitemap", async () => {
+  const hidden={...a,id:"hidden-variant",slug:"hidden-variant",web_visible:false};
+  const blocked={...a,id:"blocked-variant",slug:"blocked-variant",commercial_blocked:true};
+  globalThis.__yaraReadOnlyClient=fakeClient([a,hidden,blocked].map(publicRow));
+  assert.deepEqual((await publicService.getProductsByCategorySlug("perfumes")).map(p=>p.id),[a.id]);
+  assert.equal(await publicService.getProductBySlug(hidden.slug),null);
+  assert.equal(await publicService.getProductBySlug(blocked.slug),null);
+  const sitemap=await import(moduleUrl(source("app/sitemap.ts").replace("@/services/products",moduleUrl("export const getCatalogPublications=()=>globalThis.__sfstoreCatalogService.getCatalogPublications();")).replace("@/lib/products/yara-rosa-consolidation",identityUrl).replace("@/lib/supabase/client",mockUrl)));
+  const urls=(await sitemap.default()).map(v=>v.url);
+  assert.ok(!urls.some(u=>u.includes("hidden-variant")||u.includes("blocked-variant")));
 });

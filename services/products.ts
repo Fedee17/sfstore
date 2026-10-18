@@ -1,3 +1,4 @@
+import { groupPublicProducts } from "@/lib/products/public-families";
 import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { products as fallbackProducts } from "@/data/products";
 import {
@@ -31,13 +32,19 @@ type SupabaseAttribute = {
 };
 
 type SupabaseProductRow = {
+  family_id?: string | null;
+  family_name?: string | null;
+  family_slug?: string | null;
+  commercial_label?: string | null;
+  variant_options?: Record<string,string>;
+  sku?: string | null;
   id: string;
   name: string;
   slug: string;
   short_description: string;
   description: string | null;
   price: number;
-  transfer_price: number | string | null;
+  transfer_price?: number | string | null;
   stock: number;
   featured: boolean;
   status: string;
@@ -101,8 +108,12 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
   const primaryImage = images[0] ?? null;
 
   return {
+    kind: row.family_id ? "variant" : "simple",
+    familyId: row.family_id ?? undefined, familyName: row.family_name ?? undefined, familySlug: row.family_slug ?? undefined,
+    variantLabel: row.family_id ? Object.entries(row.variant_options??{}).map(([k,v])=>`${k}: ${v}`).join(" / ") : undefined,
+    variantOptions: row.variant_options,sku: row.sku,
     id: row.id,
-    name: row.name,
+    name: row.commercial_label ?? row.name,
     slug: row.slug,
     category: publicCategory,
     price: Number(row.price),
@@ -132,211 +143,43 @@ function fallbackByCategory(categorySlug: SupportedPublicCategory): PublicProduc
   return demoProducts().filter((product) => product.category === categorySlug);
 }
 
-export async function getProductsByCategorySlug(
-  categorySlug: SupportedPublicCategory,
-) {
-  try {
-    const supabase = getSupabaseClient();
-    let query = supabase
-      .from("products")
-      .select(
-        `
-        id,
-        name,
-        slug,
-        short_description,
-        description,
-        price,
-        transfer_price,
-        stock,
-        featured,
-        status,
-        historical_identity,
-        category_id,
-        categories!inner (
-          id,
-          name,
-          slug,
-          is_active
-        ),
-        product_images (
-          url,
-          alt,
-          sort_order,
-          is_primary
-        ),
-        product_attributes (
-          name,
-          value,
-          sort_order
-        )
-      `,
-      )
-      .eq("historical_identity", false)
-      .eq("status", "active")
-      .eq("categories.is_active", true)
-      .order("featured", { ascending: false })
-      .order("name", { ascending: true });
-
-    if (categorySlug === "perfumes") {
-      query = query.eq("categories.slug", "perfumes");
-    } else {
-      query = query.neq("categories.slug", "perfumes");
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      return fallbackByCategory(categorySlug);
-    }
-
-    const products = ((data ?? []) as unknown as SupabaseProductRow[])
-      .map(mapSupabaseProduct)
-      .filter((product): product is PublicProduct => Boolean(product));
-
-    return products.length > 0 ? products : fallbackByCategory(categorySlug);
-  } catch {
-    return fallbackByCategory(categorySlug);
-  }
+const CATALOG_COLUMNS="id,name,slug,short_description,description,price,stock,featured,status,historical_identity,category_id,categories,category_slug,product_images,product_attributes,family_id,family_name,family_slug,commercial_label,variant_options,sku";
+async function readPublicSkuRows(category?: SupportedPublicCategory, slug?: string, family?: string) {
+ const db=getSupabaseClient(), rows:SupabaseProductRow[]=[];
+ let after:string|null=null;
+ for(let page=0;page<500;page++){
+  let query=db.from("public_catalog_skus").select(CATALOG_COLUMNS).order("id").limit(200);
+  if(after)query=query.gt("id",after);
+  if(category)query=category==="perfumes"?query.eq("category_slug","perfumes"):query.neq("category_slug","perfumes");
+  if(slug)query=query.eq("slug",slug);
+  if(family)query=query.eq("family_slug",family);
+  const {data,error}=await query;
+  if(error||data===null)throw new Error("PUBLIC_CATALOG_READ_FAILED");
+  if(!data.length)return rows;
+  for(const row of data as SupabaseProductRow[]){if(after&&row.id<=after)throw new Error("PUBLIC_CATALOG_PAGINATION_FAILED");rows.push(row);after=row.id;}
+ }
+ throw new Error("PUBLIC_CATALOG_INCOMPLETE");
 }
-export async function getProductBySlug(slug: string) {
-  try {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        id,
-        name,
-        slug,
-        short_description,
-        description,
-        price,
-        transfer_price,
-        stock,
-        featured,
-        status,
-        historical_identity,
-        category_id,
-        categories!inner (
-          id,
-          name,
-          slug,
-          is_active
-        ),
-        product_images (
-          url,
-          alt,
-          sort_order,
-          is_primary
-        ),
-        product_attributes (
-          name,
-          value,
-          sort_order
-        )
-      `,
-      )
-      .eq("historical_identity", false)
-      .eq("status", "active")
-      .eq("categories.is_active", true)
-      .eq("slug", slug)
-      .maybeSingle();
-
-    if (error || !data) {
-      return demoProducts().find((product) => product.slug === slug) ?? null;
-    }
-
-    return (
-      mapSupabaseProduct(data as unknown as SupabaseProductRow) ??
-      demoProducts().find((product) => product.slug === slug) ??
-      null
-    );
-  } catch {
-    return demoProducts().find((product) => product.slug === slug) ?? null;
-  }
+const mapRows=(rows:SupabaseProductRow[])=>rows.map(mapSupabaseProduct).filter((p):p is PublicProduct=>p!==null);
+export async function getProductsByCategorySlug(categorySlug:SupportedPublicCategory):Promise<PublicProduct[]> {
+ try{return groupPublicProducts(mapRows(await readPublicSkuRows(categorySlug)));}
+ catch{return fallbackByCategory(categorySlug);}
 }
-
-export async function getRelatedProducts(
-  categoryId: string | undefined,
-  currentProductId: string,
-) {
-  const currentFallbackProduct = demoProducts().find(
-    (product) => product.id === currentProductId,
-  );
-
-  try {
-    if (!categoryId) {
-      throw new Error("Missing category id.");
-    }
-
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(
-        `
-        id,
-        name,
-        slug,
-        short_description,
-        description,
-        price,
-        transfer_price,
-        stock,
-        featured,
-        status,
-        historical_identity,
-        category_id,
-        categories!inner (
-          id,
-          name,
-          slug,
-          is_active
-        ),
-        product_images (
-          url,
-          alt,
-          sort_order,
-          is_primary
-        ),
-        product_attributes (
-          name,
-          value,
-          sort_order
-        )
-      `,
-      )
-      .eq("historical_identity", false)
-      .eq("status", "active")
-      .eq("categories.is_active", true)
-      .eq("category_id", categoryId)
-      .neq("id", currentProductId)
-      .limit(4);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const relatedProducts = ((data ?? []) as unknown as SupabaseProductRow[])
-      .map(mapSupabaseProduct)
-      .filter((product): product is PublicProduct => Boolean(product));
-
-    if (relatedProducts.length > 0) {
-      return relatedProducts;
-    }
-  } catch {
-    // Fallback below.
-  }
-
-  if (!currentFallbackProduct) {
-    return [];
-  }
-
-  return demoProducts()
-    .filter(
-      (product) =>
-        product.category === currentFallbackProduct.category &&
-        product.id !== currentFallbackProduct.id,
-    )
-    .slice(0, 4);
+export async function getProductBySlug(slug:string):Promise<PublicProduct|null> {
+ try {
+  if(!slug||slug.length>512)return null;
+  const family=mapRows(await readPublicSkuRows(undefined,undefined,slug));
+  if(family.length)return groupPublicProducts(family)[0]??null;
+  const rows=mapRows(await readPublicSkuRows(undefined,slug));
+  if(rows[0]?.familySlug)return groupPublicProducts(mapRows(await readPublicSkuRows(undefined,undefined,rows[0].familySlug)))[0]??null;
+  return rows[0]??null;
+ }catch{return demoProducts().find(p=>p.slug===slug)??null;}
+}
+export async function getRelatedProducts(categoryId:string|undefined,currentProductId:string) {
+ if(!categoryId)return [];
+ try{return groupPublicProducts(mapRows(await readPublicSkuRows())).filter(p=>p.categoryId===categoryId&&p.id!==currentProductId).slice(0,4);}
+ catch{return [];}
+}
+export async function getCatalogPublications():Promise<PublicProduct[]> {
+ try{return groupPublicProducts(mapRows(await readPublicSkuRows()));}catch{return [];}
 }

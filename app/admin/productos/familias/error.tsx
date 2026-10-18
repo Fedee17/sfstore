@@ -1,0 +1,2 @@
+"use client";
+export default function FamilyError({reset}:{reset:()=>void}) {return <section className="mx-auto max-w-3xl space-y-4 p-8"><h1 className="text-2xl font-semibold">No se pudieron cargar las familias</h1><p>Verificá la conexión y que la migración de variantes esté instalada en este entorno. No se muestran datos de respaldo.</p><button onClick={reset} className="rounded-xl border p-3">Reintentar lectura</button></section>;}

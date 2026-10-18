@@ -183,6 +183,18 @@
       "stagingFile": "staging/supabase/migrations/202610170001_store_sales_full_payment.sql",
       "sourceSha256": "dd4130d263ea91ed4dc4d8cce173f6c2cae87db96a860e41e34ca1bc5e0fca23",
       "stagingSha256": "dd4130d263ea91ed4dc4d8cce173f6c2cae87db96a860e41e34ca1bc5e0fca23"
+    },
+    {
+      "source": "supabase/migrations/202610180001_product_families_variants.sql",
+      "stagingFile": "staging/supabase/migrations/202610180001_product_families_variants.sql",
+      "sourceSha256": "d08c57326c963bd5c16136035c50e99987e6913fd67fe99dbcffa4cb3d9360f7",
+      "stagingSha256": "d08c57326c963bd5c16136035c50e99987e6913fd67fe99dbcffa4cb3d9360f7"
+    },
+    {
+      "source": "supabase/migrations/202610180002_variant_commercial_integration.sql",
+      "stagingFile": "staging/supabase/migrations/202610180002_variant_commercial_integration.sql",
+      "sourceSha256": "3fb73f5dffb77edbe99f58a6e071186b1d220538d75f78fd572dc541efb9c2a0",
+      "stagingSha256": "3fb73f5dffb77edbe99f58a6e071186b1d220538d75f78fd572dc541efb9c2a0"
     }
   ]
 }

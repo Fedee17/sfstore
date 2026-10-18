@@ -1,4 +1,5 @@
-﻿"use client";
+"use client";
+import { publicationAvailable } from "@/lib/products/public-families";
 
 import { useState } from "react";
 import { formatSavingsLabel } from "@/lib/pricing";
@@ -72,7 +73,7 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
   return (
     <div className="mt-10 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product) => {
-        const isAvailable = product.stock > 0;
+        const isAvailable = publicationAvailable(product);
         const showTransferPrice = product.price > 0;
         const transferPrice = getWebTransferPrice(product.price);
         const savingsLabel = formatSavingsLabel(product.price, transferPrice);
@@ -134,7 +135,7 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
                         {showTransferPrice ? "Transferencia bancaria" : "Precio lista"}
                       </p>
                       <p className="mt-1 break-words text-3xl font-semibold leading-tight text-[#102033]">
-                        {currencyFormatter.format(primaryPrice)}
+                        {product.kind==="family"?"Desde ":""}{currencyFormatter.format(primaryPrice)}
                       </p>
                       {showTransferPrice ? (
                         <p className="mt-2 text-sm text-[#526479]">Lista: {currencyFormatter.format(product.price)}</p>
@@ -174,7 +175,7 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
             <div className="min-w-0 p-5 pt-5 sm:p-6 sm:pt-5">
                 {isAvailable ? (
                   <div className="mt-5 grid min-w-0 gap-3">
-                    <AddToCartButton product={product} />
+                    {product.kind==="family"?<a href={`/producto/${product.slug}`} className="flex min-h-12 items-center justify-center rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white">Elegir variante</a>:<AddToCartButton product={product} />}
                     <a
                       href={`/producto/${product.slug}`}
                       className="flex min-h-12 w-full min-w-0 items-center justify-center rounded-full border border-[#0072CE]/35 px-5 py-3 text-center text-sm font-semibold text-[#0072CE] transition hover:border-[#0072CE] hover:bg-[#EEF2F6]"

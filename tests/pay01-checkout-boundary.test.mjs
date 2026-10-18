@@ -54,9 +54,9 @@ test('browser request strips untrusted prices and persists the same operation ac
  assert.deepEqual(calls[0][1].items,[{productId:product,quantity:1}]);assert.equal(calls[0][0],'/api/checkout');assert.equal(Object.hasOwn(calls[0][1],'total'),false);assert.doesNotMatch(values.get('sfstore-checkout-operation'),/fullName|email|Synthetic/);
 });
 test('buyer receipt lookup scopes a private read to the verified actor and never trusts URL totals',async()=>{
- const calls=[];const query={select:()=>query,eq:(k,v)=>{calls.push([k,v]);return query;},maybeSingle:async()=>({data:{result,state:'pending',expires_at:result.expiresAt},error:null})};
+ const calls=[];const query={select:()=>query,order:()=>query,then:(resolve)=>resolve({data:[],error:null}),eq:(k,v)=>{calls.push([k,v]);return query;},maybeSingle:async()=>({data:{result,state:'pending',expires_at:result.expiresAt},error:null})};
  const read=load('services/checkout-buyer-receipt.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>buyer},'@/lib/supabase/server':{getSupabaseAdminClient:()=>({from:()=>query})}});
- assert.equal((await read.getBuyerCheckoutReceipt(result.id)).total,100);assert.deepEqual(calls,[['order_id',result.id],['buyer_id',buyer],['id',result.id],['order_id',result.id],['buyer_id',buyer]]);
+ assert.equal((await read.getBuyerCheckoutReceipt(result.id)).total,100);assert.deepEqual(calls,[['order_id',result.id],['buyer_id',buyer],['id',result.id],['order_id',result.id],['buyer_id',buyer],['order_id',result.id]]);
 });
 test('unauthorized buyer never constructs service client or reads receipt; storage error discloses no data',async()=>{
  for(const actor of [null,buyer]){let privileged=0;const read=load('services/checkout-buyer-receipt.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>actor},'@/lib/supabase/server':{getSupabaseAdminClient:()=>{privileged++;throw Error('synthetic database outage');}}});assert.equal(await read.getBuyerCheckoutReceipt(result.id),null);assert.equal(privileged,actor?1:0);}
@@ -68,7 +68,7 @@ test('actual Next route delegates to verified authorization and atomic server ad
 test('PAY-01 orders cannot enter the legacy Mercado Pago preference or mutate through its webhook',async()=>{
  let preferences=0,ledger=0,inventory=0;
  const order={id:result.id,order_number:'FIXTURE',payment_method:'transfer',channel:'web',status:'pending',payment_status:'pending',total:100,metadata:{checkout_version:1}};
- const query={select:()=>query,eq:()=>query,maybeSingle:async()=>({data:order,error:null})};
+ const query={select:()=>query,order:()=>query,then:(resolve)=>resolve({data:[],error:null}),eq:()=>query,maybeSingle:async()=>({data:order,error:null})};
  const modules={'mercadopago':{MercadoPagoConfig:class{},Preference:class{create(){preferences++;throw Error('Forbidden real payment');}},Payment:class{async get(){return{external_reference:result.id,status:'approved',transaction_amount:100,id:'synthetic-payment'};}}},'next/server':{NextResponse:{json:Response.json.bind(Response)}},'@/lib/supabase/server':{getSupabaseAdminClient:()=>({from:()=>query})},'@/services/inventory':{decreaseStockForOrder:()=>{inventory++;}},'@/services/order-payments':{addOrderPayment:()=>{ledger++;}}};
  const globals={process:{env:{MERCADO_PAGO_ACCESS_TOKEN:'synthetic-placeholder-not-a-credential'}}};
  const preference=load('app/api/mercadopago/create-preference/route.ts',modules,globals);
@@ -127,7 +127,7 @@ test('receipt transfer instructions preserve exact server total including cents 
 test('a different verified buyer cannot read a receipt or even query its payment status',async()=>{
   const other=randomUUID();let paymentReads=0;let actor=other;
   const read=load('services/checkout-buyer-receipt.ts',{'server-only':{},'@/lib/checkout/contract':contract,'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>actor},'@/lib/supabase/server':{getSupabaseAdminClient:()=>({from(table){
-    const filters={};const query={select:()=>query,eq:(key,value)=>{filters[key]=value;return query;},maybeSingle:async()=>{
+    const filters={};const query={select:()=>query,order:()=>query,then:(resolve)=>resolve({data:[],error:null}),eq:(key,value)=>{filters[key]=value;return query;},maybeSingle:async()=>{
       if(table==='orders'){paymentReads++;return{data:{payment_status:'pending'},error:null};}
       return{data:filters.order_id===result.id&&filters.buyer_id===buyer?{result,state:'pending',expires_at:result.expiresAt}:null,error:null};
     }};return query;

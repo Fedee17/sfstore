@@ -277,3 +277,18 @@ Conclusión APTO CON CONDICIONES. Rehearsal PG17.6 sobre esquema productivo capt
 ### Ventas físicas — preparación Fase 1D (2026-10-17)
 
 Candidato en rama de publicación basada directamente en el commit productivo. Preflight productivo puntual 13/13 aprobado; respaldo PostgreSQL nuevo y recuperación aislada certificados. Se corrigió únicamente una referencia CRCRLF y un módulo real omitido en el arnés del administrador. Ver [cierre de condiciones y límites](../reports/store-sales-release-readiness-20261017.md). Pendientes autorización SQL/deployment y coordinación del mostrador; sin ejecución productiva.
+
+
+## Variantes — Fase 1 encargada y preparada localmente (2026-10-18)
+
+Rama independiente `codex/product-variants-admin-20261018`, basada en el commit publicado `e1fa0de`. Modelo aditivo y administración de familias/SKU reutilizando productos, imágenes y autorización. PostgreSQL descarta combinaciones inválidas y conserva stock e historia. Sin cambios productivos ni implementación de la ficha pública agrupada. Ver [alcance, pruebas y límites](../reports/product-variants-phase1-20261018.md). Integración posterior y publicación requieren otro alcance/aprobación.
+
+
+## Variantes — Fase 2 integrada localmente (2026-10-18)
+
+Catálogo por familia, selección explícita de SKU, compras/ventas existentes, carrito compatible, snapshots y Analytics documentado; importadores genéricos protegen variantes enviándolas a revisión. 864 pruebas PASS, 0 FAIL; 11 escenarios UI compilados y PostgreSQL descartable aprobados. Delta nuevo 002 preparado; 001 preservado. Sin cambios productivos, commit, merge o despliegue. Ver [resultados, límites y preparación de publicación](../reports/product-variants-phase2-20261018.md).
+
+
+## Variantes — preparación de publicación Fase 3 (2026-10-18)
+
+Candidato separado basado en e1fa0de productivo. Transición aditiva sin activar familias, pre/postcheck de catálogos y permisos, rehearsal PG17.6 y recuperación preparados. Sin SQL remoto ni despliegue. Ver [runbook de variantes](../reports/product-variants-release-runbook-20261018.md). El preflight productivo puntual aprobó; siguen pendientes el respaldo reciente y la autorización de publicación.

@@ -1,6 +1,15 @@
 export type ProductCategory = "perfumes" | "mates";
 
 export type Product = {
+  kind?: "simple" | "variant" | "family";
+  familyId?: string;
+  familyName?: string;
+  familySlug?: string;
+  variantLabel?: string;
+  variantOptions?: Record<string,string>;
+  sku?: string | null;
+  variants?: Product[];
+  images?: {url:string;alt:string|null;sort_order:number;is_primary:boolean}[];
   id: string;
   name: string;
   slug: string;

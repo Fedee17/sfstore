@@ -5,7 +5,7 @@ import { validateMonth } from "./periods.ts";
 /** Fixed whitelist, no contacts, free-text notes, payment references or auth rows. */
 export const READ_TABLES = {
   orders: { target: "orders", columns: "id,channel,status,payment_status,historical_import,historical_occurred_on,affects_inventory,created_at,subtotal,discount,shipping_cost,total,cost_snapshot_policy:metadata->>cost_snapshot_policy" },
-  saleLines: { target: "order_items", columns: "id,order_id,product_id,product_name,category_name,quantity,unit_price,subtotal,list_unit_price_snapshot,unit_cost_snapshot" },
+  saleLines: { target: "order_items", columns: "id,order_id,product_id,product_name,category_name,quantity,unit_price,subtotal,list_unit_price_snapshot,unit_cost_snapshot,family_id_snapshot,family_name_snapshot,sku_snapshot,variant_options_snapshot" },
   payments: { target: "order_payments", columns: "id,order_id,method,store_payment_method,status,amount,paid_at" },
   purchases: { target: "purchases", columns: "id,status,historical_import,historical_occurred_on,affects_inventory,purchase_date,total_cost,supplier_subtotal,shipping_cost" },
   purchaseLines: { target: "purchase_items", columns: "id,purchase_id,product_id,product_name_snapshot,quantity,unit_purchase_cost,supplier_line_total,effective_unit_cost,effective_line_total" },

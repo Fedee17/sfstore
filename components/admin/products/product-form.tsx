@@ -730,6 +730,7 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Precio lista</span>
             <input
               name="price"
+              readOnly={!!product?.family_id}
               type="number"
               min="0"
               step="0.01"
@@ -787,6 +788,7 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">SKU</span>
             <input
               name="sku"
+              readOnly={!!product?.family_id}
               defaultValue={product?.sku ?? ""}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />

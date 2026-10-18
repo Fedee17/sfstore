@@ -1,3 +1,4 @@
+import { ProductFamilyDetail } from "@/components/product-family-detail";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -214,6 +215,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
+  if (product.kind === "family") return <ProductFamilyDetail product={product}/>;
   const isAvailable = product.stock > 0;
   const productAttributes =
     "attributes" in product && Array.isArray(product.attributes)

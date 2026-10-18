@@ -21,12 +21,12 @@ function change(current: number, previous: number | null) {
     percent: previous === null || previous === 0 ? null : (current - previous) / previous * 100 };
 }
 type Ranking = { key: string; name: string; quantity: number; revenueCents: number; unpricedQuantity: number };
-function rankings(sales: SaleFact[], category: boolean): Ranking[] {
+function rankings(sales: SaleFact[], category: boolean, family = false): Ranking[] {
   const groups = new Map<string, Ranking>();
   for (const sale of sales) for (const line of sale.lines) {
     // Historical category names are snapshots. Missing product identities are NOT matched by a guessed name.
-    const key = category ? (line.category_name || "Sin categoría documentada") : (line.product_id || `unidentified:${line.id}`);
-    const name = category ? key : (line.product_name || "Producto sin nombre documentado");
+    const key = family ? (line.family_id_snapshot ? `family:${line.family_id_snapshot}` : `unclassified:${line.product_id??line.id}`) : category ? (line.category_name || "Sin categoría documentada") : (line.family_id_snapshot && line.product_id ? `variant:${line.product_id}` : line.product_id || `unidentified:${line.id}`);
+    const name = family ? (line.family_name_snapshot || `Sin familia documentada — ${line.product_name}`) : category ? key : (line.product_name || "Producto sin nombre documentado");
     const row = groups.get(key) ?? { key, name, quantity: 0, revenueCents: 0, unpricedQuantity: 0 };
     row.quantity += line.quantity;
     if (!Number.isSafeInteger(row.quantity)) throw new Error("COMMERCIAL_QUANTITY_OVERFLOW");
@@ -65,7 +65,7 @@ export function buildCommercialAnalytics(input: CommercialSnapshot, month: strin
       purchasesCents: r.totals.purchasesCents, datedReceiptsCents: r.totals.datedReceiptsCents,
       undatedApprovedForSalesCents: r.totals.undatedApprovedForSalesCents })),
     channels,
-    products: rankings(confirmed, false), categories: rankings(confirmed, true),
+    families: rankings(confirmed, false, true), products: rankings(confirmed, false), categories: rankings(confirmed, true),
     margin: { grossMarginCents: costEligible.length ? coveredRevenueCents - verifiedCostCents : null,
       coveredRevenueCents, verifiedCostCents, merchandiseRevenueCents,
       coveragePercent: merchandiseRevenueCents > 0 ? coveredRevenueCents / merchandiseRevenueCents * 100 : null,

@@ -19,7 +19,7 @@ export function AddToCartButton({ product }: { product: Product }) {
 
   return (
     <div>
-      <button type="button" onClick={addToCart} disabled={atLimit || product.stock <= 0}
+      <button type="button" onClick={addToCart} disabled={product.kind === "family" || atLimit || product.stock <= 0}
         aria-label={`Agregar ${product.name} al carrito`}
         className="flex min-h-12 w-full min-w-0 items-center justify-center rounded-full bg-[#0072CE] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#003B73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003B73] disabled:cursor-not-allowed disabled:bg-[#526479]">
         {atLimit ? "Stock máximo en carrito" : "Agregar al carrito"}
