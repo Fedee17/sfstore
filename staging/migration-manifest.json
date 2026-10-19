@@ -1,0 +1,200 @@
+{
+  "purpose": "new_local_synthetic_staging_only",
+  "canonicalHistoryChanged": false,
+  "remoteExecuted": false,
+  "collisionResolution": "202609180002_suppliers_admin.sql is byte-identical under staging-only version 202609180003; canonical applied files and ledgers remain untouched",
+  "applicationOrder": [
+    {
+      "source": "supabase/schema.sql",
+      "stagingFile": "staging/supabase/migrations/202609100001_staging_baseline.sql",
+      "sourceSha256": "1f587f3d121e84947c95c0f9038aff4ffa400f318f80f8269f4ed278da17f179",
+      "stagingSha256": "384f00907656dab51561a964b2fedbf61c321aef0ff87a10ac2900f0415a19e4"
+    },
+    {
+      "source": "supabase/migrations/202609110001_document_products_transfer_price.sql",
+      "stagingFile": "staging/supabase/migrations/202609110001_document_products_transfer_price.sql",
+      "sourceSha256": "050a346423503bfaffec5f67948c4e1f32a5ab356c5f7bf0029da1a850c89932",
+      "stagingSha256": "050a346423503bfaffec5f67948c4e1f32a5ab356c5f7bf0029da1a850c89932"
+    },
+    {
+      "source": "supabase/migrations/202609160001_purchase_draft_foundation.sql",
+      "stagingFile": "staging/supabase/migrations/202609160001_purchase_draft_foundation.sql",
+      "sourceSha256": "4d0da36f2865d983bce62795a2ae159d851a901f038dd8505fe6ec8589378358",
+      "stagingSha256": "4d0da36f2865d983bce62795a2ae159d851a901f038dd8505fe6ec8589378358"
+    },
+    {
+      "source": "supabase/migrations/202609170001_purchase_confirmation.sql",
+      "stagingFile": "staging/supabase/migrations/202609170001_purchase_confirmation.sql",
+      "sourceSha256": "ca3f0da0992b39972cc98e5a7231a63352e1acd14d19699f6755814f0a3c28ce",
+      "stagingSha256": "ca3f0da0992b39972cc98e5a7231a63352e1acd14d19699f6755814f0a3c28ce"
+    },
+    {
+      "source": "supabase/migrations/202609170002_inventory_audit_foundation.sql",
+      "stagingFile": "staging/supabase/migrations/202609170002_inventory_audit_foundation.sql",
+      "sourceSha256": "d70a5f143d31aa0d4acaa1a9dd044433b82d42b31971e29d764d2b3ecd495f8f",
+      "stagingSha256": "d70a5f143d31aa0d4acaa1a9dd044433b82d42b31971e29d764d2b3ecd495f8f"
+    },
+    {
+      "source": "supabase/migrations/202609170003_atomic_sales_inventory.sql",
+      "stagingFile": "staging/supabase/migrations/202609170003_atomic_sales_inventory.sql",
+      "sourceSha256": "7813712baddfcbaaabd9d641c1ad5ac8c94bf1d2684642a2ba9c8fb4c4a4e05d",
+      "stagingSha256": "7813712baddfcbaaabd9d641c1ad5ac8c94bf1d2684642a2ba9c8fb4c4a4e05d"
+    },
+    {
+      "source": "supabase/migrations/202609180001_unified_sales_payments.sql",
+      "stagingFile": "staging/supabase/migrations/202609180001_unified_sales_payments.sql",
+      "sourceSha256": "2557580802038fe0d0a40a2352feb3b9d6b2fc6cb4fe6f528598bfbd0fc1bd85",
+      "stagingSha256": "2557580802038fe0d0a40a2352feb3b9d6b2fc6cb4fe6f528598bfbd0fc1bd85"
+    },
+    {
+      "source": "supabase/migrations/202609180002_store_sales_checkout.sql",
+      "stagingFile": "staging/supabase/migrations/202609180002_store_sales_checkout.sql",
+      "sourceSha256": "75c39bd4f97a40777f8e538e3744c231e6f193ee4bdca28e2a07bf34b468b5ae",
+      "stagingSha256": "75c39bd4f97a40777f8e538e3744c231e6f193ee4bdca28e2a07bf34b468b5ae"
+    },
+    {
+      "source": "supabase/migrations/202609180002_suppliers_admin.sql",
+      "stagingFile": "staging/supabase/migrations/202609180003_suppliers_admin.sql",
+      "sourceSha256": "39d7d3d87ad6e3a44aa75e501a1f007a80092d1a232ec86bf8700b69c9a03833",
+      "stagingSha256": "39d7d3d87ad6e3a44aa75e501a1f007a80092d1a232ec86bf8700b69c9a03833"
+    },
+    {
+      "source": "supabase/migrations/202609210001_orders_workflow.sql",
+      "stagingFile": "staging/supabase/migrations/202609210001_orders_workflow.sql",
+      "sourceSha256": "4623e80153df254fe17aa079b73ef2ec0362d1cfb84bbc51fd83a313359fb7fc",
+      "stagingSha256": "4623e80153df254fe17aa079b73ef2ec0362d1cfb84bbc51fd83a313359fb7fc"
+    },
+    {
+      "source": "supabase/migrations/202609210002_store_sale_custom_unit_price.sql",
+      "stagingFile": "staging/supabase/migrations/202609210002_store_sale_custom_unit_price.sql",
+      "sourceSha256": "28314d8c298051f4d8eab45bf1f1ebfa1217dcafc4190193dedca080154b899a",
+      "stagingSha256": "28314d8c298051f4d8eab45bf1f1ebfa1217dcafc4190193dedca080154b899a"
+    },
+    {
+      "source": "supabase/migrations/202609300001_historical_import_foundation.sql",
+      "stagingFile": "staging/supabase/migrations/202609300001_historical_import_foundation.sql",
+      "sourceSha256": "86de6e9963ed25e65f40d575e6b7545c39f9258bdd1e391b8ec072698005b869",
+      "stagingSha256": "86de6e9963ed25e65f40d575e6b7545c39f9258bdd1e391b8ec072698005b869"
+    },
+    {
+      "source": "supabase/migrations/202610030001_atomic_store_sale_checkout.sql",
+      "stagingFile": "staging/supabase/migrations/202610030001_atomic_store_sale_checkout.sql",
+      "sourceSha256": "07a45babcc0a8981e0a01765de5512bfc3d42c728e5e0533080657b4042b3d20",
+      "stagingSha256": "07a45babcc0a8981e0a01765de5512bfc3d42c728e5e0533080657b4042b3d20"
+    },
+    {
+      "source": "supabase/migrations/202610040001_safe_product_image_delete.sql",
+      "stagingFile": "staging/supabase/migrations/202610040001_safe_product_image_delete.sql",
+      "sourceSha256": "d65763170948f8e4e40d8af87f5e06103d0236f9786b9248d900ecaf732638d6",
+      "stagingSha256": "d65763170948f8e4e40d8af87f5e06103d0236f9786b9248d900ecaf732638d6"
+    },
+    {
+      "source": "supabase/migrations/202610060001_atomic_product_save.sql",
+      "stagingFile": "staging/supabase/migrations/202610060001_atomic_product_save.sql",
+      "sourceSha256": "e3e87a4bc7902b9f5ace1ce8d445dd53eca47859a140bcba0515e53b7f34be3d",
+      "stagingSha256": "e3e87a4bc7902b9f5ace1ce8d445dd53eca47859a140bcba0515e53b7f34be3d"
+    },
+    {
+      "source": "supabase/migrations/202610100001_product_storage_task_results.sql",
+      "stagingFile": "staging/supabase/migrations/202610100001_product_storage_task_results.sql",
+      "sourceSha256": "a382a4e17acbe732daab5a67bf262d6ce64e5b6ac53b70e3e9c9238ecb3ba060",
+      "stagingSha256": "a382a4e17acbe732daab5a67bf262d6ce64e5b6ac53b70e3e9c9238ecb3ba060"
+    },
+    {
+      "source": "supabase/migrations/202610100002_durable_admin_image_delete.sql",
+      "stagingFile": "staging/supabase/migrations/202610100002_durable_admin_image_delete.sql",
+      "sourceSha256": "4af7264e7988c047a742ee90690b0559e62d4d70a69db781ce3f369e8710b23f",
+      "stagingSha256": "4af7264e7988c047a742ee90690b0559e62d4d70a69db781ce3f369e8710b23f"
+    },
+    {
+      "source": "supabase/migrations/202610110001_sec01_effective_permissions.sql",
+      "stagingFile": "staging/supabase/migrations/202610110001_sec01_effective_permissions.sql",
+      "sourceSha256": "8a7ceae397019fee419b61d8c8049b4b4cb84bdf4b238b660f458768d95d3463",
+      "stagingSha256": "8a7ceae397019fee419b61d8c8049b4b4cb84bdf4b238b660f458768d95d3463"
+    },
+    {
+      "source": "supabase/migrations/202610110002_pay01_atomic_checkout.sql",
+      "stagingFile": "staging/supabase/migrations/202610110002_pay01_atomic_checkout.sql",
+      "sourceSha256": "10c3fd8f9b2100b44183c8dfbe8def303c107f11cc9020bb698ecd71d793297c",
+      "stagingSha256": "10c3fd8f9b2100b44183c8dfbe8def303c107f11cc9020bb698ecd71d793297c"
+    },
+    {
+      "source": "supabase/migrations/202610110003_pay01_manual_payments.sql",
+      "stagingFile": "staging/supabase/migrations/202610110003_pay01_manual_payments.sql",
+      "sourceSha256": "04524c9fa771af34f1bf47b39162c686e754c20c921422bbd7d746965b3a279d",
+      "stagingSha256": "04524c9fa771af34f1bf47b39162c686e754c20c921422bbd7d746965b3a279d"
+    },
+    {
+      "source": "supabase/migrations/202610110004_pay01_approved_commercial_rules.sql",
+      "stagingFile": "staging/supabase/migrations/202610110004_pay01_approved_commercial_rules.sql",
+      "sourceSha256": "d282de52facd29c17fb1e575ea05958daa01c9009df35f472208fd8cb514a00b",
+      "stagingSha256": "d282de52facd29c17fb1e575ea05958daa01c9009df35f472208fd8cb514a00b"
+    },
+    {
+      "source": "supabase/migrations/202610110005_pay01_inventory_transition_permissions.sql",
+      "stagingFile": "staging/supabase/migrations/202610110005_pay01_inventory_transition_permissions.sql",
+      "sourceSha256": "33dd8fb206af3ff11d231f4e6a462b25b745c46fc0e4af808f5bbf0a6a54d056",
+      "stagingSha256": "33dd8fb206af3ff11d231f4e6a462b25b745c46fc0e4af808f5bbf0a6a54d056"
+    },
+    {
+      "source": "supabase/migrations/202610110006_pay01_guest_national_shipping.sql",
+      "stagingFile": "staging/supabase/migrations/202610110006_pay01_guest_national_shipping.sql",
+      "sourceSha256": "f971bdaa528b2fe2c33490050959708a3598d370617530c4c9ea677442641bed",
+      "stagingSha256": "f971bdaa528b2fe2c33490050959708a3598d370617530c4c9ea677442641bed"
+    },
+    {
+      "source": "supabase/migrations/202610110007_checkout_storage_review_guards.sql",
+      "stagingFile": "staging/supabase/migrations/202610110007_checkout_storage_review_guards.sql",
+      "sourceSha256": "df84c784d36e94d5ddce3bf7b7751d1e5f747fddd5e35b56a38e4eb44f562500",
+      "stagingSha256": "df84c784d36e94d5ddce3bf7b7751d1e5f747fddd5e35b56a38e4eb44f562500"
+    },
+    {
+      "source": "supabase/migrations/202610120001_web_transfer_payment_reports.sql",
+      "stagingFile": "staging/supabase/migrations/202610120001_web_transfer_payment_reports.sql",
+      "sourceSha256": "216f9fb33abd60ff771c92c05be0fdb9a83f526f29411e07eb791b232d0d3e54",
+      "stagingSha256": "216f9fb33abd60ff771c92c05be0fdb9a83f526f29411e07eb791b232d0d3e54"
+    },
+    {
+      "source": "supabase/migrations/202610120002_remove_global_reservation_budget.sql",
+      "stagingFile": "staging/supabase/migrations/202610120002_remove_global_reservation_budget.sql",
+      "sourceSha256": "bb84695e13dffc6333b88c28bb8079211cf6ddec8e14b4b0d4c8521551dd18c1",
+      "stagingSha256": "bb84695e13dffc6333b88c28bb8079211cf6ddec8e14b4b0d4c8521551dd18c1"
+    },
+    {
+      "source": "supabase/migrations/202610120003_checkout_expiration_executor.sql",
+      "stagingFile": "staging/supabase/migrations/202610120003_checkout_expiration_executor.sql",
+      "sourceSha256": "9f742c7109f83f3b8ba0af6dca59a209e9d5693205deae123b36e5bce5a0e577",
+      "stagingSha256": "9f742c7109f83f3b8ba0af6dca59a209e9d5693205deae123b36e5bce5a0e577"
+    },
+    {
+      "source": "supabase/migrations/202610120004_checkout_expiration_search_path.sql",
+      "stagingFile": "staging/supabase/migrations/202610120004_checkout_expiration_search_path.sql",
+      "sourceSha256": "45be958740a8f9b685ddd3fc30f7aea415093ba36448be300a7ce52305624bf5",
+      "stagingSha256": "45be958740a8f9b685ddd3fc30f7aea415093ba36448be300a7ce52305624bf5"
+    },
+    {
+      "source": "supabase/migrations/202610120005_checkout_approved_shipping_quotes.sql",
+      "stagingFile": "staging/supabase/migrations/202610120005_checkout_approved_shipping_quotes.sql",
+      "sourceSha256": "a46c0759e4afac347a5860a27c440280e3280892b2f1ab5d85660a62498ac48b",
+      "stagingSha256": "a46c0759e4afac347a5860a27c440280e3280892b2f1ab5d85660a62498ac48b"
+    },
+    {
+      "source": "supabase/migrations/202610170001_store_sales_full_payment.sql",
+      "stagingFile": "staging/supabase/migrations/202610170001_store_sales_full_payment.sql",
+      "sourceSha256": "dd4130d263ea91ed4dc4d8cce173f6c2cae87db96a860e41e34ca1bc5e0fca23",
+      "stagingSha256": "dd4130d263ea91ed4dc4d8cce173f6c2cae87db96a860e41e34ca1bc5e0fca23"
+    },
+    {
+      "source": "supabase/migrations/202610180001_product_families_variants.sql",
+      "stagingFile": "staging/supabase/migrations/202610180001_product_families_variants.sql",
+      "sourceSha256": "d08c57326c963bd5c16136035c50e99987e6913fd67fe99dbcffa4cb3d9360f7",
+      "stagingSha256": "d08c57326c963bd5c16136035c50e99987e6913fd67fe99dbcffa4cb3d9360f7"
+    },
+    {
+      "source": "supabase/migrations/202610180002_variant_commercial_integration.sql",
+      "stagingFile": "staging/supabase/migrations/202610180002_variant_commercial_integration.sql",
+      "sourceSha256": "3fb73f5dffb77edbe99f58a6e071186b1d220538d75f78fd572dc541efb9c2a0",
+      "stagingSha256": "3fb73f5dffb77edbe99f58a6e071186b1d220538d75f78fd572dc541efb9c2a0"
+    }
+  ]
+}

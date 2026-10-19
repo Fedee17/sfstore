@@ -1,40 +1,12 @@
 import type { MetadataRoute } from "next";
-import { getSupabaseClient } from "@/lib/supabase/client";
-import { isSupersededYaraRosa } from "@/lib/products/yara-rosa-consolidation";
+import { getCatalogPublications } from "@/services/products";
 
-type SitemapProduct = {
-  slug: string;
-  updated_at: string | null;
-};
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 async function getActiveProductUrls() {
-  try {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select("slug, updated_at, categories!inner(is_active)")
-      .eq("historical_identity", false)
-      .eq("status", "active")
-      .eq("categories.is_active", true)
-      .order("updated_at", { ascending: false });
-
-    if (error) {
-      return [];
-    }
-
-    return ((data ?? []) as SitemapProduct[]).filter((product) => !isSupersededYaraRosa(product)).map((product) => ({
-      url: `${siteUrl}/producto/${product.slug}`,
-      lastModified: product.updated_at
-        ? new Date(product.updated_at)
-        : new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    }));
-  } catch {
-    return [];
-  }
+ const products=await getCatalogPublications();
+ return products.map(product=>({url:`${siteUrl}/producto/${product.slug}`,lastModified:new Date(),changeFrequency:"monthly" as const,priority:0.7}));
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

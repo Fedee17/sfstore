@@ -1,24 +1,19 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { getWebTransferPrice, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
+
 import { SiteHeader } from "@/components/site-header";
 import { transferPayment } from "@/lib/payment";
-import {
-  calculatePricing,
-  formatSavingsLabel,
-  getTransferUnitPrice,
-  getUnitPriceForPayment,
-  hasTransferPrice,
-} from "@/lib/pricing";
-import { buildCartWhatsAppUrl } from "@/lib/whatsapp";
+
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/cart-store";
 
-type PaymentMethod = "transfer" | "mercadopago";
+
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const categoryLabels = {
@@ -27,8 +22,7 @@ const categoryLabels = {
 } as const;
 
 export default function CartPage() {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<PaymentMethod>("transfer");
+  const selectedPaymentMethod = "transfer";
   const {
     items,
     totalItems,
@@ -39,15 +33,15 @@ export default function CartPage() {
     clearCart,
   } = useCartStore();
 
-  const pricing = calculatePricing(items, selectedPaymentMethod);
+
   const checkoutHref = `/checkout?payment=${selectedPaymentMethod}`;
-  const whatsappHref = buildCartWhatsAppUrl(items, selectedPaymentMethod, {
-    total: pricing.total,
-  });
-  const checkoutLabel =
-    selectedPaymentMethod === "transfer"
-      ? "Continuar con transferencia"
-      : "Continuar con Mercado Pago";
+  const whatsappHref = buildWhatsAppUrl([
+    "Hola SFSTORE, quiero consultar por estos productos:",
+    ...items.map(item => `${item.quantity} x ${item.name}`),
+    "Pago: transferencia bancaria completa.",
+    "El precio final con 25% de descuento se confirma al crear el pedido.",
+  ].join("\n"));
+  const checkoutLabel = "Continuar con transferencia";
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
@@ -94,16 +88,7 @@ export default function CartPage() {
           <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
             <div className="space-y-4">
               {items.map((item) => {
-                const transferUnitPrice = getTransferUnitPrice(item);
-                const selectedUnitPrice = getUnitPriceForPayment(
-                  item,
-                  selectedPaymentMethod,
-                );
-                const showTransferPrice = hasTransferPrice(item);
-                const savingsLabel =
-                  selectedPaymentMethod === "transfer"
-                    ? formatSavingsLabel(item.price, item.transferPrice)
-                    : null;
+                const selectedUnitPrice = getWebTransferPrice(item.price);
 
                 return (
                   <article
@@ -121,26 +106,9 @@ export default function CartPage() {
                       >
                         {item.name}
                       </a>
-                      {showTransferPrice ? (
-                        <div className="mt-3 min-w-0">
-                          <p className="break-words text-sm font-semibold text-[#0072CE]">
-                            Precio efectivo/transferencia:{" "}
-                            {currencyFormatter.format(transferUnitPrice)}
-                          </p>
-                          {savingsLabel ? (
-                            <span className="mt-1 inline-flex max-w-full rounded-full bg-[#0072CE]/10 px-2.5 py-1 text-xs font-semibold text-[#0072CE]">
-                              {savingsLabel}
-                            </span>
-                          ) : null}
-                          <p className="mt-1 break-words text-xs text-[#102033]/55">
-                            Precio lista: {currencyFormatter.format(item.price)}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-sm text-[#102033]/60">
-                          Precio lista: {currencyFormatter.format(item.price)}
-                        </p>
-                      )}
+                      <p className="mt-2 text-sm text-[#102033]/60">
+                        Precio lista de referencia: {currencyFormatter.format(item.price)}
+                      </p>
                     </div>
 
                     <div className="flex min-w-0 flex-wrap items-center gap-3 md:justify-end">
@@ -193,29 +161,23 @@ export default function CartPage() {
 
             <aside className="h-fit rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Resumen de compra</h2>
+              <p className="mt-3 text-sm">Productos con 25% de descuento (referencia): {currencyFormatter.format(getWebTransferSubtotal(items))}. El total definitivo se confirma al preparar el pedido.</p>
               <div className="mt-6 space-y-3 border-b border-[#003B73]/15 pb-5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#102033]/65">Productos</span>
                   <span className="font-semibold">{totalItems}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#102033]/65">Subtotal lista</span>
+                  <span className="text-[#102033]/65">Subtotal de referencia (lista)</span>
                   <span className="font-semibold">
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                {pricing.discount > 0 ? (
-                  <div className="flex justify-between text-[#0072CE]">
-                    <span>Precio efectivo/transferencia</span>
-                    <span className="font-semibold">
-                      -{currencyFormatter.format(pricing.discount)}
-                    </span>
-                  </div>
-                ) : null}
+                <p>25% de descuento por transferencia. El servidor calcula y congela el precio final al crear el pedido.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
-                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold">Total final</span>
                   <span className="font-semibold text-[#003B73]">
-                    {currencyFormatter.format(pricing.total)}
+                    {"Se confirma al crear el pedido"}
                   </span>
                 </div>
               </div>
@@ -225,14 +187,12 @@ export default function CartPage() {
                   Método de pago
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                  {selectedPaymentMethod === "transfer"
-                    ? "Estás viendo precio efectivo/transferencia."
-                    : "Mercado Pago usa precio lista."}
+                  Transferencia con 25% de descuento sobre lista. Pago del 100% del total.
                 </p>
                 <div className="mt-4 grid gap-3">
                   <button
                     type="button"
-                    onClick={() => setSelectedPaymentMethod("transfer")}
+
                     className={`rounded-2xl border p-4 text-left transition ${
                       selectedPaymentMethod === "transfer"
                         ? "border-[#0072CE] bg-[#0072CE]/10"
@@ -248,27 +208,10 @@ export default function CartPage() {
                       </span>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Pagando por efectivo o transferencia accedés al precio especial disponible.
+                      El precio de transferencia se verifica al preparar el pedido.
                     </p>
                     <p className="mt-2 text-xs font-semibold text-[#102033]/55">
                       Alias: {transferPayment.alias}
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod("mercadopago")}
-                    className={`rounded-2xl border p-4 text-left transition ${
-                      selectedPaymentMethod === "mercadopago"
-                        ? "border-[#003B73] bg-[#EEF2F6]"
-                        : "border-[#003B73]/15 bg-[#F7F9FC]"
-                    }`}
-                  >
-                    <span className="text-sm font-semibold text-[#003B73]">
-                      Mercado Pago
-                    </span>
-                    <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Pagás el precio lista con el checkout de Mercado Pago.
                     </p>
                   </button>
                 </div>

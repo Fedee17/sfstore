@@ -128,7 +128,7 @@ export default async function MatesPage({ searchParams }: MatesPageProps) {
         </div>
 
         <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
-          <aside className="sticky top-6 hidden max-h-[calc(100vh-3rem)] min-w-0 overflow-y-auto rounded-2xl border border-[#DCE3EA] bg-white p-5 shadow-sm lg:block">
+          <aside className="hidden min-w-0 rounded-2xl border border-[#DCE3EA] bg-white p-5 shadow-sm lg:block">
             <CatalogSidebar
               ariaLabel="Categorías de mates"
               basePath="/mates"

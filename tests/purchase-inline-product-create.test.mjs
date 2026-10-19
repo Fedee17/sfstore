@@ -45,10 +45,10 @@ test("new products use safe private purchase-flow defaults", () => {
   assert.match(service, /status: "draft"/);
 });
 
-test("new purchases expose active products while edit keeps referenced lines", () => {
+test("new purchases expose active products and draft variants while edit keeps referenced lines", () => {
   assert.match(
     service,
-    /listPurchaseProducts\(includeProductIds: string\[\] = \[\]\)[\s\S]+\.eq\("status", "active"\)/,
+    /listPurchaseProducts\(includeProductIds: string\[\] = \[\]\)[\s\S]+\.or\("status\.eq\.active,and\(status\.eq\.draft,family_id\.not\.is\.null\)"\)/,
   );
   assert.match(service, /\.in\("id", retainedIds\)/);
   assert.match(

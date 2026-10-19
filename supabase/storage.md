@@ -1,48 +1,19 @@
-# Supabase Storage para imagenes de productos
+# Supabase Storage para imágenes de productos
 
-## Bucket requerido
+Referencia de código: main y rama local de mantenimiento, 2026-10-10. Esta guía no autoriza crear/modificar buckets, policies, datos reales ni aplicar migrations. Validar contratos con fixtures y un entorno de pruebas separado; cambios de Production requieren aprobación explícita.
 
-Crear manualmente un bucket en Supabase Storage llamado:
+## Bucket y URLs
 
-```text
-product-images
-```
+El servicio usa `product-images` (`PRODUCT_IMAGES_BUCKET`). La tienda consume URLs públicas guardadas en `product_images`. La configuración efectiva y permisos del bucket real no se verificaron en esta fase; un bucket público no autoriza uploads o borrados anónimos. No ampliar policies para solucionar un error de pruebas.
 
-El bucket debe ser publico para que las imagenes puedan mostrarse en la tienda.
+## Guardado actual
 
-## Como crearlo
+`services/product-save.ts` coordina uploads y RPC create/update atómicas con versión e idempotencia. El formulario administra una galería con `sort_order` e `is_primary`, no solo una imagen principal. Los uploads usan rutas debajo de `products/[productId]/` y validan contenido/MIME/tamaño en reintentos; no asumir el antiguo nombre `main-[timestamp]` como contrato actual.
 
-1. Entrar al proyecto en Supabase.
-2. Ir a Storage.
-3. Seleccionar New bucket.
-4. Usar el nombre `product-images`.
-5. Activar Public bucket.
-6. Guardar.
+El procesamiento de archivos acepta JPEG, PNG, WebP y entradas HEIC/HEIF; el formulario normaliza/comprime para upload en WebP o JPEG. Mantener validaciones de `lib/products/product-image-files.ts` y feedback del formulario. Una referencia DB y un objeto Storage son efectos separados; no existe transacción distribuida entre ambos.
 
-## Uso en SFSTORE
+## Recuperación y eliminación pendiente
 
-El admin sube la imagen principal desde el formulario de producto. La imagen se guarda en una ruta similar a:
+`product_save_operations` y `product_storage_tasks` registran recuperación. El worker y la corrección P1 de retención están en [draft PR #1](https://github.com/Fedee17/sfstore/pull/1), fuera de main: no repetir su implementación. Esa rama retiene objetos existentes y bloquea apply de limpieza; retirar metadata de galería no confirma eliminación del archivo.
 
-```text
-products/[productId]/main-[timestamp].[ext]
-```
-
-Luego se crea un registro en `product_images` con:
-
-```text
-product_id
-url
-alt
-sort_order = 0
-is_primary = true
-```
-
-Si el producto ya tenia una imagen principal, las anteriores se marcan como `is_primary = false` y la nueva queda como principal.
-
-## Formatos recomendados
-
-- JPG
-- PNG
-- WebP
-
-Antes de lanzar, revisar que las imagenes esten optimizadas para web.
+No ejecutar scripts heredados de limpieza ni activar un procesador desde esta guía. La migration de `result jsonb`, el RPC de eliminación durable, su integración y el eventual deploy son aprobaciones separadas. Ver [arquitectura](../docs/ARCHITECTURE.md), [reglas](../docs/SECURITY_RULES.md) y STG-01 en [backlog](../docs/DEVELOPMENT_BACKLOG.md).

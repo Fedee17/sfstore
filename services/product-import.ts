@@ -43,6 +43,7 @@ import type {
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 type ExistingProduct = ExistingPerfumeImportProduct & {
+  family_id?: string | null;
   price: number;
   transfer_price: number | null;
   cost: number | null;
@@ -79,6 +80,7 @@ async function findExistingProduct(
     .from("products")
     .select(`
       id,
+      family_id,
       name,
       slug,
       price,
@@ -98,6 +100,12 @@ async function findExistingProduct(
     slug,
     previousSlug,
   );
+}
+
+async function isFamilyPublication(slug: string, previousSlug?: string) {
+ const {data,error}=await getSupabaseAdminClient().from("product_families").select("id").in("slug",[slug,previousSlug].filter((s):s is string=>!!s)).limit(1);
+ if(error)throw new Error("No se pudo verificar si la fila corresponde a una familia.");
+ return (data?.length??0)>0;
 }
 
 async function getOrCreateCategory(name: string, slug: string) {
@@ -186,7 +194,7 @@ async function applyExistingPerfumeUpdate(
       .from("products")
       .update(patch)
       .eq("historical_identity", false)
-      .eq("id", existing.id);
+      .eq("id", existing.id).is("family_id", null).select("id").single();
     if (error) throw new Error(error.message);
   }
   await replaceNamedAttributes(
@@ -263,6 +271,11 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
     try {
       const previousSlug = input.previousProductName ? slugifyImportedProduct(input.previousProductName) : undefined;
       const existing = await findExistingProduct(sheet, slug, previousSlug);
+      if (existing?.family_id || (!existing && await isFamilyPublication(slug,previousSlug))) {
+        summary.review += 1;
+        summary.results.push(result(input.rowNumber,slug,"review","SKU con variantes: administrá precio, opciones y stock desde la familia y sus operaciones. La fila no se aplicó."));
+        continue;
+      }
       const parsed = normalizeProductImportRow(sheet, input.row, input.rowNumber);
       const normalized = parsed ? preserveCanonicalImportIdentity(parsed, existing) : null;
       if (!normalized) {
@@ -292,7 +305,7 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
           .from("products")
           .update(decision.patch)
           .eq("historical_identity", false)
-          .eq("id", existing.id);
+          .eq("id", existing.id).is("family_id", null).select("id").single();
         if (error) throw new Error(error.message);
         summary.updated += 1;
         summary.results.push(result(input.rowNumber, existing.slug, "updated", "Datos comerciales actualizados."));
@@ -381,7 +394,7 @@ export async function syncImportedProductRows(sheet: SupportedProductSheet, inpu
       };
       const supabase = getSupabaseAdminClient();
       const { error } = existing
-        ? await supabase.from("products").update(payload).eq("historical_identity", false).eq("id", productId)
+        ? await supabase.from("products").update(payload).eq("historical_identity", false).eq("id", productId).is("family_id", null).select("id").single()
         : await supabase.from("products").insert({ id: productId, ...payload });
       if (error) throw new Error(error.message);
       await replaceNamedAttributes(productId, normalized.attributes);
@@ -422,6 +435,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
     }
     try {
       const existing = await findExistingProduct(row.sourceSheet, row.slug);
+      if(existing?.family_id||(!existing&&await isFamilyPublication(row.slug))){result.review+=1;continue;}
       row = preserveCanonicalImportIdentity(row, existing);
       if (row.sourceSheet === "Precios Productos") {
         const decision = buildSafePriceImportDecision(getPriceImportSource(row), existing);
@@ -442,7 +456,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
           .from("products")
           .update(decision.patch)
           .eq("historical_identity", false)
-          .eq("id", existing.id);
+          .eq("id", existing.id).is("family_id", null).select("id").single();
         if (error) throw new Error(error.message);
         result.updated += 1;
         revalidatePath(`/producto/${existing.slug}`);
@@ -494,7 +508,7 @@ export async function applyConfirmedProductImportRows(rows: NormalizedProductImp
       };
       const supabase = getSupabaseAdminClient();
       const { error } = existing
-        ? await supabase.from("products").update(payload).eq("historical_identity", false).eq("id", productId)
+        ? await supabase.from("products").update(payload).eq("historical_identity", false).eq("id", productId).is("family_id", null).select("id").single()
         : await supabase.from("products").insert({ id: productId, ...payload });
       if (error) throw new Error(error.message);
       await replaceNamedAttributes(productId, row.attributes);

@@ -72,16 +72,14 @@ test("missing or inactive categories stay private", () => {
   );
 });
 
-test("catalog queries no longer depend on a rigid category allowlist", () => {
-  assert.doesNotMatch(productsService, /MATE_PUBLIC_CATEGORY_SLUGS/);
-  assert.match(productsService, /\.neq\("categories\.slug", "perfumes"\)/);
-  assert.match(productsService, /\.eq\("categories\.is_active", true\)/);
+test("catalog uses a filtered public projection and retains flexible category sections",()=>{
+ assert.doesNotMatch(productsService,/MATE_PUBLIC_CATEGORY_SLUGS/);
+ assert.match(productsService,/public_catalog_skus/);
+ assert.match(productsService,/category_slug/);
 });
-
-test("product queries and sitemap preserve visibility guards", () => {
-  for (const source of [productsService, sitemap]) {
-    assert.match(source, /\.eq\("historical_identity", false\)/);
-    assert.match(source, /\.eq\("status", "active"\)/);
-    assert.match(source, /\.eq\("categories\.is_active", true\)/);
-  }
+test("public projection preserves visibility guards, without granting public costs",()=>{
+ const sql=readFileSync(join(root,"supabase/migrations/202610180002_variant_commercial_integration.sql"),"utf8");
+ assert.match(sql,/where p.status='active' and not p.historical_identity and p.web_visible and not p.commercial_blocked and c.is_active/);
+ assert.match(sql,/security_barrier=true/);
+ assert.match(sitemap,/getCatalogPublications/);
 });

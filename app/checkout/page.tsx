@@ -1,15 +1,19 @@
-﻿"use client";
+"use client";
 
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { transferPayment } from "@/lib/payment";
-import { calculatePricing, getUnitPriceForPayment } from "@/lib/pricing";
-import { createOrderFromCheckout } from "@/services/orders";
+import { getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
+import { TransferAlias } from "@/components/transfer-alias";
+
+import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
+import { ARGENTINA_PROVINCES, type ShippingQuote } from "@/lib/checkout/argentina";
+import { CheckoutCaptcha } from "@/components/checkout-captcha";
+import { createOrderFromCheckout, getCheckoutOperationKey } from "@/services/orders";
 import { useCartStore } from "@/store/cart-store";
 
-type PaymentMethod = "transfer" | "mercadopago";
+
 type DeliveryMethod = "pickup" | "shipping";
-type Carrier = "Correo Argentino" | "Andreani" | "Via Cargo";
+type Carrier = "Correo Argentino" | "Andreani" | "Via Cargo" | "";
 
 type CheckoutForm = {
   fullName: string;
@@ -26,7 +30,7 @@ type CheckoutForm = {
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const categoryLabels = {
@@ -38,8 +42,8 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedPayment = searchParams.get("payment");
-  const paymentMethod: PaymentMethod =
-    requestedPayment === "mercadopago" ? "mercadopago" : "transfer";
+  const unsupportedPayment = !!requestedPayment && requestedPayment !== "transfer";
+  const paymentMethod = "transfer";
 
   const { items, totalItems, subtotal, clearCart } = useCartStore();
   const [form, setForm] = useState<CheckoutForm>({
@@ -51,30 +55,38 @@ function CheckoutContent() {
     city: "",
     address: "",
     postalCode: "",
-    carrier: "Correo Argentino",
+    carrier: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutForm, string>>>(
     {},
   );
+  const [captchaToken, setCaptchaToken] = useState<string>();
+  const [shippingQuote, setShippingQuote] = useState<ShippingQuote|null>(null);
+  const [selectedQuoteKey, setSelectedQuoteKey] = useState("");
+  const [approvedTotal,setApprovedTotal] = useState<number|null>(null);
+  const [quotationId, setQuotationId] = useState<string|null>(null);
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (submitError) feedbackRef.current?.focus();
+  }, [submitError]);
 
-  const checkoutLabel =
-    paymentMethod === "transfer"
-      ? "Preparar pedido por transferencia"
-      : "Continuar con Mercado Pago";
-  const paymentLabel =
-    paymentMethod === "transfer" ? "Transferencia bancaria" : "Mercado Pago";
+  const checkoutLabel = "Preparar pedido por transferencia";
+  const paymentLabel = "Transferencia bancaria";
   const shippingRequired = form.deliveryMethod === "shipping";
-  const pricing = calculatePricing(items, paymentMethod);
+
 
   const updateField = <Field extends keyof CheckoutForm>(
     field: Field,
     value: CheckoutForm[Field],
   ) => {
+    if (submissionLock.current) return;
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
     setErrors((currentErrors) => ({ ...currentErrors, [field]: undefined }));
     setSubmitError("");
+    if (["province","city","postalCode","deliveryMethod","address","carrier","fullName","phone","email"].includes(field)) { setShippingQuote(null); setSelectedQuoteKey(""); }
+    setQuotationId(null); setApprovedTotal(null);
   };
 
   const validateForm = () => {
@@ -88,11 +100,12 @@ function CheckoutContent() {
       nextErrors.phone = "Ingresá un teléfono de contacto.";
     }
 
-    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) {
+    if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email)) {
       nextErrors.email = "Ingresá un email válido.";
     }
 
     if (shippingRequired) {
+      if (!form.carrier) nextErrors.carrier="Elegí el transporte preferido.";
       if (!form.province.trim()) {
         nextErrors.province = "Ingresá la provincia.";
       }
@@ -108,25 +121,33 @@ function CheckoutContent() {
     }
 
     setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      setSubmitError("Revisá los datos indicados antes de preparar el pedido.");
+    }
     return Object.keys(nextErrors).length === 0;
   };
+
+  const submissionLock = useRef(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!validateForm()) {
+    if (unsupportedPayment || submissionLock.current || !validateForm()) {
       return;
     }
 
+    if (shippingRequired && !selectedQuoteKey) { setSubmitError("Calculá el envío y elegí una tarifa válida, o solicitá una cotización antes de preparar el pedido."); return; }
+    submissionLock.current = true;
     setIsSubmitting(true);
     setSubmitError("");
 
     try {
+      await ensureGuestCheckoutSession(captchaToken);
       const createdOrder = await createOrderFromCheckout({
         customer: {
           fullName: form.fullName.trim(),
           phone: form.phone.trim(),
-          email: form.email.trim(),
+          email: form.email.trim() || undefined,
         },
         shipping: {
           method: form.deliveryMethod,
@@ -134,47 +155,16 @@ function CheckoutContent() {
           city: shippingRequired ? form.city.trim() : undefined,
           address: shippingRequired ? form.address.trim() : undefined,
           postalCode: shippingRequired ? form.postalCode.trim() : undefined,
-          carrier: shippingRequired ? form.carrier : undefined,
+          carrier: shippingRequired ? shippingQuote?.rates.find(rate=>rate.quoteKey===selectedQuoteKey)?.carrier : undefined,
+          quoteKey: shippingRequired ? selectedQuoteKey : undefined,
         },
         paymentMethod,
         items,
-        subtotal: pricing.subtotal,
-        total: pricing.total,
-        discount: pricing.discount,
-        shippingCost: 0,
       });
-
-      if (paymentMethod === "mercadopago") {
-        const preferenceResponse = await fetch(
-          "/api/mercadopago/create-preference",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ orderId: createdOrder.id }),
-          },
-        );
-        const preference = (await preferenceResponse.json()) as {
-          initPoint?: string;
-          error?: string;
-        };
-
-        if (!preferenceResponse.ok || !preference.initPoint) {
-          throw new Error(
-            preference.error ??
-              "No se pudo iniciar el pago con Mercado Pago. El pedido quedó creado.",
-          );
-        }
-
-        clearCart();
-        window.location.href = preference.initPoint;
-        return;
-      }
 
       clearCart();
       router.push(
-        `/checkout/exito?order=${createdOrder.id}&number=${createdOrder.orderNumber}&total=${pricing.total}`,
+        `/checkout/exito?order=${createdOrder.id}`,
       );
     } catch (error) {
       setSubmitError(
@@ -183,10 +173,50 @@ function CheckoutContent() {
           : "No se pudo preparar el pedido. Intentalo nuevamente.",
       );
     } finally {
+      submissionLock.current = false;
       setIsSubmitting(false);
     }
   };
 
+  const calculateShipping = async () => {
+    if (submissionLock.current) return;
+    submissionLock.current = true; setIsSubmitting(true); setSubmitError(""); setShippingQuote(null); setSelectedQuoteKey(""); setApprovedTotal(null);
+    try {
+      await ensureGuestCheckoutSession(captchaToken);
+      const response = await fetch("/api/checkout/shipping",{ method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim() }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error??"No se pudo calcular el envío.");
+      setShippingQuote({...result,rates:result.rates.filter((rate:{carrier:string})=>rate.carrier===form.carrier),status:result.rates.some((rate:{carrier:string})=>rate.carrier===form.carrier)?"available":"quotation_required"});
+    } catch (error) { setSubmitError(error instanceof Error ? error.message : "No se pudo calcular el envío."); }
+    finally { submissionLock.current = false; setIsSubmitting(false); }
+  };
+  const requestQuotation = async () => {
+    if (submissionLock.current || !validateForm()) return;
+    submissionLock.current = true; setIsSubmitting(true); setSubmitError("");
+    try {
+      await ensureGuestCheckoutSession(captchaToken);
+      const request = { customer:{fullName:form.fullName.trim(),phone:form.phone.trim(),email:form.email.trim()||undefined},shipping:{method:"shipping",carrier:form.carrier,province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim(),address:form.address.trim()},paymentMethod:"transfer",items:items.map(item=>({productId:item.productId,quantity:item.quantity})).sort((a,b)=>a.productId.localeCompare(b.productId)) };
+      const operationKey = await getCheckoutOperationKey(request,"sfstore-shipping-quotation-operation");
+      const response = await fetch("/api/checkout/quotation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,operationKey})});
+      const result = await response.json();if (!response.ok) throw new Error(result.error??"No se pudo solicitar la cotización.");
+      setQuotationId(result.id);
+    } catch (error) { setSubmitError(error instanceof Error ? error.message : "No se pudo solicitar la cotización."); }
+    finally { submissionLock.current = false;setIsSubmitting(false); }
+  };
+
+  const refreshQuotation = async () => {
+    if (!quotationId || submissionLock.current) return;
+    submissionLock.current=true;setIsSubmitting(true);setSubmitError("");
+    try {
+      const response=await fetch("/api/checkout/quotation?id="+encodeURIComponent(quotationId),{cache:"no-store"});const data=await response.json();
+      if(!response.ok)throw new Error("No se pudo consultar la cotización. Conservá esta sesión.");
+      if(data.status==="resolved"&&!data.accepted_order_id&&Date.parse(data.valid_until)<=Date.now()){
+        setQuotationId(null);setApprovedTotal(null);setSelectedQuoteKey("");setShippingQuote({country:"AR",status:"quotation_required",rates:[]});sessionStorage.removeItem("sfstore-shipping-quotation-operation");setSubmitError("La cotización venció. Solicitá una nueva; no transfieras.");return;
+      }
+      if(data.status!=="resolved"||data.accepted_order_id||!data.quote_key){setSubmitError("La cotización todavía no está disponible para aceptar. Consultá al local; no transfieras.");return;}
+      setShippingQuote({country:"AR",status:"available",rates:[{carrier:data.quoted_carrier,fee:Number(data.shipping_fee),quoteKey:data.quote_key}]});setSelectedQuoteKey(data.quote_key);setApprovedTotal(Number(data.quoted_total));
+    }catch(error){setSubmitError(error instanceof Error?error.message:"No se pudo consultar la cotización.");}finally{submissionLock.current=false;setIsSubmitting(false);}
+  };
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">
@@ -207,8 +237,8 @@ function CheckoutContent() {
             </h1>
           </div>
           <p className="max-w-xl text-base leading-7 text-[#102033]/70">
-            Completá tus datos para reservar la compra. Si elegís Mercado Pago,
-            te redirigimos al checkout seguro para pagar.
+            Completá tus datos para preparar el pedido. La disponibilidad y el importe
+            se verifican al preparar el pedido. El pago se confirma manualmente.
           </p>
         </div>
 
@@ -238,11 +268,16 @@ function CheckoutContent() {
         ) : (
           <form
             onSubmit={handleSubmit}
+            onInvalid={(event) => {
+              event.preventDefault();
+              setSubmitError("Revisá los datos indicados antes de preparar el pedido.");
+            }}
             className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]"
           >
             <div className="space-y-6">
               <section className="rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-6 shadow-sm">
-                <h2 className="text-2xl font-semibold">Datos del cliente</h2>
+                <h2 className="text-2xl font-semibold">Datos para procesar el pedido</h2>
+                <p className="mt-2">Comprá sin registro ni contraseña. Conservá esta sesión para consultar tu pedido.</p>
                 <div className="mt-6 grid gap-5">
                   <label className="grid gap-2">
                     <span className="text-sm font-semibold text-[#102033]/75">
@@ -285,7 +320,7 @@ function CheckoutContent() {
 
                     <label className="grid gap-2">
                       <span className="text-sm font-semibold text-[#102033]/75">
-                        Email
+                        Email (opcional)
                       </span>
                       <input
                         type="email"
@@ -319,15 +354,16 @@ function CheckoutContent() {
                     }`}
                   >
                     <span className="text-sm font-semibold text-[#0072CE]">
-                      Retiro en punto de entrega
+                      Retiro en el local · Sin costo
                     </span>
                     <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Coordinamos el retiro en Juan de Garay 2090.
+                      Pagás por transferencia. Esperá la confirmación del local antes de retirar; coordinaremos los detalles.
                     </p>
                   </button>
 
                   <button
                     type="button"
+
                     onClick={() => updateField("deliveryMethod", "shipping")}
                     className={`rounded-2xl border p-4 text-left transition ${
                       form.deliveryMethod === "shipping"
@@ -351,13 +387,10 @@ function CheckoutContent() {
                         <span className="text-sm font-semibold text-[#102033]/75">
                           Provincia
                         </span>
-                        <input
-                          value={form.province}
-                          onChange={(event) =>
-                            updateField("province", event.target.value)
-                          }
-                          className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                        />
+                        <select aria-label="Provincia" value={form.province} onChange={event=>updateField("province",event.target.value)} className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3">
+                          <option value="">Seleccioná una provincia</option>
+                          {ARGENTINA_PROVINCES.map(province=><option key={province} value={province}>{province}</option>)}
+                        </select>
                         {errors.province ? (
                           <span className="text-xs font-semibold text-[#003B73]">
                             {errors.province}
@@ -367,7 +400,7 @@ function CheckoutContent() {
 
                       <label className="grid gap-2">
                         <span className="text-sm font-semibold text-[#102033]/75">
-                          Ciudad
+                          Localidad
                         </span>
                         <input
                           value={form.city}
@@ -422,31 +455,23 @@ function CheckoutContent() {
                       </label>
                     </div>
 
-                    <label className="grid gap-2">
-                      <span className="text-sm font-semibold text-[#102033]/75">
-                        Transporte preferido
-                      </span>
-                      <select
-                        value={form.carrier}
-                        onChange={(event) =>
-                          updateField("carrier", event.target.value as Carrier)
-                        }
-                        className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                      >
-                        <option>Correo Argentino</option>
-                        <option>Andreani</option>
-                        <option>Via Cargo</option>
+                    <label className="grid gap-2">Transporte preferido<select aria-label="Transporte preferido" value={form.carrier} onChange={event=>updateField("carrier",event.target.value as Carrier)} className="rounded-xl border p-3"><option value="">Elegí un transporte</option>{["Correo Argentino","Andreani","Via Cargo"].map(carrier=><option key={carrier}>{carrier}</option>)}</select>{errors.carrier?<span>{errors.carrier}</span>:null}</label><p>El costo depende del destino y de una tarifa aprobada por el local. Este formulario no contrata transporte.</p>
+                    <button type="button" disabled={isSubmitting} onClick={calculateShipping} className="rounded-xl border p-3">Calcular envío</button>
+                    {shippingQuote?.status === "available" ? <label className="grid gap-2">Tarifa disponible
+                      <select aria-label="Tarifa disponible" value={selectedQuoteKey} onChange={event=>setSelectedQuoteKey(event.target.value)} className="rounded-xl border p-3">
+                        <option value="">Elegí una tarifa</option>
+                        {shippingQuote.rates.filter(rate=>rate.carrier===form.carrier).map(rate=><option key={rate.quoteKey} value={rate.quoteKey}>{rate.carrier} · {currencyFormatter.format(rate.fee)}</option>)}
                       </select>
-                    </label>
+                    </label> : null}
+                    {shippingQuote?.status === "quotation_required" ? <div><p>No hay tarifa aprobada para este destino y transporte. Solicitá una cotización: no se confirma un pedido ni se reserva stock hasta aceptar el total definitivo. No transfieras antes de conocerlo.</p>
+                      <button type="button" disabled={isSubmitting || !!quotationId} onClick={requestQuotation} className="mt-3 rounded-xl border p-3">Solicitar cotización</button>
+                    </div> : null}
+                    {approvedTotal !== null ? <p role="status">Cotización aprobada: el total incluye los productos con 25% de descuento y el envío. Al aceptar se verificará nuevamente la disponibilidad y el precio. No transfieras hasta obtener el pedido con su total final.</p> : null}
+                    {quotationId ? <div><button type="button" disabled={isSubmitting} onClick={refreshQuotation} className="rounded border p-3">Consultar cotización del local</button><p role="status">Solicitud registrada: {quotationId}. El local revisará el transporte elegido y comunicará el costo. No es un pedido confirmado ni una reserva. No transfieras todavía.</p></div> : null}
+
                   </div>
                 ) : null}
               </section>
-
-              {submitError ? (
-                <div className="rounded-3xl border border-[#003B73]/25 bg-[#EEF2F6] p-5 text-sm font-semibold text-[#003B73]">
-                  {submitError}
-                </div>
-              ) : null}
 
               {paymentMethod === "transfer" ? (
                 <section className="rounded-[2rem] border border-[#0072CE]/20 bg-[#0072CE]/10 p-6 shadow-sm">
@@ -458,22 +483,7 @@ function CheckoutContent() {
                       Recomendado
                     </span>
                   </div>
-                  <ol className="mt-5 grid gap-3 text-sm leading-6 text-[#102033]/75">
-                    <li>1. Confirmás tu pedido desde este checkout.</li>
-                    <li>2. Transferís al alias {transferPayment.alias}.</li>
-                    <li>3. Enviás el comprobante por WhatsApp.</li>
-                    <li>4. Preparamos tu compra.</li>
-                  </ol>
-                  <div className="mt-5 rounded-2xl border border-[#0072CE]/20 bg-[#F7F9FC] p-4 text-sm">
-                    <p>
-                      <span className="font-semibold">Titular:</span>{" "}
-                      {transferPayment.holder}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Banco/billetera:</span>{" "}
-                      {transferPayment.provider}
-                    </p>
-                  </div>
+                  {shippingRequired && !selectedQuoteKey ? <p className="mt-4">Primero conocé y aceptá el total definitivo, incluido el envío. No transfieras ni informes un pago mientras falta la cotización.</p> : <><ol className="mt-5 grid gap-3 text-sm leading-6"><li>1. Preparás el pedido con el total final.</li><li>2. Transferís el 100% del importe exacto a Naranja X.</li><li>3. Informás el pago y adjuntás el comprobante en la pantalla del pedido.</li><li>4. El local verifica la acreditación antes de confirmar la venta.</li></ol><div className="mt-5"><TransferAlias /></div></>}
                 </section>
               ) : null}
             </div>
@@ -495,7 +505,7 @@ function CheckoutContent() {
                       </div>
                       <p className="font-semibold text-[#003B73]">
                         {currencyFormatter.format(
-                          getUnitPriceForPayment(item, paymentMethod) *
+                          item.price *
                             item.quantity,
                         )}
                       </p>
@@ -510,23 +520,16 @@ function CheckoutContent() {
                   <span className="font-semibold">{totalItems}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#102033]/65">Subtotal lista</span>
+                  <span className="text-[#102033]/65">Subtotal de referencia (lista)</span>
                   <span className="font-semibold">
-                    {currencyFormatter.format(pricing.subtotal)}
+                    {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                {pricing.discount > 0 ? (
-                  <div className="flex justify-between text-[#0072CE]">
-                    <span>Precio efectivo/transferencia</span>
-                    <span className="font-semibold">
-                      -{currencyFormatter.format(pricing.discount)}
-                    </span>
-                  </div>
-                ) : null}
+                <div className="flex justify-between"><span>Productos con 25% de descuento (referencia)</span><span>{currencyFormatter.format(getWebTransferSubtotal(items))}</span></div><p>25% de descuento en productos por transferencia. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
-                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold">Total final</span>
                   <span className="font-semibold text-[#003B73]">
-                    {currencyFormatter.format(pricing.total)}
+                    {shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : "Se confirma al crear el pedido"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -540,21 +543,34 @@ function CheckoutContent() {
                   <span className="font-semibold text-[#0072CE]">
                     Recomendado:
                   </span>{" "}
-                  pagando por transferencia o efectivo accedés al mejor precio.
+                  Primero aceptás el total definitivo al preparar el pedido; el precio queda fijo entonces. Tenés 24 horas para transferir el 100% del total e informar el pago con comprobante. No se admiten señas ni pagos parciales.
                 </div>
-              ) : (
-                <div className="mt-5 rounded-2xl border border-[#003B73]/20 bg-[#EEF2F6] p-4 text-sm leading-6 text-[#102033]/75">
-                  Mercado Pago usa precio lista. Te redirigimos para completar
-                  el pago de forma segura.
-                </div>
-              )}
+              ) : null}
 
+              <label className="mt-5 grid gap-2 text-sm font-semibold">
+                Método de pago
+                <select value={paymentMethod} disabled className="rounded-xl border p-3"><option value="transfer">Transferencia bancaria</option></select>
+              </label>
+              {unsupportedPayment ? <p role="alert" className="mt-3">El método solicitado no está habilitado. Volvé al carrito para elegir un pago manual.</p> : null}
+              <CheckoutCaptcha onToken={setCaptchaToken} />
+              {submitError ? (
+                <div
+                  id="checkout-feedback"
+                  ref={feedbackRef}
+                  role="alert"
+                  tabIndex={-1}
+                  className="mt-4 rounded-2xl border border-[#003B73]/25 bg-[#EEF2F6] p-4 text-sm font-semibold text-[#003B73]"
+                >
+                  {submitError}
+                </div>
+              ) : null}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                aria-describedby={submitError ? "checkout-feedback" : undefined}
+                disabled={isSubmitting || unsupportedPayment || (shippingRequired && !selectedQuoteKey)}
                 className="mt-6 flex w-full items-center justify-center rounded-full bg-[#102033] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0072CE] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSubmitting ? "Creando pedido..." : checkoutLabel}
+                {isSubmitting ? "Creando pedido..." : approvedTotal !== null ? "Aceptar total y preparar pedido por transferencia" : checkoutLabel}
               </button>
             </aside>
           </form>

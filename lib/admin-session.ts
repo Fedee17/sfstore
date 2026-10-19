@@ -12,7 +12,7 @@ export function getAllowedAdminEmails() {
 }
 
 export function isAllowedAdminUser(user: User) {
-  return isAllowedAdminEmail(
+  return !user.is_anonymous && isAllowedAdminEmail(
     user.email,
     process.env.ADMIN_ALLOWED_EMAILS,
   );

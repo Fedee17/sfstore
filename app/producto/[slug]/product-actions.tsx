@@ -11,13 +11,12 @@ type ProductActionsProps = {
 
 export function ProductActions({ product }: ProductActionsProps) {
   const addItem = useCartStore((state) => state.addItem);
-  const currentQuantity = useCartStore(
-    (state) =>
-      state.items.find((item) => item.productId === product.id)?.quantity ?? 0,
-  );
+  const cartItem = useCartStore((state) => state.items.find((item) => item.productId === product.id));
+  const currentQuantity = cartItem?.quantity ?? 0;
   const [feedback, setFeedback] = useState("");
   const isAvailable = product.stock > 0;
-  const isAtMaxStock = isAvailable && currentQuantity >= product.stock;
+  const reachedCartLimit = cartItem ? cartItem.quantity >= cartItem.stock : false;
+  const isAtMaxStock = isAvailable && (reachedCartLimit || currentQuantity >= product.stock);
 
   function handleAddToCart() {
     if (!isAvailable) {
@@ -29,8 +28,10 @@ export function ProductActions({ product }: ProductActionsProps) {
       return;
     }
 
+    const before = useCartStore.getState().items.find((item) => item.productId === product.id)?.quantity ?? 0;
     addItem(product);
-    setFeedback("Producto agregado al carrito.");
+    const after = useCartStore.getState().items.find((item) => item.productId === product.id)?.quantity ?? 0;
+    setFeedback(after > before ? "Producto agregado al carrito." : "Ya agregaste el stock disponible.");
   }
 
   return (
@@ -43,7 +44,7 @@ export function ProductActions({ product }: ProductActionsProps) {
             disabled={isAtMaxStock}
             className="min-h-12 min-w-0 rounded-full bg-[#0072CE] px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-[#003B73] disabled:cursor-not-allowed disabled:bg-[#0072CE]/55"
           >
-            {isAtMaxStock ? "Stock mÃ¡ximo en carrito" : "Agregar al carrito"}
+            {isAtMaxStock ? "Stock máximo en carrito" : "Agregar al carrito"}
           </button>
         ) : (
           <a
@@ -64,13 +65,11 @@ export function ProductActions({ product }: ProductActionsProps) {
           Consultar por WhatsApp
         </a>
       </div>
-      {feedback ? (
-        <p className="mt-3 break-words text-sm font-semibold text-[#0072CE]">
+        <p role="status" aria-atomic="true" className="mt-3 break-words text-sm font-semibold text-[#0072CE]">
           {feedback}
         </p>
-      ) : null}
       <p className="mt-4 break-words text-sm leading-6 text-[#102033]/60">
-        Te ayudamos a elegir segÃºn tus gustos, ocasiÃ³n y presupuesto.
+        Te ayudamos a elegir según tus gustos, ocasión y presupuesto.
       </p>
     </div>
   );

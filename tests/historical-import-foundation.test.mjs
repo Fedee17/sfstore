@@ -108,8 +108,10 @@ test("historical identities are restricted to historical records", () => {
 });
 
 test("operational services explicitly exclude historical identities", () => {
+  assert.match(source("supabase","migrations","202610180002_variant_commercial_integration.sql"),/not p.historical_identity/);
+  assert.match(source("services","products.ts"),/public_catalog_skus/);
   for (const path of [
-    ["services", "products.ts"],
+
     ["services", "purchases.ts"],
     ["services", "store-sales.ts"],
     ["services", "customer-orders.ts"],

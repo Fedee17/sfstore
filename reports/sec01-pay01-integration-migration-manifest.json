@@ -1,0 +1,42 @@
+{
+  "purpose": "review_only_not_a_migration_runner",
+  "productionExecuted": false,
+  "applicationOrder": [
+    {
+      "file": "supabase/migrations/202610100001_product_storage_task_results.sql",
+      "sha256": "a382a4e17acbe732daab5a67bf262d6ce64e5b6ac53b70e3e9c9238ecb3ba060"
+    },
+    {
+      "file": "supabase/migrations/202610100002_durable_admin_image_delete.sql",
+      "sha256": "4af7264e7988c047a742ee90690b0559e62d4d70a69db781ce3f369e8710b23f"
+    },
+    {
+      "file": "supabase/migrations/202610110001_sec01_effective_permissions.sql",
+      "sha256": "8a7ceae397019fee419b61d8c8049b4b4cb84bdf4b238b660f458768d95d3463"
+    },
+    {
+      "file": "supabase/migrations/202610110002_pay01_atomic_checkout.sql",
+      "sha256": "10c3fd8f9b2100b44183c8dfbe8def303c107f11cc9020bb698ecd71d793297c"
+    },
+    {
+      "file": "supabase/migrations/202610110003_pay01_manual_payments.sql",
+      "sha256": "04524c9fa771af34f1bf47b39162c686e754c20c921422bbd7d746965b3a279d"
+    },
+    {
+      "file": "supabase/migrations/202610110004_pay01_approved_commercial_rules.sql",
+      "sha256": "d282de52facd29c17fb1e575ea05958daa01c9009df35f472208fd8cb514a00b"
+    },
+    {
+      "file": "supabase/migrations/202610110005_pay01_inventory_transition_permissions.sql",
+      "sha256": "33dd8fb206af3ff11d231f4e6a462b25b745c46fc0e4af808f5bbf0a6a54d056"
+    },
+    {
+      "file": "supabase/migrations/202610110006_pay01_guest_national_shipping.sql",
+      "sha256": "f971bdaa528b2fe2c33490050959708a3598d370617530c4c9ea677442641bed"
+    },
+    {
+      "file": "supabase/migrations/202610110007_checkout_storage_review_guards.sql",
+      "sha256": "df84c784d36e94d5ddce3bf7b7751d1e5f747fddd5e35b56a38e4eb44f562500"
+    }
+  ]
+}

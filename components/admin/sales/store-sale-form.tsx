@@ -10,8 +10,8 @@ import {
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import {
   calculateEnteredPayments,
-  calculateStoreSaleTotal,
-  getStoreSaleUnitPrice,
+  calculateStoreSalePricing,
+  type StoreSalePaymentMethod,
   matchesStoreSaleProduct,
 } from "@/lib/store-sales";
 import type { StoreSaleProduct } from "@/services/store-sales";
@@ -27,12 +27,11 @@ const initialState: StoreSaleActionState = { status: "idle", message: "" };
 type SaleLine = {
   product: StoreSaleProduct;
   quantity: number;
-  unitPrice: string;
 };
 
 type PaymentLine = {
   key: string;
-  method: "cash" | "transfer" | "card" | "other";
+  method: StoreSalePaymentMethod;
   amount: string;
 };
 
@@ -59,12 +58,11 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
       .slice(0, 10);
   }, [products, query]);
 
-  const total = calculateStoreSaleTotal(
-    lines.map((line) => ({
-      quantity: line.quantity,
-      unitPrice: parseAmount(line.unitPrice),
-    })),
+  const pricing = calculateStoreSalePricing(
+    lines.map((line) => ({ price: Number(line.product.price), quantity: line.quantity })),
+    payments.map((payment) => payment.method),
   );
+  const total = pricing.total;
   const paid = calculateEnteredPayments(
     payments.map((payment) => ({
       method: payment.method,
@@ -92,7 +90,6 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
         {
           product,
           quantity: 1,
-          unitPrice: getStoreSaleUnitPrice(product).toFixed(2),
         },
       ];
     });
@@ -112,14 +109,6 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
     );
   }
 
-  function updateUnitPrice(productId: string, unitPrice: string) {
-    setLines((current) =>
-      current.map((line) =>
-        line.product.id === productId ? { ...line, unitPrice } : line,
-      ),
-    );
-  }
-
   function updatePayment(key: string, patch: Partial<PaymentLine>) {
     setPayments((current) =>
       current.map((payment) =>
@@ -135,7 +124,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
       <section className="rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
         <h2 className="text-xl font-semibold">Productos</h2>
         <p className="mt-1 text-sm text-[#1F1F1F]/60">
-          El precio se fija al registrar la venta: transferencia si existe, o precio de lista.
+          25% de descuento si todos los pagos son en efectivo o transferencia. Con débito, crédito, QR u otro medio, toda la venta usa precio de lista. El servidor verifica los precios al confirmar.
         </p>
 
         <div className="relative mt-5">
@@ -168,7 +157,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                     <span className="block font-semibold">{product.name}</span>
                     <span className="text-xs text-[#1F1F1F]/55">
                       {product.sku ? `SKU ${product.sku} · ` : ""}
-                      Stock {product.stock} · {currencyFormatter.format(getStoreSaleUnitPrice(product))}
+                      Stock {product.stock} · {currencyFormatter.format(calculateStoreSalePricing([{ price: Number(product.price), quantity: 1 }], payments.map((payment) => payment.method)).items[0].unitPrice)}
                     </span>
                   </button>
                 ))
@@ -187,8 +176,8 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
               Agrega al menos un producto para registrar la venta.
             </p>
           ) : (
-            lines.map((line) => {
-              const unitPrice = parseAmount(line.unitPrice);
+            lines.map((line, index) => {
+              const unitPrice = pricing.items[index].unitPrice;
               return (
                 <article
                   key={line.product.id}
@@ -222,17 +211,8 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                   </label>
                   <label className="grid gap-2 text-sm font-semibold">
                     Precio unitario
-                    <input
-                      name="unitPrice"
-                      inputMode="decimal"
-                      required
-                      disabled={completed}
-                      value={line.unitPrice}
-                      onChange={(event) =>
-                        updateUnitPrice(line.product.id, event.target.value)
-                      }
-                      className="h-11 min-w-0 rounded-xl border border-[#8B5E3C]/20 bg-white px-3 outline-none focus:border-[#556B2F] disabled:opacity-60"
-                    />
+                    <input type="hidden" name="unitPrice" value={unitPrice.toFixed(2)} />
+                    <span className="flex h-12 items-center">{currencyFormatter.format(unitPrice)}</span>
                   </label>
                   <div className="text-sm">
                     <span className="block text-xs text-[#1F1F1F]/55">Subtotal</span>
@@ -272,7 +252,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">Pagos</h2>
-            <p className="mt-1 text-sm text-[#1F1F1F]/60">Podes registrar uno o varios medios.</p>
+            <p className="mt-1 text-sm text-[#1F1F1F]/60">Podés combinar medios. Debés cobrar exactamente el total para confirmar la venta.</p>
           </div>
           <button
             type="button"
@@ -298,7 +278,9 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                 >
                   <option value="cash">Efectivo</option>
                   <option value="transfer">Transferencia</option>
-                  <option value="card">Tarjeta</option>
+                  <option value="debit">Débito</option>
+                  <option value="credit">Crédito</option>
+                  <option value="qr">QR</option>
                   <option value="other">Otro</option>
                 </select>
               </label>
@@ -306,6 +288,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                 Importe
                 <input
                   name="paymentAmount"
+                  required
                   inputMode="decimal"
                   value={payment.amount}
                   disabled={completed}
@@ -328,10 +311,12 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
       </section>
 
       <section className="grid gap-4 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 sm:grid-cols-3">
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Subtotal de lista</span><strong className="mt-1 block text-xl">{currencyFormatter.format(pricing.subtotal)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Descuento</span><strong className="mt-1 block text-xl">{currencyFormatter.format(pricing.discount)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total</span><strong className="mt-1 block text-xl">{currencyFormatter.format(total)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Pagado</span><strong className="mt-1 block text-xl">{currencyFormatter.format(paid)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Saldo</span><strong className="mt-1 block text-xl">{currencyFormatter.format(remaining)}</strong></div>
-        {paid > 0 && remaining > 0 ? <p className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Pago parcial: el stock no se descuenta ni se reserva.</p> : null}
+        {paid > 0 && remaining > 0 ? <p className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Falta completar el pago. No se registrará la venta ni se descontará stock.</p> : null}
         {overpayment ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Los pagos no pueden superar el total.</p> : null}
       </section>
 
@@ -345,7 +330,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
       <div className="flex justify-end">
         <PendingSubmitButton
           pendingLabel="Registrando..."
-          disabled={completed || lines.length === 0 || total <= 0 || overpayment}
+          disabled={completed || lines.length === 0 || total <= 0 || overpayment || remaining > 0 || payments.some((payment) => parseAmount(payment.amount) <= 0)}
           className="rounded-full bg-[#556B2F] px-7 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:bg-[#1F1F1F]/20 disabled:text-[#1F1F1F]/60"
         >
           Registrar venta

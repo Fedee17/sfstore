@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "codex/sec01-pay01-staging-preparation": false,
+      "codex/integration-sec01-pay01-storage-20261011": false,
+      "codex/dependency-security-20261012": false,
+      "codex/xlsx-security-20261012": false,
+      "codex/admin-login-captcha-20261012": false,
+      "codex/nightly-audit-clickup": false,
+      "codex/vercel-upload-security-20261012": false,
+      "codex/ui-ux-stabilization": false
+    }
+  }
+}

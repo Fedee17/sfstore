@@ -3,6 +3,9 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { Product } from "@/types/product";
 
 export type CartItem = {
+  familyId?: string;
+  variantLabel?: string;
+  sku?: string | null;
   productId: string;
   name: string;
   slug: string;
@@ -49,7 +52,7 @@ export const useCartStore = create<CartState>()(
       subtotal: 0,
       addItem: (product) =>
         set((state) => {
-          if (product.stock <= 0) {
+          if (product.kind === "family" || product.stock <= 0) {
             return state;
           }
 
@@ -62,7 +65,9 @@ export const useCartStore = create<CartState>()(
               item.productId === product.id
                 ? {
                     ...item,
-                    quantity: Math.min(item.quantity + 1, item.stock),
+                    name: product.name, slug: product.slug, price: product.price, transferPrice: product.transferPrice,
+                    familyId: product.familyId, variantLabel: product.variantLabel, sku: product.sku,
+                    stock: product.stock, quantity: Math.min(item.quantity + 1, product.stock),
                   }
                 : item,
             );
@@ -73,6 +78,7 @@ export const useCartStore = create<CartState>()(
           return withTotals([
             ...state.items,
             {
+              familyId: product.familyId, variantLabel: product.variantLabel, sku: product.sku,
               productId: product.id,
               name: product.name,
               slug: product.slug,
@@ -119,6 +125,12 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "sfstore-cart",
+      version: 1,
+      migrate: (persisted) => {
+        const previous=persisted as {items?:CartItem[]};
+        const items=Array.isArray(previous?.items)?previous.items.filter(p=>typeof p.productId==="string"&&Number.isSafeInteger(p.quantity)&&p.quantity>0&&Number.isFinite(p.price)&&p.price>=0):[];
+        return withTotals(items);
+      },
       storage: createJSONStorage(() => localStorage),
     },
   ),

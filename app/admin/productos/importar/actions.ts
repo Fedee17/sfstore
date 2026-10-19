@@ -1,6 +1,7 @@
 "use server";
 
-import * as XLSX from "xlsx";
+import { parseProductImportFile } from "@/lib/product-import/file-parser";
+import { assertUploadFormData } from "@/lib/uploads/limits";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
   isSupportedProductSheet,
@@ -36,17 +37,8 @@ import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { getYaraRosaCanonicalId } from "@/lib/products/yara-rosa-consolidation";
 import { applyConfirmedProductImportRows } from "@/services/product-import";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_GOOGLE_RESPONSE_SIZE = 2 * 1024 * 1024;
 const GOOGLE_SHEETS_TIMEOUT_MS = 12000;
-const IMPORTABLE_MIME_TYPES = new Set([
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-excel",
-  "text/csv",
-  "application/csv",
-  "text/plain",
-  "",
-]);
 
 type ImportAction = "create" | "update" | "unchanged" | "review" | "blocked" | "duplicate" | "error";
 type ImportSource = "file" | "google";
@@ -109,16 +101,7 @@ const emptyImportPreviewState: ProductImportPreviewState = {
   source: "file",
 };
 
-async function readWorkbook(file: File) {
-  if (file.size <= 0) throw new Error("Subí un archivo .xlsx o .csv para previsualizar.");
-  if (file.size > MAX_FILE_SIZE) throw new Error("El archivo supera el límite de 5 MB.");
-  const fileName = file.name.toLowerCase();
-  if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls") && !fileName.endsWith(".csv")) {
-    throw new Error("Formato inválido. Usá .xlsx, .xls o .csv.");
-  }
-  if (!IMPORTABLE_MIME_TYPES.has(file.type)) throw new Error("Tipo de archivo inválido para importación.");
-  return XLSX.read(Buffer.from(await file.arrayBuffer()), { type: "buffer", cellDates: false, raw: true });
-}
+
 
 function extractGoogleSheetConfig(sheetUrl: string) {
   let url: URL;
@@ -277,12 +260,13 @@ export async function previewProductImport(_previousState: ProductImportPreviewS
     const sheetName = String(formData.get("sheetName") ?? "");
     const file = formData.get("file");
     if (!isSupportedProductSheet(sheetName)) throw new Error("Seleccioná una hoja soportada para importar.");
-    if (!(file instanceof File)) throw new Error("Subí un archivo .xlsx o .csv para previsualizar.");
-    const workbook = await readWorkbook(file);
-    if (!workbook.SheetNames.includes(sheetName)) throw new Error(`El archivo no contiene la hoja '${sheetName}'.`);
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[sheetName], { defval: "", raw: true });
+    if (!(file instanceof File)) throw new Error("Subí un archivo .xlsx, .xls o .csv para previsualizar.");
+    assertUploadFormData(formData);
+    const rows = await parseProductImportFile(file, sheetName);
     const normalizedRows = normalizeProductImportRows(sheetName, rows);
-    return buildPreviewState(sheetName, normalizedRows, await findExistingProducts(normalizedRows));
+    const preview = buildPreviewState(sheetName, normalizedRows, await findExistingProducts(normalizedRows));
+    if (Buffer.byteLength(JSON.stringify(preview), "utf8") > 2 * 1024 * 1024) throw new Error("La previsualización es demasiado grande. Dividí el archivo en tandas.");
+    return preview;
   } catch (error) {
     return { ...emptyImportPreviewState, sheetName: String(formData.get("sheetName") ?? "Producto Perfumes"), message: error instanceof Error ? error.message : "No se pudo previsualizar la importación." };
   }

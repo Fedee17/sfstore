@@ -1,10 +1,38 @@
+export const STORE_SALE_PAYMENT_METHODS = ["cash", "transfer", "debit", "credit", "qr", "other"] as const;
+export type StoreSalePaymentMethod = (typeof STORE_SALE_PAYMENT_METHODS)[number];
+
+// Preview only: PostgreSQL re-reads and locks products before authorizing a sale.
+// Round per unit, identically to the online 25% policy; never use transfer_price.
+export function calculateStoreSalePricing(
+  lines: { price: number; quantity: number }[],
+  methods: readonly string[],
+) {
+  const discounted = methods.length > 0 && methods.every((method) => method === "cash" || method === "transfer");
+  let subtotalCents = BigInt(0);
+  let totalCents = BigInt(0);
+  const items = lines.map((line) => {
+    if (!Number.isFinite(line.price) || line.price <= 0 || !Number.isSafeInteger(line.quantity) || line.quantity <= 0) {
+      throw new Error("Producto, precio o cantidad no válidos.");
+    }
+    const cents = BigInt(Math.round(line.price * 100));
+    const unit = discounted ? (cents * BigInt(75) + BigInt(50)) / BigInt(100) : cents;
+    subtotalCents += cents * BigInt(line.quantity);
+    totalCents += unit * BigInt(line.quantity);
+    return { unitPrice: Number(unit) / 100, subtotal: Number(unit * BigInt(line.quantity)) / 100 };
+  });
+  if (subtotalCents > BigInt(MAX_STORE_SALE_MONEY_CENTS) || totalCents > BigInt(MAX_STORE_SALE_MONEY_CENTS)) {
+    throw new Error("El total supera el máximo permitido.");
+  }
+  return { discounted, subtotal: Number(subtotalCents) / 100, discount: Number(subtotalCents - totalCents) / 100, total: Number(totalCents) / 100, items };
+}
+
 export type StoreSaleProductPrice = {
   price: number;
   transfer_price: number | null;
 };
 
 export type StoreSalePaymentInput = {
-  method: "cash" | "transfer" | "card" | "other";
+  method: StoreSalePaymentMethod;
   amount: number;
 };
 
@@ -97,7 +125,7 @@ export function getStoreSaleDisplayName(
 }
 
 export function getStoreSaleUnitPrice(product: StoreSaleProductPrice) {
-  return Number(product.transfer_price ?? product.price);
+  return calculateStoreSalePricing([{ price: product.price, quantity: 1 }], ["cash"]).items[0].unitPrice;
 }
 
 export function calculateStoreSaleTotal(

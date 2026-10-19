@@ -63,9 +63,9 @@ test("the list reuses item snapshots without a separate product query", () => {
 });
 
 test("the list keeps payment status, total and technical order number", () => {
-  assert.match(listPage, /paymentLabels\[sale\.payment_status\]/i);
-  assert.match(listPage, /currencyFormatter\.format\(Number\(sale\.total\)\)/i);
-  assert.match(listPage, /Venta \{sale\.order_number\}/i);
+  assert.match(listPage, /paymentLabels\[fact\.original\.payment_status\]/i);
+  assert.match(listPage, /displayCents\(fact\.totalCents\)/i);
+  assert.match(listPage, /Venta \{fact\.original\.order_number\}/i);
 });
 
 test("the protected detail uses the same display rule and stays accessible", () => {

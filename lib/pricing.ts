@@ -1,4 +1,4 @@
-export type PaymentMethod = "transfer" | "mercadopago";
+export type PaymentMethod = "transfer" | "mercadopago" | "cash";
 
 export type PricedItem = {
   price: number;

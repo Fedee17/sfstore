@@ -1,3 +1,4 @@
+import { assertCurrentCommercialOperation } from "@/services/commercial-history-guards";
 import {
   calculatePurchaseDraft,
   centsToDatabaseMoney,
@@ -15,6 +16,7 @@ export type PurchaseProduct = {
   id: string;
   name: string;
   slug: string;
+  commercial_label?: string | null;
   sku: string | null;
   cost: number | string | null;
   status: string;
@@ -87,10 +89,10 @@ export async function listPurchaseProducts(includeProductIds: string[] = []) {
   const supabase = getSupabaseAdminClient();
   const { data: activeProducts, error } = await supabase
     .from("products")
-    .select("id, name, slug, sku, cost, status")
+    .select("id, name, commercial_label, slug, sku, cost, status")
     .eq("historical_identity", false)
     .neq("id", YARA_ROSA.archivedId)
-    .eq("status", "active")
+    .or("status.eq.active,and(status.eq.draft,family_id.not.is.null)")
     .order("name", { ascending: true });
 
   if (error) {
@@ -100,7 +102,7 @@ export async function listPurchaseProducts(includeProductIds: string[] = []) {
   const products = new Map(
     ((activeProducts ?? []) as PurchaseProduct[]).map((product) => [
       product.id,
-      product,
+      { ...product, name: product.commercial_label ?? product.name },
     ]),
   );
   const retainedIds = [...new Set(includeProductIds.filter(Boolean))];
@@ -108,7 +110,7 @@ export async function listPurchaseProducts(includeProductIds: string[] = []) {
   if (retainedIds.length > 0) {
     const { data: retainedProducts, error: retainedError } = await supabase
       .from("products")
-      .select("id, name, slug, sku, cost, status")
+      .select("id, name, commercial_label, slug, sku, cost, status")
       .eq("historical_identity", false)
       .in("id", retainedIds);
 
@@ -117,7 +119,7 @@ export async function listPurchaseProducts(includeProductIds: string[] = []) {
     }
 
     for (const product of (retainedProducts ?? []) as PurchaseProduct[]) {
-      products.set(product.id, product);
+      products.set(product.id, {...product,name:product.commercial_label??product.name});
     }
   }
 
@@ -133,7 +135,7 @@ function cleanProductName(value: string) {
 async function findPurchaseProductBySlug(slug: string) {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, name, slug, sku, cost, status")
+    .select("id, name, commercial_label, slug, sku, cost, status")
     .eq("historical_identity", false)
     .eq("slug", slug)
     .maybeSingle();
@@ -148,7 +150,7 @@ async function findPurchaseProductBySlug(slug: string) {
 async function findPurchaseProductByName(name: string) {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, name, slug, sku, cost, status")
+    .select("id, name, commercial_label, slug, sku, cost, status")
     .eq("historical_identity", false)
     .neq("id", YARA_ROSA.archivedId)
     .ilike("name", name)
@@ -241,7 +243,7 @@ export async function createPurchaseProduct(
       featured: false,
       status: "draft",
     })
-    .select("id, name, slug, sku, cost, status")
+    .select("id, name, commercial_label, slug, sku, cost, status")
     .single();
 
   if (error) {
@@ -466,6 +468,7 @@ export async function confirmPurchase(
     throw new Error("Falta el ID de la compra.");
   }
 
+  await assertCurrentCommercialOperation("purchases",normalizedPurchaseId);
   const { data, error } = await getSupabaseAdminClient().rpc(
     "confirm_purchase",
     {

@@ -18,8 +18,7 @@ const newPage = source("app", "admin", "ventas", "nueva", "page.tsx");
 const form = source("components", "admin", "sales", "store-sale-form.tsx");
 const paymentForm = source("components", "admin", "sales", "store-sale-payment-form.tsx");
 const service = source("services", "store-sales.ts");
-const checkoutService = source("services", "orders.ts");
-const webhook = source("app", "api", "mercadopago", "webhook", "route.ts");
+const webhook = source("lib", "payments", "legacy-mercadopago", "webhook.ts");
 const model = await import(pathToFileURL(join(root, "lib", "store-sales.ts")).href);
 
 test("store sale mutations require an authorized admin", () => {
@@ -75,8 +74,8 @@ test("multiple payment rows are submitted in one atomic call", () => {
   assert.match(atomicMigration, /jsonb_array_elements\(p_payments\) with ordinality/i);
 });
 
-test("partial payments remain partial and warn that stock is untouched", () => {
-  assert.match(actions, /paymentStatus === "partial"[\s\S]+stock todavia no fue descontado/i);
+test("new physical sales require complete payment; legacy partial sales remain readable", () => {
+  assert.match(actions, /paymentStatus !== "paid"/i);
   assert.match(detailPage, /Pago parcial: el stock no fue descontado ni reservado/i);
 });
 
@@ -143,11 +142,11 @@ test("insufficient stock at completion aborts inventory atomically and is visibl
 });
 
 test("existing web checkout remains explicitly channel web", () => {
-  assert.match(checkoutService, /channel: "web"/i);
+  assert.match(readFileSync(new URL("../supabase/migrations/202610110002_pay01_atomic_checkout.sql", import.meta.url), "utf8"), /values\(order_id,customer_id,order_number,'web'/i);
   assert.doesNotMatch(migration, /update orders[\s\S]+channel = 'store'/i);
 });
 
-test("Mercado Pago continues using the shared payment and inventory services", () => {
+test("archived Mercado Pago code preserves the shared payment and inventory services", () => {
   assert.match(webhook, /addOrderPayment/i);
   assert.match(webhook, /decreaseStockForOrder/i);
   assert.doesNotMatch(migration, /create or replace function record_order_payment/i);
@@ -156,7 +155,7 @@ test("Mercado Pago continues using the shared payment and inventory services", (
 test("sales list and new sale routes require an admin session", () => {
   assert.match(listPage, /await requireAdminSession\(\)/i);
   assert.match(newPage, /await requireAdminSession\(\)/i);
-  assert.match(listPage, /listStoreSales/i);
+  assert.match(listPage, /getCommercialList/i);
 });
 
 test("sale detail is protected and only exposes additional payment for unpaid sales", () => {
@@ -166,9 +165,9 @@ test("sale detail is protected and only exposes additional payment for unpaid sa
   assert.match(paymentForm, /PendingSubmitButton/i);
 });
 
-test("store sale totals use one transfer-first snapshot price", () => {
-  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: 100 }), 100);
-  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: null }), 120);
+test("physical default price ignores stored transfer price and applies 25 percent", () => {
+  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: 100 }), 90);
+  assert.equal(model.getStoreSaleUnitPrice({ price: 120, transfer_price: null }), 90);
   assert.equal(model.calculateStoreSaleTotal([{ quantity: 2, unitPrice: 100.005 }]), 200.01);
   assert.equal(model.calculateEnteredPayments([{ method: "cash", amount: 30 }, { method: "transfer", amount: 50 }]), 80);
 });

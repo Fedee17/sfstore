@@ -13,19 +13,18 @@ const actions = source("app", "admin", "ventas", "actions.ts");
 const service = source("services", "store-sales.ts");
 const detail = source("app", "admin", "ventas", "[id]", "page.tsx");
 const inventoryMigration = source("supabase", "migrations", "202609170003_atomic_sales_inventory.sql");
-const checkout = source("services", "orders.ts");
 const model = await import(pathToFileURL(join(root, "lib", "store-sales.ts")).href);
 
-test("initial unit price keeps transfer-first catalog policy", () => {
-  assert.equal(model.getStoreSaleUnitPrice({ price: 12000, transfer_price: 10500 }), 10500);
-  assert.equal(model.getStoreSaleUnitPrice({ price: 12000, transfer_price: null }), 12000);
-  assert.match(form, /getStoreSaleUnitPrice\(product\)\.toFixed\(2\)/i);
+test("initial physical unit price applies 25 percent from list, ignoring stored transfer price", () => {
+  assert.equal(model.getStoreSaleUnitPrice({ price: 12000, transfer_price: 10500 }), 9000);
+  assert.equal(model.getStoreSaleUnitPrice({ price: 12000, transfer_price: null }), 9000);
+  assert.match(form, /calculateStoreSalePricing/i);
 });
 
-test("unit price is editable and submitted for every sale line", () => {
+test("unit preview is submitted per line and cannot be manually edited", () => {
   assert.match(form, /name="unitPrice"/i);
-  assert.match(form, /value=\{line\.unitPrice\}/i);
-  assert.match(form, /updateUnitPrice/i);
+  assert.match(form, /value=\{unitPrice\.toFixed\(2\)\}/i);
+  assert.doesNotMatch(form, /updateUnitPrice/i);
 });
 
 test("custom price and quantity calculate the visible subtotal", () => {
@@ -131,12 +130,12 @@ test("product loading intentionally exposes only active products without stock f
 });
 
 test("existing store-sale details remain snapshot-readable", () => {
-  assert.match(service, /order_items \([\s\S]+unit_price, quantity, subtotal/i);
+  assert.match(service, /order_items \([\s\S]+unit_price,[\s\S]+quantity, subtotal/i);
   assert.match(detail, /Precio/i);
 });
 
-test("web checkout remains unchanged", () => {
-  assert.match(checkout, /channel: "web"/i);
+test("web checkout preserves its channel across the server migration", () => {
+  assert.match(readFileSync(new URL("../supabase/migrations/202610110002_pay01_atomic_checkout.sql", import.meta.url), "utf8"), /values\(order_id,customer_id,order_number,'web'/i);
   assert.doesNotMatch(migration, /channel\s*=\s*'web'|update orders[\s\S]+channel/i);
 });
 

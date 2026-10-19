@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { ProductForm } from "@/components/admin/products/product-form";
@@ -41,6 +42,7 @@ export default async function EditProductPage({
             {categoriesResult.error ?? productResult.error}
           </div>
         ) : null}
+        {product?.family_id ? <p className="mt-5 rounded-xl border border-[#8B5E3C]/20 p-4">El precio y la combinación se administran en <Link className="underline" href={`/admin/productos/familias/${product.family_id}`}>la familia del SKU</Link>. El precio y SKU no se editan aquí; podés administrar sus fotografías y otros datos.</p> : null}
         {product ? (
           <ProductForm
             action={updateProduct}

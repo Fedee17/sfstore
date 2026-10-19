@@ -14,7 +14,7 @@ const migration = source(
 );
 const paymentService = source("services", "order-payments.ts");
 const checkoutService = source("services", "orders.ts");
-const webhook = source("app", "api", "mercadopago", "webhook", "route.ts");
+const webhook = source("lib", "payments", "legacy-mercadopago", "webhook.ts");
 const inventoryService = source("services", "inventory.ts");
 const adminOrders = source("services", "admin.ts");
 const adminActions = source("app", "admin", "pedidos", "actions.ts");
@@ -25,7 +25,7 @@ const paymentModel = await import(
 
 test("existing checkout orders remain web orders", () => {
   assert.match(migration, /channel text not null default 'web'/i);
-  assert.match(checkoutService, /channel: "web"/i);
+  assert.match(readFileSync(new URL("../supabase/migrations/202610110002_pay01_atomic_checkout.sql", import.meta.url), "utf8"), /values\(order_id,customer_id,order_number,'web'/i);
   assert.match(adminOrders, /channel,/i);
 });
 
@@ -193,9 +193,11 @@ test("the existing atomic sale inventory RPC remains independent", () => {
   assert.match(inventoryService, /"apply_sale_inventory"/i);
 });
 
-test("legacy checkout payment selection remains available during the transition", () => {
-  assert.match(checkoutService, /export type PaymentMethod = "transfer" \| "mercadopago"/i);
-  assert.match(checkoutService, /payment_method: payload\.paymentMethod/i);
+test("web checkout supports transfer only through the gated server contract", () => {
+  assert.match(checkoutService, /export type PaymentMethod = "transfer";/i);
+  assert.match(checkoutService, /paymentMethod: payload\.paymentMethod/i);
+  assert.match(checkoutService, /fetch\("\/api\/checkout"/i);
+  assert.doesNotMatch(checkoutService, /\.from\("orders"\)|\.insert\(/i);
   assert.match(
     migration,
     /Legacy checkout payment selection\. New payment truth lives in order_payments/i,

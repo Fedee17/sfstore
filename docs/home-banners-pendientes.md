@@ -13,3 +13,8 @@ Criterio visual:
 - espacio libre para texto o CTAs
 - paleta crema, verde oliva, marrón cuero y negro mate
 - sin textos, logos ni marcas visibles en la imagen
+
+
+## Nota de mantenimiento — 2026-10-10
+
+Los dos assets listados se conservan. La paleta crema/oliva/cuero de esta guía es un criterio histórico; `lib/brand.ts` define hoy azul/rojo para el sitio público. Consultar [DESIGN_SYSTEM](DESIGN_SYSTEM.md) antes de nuevos banners. Esta actualización no cambia imágenes, paleta ni decisiones comerciales; nuevos assets requieren revisión visual.

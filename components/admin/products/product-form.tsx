@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_UPLOAD_FILE_BYTES, assertUploadFormData, UploadLimitError } from "@/lib/uploads/limits";
 import imageCompression from "browser-image-compression";
 import { isHeicFile, normalizeHeicFile } from "heic-normalize";
 import Image from "next/image";
@@ -457,13 +458,18 @@ export function ProductForm({
     }
     lastSubmissionRef.current = requestRef.current;
     try {
+      assertUploadFormData(requestRef.current);
       const result = await action(previousState, requestRef.current);
       if (result.status === "success") versionRef.current = result.version;
       if (result.status === "success" || result.retryMode === "new" || result.retryMode === "reload") {
         requestRef.current = null;
       }
       return result;
-    } catch {
+    } catch (error) {
+      if (error instanceof UploadLimitError) {
+        requestRef.current = null;
+        return { status: "error", retryMode: "new", message: error.message } as ProductFormActionState;
+      }
       return { status: "error", retryMode: "retry", message: "No se recibio confirmacion. Reintenta el mismo guardado." } as ProductFormActionState;
     } finally {
       submitLockRef.current = false;
@@ -594,6 +600,7 @@ export function ProductForm({
         optimizedFiles.push(await prepareProductImage(file));
       }
 
+      if ([...pendingImages.map(image=>image.file), ...optimizedFiles].reduce((sum,file)=>sum+file.size,0)>MAX_UPLOAD_FILE_BYTES) throw new Error("Las imágenes deben sumar como máximo 3 MiB. Cargalas en tandas.");
       const additions = optimizedFiles.map((file) => {
         const previewUrl = URL.createObjectURL(file);
         previewUrlsRef.current.add(previewUrl);
@@ -723,6 +730,7 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Precio lista</span>
             <input
               name="price"
+              readOnly={!!product?.family_id}
               type="number"
               min="0"
               step="0.01"
@@ -780,6 +788,7 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">SKU</span>
             <input
               name="sku"
+              readOnly={!!product?.family_id}
               defaultValue={product?.sku ?? ""}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />

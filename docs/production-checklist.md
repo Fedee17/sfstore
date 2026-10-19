@@ -1,14 +1,14 @@
 # Checklist de produccion SFSTORE
 
-Este documento prepara el deploy sin exponer secretos. Completar en Vercel/hosting antes de publicar.
+Este documento conserva la referencia histórica de deploy y registra correcciones de documentación. No confirma la configuración activa ni autoriza cambios en Vercel/Supabase, pagos, push, merge o deploy. Esas operaciones requieren aprobación explícita; consultar [contexto](PROJECT_CONTEXT.md) y [seguridad](SECURITY_RULES.md).
 
-## Despliegue desde GitHub
+## Referencia histórica de despliegue desde GitHub
 
 - Repositorio: `Fedee17/sfstore`.
 - Proyecto Vercel existente: `sfstore`.
 - Rama de produccion: `main`.
 - Dominio estable: `https://sfstore-ten.vercel.app`.
-- Despues de un push, comprobar el deployment automatico y las respuestas GET: `/` devuelve 200 y `/api/integrations/google-sheets/product-sync` devuelve 405.
+- Solo después de un push/deploy explícitamente autorizado, verificar la configuración activa de deployment y las respuestas GET: `/` devuelve 200 y `/api/integrations/google-sheets/product-sync` devuelve 405.
 - Mantener `.env.local`, `.vercel` y los logs locales fuera de Git.
 
 ## Variables de entorno
@@ -21,7 +21,7 @@ Este documento prepara el deploy sin exponer secretos. Completar en Vercel/hosti
 | `SUPABASE_SERVICE_ROLE_KEY` | Si | Privada | lecturas/admin server-side, ordenes, stock, Mercado Pago API routes | `eyJ...` | Si, solo server |
 | `MERCADO_PAGO_ACCESS_TOKEN` | Si para Mercado Pago | Privada | crear preferencia y consultar pagos en webhook | `APP_USR-...` o token test | Si, solo server |
 | `ADMIN_ALLOWED_EMAILS` | Si | Privada/config | restringe emails autorizados para `/admin` | `dueño@dominio.com,otro@dominio.com` | Si |
-| `ADMIN_EMAIL` | No | Privada/config | fallback legacy si no existe `ADMIN_ALLOWED_EMAILS` | `dueño@dominio.com` | Mejor usar `ADMIN_ALLOWED_EMAILS` |
+| `ADMIN_EMAIL` | No | Privada/config | No utilizada por la autorización actual; no es fallback | No aplica | No requerida; usar `ADMIN_ALLOWED_EMAILS` |
 | `GOOGLE_SHEETS_SYNC_SECRET` | Si para sync automática | Privada | autentica `/api/integrations/google-sheets/product-sync` | cadena aleatoria extensa | Si, solo server |
 
 Notas:
@@ -52,11 +52,11 @@ Verificaciones:
 - `lib/supabase/server.ts` usa `SUPABASE_SERVICE_ROLE_KEY` solo del lado servidor.
 - El admin se protege con sesion y `ADMIN_ALLOWED_EMAILS`.
 - RLS publica debe permitir leer categorias activas, productos `status = 'active'`, imagenes y atributos.
-- RLS publica debe permitir inserts necesarios de checkout en `customers`, `orders` y `order_items`, segun el flujo implementado.
+- El checkout actual intenta inserts anon en `customers`, `orders` y `order_items`; esto describe una dependencia del flujo, no una recomendación de abrir permisos. PAY-01/SEC-01 requieren revisión autoritativa y de RLS. No cambiar grants/policies desde este checklist.
 - No agregar SELECT publico a datos privados de clientes.
 
 Pendiente recomendado:
-- Revisar logs temporales de login admin antes de produccion. `app/admin/login/actions.ts` todavia imprime diagnostico seguro, pero conviene remover o bajar ruido cuando el login quede confirmado.
+- SEC-02 en la rama de mantenimiento local elimina logs temporales de correo/allowlist y detalles libres de Auth; conserva eventos/códigos diagnósticos acotados. Está pendiente de integración y despliegue autorizados, por lo que no demuestra el estado de logs de Production.
 
 ## Mercado Pago
 
@@ -112,6 +112,8 @@ Verificaciones:
 
 ## Seguridad basica
 
+Antecedente de una búsqueda anterior; no constituye una nueva verificación de secretos de Production.
+
 Busqueda realizada sobre el codigo, excluyendo `.env*`, `node_modules` y `.next`:
 - No se detectaron valores literales obvios de `SUPABASE_SERVICE_ROLE_KEY`.
 - No se detectaron valores literales obvios de `MERCADO_PAGO_ACCESS_TOKEN`.
@@ -127,10 +129,14 @@ Pendiente recomendado:
 
 Ejecutar:
 
-```powershell
-node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" exec tsc --noEmit
-node "C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js" run build
+```bash
+node --test tests/*.test.mjs
+npm run lint
+npm run build
+npx tsc --noEmit
 ```
+
+Registrar skips y baseline de lint; los errores corregidos en draft PR #1 aún no están integrados. Para tests completos ver los runtimes locales en PROJECT_AUDIT_2026-10-10.md. Validar aquí no autoriza desplegar.
 
 Validar rutas:
 - `/`
@@ -152,6 +158,6 @@ Validar rutas:
 - Configurar `NEXT_PUBLIC_SITE_URL` con dominio real HTTPS.
 - Configurar webhook en Mercado Pago Developers.
 - Confirmar bucket `product-images` publico.
-- Confirmar RLS publica de catalogo y RLS de inserts de checkout.
-- Revisar/remover logs temporales de diagnostico en login admin.
+- Revisar permisos públicos y diseño seguro del checkout mediante SEC-01/PAY-01, sin ampliar RLS unilateralmente.
+- Revisar la integración pendiente de SEC-02 y confirmar política de logs antes de publicar.
 - Crear `public/og-sfstore.png` 1200x630 si se quiere una preview social mas cuidada.

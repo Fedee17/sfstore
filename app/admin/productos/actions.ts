@@ -1,5 +1,6 @@
 "use server";
 
+import { assertUploadFormData } from "@/lib/uploads/limits";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
@@ -253,6 +254,7 @@ function revalidateProductPaths({
 }
 
 function getProductImageFiles(formData: FormData) {
+  assertUploadFormData(formData);
   const files = [
     ...formData.getAll("productImages"),
     formData.get("primaryImage"),
@@ -272,7 +274,7 @@ function getProductImageFiles(formData: FormData) {
     }
 
     if (file.size > MAX_PRODUCT_IMAGE_UPLOAD_BYTES) {
-      throw new Error("Cada imagen debe pesar como máximo 5 MB después de optimizarse.");
+      throw new Error("Cada imagen debe pesar como máximo 3 MiB después de optimizarse.");
     }
 
     return true;
@@ -711,7 +713,9 @@ export async function deleteProductImage(
       status: "success",
       message: result.storagePreservedForSharedReference
         ? "La imagen se quito del producto. El archivo compartido se conservo."
-        : "La imagen se elimino correctamente.",
+        : result.storageRetainedForDeferredCleanup
+          ? "La imagen se quito del producto. El archivo se conservo para una limpieza segura posterior."
+          : "La imagen se quito del producto.",
       submissionId: crypto.randomUUID(),
     };
   } catch (error) {

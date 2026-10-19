@@ -3,6 +3,7 @@ import { readFile, stat } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import XLSX from "xlsx";
+import { readRawWorksheetRows } from "../lib/product-import/workbook.ts";
 import {
   assertHistoricalImportReady,
   buildHistoricalImportPlan,
@@ -57,7 +58,7 @@ const resolvedMappingDecisions = new Set(["MATCH", "CREATE_HISTORICAL", "CREATE_
 const mappingsPending = mappingRows.filter((row) => !resolvedMappingDecisions.has(row.final_decision?.trim().toUpperCase())).length;
 
 const workbook = XLSX.read(source, { type: "buffer", cellDates: false, cellText: true, cellNF: true });
-const salesMatrix = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets["Control de ventas"], { header: 1, raw: true, defval: null });
+const salesMatrix = readRawWorksheetRows<unknown[]>(workbook.Sheets["Control de ventas"], { header: 1, raw: true, defval: null });
 const saleEvidenceByRow = new Map<number, SaleEvidence>();
 for (const row of dryRunRows.filter((candidate) => candidate.record_type === "sale" && candidate.decision === "INSERT")) {
   const sourceRow = Number(row.source_row);
