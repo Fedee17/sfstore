@@ -80,3 +80,12 @@ Antes de preparar una integración o publicación:
 - Registrar el commit aprobado, el commit efectivamente publicado y el estado de sincronización de `main` al cerrar una publicación. No declarar completada la sincronización mientras sólo exista una rama candidata local.
 
 Esta política no autoriza por sí sola merges, pushes, despliegues ni cambios en servicios o datos productivos.
+
+## SFSTORE - Consulta obligatoria de estándares de diseño y desarrollo
+
+Antes de desarrollar o modificar funcionalidades de SFSTORE, leer y aplicar conjuntamente:
+
+- Las [Directrices Maestras de Experiencia Digital](docs/SFSTORE-DIRECTRICES-MAESTRAS.md).
+- Los [Estándares de Diseño y Desarrollo](docs/SFSTORE-ESTANDARES-DISENO-DESARROLLO.md).
+
+Las Directrices Maestras definen los principios rectores y los Estándares los criterios de implementación y aceptación. Conservar las reglas comerciales confirmadas, la seguridad y la integridad de datos; distinguir hechos confirmados, propuestas y pendientes de verificar. Documentar las comprobaciones aplicables y justificar los controles que no correspondan al alcance. Estos documentos no conceden por sí mismos autorización para operaciones productivas ni amplían el alcance de una tarea.
