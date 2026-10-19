@@ -89,3 +89,13 @@ Antes de desarrollar o modificar funcionalidades de SFSTORE, leer y aplicar conj
 - Los [Estándares de Diseño y Desarrollo](docs/SFSTORE-ESTANDARES-DISENO-DESARROLLO.md).
 
 Las Directrices Maestras definen los principios rectores y los Estándares los criterios de implementación y aceptación. Conservar las reglas comerciales confirmadas, la seguridad y la integridad de datos; distinguir hechos confirmados, propuestas y pendientes de verificar. Documentar las comprobaciones aplicables y justificar los controles que no correspondan al alcance. Estos documentos no conceden por sí mismos autorización para operaciones productivas ni amplían el alcance de una tarea.
+
+## SFSTORE - Tres documentos maestros para planificar y desarrollar mejoras
+
+Antes de planificar o desarrollar mejoras de SFSTORE, consultar obligatoriamente y de forma conjunta:
+
+1. Las [Directrices Maestras de Experiencia Digital](docs/SFSTORE-DIRECTRICES-MAESTRAS.md).
+2. Los [Estándares de Diseño y Desarrollo](docs/SFSTORE-ESTANDARES-DISENO-DESARROLLO.md).
+3. El [Plan de Mejora Continua](docs/SFSTORE-PLAN-MEJORA-CONTINUA.md).
+
+El plan organiza la evidencia, las prioridades y el seguimiento; no reemplaza los principios ni los criterios de aceptación de los otros dos documentos. Su incorporación no autoriza implementar el backlog ni modificar funcionalidades, datos o servicios productivos. Iniciar únicamente las mejoras encargadas expresamente, respetando el alcance y las autorizaciones de la tarea y conservando todas las instrucciones anteriores.
