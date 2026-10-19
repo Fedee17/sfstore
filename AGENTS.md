@@ -65,3 +65,18 @@ Toda implementación debe considerar, según su alcance:
 - Experiencia operativa del panel administrador, cuando corresponda.
 
 No considerar terminada una funcionalidad únicamente porque pasa las pruebas técnicas. Verificar los criterios de aceptación del manual y documentar la evidencia pertinente, las limitaciones y los puntos que no aplican.
+
+## SFSTORE - main y código aprobado para Production
+
+La rama `main` debe representar siempre la versión de código aprobada para Production y conservar todas las funcionalidades productivas vigentes.
+
+Antes de preparar una integración o publicación:
+
+- Identificar el commit exacto que sirve el dominio productivo y compararlo con `main` y con el candidato. No asumir que el último deployment registrado es el activo.
+- Si Production contiene cambios ausentes en `main`, preparar primero su integración, conservando las funcionalidades productivas y las directrices documentales aprobadas. No incorporar diferencias históricas que eliminen esas funcionalidades.
+- Verificar el diff y ejecutar las pruebas pertinentes antes de integrar. Resolver conflictos sin descartar código productivo.
+- No publicar desde una rama independiente dejando funcionalidades productivas fuera de `main` sin un procedimiento explícito de sincronización, autorizado por el propietario, que identifique commits, orden de integración, verificaciones y recuperación.
+- Comprobar los disparadores automáticos de despliegue antes de publicar ramas o integrar cambios. Preparar el bloqueo temporal necesario para evitar un despliegue accidental; modificar Vercel, integrar a `main` o desplegar requiere la autorización correspondiente.
+- Registrar el commit aprobado, el commit efectivamente publicado y el estado de sincronización de `main` al cerrar una publicación. No declarar completada la sincronización mientras sólo exista una rama candidata local.
+
+Esta política no autoriza por sí sola merges, pushes, despliegues ni cambios en servicios o datos productivos.
