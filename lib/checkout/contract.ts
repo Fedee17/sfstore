@@ -3,7 +3,7 @@ export type CheckoutRequest = {
   customer: { fullName: string; phone: string; email?: string };
   shipping: { method: "pickup" | "shipping"; province?: string; city?: string; address?: string; postalCode?: string; carrier?: "Correo Argentino" | "Andreani" | "Via Cargo"; quoteKey?: string };
   paymentMethod: "transfer";
-  items: { productId: string; quantity: number }[];
+  items: { productId: string; quantity: number; comboConnector?: "cc" | "lightning" }[];
 };
 export type CheckoutResult = {
   id: string; orderNumber: string; subtotal: number; discount: number; shippingCost: number; total: number;
@@ -38,9 +38,11 @@ export function parseCheckoutRequest(value: unknown): CheckoutRequest {
   if (!Array.isArray(value.items) || value.items.length < 1 || value.items.length > 100) return bad();
   const seen = new Set<string>();
   for (const item of value.items) {
-    if (!record(item)) return bad(); keys(item,["productId","quantity"]);
-    if (!isUuid(item.productId) || !Number.isInteger(item.quantity) || (item.quantity as number) < 1 || (item.quantity as number) > 2147483647 || seen.has(item.productId.toLowerCase())) return bad();
-    seen.add(item.productId.toLowerCase());
+    if (!record(item)) return bad(); keys(item,["productId","quantity","comboConnector"]);
+    if (item.comboConnector !== undefined && item.comboConnector !== "cc" && item.comboConnector !== "lightning") return bad();
+    const key = `${String(item.productId).toLowerCase()}:${item.comboConnector ?? ""}`;
+    if (!isUuid(item.productId) || !Number.isInteger(item.quantity) || (item.quantity as number) < 1 || (item.quantity as number) > 2147483647 || seen.has(key)) return bad();
+    seen.add(key);
   }
   return value as unknown as CheckoutRequest;
 }

@@ -38,6 +38,9 @@ function parsePaymentAmount(value: FormDataEntryValue | null) {
 function readItems(formData: FormData) {
   const productIds = formData.getAll("productId").map(String);
   const quantities = formData.getAll("quantity").map(Number);
+  const connectors = formData.getAll("comboConnector").map(String);
+  if (connectors.length && connectors.length !== productIds.length) throw new Error("La selección de cables está incompleta.");
+  if (connectors.some(c => c !== "" && c !== "cc" && c !== "lightning")) throw new Error("El conector elegido no es válido.");
   const unitPrices = formData
     .getAll("unitPrice")
     .map((value) => parseStoreSaleUnitPrice(String(value)));
@@ -53,6 +56,7 @@ function readItems(formData: FormData) {
     productId: productId.trim(),
     quantity: quantities[index],
     unitPrice: unitPrices[index],
+    ...(connectors[index] ? { comboConnector: connectors[index] as "cc" | "lightning" } : {}),
   }));
 }
 

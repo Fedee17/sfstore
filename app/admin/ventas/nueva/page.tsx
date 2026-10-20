@@ -4,10 +4,12 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { StoreSaleForm } from "@/components/admin/sales/store-sale-form";
 import { requireAdminSession } from "@/lib/admin-session";
 import { listStoreSaleProducts } from "@/services/store-sales";
+import { listComponentRecipes } from "@/services/component-inventory";
 
 export default async function NewStoreSalePage() {
   await requireAdminSession();
   const products = await listStoreSaleProducts();
+  const recipes = await listComponentRecipes();
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -16,7 +18,7 @@ export default async function NewStoreSalePage() {
         <Link href="/admin/ventas" className="text-sm font-semibold text-[#8B5E3C]">Volver a ventas</Link>
         <h1 className="mt-4 text-4xl font-semibold">Nueva venta local</h1>
         <p className="mt-2 text-sm text-[#1F1F1F]/60">El stock se descuenta recien cuando el pago queda completo.</p>
-        <StoreSaleForm products={products} />
+        <StoreSaleForm products={products} recipes={recipes} />
       </section>
     </main>
   );

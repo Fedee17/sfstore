@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { transferPayment } from "@/lib/payment";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import { useCartStore } from "@/store/cart-store";
+import { useCartStore, cartItemKey } from "@/store/cart-store";
 
 
 
@@ -92,7 +92,7 @@ export default function CartPage() {
 
                 return (
                   <article
-                    key={item.productId}
+                    key={cartItemKey(item)}
                     className="overflow-hidden rounded-3xl border border-[#003B73]/15 bg-white/70 p-5 shadow-sm"
                   >
                     <div className="grid min-w-0 gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
@@ -115,7 +115,7 @@ export default function CartPage() {
                       <div className="flex items-center rounded-full border border-[#003B73]/20 bg-[#F7F9FC]">
                         <button
                           type="button"
-                          onClick={() => decreaseQuantity(item.productId)}
+                          onClick={() => decreaseQuantity(cartItemKey(item))}
                           className="h-10 w-10 text-lg font-semibold text-[#003B73] transition hover:text-[#0072CE]"
                         >
                           -
@@ -125,7 +125,7 @@ export default function CartPage() {
                         </span>
                         <button
                           type="button"
-                          onClick={() => increaseQuantity(item.productId)}
+                          onClick={() => increaseQuantity(cartItemKey(item))}
                           disabled={item.quantity >= item.stock}
                           className="h-10 w-10 text-lg font-semibold text-[#003B73] transition hover:text-[#0072CE] disabled:cursor-not-allowed disabled:opacity-35"
                         >
@@ -139,7 +139,7 @@ export default function CartPage() {
                       </p>
                       <button
                         type="button"
-                        onClick={() => removeItem(item.productId)}
+                        onClick={() => removeItem(cartItemKey(item))}
                         className="rounded-full border border-[#102033]/10 px-4 py-2 text-sm font-semibold text-[#102033]/70 transition hover:border-[#0072CE] hover:text-[#003B73]"
                       >
                         Eliminar

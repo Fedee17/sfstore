@@ -15,6 +15,7 @@ import {
   matchesStoreSaleProduct,
 } from "@/lib/store-sales";
 import type { StoreSaleProduct } from "@/services/store-sales";
+import { commercialLineKey, fitsComponentInventory, componentIds, type ComponentRecipe, type CableConnector } from "@/lib/products/component-combos";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -25,9 +26,13 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
 const initialState: StoreSaleActionState = { status: "idle", message: "" };
 
 type SaleLine = {
+  comboConnector?: CableConnector;
+  components?: { productId: string; stock: number }[];
   product: StoreSaleProduct;
   quantity: number;
 };
+
+const saleLineKey = (line: SaleLine) => commercialLineKey(line.product.id, line.comboConnector);
 
 type PaymentLine = {
   key: string;
@@ -43,11 +48,12 @@ function newPayment(): PaymentLine {
   return { key: crypto.randomUUID(), method: "cash", amount: "" };
 }
 
-export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
+export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleProduct[]; recipes?: ComponentRecipe[] }) {
   const [state, action] = useActionState(createStoreSaleAction, initialState);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [lines, setLines] = useState<SaleLine[]>([]);
+  const [componentError, setComponentError] = useState("");
   const [payments, setPayments] = useState<PaymentLine[]>([newPayment()]);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const quantityRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -73,40 +79,33 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
   const overpayment = paid > total && total > 0;
   const completed = state.status === "success";
 
+  function applyLines(next: SaleLine[]) {
+    if (!fitsComponentInventory(next.map(line => ({ productId: line.product.id, stock: line.product.stock, quantity: line.quantity, components: line.components })))) {
+      setComponentError("No hay stock compartido suficiente para esa selección. Revisá las cantidades."); return;
+    }
+    setLines(next); setComponentError("");
+  }
   function selectProduct(product: StoreSaleProduct) {
-    setSearchOpen(false);
-    setQuery("");
-    setLines((current) => {
-      const existing = current.find((line) => line.product.id === product.id);
-      if (existing) {
-        return current.map((line) =>
-          line.product.id === product.id
-            ? { ...line, quantity: Math.min(line.quantity + 1, product.stock) }
-            : line,
-        );
-      }
-      return [
-        ...current,
-        {
-          product,
-          quantity: 1,
-        },
-      ];
-    });
+    setSearchOpen(false); setQuery("");
+    const existing = lines.find(line => !line.comboConnector && line.product.id === product.id);
+    applyLines(existing ? lines.map(line => !line.comboConnector && line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { product, quantity: 1 }]);
     requestAnimationFrame(() => quantityRefs.current[product.id]?.focus());
   }
+  function updateQuantity(key: string, quantity: number) {
+    applyLines(lines.map(line => saleLineKey(line) === key ? { ...line, quantity: Math.max(1, Math.trunc(quantity) || 1) } : line));
+  }
 
-  function updateQuantity(productId: string, quantity: number) {
-    setLines((current) =>
-      current.map((line) =>
-        line.product.id === productId
-          ? {
-              ...line,
-              quantity: Math.max(1, Math.min(Math.trunc(quantity) || 1, line.product.stock)),
-            }
-          : line,
-      ),
-    );
+  function selectCombo(recipe: ComponentRecipe, connector: CableConnector) {
+    try {
+      const selection = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
+      if (selection.some(p => !p || Number(p.price) <= 0)) throw new Error("Falta aprobar un precio o habilitar un componente. No se agregó el conjunto.");
+      if (!recipe.prices_approved || !recipe.combo_list_price || !recipe.combo_price_version) throw new Error("El conjunto no tiene precio aprobado.");
+      const components = (selection as StoreSaleProduct[]).map(p => ({ productId: p.id, stock: p.stock }));
+      const key = commercialLineKey(recipe.presentation_product, connector);
+      const existing = lines.find(l => saleLineKey(l) === key);
+      const line: SaleLine = { product: { ...selection[0]!, id: recipe.presentation_product, name: `${recipe.name} · ${connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}`, price: recipe.combo_list_price, stock: Math.min(...components.map(p => p.stock)), sku: null }, quantity: (existing?.quantity ?? 0) + 1, comboConnector: connector, components };
+      applyLines(existing ? lines.map(l => saleLineKey(l) === key ? line : l) : [...lines, line]);
+    } catch (error) { setComponentError(error instanceof Error ? error.message : "No se pudo agregar el conjunto."); }
   }
 
   function updatePayment(key: string, patch: Partial<PaymentLine>) {
@@ -127,6 +126,17 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
           25% de descuento si todos los pagos son en efectivo o transferencia. Con débito, crédito, QR u otro medio, toda la venta usa precio de lista. El servidor verifica los precios al confirmar.
         </p>
 
+        {recipes.length ? <fieldset className="mt-5 grid gap-3 rounded-2xl border border-[#556B2F]/20 p-4" disabled={completed}>
+          <legend className="px-2 font-semibold">Cargador completo · elegí el cable</legend>
+          <p className="text-sm">Se agrega el conjunto con su precio especial. Consume un cabezal y el cable elegido; comparten stock con la venta individual. El descuento se aplica una sola vez.</p>
+          {recipes.map(recipe => <div key={recipe.id} className="grid gap-2 sm:grid-cols-2">
+            <p className="text-sm font-semibold sm:col-span-2">{recipe.name}{recipe.combo_list_price ? ` · ${currencyFormatter.format(calculateStoreSalePricing([{ price: recipe.combo_list_price, quantity: 1 }], payments.map(p => p.method)).total)}` : ""}{!recipe.prices_approved || !recipe.combo_price_version ? " · precios pendientes" : ""}</p>
+            {(["cc", "lightning"] as const).map(connector => <button key={connector} type="button" disabled={!recipe.prices_approved || !recipe.combo_price_version} onClick={() => selectCombo(recipe, connector)} className="min-h-11 rounded-xl border border-[#556B2F]/40 px-3 py-3 text-left font-semibold disabled:opacity-50">Agregar con {connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}</button>)}
+          </div>)}
+          <p role="alert" className="text-sm">{componentError}</p>
+        </fieldset> : null}
+
+        {!recipes.length && componentError ? <p role="alert" className="mt-3 text-sm">{componentError}</p> : null}
         <div className="relative mt-5">
           <label className="grid gap-2 text-sm font-semibold">
             Buscar por nombre o SKU
@@ -180,11 +190,11 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
               const unitPrice = pricing.items[index].unitPrice;
               return (
                 <article
-                  key={line.product.id}
+                  key={saleLineKey(line)}
                   className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] p-4 md:grid-cols-[minmax(0,1.7fr)_8rem_10rem_9rem_auto] md:items-end"
                 >
                   <div className="min-w-0">
-                    <input type="hidden" name="productId" value={line.product.id} />
+                    <input type="hidden" name="productId" value={line.product.id} /><input type="hidden" name="comboConnector" value={line.comboConnector ?? ""}/>
                     <p className="break-words font-semibold">{line.product.name}</p>
                     <p className="mt-1 text-xs text-[#1F1F1F]/55">
                       Stock disponible: {line.product.stock}
@@ -195,7 +205,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                     Cantidad
                     <input
                       ref={(element) => {
-                        quantityRefs.current[line.product.id] = element;
+                        quantityRefs.current[saleLineKey(line)] = element;
                       }}
                       name="quantity"
                       type="number"
@@ -205,7 +215,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                       required
                       disabled={completed}
                       value={line.quantity}
-                      onChange={(event) => updateQuantity(line.product.id, Number(event.target.value))}
+                      onChange={(event) => updateQuantity(saleLineKey(line), Number(event.target.value))}
                       className="h-11 min-w-0 rounded-xl border border-[#8B5E3C]/20 bg-white px-3 outline-none focus:border-[#556B2F] disabled:opacity-60"
                     />
                   </label>
@@ -223,7 +233,7 @@ export function StoreSaleForm({ products }: { products: StoreSaleProduct[] }) {
                     disabled={completed}
                     onClick={() =>
                       setLines((current) =>
-                        current.filter((item) => item.product.id !== line.product.id),
+                        current.filter((item) => saleLineKey(item) !== saleLineKey(line)),
                       )
                     }
                     className="h-11 rounded-xl border border-[#8B5E3C]/30 px-4 text-sm font-semibold text-[#8B5E3C] transition hover:bg-[#8B5E3C]/10 disabled:opacity-50"

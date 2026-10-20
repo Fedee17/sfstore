@@ -228,7 +228,7 @@ export default async function AdminProductsPage({
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
       <AdminNav />
-      <div className="mx-auto max-w-6xl px-5 pt-6"><Link href="/admin/productos/familias" className="font-semibold underline">Administrar familias y variantes</Link></div>
+      <div className="mx-auto flex max-w-6xl flex-wrap gap-4 px-5 pt-6"><Link href="/admin/productos/familias" className="font-semibold underline">Administrar familias y variantes</Link><Link href="/admin/productos/componentes" className="font-semibold underline">Cargadores por componentes</Link></div>
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
         <div className="flex min-w-0 flex-col justify-between gap-4 md:flex-row md:items-end">
           <div className="min-w-0">

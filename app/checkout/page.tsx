@@ -9,7 +9,7 @@ import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
 import { ARGENTINA_PROVINCES, type ShippingQuote } from "@/lib/checkout/argentina";
 import { CheckoutCaptcha } from "@/components/checkout-captcha";
 import { createOrderFromCheckout, getCheckoutOperationKey } from "@/services/orders";
-import { useCartStore } from "@/store/cart-store";
+import { useCartStore, cartItemKey } from "@/store/cart-store";
 
 
 type DeliveryMethod = "pickup" | "shipping";
@@ -195,7 +195,7 @@ function CheckoutContent() {
     submissionLock.current = true; setIsSubmitting(true); setSubmitError("");
     try {
       await ensureGuestCheckoutSession(captchaToken);
-      const request = { customer:{fullName:form.fullName.trim(),phone:form.phone.trim(),email:form.email.trim()||undefined},shipping:{method:"shipping",carrier:form.carrier,province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim(),address:form.address.trim()},paymentMethod:"transfer",items:items.map(item=>({productId:item.productId,quantity:item.quantity})).sort((a,b)=>a.productId.localeCompare(b.productId)) };
+      const request = { customer:{fullName:form.fullName.trim(),phone:form.phone.trim(),email:form.email.trim()||undefined},shipping:{method:"shipping",carrier:form.carrier,province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim(),address:form.address.trim()},paymentMethod:"transfer",items:items.map(item=>({productId:item.productId,quantity:item.quantity,...(item.comboConnector?{comboConnector:item.comboConnector}:{})})).sort((a,b)=>a.productId.localeCompare(b.productId)||(a.comboConnector??" ").localeCompare(b.comboConnector??" ")) };
       const operationKey = await getCheckoutOperationKey(request,"sfstore-shipping-quotation-operation");
       const response = await fetch("/api/checkout/quotation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,operationKey})});
       const result = await response.json();if (!response.ok) throw new Error(result.error??"No se pudo solicitar la cotización.");
@@ -493,7 +493,7 @@ function CheckoutContent() {
               <div className="mt-6 space-y-4">
                 {items.map((item) => (
                   <div
-                    key={item.productId}
+                    key={cartItemKey(item)}
                     className="border-b border-[#003B73]/15 pb-4 last:border-b-0"
                   >
                     <div className="flex justify-between gap-4">

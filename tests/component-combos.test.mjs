@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import {spawnSync} from 'node:child_process';
+import ts from 'typescript';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {componentIds,addComponentSelection} from '../lib/products/component-combos.ts';
+const recipe={head_product:'head',cable_cc_product:'cc',cable_lightning_product:'lightning'};
+test('explicit connector resolves exactly two physical SKU and no presentation',()=>{assert.deepEqual(componentIds(recipe,'cc'),['head','cc']);assert.deepEqual(componentIds(recipe,'lightning'),['head','lightning']);assert.throws(()=>componentIds(recipe,''),/Elegí/);});
+test('partial stock failure is atomic including quantities already in cart',()=>{const lines=[{product:{id:'head',stock:1},quantity:1}],before=structuredClone(lines);assert.throws(()=>addComponentSelection(lines,[{id:'head',stock:1},{id:'cc',stock:10}],product=>({product,quantity:1})),/stock/);assert.deepEqual(lines,before);});
+test('standalone and paired lines consolidate real SKU without duplication',()=>{const old=[{product:{id:'head',stock:3},quantity:1}];const result=addComponentSelection(old,[{id:'head',stock:3},{id:'cc',stock:2}],product=>({product,quantity:1}));assert.equal(result.length,2);assert.equal(result[0].quantity,2);assert.equal(old[0].quantity,1);});
+const require=createRequire(import.meta.url),url=s=>`data:text/javascript;base64,${Buffer.from(s).toString('base64')}`;
+function compile(file){return ts.transpileModule(readFileSync(new URL(file,import.meta.url),'utf8'),{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;}
+const memory=new Map();globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
+let storeJS=compile('../store/cart-store.ts');for(const m of ['zustand','zustand/middleware'])storeJS=storeJS.replace(JSON.stringify(m),JSON.stringify(pathToFileURL(require.resolve(m)).href));
+storeJS=storeJS.replace('"@/lib/products/component-combos"',JSON.stringify(new URL("../lib/products/component-combos.ts",import.meta.url).href));
+const {useCartStore}=await import(url(storeJS));
+const product=(id,stock=2,price=100)=>({id,stock,price,name:id,slug:id,category:'mates',featured:false,shortDescription:'SYNTHETIC',imagePlaceholder:'TEST'});
+test('actual cart adds both components, persists exact SKU and refuses incomplete additions',()=>{useCartStore.getState().clearCart();assert.equal(useCartStore.getState().addComponents(product('head',1),product('lightning',2)),true);const before=structuredClone(useCartStore.getState().items);assert.equal(useCartStore.getState().addComponents(product('head',1),product('cc',2)),false);assert.deepEqual(useCartStore.getState().items,before);assert.deepEqual(before.map(x=>x.productId),['head','lightning']);assert.equal(useCartStore.getState().addComponents(product('head',2),product('cc',1,0)),false);});
+test('combo reuses per-SKU server cent rounding instead of discounting an aggregate price',async()=>{const {getWebTransferSubtotal}=await import('../lib/web-transfer-pricing.ts');assert.equal(getWebTransferSubtotal([{price:100.01,quantity:2},{price:0.01,quantity:2}]),150.04);});
+let uiJS=compile('../components/component-buy-together.tsx');
+for(const m of ['react','react/jsx-runtime'])uiJS=uiJS.replaceAll(JSON.stringify(m),JSON.stringify(pathToFileURL(require.resolve(m)).href));
+uiJS=uiJS.replace('"@/store/cart-store"',JSON.stringify(url('export const useCartStore=()=>()=>true'))).replace('"@/lib/web-transfer-pricing"',JSON.stringify(new URL('../lib/web-transfer-pricing.ts',import.meta.url).href));
+const {ComponentBuyTogether}=await import(url(uiJS));
+test('actual combo UI is keyboard labeled, starts with no connector and has no unapproved default',()=>{const html=renderToStaticMarkup(React.createElement(ComponentBuyTogether,{offers:[{id:'recipe',name:'SYNTHETIC',connector:'cc',head:product('head'),cable:product('cc')}]}));assert.match(html,/Elegí el tipo de cable/);assert.match(html,/Seleccioná una opción/);assert.match(html,/<button[^>]*disabled/);assert.match(html,/aria-live="polite"/);assert.match(html,/min-w-0/);});
+test('operator helper refuses a Production hostname before connecting',()=>{const result=spawnSync(process.execPath,['scripts/component-inventory.mjs','--manifest','nonexistent','--host','db.production.invalid','--port','5432'],{encoding:'utf8'});assert.equal(result.status,1);assert.match(result.stderr,/LOCAL_DATABASE_ONLY/);assert.doesNotMatch(result.stderr,/password|postgres:\/\//i);});
+let actionJS=compile('../app/admin/compras/component-actions.ts');
+actionJS=actionJS.replace('"next/cache"',JSON.stringify(url('export function revalidatePath(){}')))
+ .replace('"@/lib/admin-session"',JSON.stringify(url('export async function requireAdminActionSession(){if(!globalThis.__componentAuthorized)throw Error("denied")}')))
+ .replace('"@/lib/supabase/server"',JSON.stringify(url('export function getSupabaseAdminClient(){return {rpc:async(name,args)=>{globalThis.__componentMutation={name,args};return {error:null}}}}')));
+const {saveComponentComposition}=await import(url(actionJS));
+const form=(cc,lightning)=>{const f=new FormData();for(const [k,v] of Object.entries({cc,lightning,purchaseId:'synthetic-purchase',recipeId:'synthetic-recipe'}))f.set(k,String(v));return f;};
+test('actual composition action rejects unauthorized access before any mutation',async()=>{globalThis.__componentAuthorized=false;globalThis.__componentMutation=null;await assert.rejects(saveComponentComposition({message:'',success:false},form(10,10)),/denied/);assert.equal(globalThis.__componentMutation,null);});
+test('actual composition action validates quantities and only configures a draft, never receives stock',async()=>{globalThis.__componentAuthorized=true;globalThis.__componentMutation=null;assert.equal((await saveComponentComposition({message:'',success:false},form(-1,21))).success,false);assert.equal(globalThis.__componentMutation,null);assert.equal((await saveComponentComposition({message:'',success:false},form(10,10))).success,true);assert.equal(globalThis.__componentMutation.name,'set_component_purchase_composition');assert.deepEqual(globalThis.__componentMutation.args,{p_purchase:'synthetic-purchase',p_recipe:'synthetic-recipe',p_cc:10,p_lightning:10});});
+let offersJS=compile('../components/component-offers.tsx');
+offersJS=offersJS.replace('"@/components/component-buy-together"',JSON.stringify(url(uiJS))).replace('"@/services/public-component-offers"',JSON.stringify(url('export async function getComponentOffers(){throw Error("SYNTHETIC UNAVAILABLE")}')));
+offersJS=offersJS.replace('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href));
+const {ComponentOffers}=await import(url(offersJS));
+test('combo service failure keeps the standalone product available with an honest status',async()=>{const html=renderToStaticMarkup(await ComponentOffers({headId:'synthetic-head'}));assert.match(html,/No pudimos consultar los conjuntos/);assert.match(html,/por separado/);assert.doesNotMatch(html,/<button|stock|precio/i);});

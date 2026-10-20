@@ -9,6 +9,8 @@ import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
+import { Suspense } from "react";
+import { ComponentOffers } from "@/components/component-offers";
 
 type ProductPageProps = {
   params: Promise<{
@@ -301,6 +303,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <PricePanel product={product} isAvailable={isAvailable} />
             <ProductActions product={product} />
+            <Suspense fallback={<p role="status" className="mt-4 text-sm">Consultando conjuntos…</p>}><ComponentOffers headId={product.id}/></Suspense>
           </article>
         </div>
       </section>

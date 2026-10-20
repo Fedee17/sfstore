@@ -34,8 +34,8 @@ export async function createOrderFromCheckout(payload: CreateOrderFromCheckoutPa
     customer: payload.customer,
     shipping: payload.shipping.method === "pickup" ? { method: "pickup" } : payload.shipping,
     paymentMethod: payload.paymentMethod,
-    items: payload.items.map(item => ({ productId: item.productId, quantity: item.quantity }))
-      .sort((a,b) => a.productId.localeCompare(b.productId)),
+    items: payload.items.map(item => ({ productId: item.productId, quantity: item.quantity, ...(item.comboConnector ? { comboConnector: item.comboConnector } : {}) }))
+      .sort((a,b) => a.productId.localeCompare(b.productId) || (a.comboConnector ?? "").localeCompare(b.comboConnector ?? "")),
   };
   const operationKey = await getCheckoutOperationKey(request);
   const response = await fetch("/api/checkout", {

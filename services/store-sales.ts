@@ -20,6 +20,7 @@ export type StoreSaleProduct = {
 };
 
 export type StoreSaleLine = {
+  combo_price_snapshot?: { groupKey: string; finalPrice: number; connector: string } | null;
   id: string;
   product_id: string | null;
   product_name: string;
@@ -135,7 +136,7 @@ export async function createStoreSale(input: {
   createdBy: string;
   customerName: string;
   notes: string;
-  items: { productId: string; quantity: number; unitPrice: number }[];
+  items: { productId: string; quantity: number; unitPrice: number; comboConnector?: "cc" | "lightning" }[];
   payments: {
     method: StoreSalePaymentMethod;
     amount: number;
@@ -152,6 +153,7 @@ export async function createStoreSale(input: {
         product_id: item.productId,
         quantity: item.quantity,
         unit_price: item.unitPrice,
+        ...(item.comboConnector ? { combo_connector: item.comboConnector } : {}),
       })),
       p_payments: input.payments,
     },
@@ -159,6 +161,9 @@ export async function createStoreSale(input: {
 
   if (error) {
     const messages: Record<string, string> = {
+      COMBO_NOT_AVAILABLE: "El conjunto cambió o no tiene un precio aprobado. Recargá los productos.",
+      COMBO_SELECTION_REQUIRED: "Elegí el tipo de cable del conjunto.",
+      CHECKOUT_PRODUCT_UNAVAILABLE: "Un componente ya no está disponible.",
       STORE_SALE_PAYMENT_TOTAL_MISMATCH: "Debés cobrar exactamente el total de la venta. No se admiten saldos ni excedentes.",
       STORE_SALE_PRICE_CHANGED: "El precio cambió. Recargá los productos y revisá el total antes de confirmar.",
       STORE_SALE_NO_ITEMS: "La venta debe incluir al menos un producto.",
@@ -292,7 +297,7 @@ export async function getStoreSaleById(orderId: string) {
       notes, metadata, created_at,
       order_items (
         id, product_id, product_name, product_slug, category_name,
-        unit_price, list_unit_price_snapshot, unit_cost_snapshot, quantity, subtotal, created_at
+        unit_price, list_unit_price_snapshot, unit_cost_snapshot, quantity, subtotal, created_at, combo_price_snapshot
       ),
       order_payments (
         id, order_id, method, amount, status, reference, notes,

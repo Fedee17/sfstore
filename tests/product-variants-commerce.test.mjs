@@ -3,6 +3,7 @@ import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import ts from 'typescript';
+import * as componentCombos from '../lib/products/component-combos.ts';
 import {groupPublicProducts,publicationAvailable} from '../lib/products/public-families.ts';
 import {buildCommercialAnalytics} from '../lib/commercial-reporting/analytics.ts';
 const simple={id:'simple',name:'Simple',slug:'simple',category:'mates',price:100,stock:2,featured:false,shortDescription:'Synthetic',imagePlaceholder:'SY'};
@@ -19,7 +20,7 @@ test('price from available SKU, sold-out family remains nonbuyable and no varian
 function cartWithLegacy(){
  const storage=new Map([['sfstore-cart',JSON.stringify({version:0,state:{items:[{productId:'old-simple',name:'Old',slug:'old',category:'mates',price:100,stock:2,quantity:1}],subtotal:1,totalItems:999}})]]);
  const exports={},require=createRequire(import.meta.url),code=ts.transpileModule(readFileSync(new URL('../store/cart-store.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- new Function('require','exports','localStorage',code)(require,exports,{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)});
+ new Function('require','exports','localStorage',code)(id=>id==='@/lib/products/component-combos'?componentCombos:require(id),exports,{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)});
  return exports.useCartStore;
 }
 test('legacy cart rehydrates without inventing variants; SKU remain distinct and parent cannot be added',async()=>{

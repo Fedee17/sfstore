@@ -87,6 +87,9 @@ export type ConfirmPurchaseResult = {
 
 export async function listPurchaseProducts(includeProductIds: string[] = []) {
   const supabase = getSupabaseAdminClient();
+  const { data: componentRecipes, error: componentError } = await supabase.from("component_recipes").select("source_product").order("id").limit(101);
+  if (componentError || (componentRecipes?.length ?? 0) > 100) throw new Error("No se pudo cargar el catalogo completo de componentes para recepcion.");
+  const sourceIds = (componentRecipes ?? []).map(r => r.source_product as string);
   const { data: activeProducts, error } = await supabase
     .from("products")
     .select("id, name, commercial_label, slug, sku, cost, status")
@@ -105,7 +108,8 @@ export async function listPurchaseProducts(includeProductIds: string[] = []) {
       { ...product, name: product.commercial_label ?? product.name },
     ]),
   );
-  const retainedIds = [...new Set(includeProductIds.filter(Boolean))];
+  // Source sets remain purchaseable even while blocked for direct commercial sale.
+  const retainedIds = [...new Set([...includeProductIds, ...sourceIds].filter(Boolean))];
 
   if (retainedIds.length > 0) {
     const { data: retainedProducts, error: retainedError } = await supabase
@@ -478,7 +482,13 @@ export async function confirmPurchase(
   );
 
   if (error) {
-    throw new Error(error.message);
+    const componentMessages: Record<string, string> = {
+      COMPONENT_COMPOSITION_REQUIRED: "Guardá cuántos cables de cada tipo recibís antes de confirmar los conjuntos.",
+      COMPONENT_COMPOSITION_INVALID: "La cantidad de cables debe coincidir con los conjuntos de la compra.",
+      COMPONENT_SOURCE_STOCK_NOT_EMPTY: "Hay conjuntos anteriores sin convertir. Conciliá esa existencia antes de recibir más.",
+      COMPONENT_OPENING_COST_UNKNOWN: "No se puede ponderar un costo anterior desconocido. Revisá su procedencia antes de confirmar.",
+    };
+    throw new Error(componentMessages[error.message] ?? error.message);
   }
 
   if (!data || typeof data !== "object" || Array.isArray(data)) {

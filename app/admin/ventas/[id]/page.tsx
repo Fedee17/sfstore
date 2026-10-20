@@ -60,6 +60,7 @@ export default async function StoreSaleDetailPage({ params }: { params: Promise<
         </section>
 
         <p className="mt-5 text-sm">Subtotal de lista: {currencyFormatter.format(Number(sale.subtotal))} · Descuento: {currencyFormatter.format(Number(sale.discount))}</p>
+        {sale.order_items.some(item => item.combo_price_snapshot) ? <p className="mt-3 text-sm">Los importes de cada componente son partes del precio especial del combo, no sus precios individuales. El descuento del medio de pago ya está aplicado una vez.</p> : null}
         <section className="mt-6 grid gap-4 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 sm:grid-cols-3">
           <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total</span><strong className="mt-1 block text-xl">{currencyFormatter.format(Number(sale.total))}</strong></div>
           <div><span className="text-xs uppercase text-[#1F1F1F]/55">Pagado</span><strong className="mt-1 block text-xl">{currencyFormatter.format(sale.totalPaid)}</strong></div>
