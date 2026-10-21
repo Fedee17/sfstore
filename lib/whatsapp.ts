@@ -32,6 +32,9 @@ export function buildWhatsAppUrl(message: string) {
 }
 
 export function buildProductWhatsAppMessage(product: Product) {
+  if (product.kind === "combo") {
+    return [`Hola SFSTORE, quiero consultar por ${product.name}.`, "¿Me confirmás la disponibilidad y la compatibilidad de este conector con mi equipo?"].join("\n");
+  }
   const transferPrice = formatCurrency(product.transferPrice);
   const listPrice = formatCurrency(product.price);
 

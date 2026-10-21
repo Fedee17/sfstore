@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
-import { useCartStore } from "@/store/cart-store";
+import { useCartStore, cartItemKey } from "@/store/cart-store";
 import type { Product } from "@/types/product";
 
 type ProductActionsProps = {
@@ -10,8 +10,9 @@ type ProductActionsProps = {
 };
 
 export function ProductActions({ product }: ProductActionsProps) {
+  const key = product.combo ? `${product.combo.presentationId}:${product.combo.connector}` : product.id;
   const addItem = useCartStore((state) => state.addItem);
-  const cartItem = useCartStore((state) => state.items.find((item) => item.productId === product.id));
+  const cartItem = useCartStore((state) => state.items.find((item) => cartItemKey(item) === key));
   const currentQuantity = cartItem?.quantity ?? 0;
   const [feedback, setFeedback] = useState("");
   const isAvailable = product.stock > 0;
@@ -28,9 +29,9 @@ export function ProductActions({ product }: ProductActionsProps) {
       return;
     }
 
-    const before = useCartStore.getState().items.find((item) => item.productId === product.id)?.quantity ?? 0;
+    const before = useCartStore.getState().items.find((item) => cartItemKey(item) === key)?.quantity ?? 0;
     addItem(product);
-    const after = useCartStore.getState().items.find((item) => item.productId === product.id)?.quantity ?? 0;
+    const after = useCartStore.getState().items.find((item) => cartItemKey(item) === key)?.quantity ?? 0;
     setFeedback(after > before ? "Producto agregado al carrito." : "Ya agregaste el stock disponible.");
   }
 

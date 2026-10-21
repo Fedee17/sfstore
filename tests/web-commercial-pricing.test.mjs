@@ -9,6 +9,8 @@ function url(code) {
   return `data:text/javascript;base64,${Buffer.from(ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString("base64")}`;
 }
 const service = await import(url(source("services/products.ts")
+  .replace("@/lib/products/component-publications", new URL("../lib/products/component-publications.ts", import.meta.url).href)
+  .replace("@/lib/products/component-combos", new URL("../lib/products/component-combos.ts", import.meta.url).href)
   .replace("@/lib/products/public-families", url(source("lib/products/public-families.ts")))
   .replace("@/lib/web-transfer-pricing", url(source("lib/web-transfer-pricing.ts")))
   .replace("@/data/products", url(source("data/products.ts")))

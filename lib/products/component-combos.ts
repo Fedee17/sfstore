@@ -51,3 +51,15 @@ export function addComponentSelection<T extends { product: { id: string; stock: 
   }
   return next;
 }
+
+/** Virtual publication identity. Only presentationId + connector are sent to commerce RPCs. */
+export function componentPublicationName(connector: CableConnector) {
+  return `Cargador completo ${connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}`;
+}
+export function componentPublicationSlug(presentationId: string, connector: CableConnector) {
+  return `combo-${presentationId}-${connector}`;
+}
+export function parseComponentPublicationSlug(slug: string): { presentationId: string; connector: CableConnector } | null {
+  const match = /^combo-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-(cc|lightning)$/.exec(slug);
+  return match ? { presentationId: match[1], connector: match[2] as CableConnector } : null;
+}

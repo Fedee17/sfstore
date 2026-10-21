@@ -97,6 +97,8 @@
 
 | 20/10/2026 | P14 · candidato acotado y corte | Preparado localmente, sin publicar | Rama de publicación sin rentabilidad; bloqueo por SKU, conversión y precios en transacción, recuperación condicionada; IDs nuevos generados por la base. | `codex/charger-components-release-20261020` | 9 pruebas específicas del corte, build y tipos; visual pendiente, autorización productiva y actor por vincular. Ver `docs/CHARGER-RELEASE-RUNBOOK.md`. |
 
+| 21/10/2026 | P14 · cinco presentaciones | En validación local | Tres SKU físicos y dos publicaciones virtuales diferenciadas de cargador completo, con URL/búsqueda/mostrador propios; una receta, precio especial y stock compartido existentes. Incluye correcciones visuales de precio/selector y revisión notebook/móvil con datos sintéticos. | Candidato local, sin publicación | Ver `docs/CHARGER-COMMERCIAL-PRESENTATIONS.md`; no se modificaron Production, costos ni SQL. |
+
 **Regla de mantenimiento:** Codex actualiza esta tabla y el estado de una tarea en el mismo cambio documental correspondiente, sin reescribir las decisiones históricas. Si un dato comercial cambia, verificar la fuente actual antes de actuar. Revisar prioridades después de cada entrega importante y al disponer de medición confiable.
 
 ## 8. Custodia y alcance

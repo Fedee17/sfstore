@@ -12,6 +12,8 @@ app/carrito/page.tsx
 app/checkout/exito/page.tsx
 app/checkout/page.tsx
 app/producto/[slug]/page.tsx
+app/producto/[slug]/product-actions.tsx
+components/add-to-cart-button.tsx
 components/admin/component-recipe-form.tsx
 components/admin/purchases/charger-components-preview.tsx
 components/admin/purchases/component-composition-form.tsx
@@ -20,13 +22,16 @@ components/component-buy-together.tsx
 components/component-offers.tsx
 docs/CHARGER-COMBO-FINAL-VALIDATION.md
 docs/CHARGER-COMBO-PRICING.md
+docs/CHARGER-COMMERCIAL-PRESENTATIONS.md
 docs/CHARGER-COMPONENT-COST-RECONCILIATION.md
 docs/CHARGER-COMPONENT-INVENTORY.md
 docs/CHARGER-RELEASE-RUNBOOK.md
 docs/SFSTORE-PLAN-MEJORA-CONTINUA.md
 lib/checkout/contract.ts
 lib/products/component-combos.ts
+lib/products/component-publications.ts
 lib/purchases/charger-components.ts
+lib/whatsapp.ts
 reports/charger-components-preflight-read-only.sql
 reports/charger-components-release-state-read-only.sql
 reports/charger-release-configure-review.sql
@@ -40,6 +45,7 @@ services/checkout-buyer-receipt.ts
 services/checkout-server.ts
 services/component-inventory.ts
 services/orders.ts
+services/products.ts
 services/public-component-offers.ts
 services/purchases.ts
 services/store-sales.ts
@@ -53,5 +59,9 @@ tests/component-combo-pricing-postgres.test.mjs
 tests/component-combo-real-local.test.mjs
 tests/component-combos.test.mjs
 tests/component-inventory-postgres.test.mjs
+tests/component-publications.test.mjs
 tests/pay01-checkout-boundary.test.mjs
 tests/product-variants-commerce.test.mjs
+tests/web-commercial-pricing.test.mjs
+tests/yara-rosa-consolidation.test.mjs
+types/product.ts

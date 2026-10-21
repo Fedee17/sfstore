@@ -1,7 +1,8 @@
 export type ProductCategory = "perfumes" | "mates";
 
 export type Product = {
-  kind?: "simple" | "variant" | "family";
+  kind?: "simple" | "variant" | "family" | "combo";
+  combo?: { presentationId: string; connector: "cc" | "lightning"; priceVersion: string; recipeName: string; head: Product; cable: Product };
   familyId?: string;
   familyName?: string;
   familySlug?: string;

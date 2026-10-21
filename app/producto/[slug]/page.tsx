@@ -155,12 +155,12 @@ function PricePanel({
   return (
     <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-[#003B73]/15 bg-[#F7F9FC] p-5">
       {showTransferPrice ? (
-        <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(180px,0.55fr)] md:items-end">
+        <div className="grid min-w-0 gap-4">
           <div className="min-w-0">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
               Precio por transferencia
             </p>
-            <p className="mt-2 break-words text-4xl font-semibold leading-tight text-[#102033] sm:text-5xl">
+            <p className="mt-2 whitespace-nowrap text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
               {currencyFormatter.format(transferPrice)}
             </p>
             {savingsLabel ? (
@@ -189,7 +189,7 @@ function PricePanel({
           <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
             Precio lista
           </p>
-          <p className="mt-2 break-words text-4xl font-semibold leading-tight text-[#102033] sm:text-5xl">
+          <p className="mt-2 whitespace-nowrap text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
             {currencyFormatter.format(product.price)}
           </p>
         </div>
@@ -197,7 +197,7 @@ function PricePanel({
 
       {isAvailable ? (
         <p className="mt-4 break-words text-sm font-medium text-[#0072CE]">
-          Stock disponible: {product.stock} unidad
+          {product.kind === "combo" ? "Disponibilidad según componentes" : "Stock disponible"}: {product.stock} unidad
           {product.stock === 1 ? "" : "es"}
         </p>
       ) : (
@@ -303,7 +303,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <PricePanel product={product} isAvailable={isAvailable} />
             <ProductActions product={product} />
-            <Suspense fallback={<p role="status" className="mt-4 text-sm">Consultando conjuntos…</p>}><ComponentOffers headId={product.id}/></Suspense>
+            {product.kind !== "combo" ? <Suspense fallback={<p role="status" className="mt-4 text-sm">Consultando conjuntos…</p>}><ComponentOffers headId={product.id}/></Suspense> : null}
           </article>
         </div>
       </section>
@@ -312,7 +312,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="flex min-w-0 flex-col justify-between gap-4 border-t border-[#003B73]/15 pt-10 sm:flex-row sm:items-end">
           <div className="min-w-0">
             <p className="break-words text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-              TambiÃ©n te puede gustar
+              También te puede gustar
             </p>
             <h2 className="mt-3 break-words text-3xl font-semibold">
               Productos relacionados

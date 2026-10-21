@@ -1,3 +1,5 @@
+import { projectComponentPublications, type PublicComponentOfferRow } from "@/lib/products/component-publications";
+import { parseComponentPublicationSlug } from "@/lib/products/component-combos";
 import { groupPublicProducts } from "@/lib/products/public-families";
 import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { products as fallbackProducts } from "@/data/products";
@@ -144,7 +146,7 @@ function fallbackByCategory(categorySlug: SupportedPublicCategory): PublicProduc
 }
 
 const CATALOG_COLUMNS="id,name,slug,short_description,description,price,stock,featured,status,historical_identity,category_id,categories,category_slug,product_images,product_attributes,family_id,family_name,family_slug,commercial_label,variant_options,sku";
-async function readPublicSkuRows(category?: SupportedPublicCategory, slug?: string, family?: string) {
+async function readPublicSkuRows(category?: SupportedPublicCategory, slug?: string, family?: string, slugs?: string[]) {
  const db=getSupabaseClient(), rows:SupabaseProductRow[]=[];
  let after:string|null=null;
  for(let page=0;page<500;page++){
@@ -152,6 +154,7 @@ async function readPublicSkuRows(category?: SupportedPublicCategory, slug?: stri
   if(after)query=query.gt("id",after);
   if(category)query=category==="perfumes"?query.eq("category_slug","perfumes"):query.neq("category_slug","perfumes");
   if(slug)query=query.eq("slug",slug);
+  if(slugs)query=query.in("slug",slugs);
   if(family)query=query.eq("family_slug",family);
   const {data,error}=await query;
   if(error||data===null)throw new Error("PUBLIC_CATALOG_READ_FAILED");
@@ -161,13 +164,42 @@ async function readPublicSkuRows(category?: SupportedPublicCategory, slug?: stri
  throw new Error("PUBLIC_CATALOG_INCOMPLETE");
 }
 const mapRows=(rows:SupabaseProductRow[])=>rows.map(mapSupabaseProduct).filter((p):p is PublicProduct=>p!==null);
+const OFFER_COLUMNS="id,name,connector,head_slug,cable_slug,presentation_product,combo_list_price,combo_transfer_price,price_version";
+async function readPublicComboRows(selection?: {presentationId:string;connector:string}): Promise<PublicComponentOfferRow[]> {
+ const rows: PublicComponentOfferRow[] = []; let after: PublicComponentOfferRow | undefined;
+ for(let page=0;page<500;page++) {
+  let query=getSupabaseClient().from("public_component_offers").select(OFFER_COLUMNS).order("id").order("connector").limit(200);
+  if(selection)query=query.eq("presentation_product",selection.presentationId).eq("connector",selection.connector);
+  if(after)query=query.or(`id.gt.${after.id},and(id.eq.${after.id},connector.gt.${after.connector})`);
+  const {data,error}=await query;
+  if(error||data===null)throw new Error("PUBLIC_COMBO_READ_FAILED");
+  if(!data.length)return rows;
+  for(const row of data as PublicComponentOfferRow[]) {
+   if(!/^[0-9a-f-]{36}$/.test(row.id)||!["cc","lightning"].includes(row.connector)||
+      (after&&(row.id<after.id||(row.id===after.id&&row.connector<=after.connector))))throw new Error("PUBLIC_COMBO_PAGINATION_FAILED");
+   rows.push(row);after=row;
+  }
+ }
+ throw new Error("PUBLIC_COMBO_INCOMPLETE");
+}
+async function comboPublications(physical: PublicProduct[]) {
+ // A missing/unavailable offer contract must not prevent buying ordinary products.
+ try{return projectComponentPublications(physical,await readPublicComboRows());}catch{return [];}
+}
 export async function getProductsByCategorySlug(categorySlug:SupportedPublicCategory):Promise<PublicProduct[]> {
- try{return groupPublicProducts(mapRows(await readPublicSkuRows(categorySlug)));}
+ try{const physical=mapRows(await readPublicSkuRows(categorySlug));return [...groupPublicProducts(physical),...await comboPublications(physical)];}
  catch{return fallbackByCategory(categorySlug);}
 }
 export async function getProductBySlug(slug:string):Promise<PublicProduct|null> {
  try {
   if(!slug||slug.length>512)return null;
+  const virtual=parseComponentPublicationSlug(slug);
+  if(virtual){
+   const offers=await readPublicComboRows(virtual);
+   if(offers.length!==1)return null;
+   const physical=mapRows(await readPublicSkuRows(undefined,undefined,undefined,[offers[0].head_slug,offers[0].cable_slug]));
+   return projectComponentPublications(physical,offers)[0]??null;
+  }
   const family=mapRows(await readPublicSkuRows(undefined,undefined,slug));
   if(family.length)return groupPublicProducts(family)[0]??null;
   const rows=mapRows(await readPublicSkuRows(undefined,slug));
@@ -177,9 +209,8 @@ export async function getProductBySlug(slug:string):Promise<PublicProduct|null> 
 }
 export async function getRelatedProducts(categoryId:string|undefined,currentProductId:string) {
  if(!categoryId)return [];
- try{return groupPublicProducts(mapRows(await readPublicSkuRows())).filter(p=>p.categoryId===categoryId&&p.id!==currentProductId).slice(0,4);}
- catch{return [];}
+ return (await getCatalogPublications()).filter(p=>p.categoryId===categoryId&&p.id!==currentProductId).slice(0,4);
 }
 export async function getCatalogPublications():Promise<PublicProduct[]> {
- try{return groupPublicProducts(mapRows(await readPublicSkuRows()));}catch{return [];}
+ try{const physical=mapRows(await readPublicSkuRows());return [...groupPublicProducts(physical),...await comboPublications(physical)];}catch{return [];}
 }

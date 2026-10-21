@@ -74,3 +74,10 @@ Sigue bloqueada la automatización de navegador/escritorio por el incidente de W
 Los hashes de las tres copias privadas vinculadas al manifiesto del preflight están en `staging/runtime/charger-release-private/artifact-hashes-private.json`. No confundirlos con las plantillas: ejecutar solo un archivo exacto, revisado y autorizado, con el actor real identificado. No se afirma que la copia productiva con sus valores particulares se haya ejecutado contra Production; se ejecutó el mismo cuerpo parametrizado con fixtures sintéticos.
 
 Cierre de revisión: 57 archivos respecto de main (incluye documentos maestros aprobados y el inventario de archivos); rentabilidad excluida, editores de producto/familia iguales a Production. Los tres SQL privados conservan exactamente los cuerpos de plantilla ensayados, con el manifiesto privado vinculado. Gitleaks sobre el diff: sin secretos detectados. Las dos migraciones conservan los bytes LF del commit de desarrollo validado.
+
+
+## Actualización comercial del 21/10/2026 — cinco presentaciones
+
+El propietario confirmó tres artículos físicos y dos publicaciones diferenciadas de cargador completo, una por conector. La receta y los contratos SQL anteriores no cambian. Las dos publicaciones virtuales se derivan de las ofertas existentes, con tarjeta, URL, búsqueda y selección de mostrador propias, sin stock independiente. Ver `docs/CHARGER-COMMERCIAL-PRESENTATIONS.md`.
+
+La revisión visual inicialmente bloqueada se completó localmente en notebook y móvil con PostgreSQL descartable, PostgREST y Auth. Las fotografías reales continúan pendientes; se revisó el placeholder honesto. Se incorporaron las dos correcciones de presentación previamente pendientes y el texto mal codificado de relacionados. No se modificó Production. El hash del nuevo candidato debe identificarse y aprobarse antes de publicar; `84651ee` es la base, no contiene por sí mismo estas correcciones.

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { Product } from "@/types/product";
-import { commercialLineKey, fitsComponentInventory, type CableConnector } from "@/lib/products/component-combos";
+import { commercialLineKey, componentPublicationSlug, fitsComponentInventory, type CableConnector } from "@/lib/products/component-combos";
 
 export type CartItem = {
   comboConnector?: CableConnector;
@@ -54,7 +54,7 @@ function stockChecked(current: CartItem[], next: CartItem[]) { return withTotals
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
       totalItems: 0,
       subtotal: 0,
@@ -63,7 +63,7 @@ export const useCartStore = create<CartState>()(
         set(state => {
           if (!version || !Number.isFinite(price) || price <= 0 || head.id === cable.id) return state;
           const key = commercialLineKey(id, connector), index = state.items.findIndex(i => cartItemKey(i) === key);
-          const item: CartItem = { productId: id, name: `${name} · ${connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}`, slug: head.slug, category: head.category, price, quantity: (index < 0 ? 0 : state.items[index].quantity) + 1, stock: Math.min(head.stock, cable.stock), comboConnector: connector, comboPriceVersion: version, components: [head, cable].map(p => ({ productId: p.id, stock: p.stock })) };
+          const item: CartItem = { productId: id, name: `${name} · ${connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}`, slug: componentPublicationSlug(id, connector), category: head.category, price, quantity: (index < 0 ? 0 : state.items[index].quantity) + 1, stock: Math.min(head.stock, cable.stock), comboConnector: connector, comboPriceVersion: version, components: [head, cable].map(p => ({ productId: p.id, stock: p.stock })) };
           const items = state.items.map(i => ({ ...i }));
           if (index < 0) items.push(item); else items[index] = item;
           if (!fitsComponentInventory(items)) return state;
@@ -75,7 +75,7 @@ export const useCartStore = create<CartState>()(
         let added = false;
         set(state => {
           const products = [head, cable];
-          if (head.id === cable.id || products.some(p => p.kind === "family" || p.price <= 0 || !Number.isSafeInteger(p.stock) || p.stock < (state.items.find(i => i.productId === p.id)?.quantity ?? 0) + 1)) return state;
+          if (head.id === cable.id || products.some(p => (p.kind === "family" || p.kind === "combo") || p.price <= 0 || !Number.isSafeInteger(p.stock) || p.stock < (state.items.find(i => i.productId === p.id)?.quantity ?? 0) + 1)) return state;
           const items = state.items.map(i => ({ ...i }));
           for (const p of products) {
             const index = items.findIndex(i => i.productId === p.id);
@@ -88,7 +88,12 @@ export const useCartStore = create<CartState>()(
         });
         return added;
       },
-      addItem: (product) =>
+      addItem: (product) => {
+        if (product.kind === "combo") {
+          const c = product.combo;
+          if (c) get().addCombo(c.presentationId, "Cargador completo", c.connector, product.price, c.priceVersion, c.head, c.cable);
+          return;
+        }
         set((state) => {
           if (product.kind === "family" || product.stock <= 0) {
             return state;
@@ -127,7 +132,8 @@ export const useCartStore = create<CartState>()(
               stock: product.stock,
             },
           ]);
-        }),
+        });
+      },
       removeItem: (productId) =>
         set((state) =>
           withTotals(

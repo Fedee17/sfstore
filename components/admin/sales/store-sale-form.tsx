@@ -15,7 +15,7 @@ import {
   matchesStoreSaleProduct,
 } from "@/lib/store-sales";
 import type { StoreSaleProduct } from "@/services/store-sales";
-import { commercialLineKey, fitsComponentInventory, componentIds, type ComponentRecipe, type CableConnector } from "@/lib/products/component-combos";
+import { commercialLineKey, fitsComponentInventory, componentIds, componentPublicationName, type ComponentRecipe, type CableConnector } from "@/lib/products/component-combos";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -58,11 +58,17 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const quantityRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  const choices = useMemo(() => [...products, ...recipes.flatMap(recipe => (["cc", "lightning"] as const).map(connector => {
+    const parts = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
+    if (parts.some(p => !p) || !recipe.prices_approved || !recipe.combo_price_version || !recipe.combo_list_price) return null;
+    return { ...parts[0]!, id: `${recipe.presentation_product}:${connector}`, name: componentPublicationName(connector),
+      sku: null, price: recipe.combo_list_price, stock: Math.min(...parts.map(p => p!.stock)), comboRecipe: recipe, comboConnector: connector };
+  }).filter((p): p is NonNullable<typeof p> => p !== null))], [products, recipes]);
   const matches = useMemo(() => {
-    return products
+    return choices
       .filter((product) => matchesStoreSaleProduct(product, query))
       .slice(0, 10);
-  }, [products, query]);
+  }, [choices, query]);
 
   const pricing = calculateStoreSalePricing(
     lines.map((line) => ({ price: Number(line.product.price), quantity: line.quantity })),
@@ -85,7 +91,10 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
     }
     setLines(next); setComponentError("");
   }
-  function selectProduct(product: StoreSaleProduct) {
+  function selectProduct(product: StoreSaleProduct & { comboRecipe?: ComponentRecipe; comboConnector?: CableConnector }) {
+    if (product.comboRecipe && product.comboConnector) {
+      selectCombo(product.comboRecipe, product.comboConnector); setSearchOpen(false); setQuery(""); return;
+    }
     setSearchOpen(false); setQuery("");
     const existing = lines.find(line => !line.comboConnector && line.product.id === product.id);
     applyLines(existing ? lines.map(line => !line.comboConnector && line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { product, quantity: 1 }]);
@@ -103,7 +112,7 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
       const components = (selection as StoreSaleProduct[]).map(p => ({ productId: p.id, stock: p.stock }));
       const key = commercialLineKey(recipe.presentation_product, connector);
       const existing = lines.find(l => saleLineKey(l) === key);
-      const line: SaleLine = { product: { ...selection[0]!, id: recipe.presentation_product, name: `${recipe.name} · ${connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}`, price: recipe.combo_list_price, stock: Math.min(...components.map(p => p.stock)), sku: null }, quantity: (existing?.quantity ?? 0) + 1, comboConnector: connector, components };
+      const line: SaleLine = { product: { ...selection[0]!, id: recipe.presentation_product, name: componentPublicationName(connector), price: recipe.combo_list_price, stock: Math.min(...components.map(p => p.stock)), sku: null }, quantity: (existing?.quantity ?? 0) + 1, comboConnector: connector, components };
       applyLines(existing ? lines.map(l => saleLineKey(l) === key ? line : l) : [...lines, line]);
     } catch (error) { setComponentError(error instanceof Error ? error.message : "No se pudo agregar el conjunto."); }
   }
@@ -127,12 +136,17 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
         </p>
 
         {recipes.length ? <fieldset className="mt-5 grid gap-3 rounded-2xl border border-[#556B2F]/20 p-4" disabled={completed}>
-          <legend className="px-2 font-semibold">Cargador completo · elegí el cable</legend>
-          <p className="text-sm">Se agrega el conjunto con su precio especial. Consume un cabezal y el cable elegido; comparten stock con la venta individual. El descuento se aplica una sola vez.</p>
-          {recipes.map(recipe => <div key={recipe.id} className="grid gap-2 sm:grid-cols-2">
-            <p className="text-sm font-semibold sm:col-span-2">{recipe.name}{recipe.combo_list_price ? ` · ${currencyFormatter.format(calculateStoreSalePricing([{ price: recipe.combo_list_price, quantity: 1 }], payments.map(p => p.method)).total)}` : ""}{!recipe.prices_approved || !recipe.combo_price_version ? " · precios pendientes" : ""}</p>
-            {(["cc", "lightning"] as const).map(connector => <button key={connector} type="button" disabled={!recipe.prices_approved || !recipe.combo_price_version} onClick={() => selectCombo(recipe, connector)} className="min-h-11 rounded-xl border border-[#556B2F]/40 px-3 py-3 text-left font-semibold disabled:opacity-50">Agregar con {connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}</button>)}
-          </div>)}
+          <legend className="px-2 font-semibold">Cargadores completos</legend>
+          <p className="text-sm">Dos presentaciones con precio especial. Cada una consume un cabezal y el cable indicado; comparten stock con los artículos individuales. El descuento se aplica una sola vez.</p>
+          {recipes.flatMap(recipe => (["cc", "lightning"] as const).map(connector => {
+            const parts = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
+            const available = parts.every(Boolean) ? Math.min(...parts.map(p => p!.stock)) : 0;
+            return <article key={`${recipe.id}:${connector}`} className="grid gap-2 rounded-xl border border-[#556B2F]/20 p-3">
+              <h3 className="font-semibold">{componentPublicationName(connector)}</h3>
+              <p className="text-sm">{recipe.combo_list_price ? currencyFormatter.format(calculateStoreSalePricing([{ price: recipe.combo_list_price, quantity: 1 }], payments.map(p => p.method)).total) : "Precio pendiente"} · Disponibles: {available}</p>
+              <button type="button" disabled={!recipe.prices_approved || !recipe.combo_price_version || available < 1} onClick={() => selectCombo(recipe, connector)} className="min-h-11 rounded-xl border border-[#556B2F]/40 px-3 py-3 text-left font-semibold disabled:opacity-50">Agregar {componentPublicationName(connector)}</button>
+            </article>;
+          }))}
           <p role="alert" className="text-sm">{componentError}</p>
         </fieldset> : null}
 

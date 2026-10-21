@@ -1,19 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useCartStore } from "@/store/cart-store";
+import { useCartStore, cartItemKey } from "@/store/cart-store";
 import type { Product } from "@/types/product";
 
 export function AddToCartButton({ product }: { product: Product }) {
-  const item = useCartStore((state) => state.items.find((entry) => entry.productId === product.id));
+  const key = product.combo ? `${product.combo.presentationId}:${product.combo.connector}` : product.id;
+  const item = useCartStore((state) => state.items.find((entry) => cartItemKey(entry) === key));
   const addItem = useCartStore((state) => state.addItem);
   const [feedback, setFeedback] = useState("");
   const atLimit = Boolean(item && item.quantity >= item.stock);
 
   function addToCart() {
-    const before = useCartStore.getState().items.find((entry) => entry.productId === product.id)?.quantity ?? 0;
+    const before = useCartStore.getState().items.find((entry) => cartItemKey(entry) === key)?.quantity ?? 0;
     addItem(product);
-    const after = useCartStore.getState().items.find((entry) => entry.productId === product.id)?.quantity ?? 0;
+    const after = useCartStore.getState().items.find((entry) => cartItemKey(entry) === key)?.quantity ?? 0;
     setFeedback(after > before ? `${product.name}: agregado al carrito (${after}).` : `${product.name}: ya agregaste el stock disponible.`);
   }
 
