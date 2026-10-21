@@ -42,3 +42,8 @@ Esta modificación de presentación no añade migraciones. La publicación compl
 
 
 Validación final: 64 pruebas afectadas aprobadas (13 específicas de publicaciones y 51 regresiones), cero fallos ni omisiones; build Turbopack y TypeScript aprobados. El primer build en sandbox falló al crear la junction de xlsx; la misma compilación pasó con permisos de ejecución fuera del sandbox, sin modificar ACL ni configuración. ESLint sin errores, con dos advertencias preexistentes de imágenes. Gitleaks y revisión de diff antes del commit. No se repitieron las suites PostgreSQL de inventario sin cambios.
+
+
+### Paquete final de seguridad
+
+La integración comercial no altera sus dos migraciones originales. El paquete de publicación añade después `202610210001_public_catalog_component_security.sql`, con ambas vistas SECURITY INVOKER y una proyección pública sin stock propio ni datos administrativos. Aplicar las tres migraciones y el postcheck antes de publicar el código, según `docs/CHARGER-RELEASE-RUNBOOK.md`. Cinco presentaciones y precios aprobados sin cambios; preparación local, no publicada.

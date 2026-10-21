@@ -99,6 +99,8 @@
 
 | 21/10/2026 | P14 · cinco presentaciones | En validación local | Tres SKU físicos y dos publicaciones virtuales diferenciadas de cargador completo, con URL/búsqueda/mostrador propios; una receta, precio especial y stock compartido existentes. Incluye correcciones visuales de precio/selector y revisión notebook/móvil con datos sintéticos. | Candidato local, sin publicación | Ver `docs/CHARGER-COMMERCIAL-PRESENTATIONS.md`; no se modificaron Production, costos ni SQL. |
 
+| 21/10/2026 | P14 · seguridad conjunta de catálogo/ofertas | Integrado localmente, sin publicar | Tercera migración con bytes exactos validados; vistas invocadoras, grants por columna, proyección pública por conector sin costos ni stock persistido. Recetas y auditorías privadas. | Candidato derivado de `3dc2e92` | 53 controles previos reutilizados y 19 pruebas focalizadas de integración aprobadas en PostgreSQL 17.6, sin omisiones. Ver runbook; requiere autorización del nuevo candidato/DDL y control de Vercel antes del corte. |
+
 **Regla de mantenimiento:** Codex actualiza esta tabla y el estado de una tarea en el mismo cambio documental correspondiente, sin reescribir las decisiones históricas. Si un dato comercial cambia, verificar la fuente actual antes de actuar. Revisar prioridades después de cada entrega importante y al disponer de medición confiable.
 
 ## 8. Custodia y alcance

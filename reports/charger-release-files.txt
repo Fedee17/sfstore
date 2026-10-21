@@ -1,3 +1,4 @@
+.gitattributes
 AGENTS.md
 app/admin/compras/[id]/componentes/page.tsx
 app/admin/compras/[id]/page.tsx
@@ -32,6 +33,7 @@ lib/products/component-combos.ts
 lib/products/component-publications.ts
 lib/purchases/charger-components.ts
 lib/whatsapp.ts
+reports/catalog-component-security-postcheck-read-only.sql
 reports/charger-components-preflight-read-only.sql
 reports/charger-components-release-state-read-only.sql
 reports/charger-release-configure-review.sql
@@ -52,6 +54,8 @@ services/store-sales.ts
 store/cart-store.ts
 supabase/migrations/202610190001_component_inventory.sql
 supabase/migrations/202610200001_component_combo_pricing.sql
+supabase/migrations/202610210001_public_catalog_component_security.sql
+tests/catalog-component-security-postgres.test.mjs
 tests/charger-components.test.mjs
 tests/charger-release-transaction-postgres.test.mjs
 tests/component-combo-price.test.mjs
