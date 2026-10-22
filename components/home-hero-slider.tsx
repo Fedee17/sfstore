@@ -19,14 +19,14 @@ type HomeHeroSliderProps = {
 
 export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
   const activeSlide = slides[activeIndex] ?? slides[0];
 
   if (!activeSlide) {
     return null;
   }
 
-  const activeImageFailed = failedImages[activeSlide.imageSrc];
+
 
   return (
     <section className="mx-auto max-w-6xl px-5 pb-8 pt-6 sm:px-8 lg:pb-10 lg:pt-10">
@@ -34,28 +34,14 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
         <a
           href={activeSlide.primaryCtaHref}
           aria-label={activeSlide.primaryCtaLabel}
-          className="block aspect-[16/9] min-w-0 overflow-hidden rounded-[2rem] border border-[#DCE3EA] bg-white shadow-2xl shadow-[#102033]/10 outline-none transition hover:shadow-[#102033]/15 focus-visible:ring-2 focus-visible:ring-[#0072CE] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F9FC]"
+          className="block min-w-0 overflow-hidden rounded-[2rem] border border-[#DCE3EA] bg-white shadow-2xl shadow-[#102033]/10 outline-none transition hover:shadow-[#102033]/15 focus-visible:ring-2 focus-visible:ring-[#0072CE] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F9FC]"
         >
-          {!activeImageFailed ? (
-            <img
-              src={activeSlide.imageSrc}
-              alt={activeSlide.imageAlt}
-              className="h-full w-full max-w-full object-contain"
-              loading="eager"
-              onError={() =>
-                setFailedImages((currentFailedImages) => ({
-                  ...currentFailedImages,
-                  [activeSlide.imageSrc]: true,
-                }))
-              }
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_52%,#0072CE_100%)] px-6 text-center text-[#102033]">
-              <span className="max-w-lg break-words text-2xl font-semibold sm:text-4xl">
-                {activeSlide.title}
-              </span>
-            </div>
-          )}
+          <div className="flex min-h-56 flex-col justify-center gap-4 bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)] p-6 sm:min-h-80 sm:p-12">
+            <h2 className="max-w-2xl text-3xl font-semibold text-[#102033] sm:text-5xl">{activeSlide.title}</h2>
+            <p className="max-w-xl text-base text-[#102033]/75">{activeSlide.subtitle}</p>
+            <p className="font-semibold text-[#003B73]">25% OFF por transferencia · pago completo</p>
+            <span className="w-fit rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white">{activeSlide.primaryCtaLabel}</span>
+          </div>
         </a>
 
         {slides.length > 1 ? (

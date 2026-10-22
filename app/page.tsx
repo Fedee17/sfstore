@@ -4,7 +4,7 @@ import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slide
 import { SiteHeader } from "@/components/site-header";
 import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import { getProductsByCategorySlug, type PublicProduct } from "@/services/products";
+import { getCatalogPublications, type PublicProduct } from "@/services/products";
 
 export const metadata: Metadata = {
   title: "Perfumes, mates y regalos importados",
@@ -32,7 +32,8 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
 
 const categoryLabels: Record<PublicProduct["category"], string> = {
   perfumes: "Perfumes",
-  mates: "Mates",
+  mates: "Mates y termos",
+  accesorios: "Accesorios",
 };
 
 const benefits = [
@@ -267,12 +268,9 @@ function GuideCard({
 
 export default async function Home() {
   await connection(); // Current catalog/stock at request time, never frozen during build.
-  const [perfumes, mates] = await Promise.all([
-    getProductsByCategorySlug("perfumes"),
-    getProductsByCategorySlug("mates"),
-  ]);
-
-  const allProducts = [...perfumes, ...mates];
+  const allProducts = await getCatalogPublications();
+  const perfumes = allProducts.filter(product => product.category === "perfumes");
+  const mates = allProducts.filter(product => product.category === "mates");
   const featuredProducts = getHomeFeaturedProducts(allProducts);
   const perfumeVisual = getFirstVisualProduct(perfumes);
   const mateVisual = getFirstVisualProduct(mates);
@@ -420,13 +418,12 @@ export default async function Home() {
             isExternal
           />
           <CategoryCard
-            href={generalWhatsAppLink}
+            href="/accesorios"
             eyebrow="Accesorios"
             title="Completá la compra"
             description="Detalles útiles para sumar a tu pedido."
             product={null}
             tone="dark"
-            isExternal
           />
         </div>
       </section>

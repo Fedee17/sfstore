@@ -42,7 +42,7 @@ export function ProductImageGallery({
 
   if (!selectedImage) {
     return (
-      <div className="flex aspect-square flex-col items-center justify-center bg-[#102033] text-[#F7F9FC]" role="img" aria-label={`Imagen no disponible de ${productName}`}>
+      <div className="flex min-h-40 flex-col py-8 lg:aspect-square items-center justify-center bg-[#102033] text-[#F7F9FC]" role="img" aria-label={`Imagen no disponible de ${productName}`}>
         <span className="break-all px-4 text-center text-7xl font-semibold tracking-wide text-[#DCE3EA] sm:text-8xl">
           {placeholder}
         </span>

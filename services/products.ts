@@ -146,13 +146,12 @@ function fallbackByCategory(categorySlug: SupportedPublicCategory): PublicProduc
 }
 
 const CATALOG_COLUMNS="id,name,slug,short_description,description,price,stock,featured,status,historical_identity,category_id,categories,category_slug,product_images,product_attributes,family_id,family_name,family_slug,commercial_label,variant_options,sku";
-async function readPublicSkuRows(category?: SupportedPublicCategory, slug?: string, family?: string, slugs?: string[]) {
+async function readPublicSkuRows(slug?: string, family?: string, slugs?: string[]) {
  const db=getSupabaseClient(), rows:SupabaseProductRow[]=[];
  let after:string|null=null;
  for(let page=0;page<500;page++){
   let query=db.from("public_catalog_skus").select(CATALOG_COLUMNS).order("id").limit(200);
   if(after)query=query.gt("id",after);
-  if(category)query=category==="perfumes"?query.eq("category_slug","perfumes"):query.neq("category_slug","perfumes");
   if(slug)query=query.eq("slug",slug);
   if(slugs)query=query.in("slug",slugs);
   if(family)query=query.eq("family_slug",family);
@@ -187,7 +186,7 @@ async function comboPublications(physical: PublicProduct[]) {
  try{return projectComponentPublications(physical,await readPublicComboRows());}catch{return [];}
 }
 export async function getProductsByCategorySlug(categorySlug:SupportedPublicCategory):Promise<PublicProduct[]> {
- try{const physical=mapRows(await readPublicSkuRows(categorySlug));return [...groupPublicProducts(physical),...await comboPublications(physical)];}
+ try{const physical=mapRows(await readPublicSkuRows());return [...groupPublicProducts(physical),...await comboPublications(physical)].filter(product=>product.category===categorySlug);}
  catch{return fallbackByCategory(categorySlug);}
 }
 export async function getProductBySlug(slug:string):Promise<PublicProduct|null> {
@@ -197,13 +196,13 @@ export async function getProductBySlug(slug:string):Promise<PublicProduct|null> 
   if(virtual){
    const offers=await readPublicComboRows(virtual);
    if(offers.length!==1)return null;
-   const physical=mapRows(await readPublicSkuRows(undefined,undefined,undefined,[offers[0].head_slug,offers[0].cable_slug]));
+   const physical=mapRows(await readPublicSkuRows(undefined,undefined,[offers[0].head_slug,offers[0].cable_slug]));
    return projectComponentPublications(physical,offers)[0]??null;
   }
-  const family=mapRows(await readPublicSkuRows(undefined,undefined,slug));
+  const family=mapRows(await readPublicSkuRows(undefined,slug));
   if(family.length)return groupPublicProducts(family)[0]??null;
-  const rows=mapRows(await readPublicSkuRows(undefined,slug));
-  if(rows[0]?.familySlug)return groupPublicProducts(mapRows(await readPublicSkuRows(undefined,undefined,rows[0].familySlug)))[0]??null;
+  const rows=mapRows(await readPublicSkuRows(slug));
+  if(rows[0]?.familySlug)return groupPublicProducts(mapRows(await readPublicSkuRows(undefined,rows[0].familySlug)))[0]??null;
   return rows[0]??null;
  }catch{return demoProducts().find(p=>p.slug===slug)??null;}
 }

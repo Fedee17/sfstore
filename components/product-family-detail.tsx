@@ -1,4 +1,5 @@
 "use client";
+import { publicCategoryPaths } from "@/lib/catalog/public-product-visibility";
 import { useState } from "react";
 import Link from "next/link";
 import type { Product } from "@/types/product";
@@ -14,7 +15,7 @@ export function ProductFamilyDetail({product}:{product:Product}) {
  const selected=complete?variants.find(p=>dimensions.every(d=>p.variantOptions?.[d]===choices[d])):undefined;
  const cartProduct=selected?{...selected,slug:product.slug}:null;
  return <main className="min-h-screen bg-[#F7F9FC] text-[#102033]"><SiteHeader/>
- <section className="mx-auto max-w-6xl px-5 py-8"><Link href={product.category==="perfumes"?"/perfumes":"/mates"} className="underline">Volver al catálogo</Link>
+ <section className="mx-auto max-w-6xl px-5 py-8"><Link href={publicCategoryPaths[product.category]} className="underline">Volver al catálogo</Link>
  <h1 className="my-6 break-words text-3xl font-semibold">{product.name}</h1>
  <div className="grid min-w-0 gap-7 lg:grid-cols-2"><div className="min-w-0 overflow-hidden rounded-3xl border bg-[#102033]">
  <ProductImageGallery key={selected?.id??product.id} images={selected?.images??[]} placeholder={product.imagePlaceholder} productName={selected?.name??product.name}/>

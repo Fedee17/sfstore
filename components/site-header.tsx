@@ -230,6 +230,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
             openMenu={openMenu}
             setOpenMenu={setOpenMenu}
           />
+          <Link href="/accesorios" prefetch={false} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 py-2 text-white hover:bg-white/10">Accesorios</Link>
           <a
             href={helpHref}
             target="_blank"

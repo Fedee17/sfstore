@@ -1,8 +1,9 @@
 "use client";
+import { publicCategoryLabels as categoryLabels } from "@/lib/catalog/public-product-visibility";
 
 import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
+import { getWebTransferSubtotal, getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { TransferAlias } from "@/components/transfer-alias";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
@@ -33,10 +34,7 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 2,
 });
 
-const categoryLabels = {
-  perfumes: "Perfumes",
-  mates: "Mates",
-} as const;
+
 
 function CheckoutContent() {
   const router = useRouter();
@@ -500,12 +498,12 @@ function CheckoutContent() {
                       <div>
                         <p className="font-semibold">{item.name}</p>
                         <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-                          {categoryLabels[item.category]} x {item.quantity}
+                          {categoryLabels[item.category]} · {item.quantity} unidad(es) · transferencia
                         </p>
                       </div>
                       <p className="font-semibold text-[#003B73]">
                         {currencyFormatter.format(
-                          item.price *
+                          getWebTransferPrice(item.price) *
                             item.quantity,
                         )}
                       </p>
@@ -520,16 +518,16 @@ function CheckoutContent() {
                   <span className="font-semibold">{totalItems}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#102033]/65">Subtotal de referencia (lista)</span>
+                  <span className="text-[#102033]/65">Subtotal de lista</span>
                   <span className="font-semibold">
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Productos con 25% de descuento (referencia)</span><span>{currencyFormatter.format(getWebTransferSubtotal(items))}</span></div><p>25% de descuento en productos por transferencia. El servidor calcula el importe final y lo congela al crear el pedido; envío según configuración válida.</p>
+                <div className="flex justify-between"><span>Productos por transferencia (25% OFF)</span><span>{currencyFormatter.format(getWebTransferSubtotal(items))}</span></div><p>Revisamos precios y disponibilidad al preparar tu pedido. No transfieras antes de obtener su confirmación.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
-                  <span className="font-semibold">Total final</span>
+                  <span className="font-semibold">{shippingRequired ? "Total con envío" : "Total por transferencia · retiro"}</span>
                   <span className="font-semibold text-[#003B73]">
-                    {shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : "Se confirma al crear el pedido"}
+                    {shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : currencyFormatter.format(Math.round((getWebTransferSubtotal(items) + (shippingQuote?.rates.find(rate => rate.quoteKey === selectedQuoteKey)?.fee ?? 0))*100)/100)}
                   </span>
                 </div>
                 <div className="flex justify-between">

@@ -112,3 +112,13 @@ test('checkout serialization of both virtual publications sends only the origina
  assert.deepEqual(payload.items,[{productId:id,quantity:1,comboConnector:'cc'},{productId:id,quantity:1,comboConnector:'lightning'}]);
  assert.doesNotMatch(JSON.stringify(payload),/combo:|30666|23000|unitPrice|priceVersion|recipeName|components/);
 });
+
+test('electronics retain their source category and all five publications belong to Accessories, never Mates',async()=>{
+ const electronics=raw.map(p=>({...p,category_slug:'electronica',categories:{...p.categories,name:'Electrónica',slug:'electronica'}}));
+ globalThis.__publicationDb=db(false,electronics);
+ const all=await service.getProductsByCategorySlug('accesorios');
+ assert.equal(all.length,5);assert.ok(all.every(p=>p.category==='accesorios'));
+ assert.ok(all.every(p=>p.categoryName==='Electrónica'));
+ assert.equal((await service.getProductsByCategorySlug('mates')).length,0);
+ assert.equal((await service.getProductsByCategorySlug('perfumes')).length,0);
+});

@@ -1,9 +1,10 @@
 "use client";
+import { publicCategoryLabels as categoryLabels, publicCategoryPaths } from "@/lib/catalog/public-product-visibility";
 
 import { getWebTransferPrice, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
 
 import { SiteHeader } from "@/components/site-header";
-import { transferPayment } from "@/lib/payment";
+
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore, cartItemKey } from "@/store/cart-store";
@@ -16,10 +17,7 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 2,
 });
 
-const categoryLabels = {
-  perfumes: "Perfumes",
-  mates: "Mates",
-} as const;
+
 
 export default function CartPage() {
   const selectedPaymentMethod = "transfer";
@@ -57,7 +55,7 @@ export default function CartPage() {
             </h1>
           </div>
           <p className="max-w-xl text-base leading-7 text-[#102033]/70 md:text-right">
-            Revisá cantidades, elegí método de pago y avanzá al checkout.
+            Revisá cantidades y continuá con el pago por transferencia.
           </p>
         </div>
 
@@ -107,7 +105,10 @@ export default function CartPage() {
                         {item.name}
                       </a>
                       <p className="mt-2 text-sm text-[#102033]/60">
-                        Precio lista de referencia: {currencyFormatter.format(item.price)}
+                        Lista por unidad: {currencyFormatter.format(item.price)}
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-[#003B73]">
+                        Transferencia por unidad: {currencyFormatter.format(selectedUnitPrice)}
                       </p>
                     </div>
 
@@ -115,8 +116,9 @@ export default function CartPage() {
                       <div className="flex items-center rounded-full border border-[#003B73]/20 bg-[#F7F9FC]">
                         <button
                           type="button"
+                          aria-label={`Quitar una unidad de ${item.name}`}
                           onClick={() => decreaseQuantity(cartItemKey(item))}
-                          className="h-10 w-10 text-lg font-semibold text-[#003B73] transition hover:text-[#0072CE]"
+                          className="h-11 w-11 text-lg font-semibold text-[#003B73] transition hover:text-[#0072CE]"
                         >
                           -
                         </button>
@@ -125,9 +127,10 @@ export default function CartPage() {
                         </span>
                         <button
                           type="button"
+                          aria-label={`Agregar una unidad de ${item.name}`}
                           onClick={() => increaseQuantity(cartItemKey(item))}
                           disabled={item.quantity >= item.stock}
-                          className="h-10 w-10 text-lg font-semibold text-[#003B73] transition hover:text-[#0072CE] disabled:cursor-not-allowed disabled:opacity-35"
+                          className="h-11 w-11 text-lg font-semibold text-[#003B73] transition hover:text-[#0072CE] disabled:cursor-not-allowed disabled:opacity-35"
                         >
                           +
                         </button>
@@ -161,23 +164,24 @@ export default function CartPage() {
 
             <aside className="h-fit rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Resumen de compra</h2>
-              <p className="mt-3 text-sm">Productos con 25% de descuento (referencia): {currencyFormatter.format(getWebTransferSubtotal(items))}. El total definitivo se confirma al preparar el pedido.</p>
+              <p className="mt-3 text-sm">Pago completo por transferencia · 25% OFF en productos. Revisamos precios y disponibilidad al preparar el pedido.</p>
               <div className="mt-6 space-y-3 border-b border-[#003B73]/15 pb-5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#102033]/65">Productos</span>
                   <span className="font-semibold">{totalItems}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#102033]/65">Subtotal de referencia (lista)</span>
+                  <span className="text-[#102033]/65">Subtotal de lista</span>
                   <span className="font-semibold">
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <p>25% de descuento por transferencia. El servidor calcula y congela el precio final al crear el pedido.</p>
+                <div className="flex justify-between"><span>Descuento por transferencia</span><span>−{currencyFormatter.format(Math.round((subtotal-getWebTransferSubtotal(items))*100)/100)}</span></div>
+                <p>Envío: se define en el siguiente paso. Retiro sin cargo.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
-                  <span className="font-semibold">Total final</span>
+                  <span className="font-semibold">Productos por transferencia</span>
                   <span className="font-semibold text-[#003B73]">
-                    {"Se confirma al crear el pedido"}
+                    {currencyFormatter.format(getWebTransferSubtotal(items))}
                   </span>
                 </div>
               </div>
@@ -211,7 +215,7 @@ export default function CartPage() {
                       El precio de transferencia se verifica al preparar el pedido.
                     </p>
                     <p className="mt-2 text-xs font-semibold text-[#102033]/55">
-                      Alias: {transferPayment.alias}
+                      No transfieras hasta preparar tu pedido.
                     </p>
                   </button>
                 </div>
@@ -224,7 +228,7 @@ export default function CartPage() {
                 {checkoutLabel}
               </a>
               <a
-                href="/perfumes"
+                href={publicCategoryPaths[items[items.length - 1]?.category ?? "perfumes"]}
                 className="mt-3 flex w-full items-center justify-center rounded-full border border-[#102033]/10 px-6 py-3.5 text-center text-sm font-semibold text-[#102033]/70 transition hover:border-[#0072CE] hover:text-[#0072CE]"
               >
                 Seguir comprando

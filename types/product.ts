@@ -1,4 +1,4 @@
-export type ProductCategory = "perfumes" | "mates";
+export type ProductCategory = "perfumes" | "mates" | "accesorios";
 
 export type Product = {
   kind?: "simple" | "variant" | "family" | "combo";

@@ -83,3 +83,13 @@ test("public projection preserves visibility guards, without granting public cos
  assert.match(sql,/security_barrier=true/);
  assert.match(sitemap,/getCatalogPublications/);
 });
+
+// Regression: electronics used to be silently converted into Mates.
+test("electronics and general accessories have their own section", () => {
+  for (const categorySlug of ["electronica", "accesorios", "regalos"]) {
+    assert.equal(resolvePublicCatalogSection(visibleProduct({ categorySlug })), "accesorios");
+  }
+  for (const categorySlug of ["mates", "termos", "accesorios-materos", "vasos-termicos"]) {
+    assert.equal(resolvePublicCatalogSection(visibleProduct({ categorySlug })), "mates");
+  }
+});

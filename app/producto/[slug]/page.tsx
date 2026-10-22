@@ -1,3 +1,4 @@
+import { publicCategoryLabels as categoryLabels, publicCategoryPaths as categoryPaths } from "@/lib/catalog/public-product-visibility";
 import { ProductFamilyDetail } from "@/components/product-family-detail";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -74,15 +75,9 @@ const currencyFormatter = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 2,
 });
 
-const categoryLabels = {
-  perfumes: "Perfumes",
-  mates: "Mates",
-} as const;
 
-const categoryPaths = {
-  perfumes: "/perfumes",
-  mates: "/mates",
-} as const;
+
+
 
 type ProductGalleryImageData = {
   url: string;
@@ -150,12 +145,12 @@ function PricePanel({
 }) {
   const showTransferPrice = product.price > 0;
   const transferPrice = getWebTransferPrice(product.price);
-  const savingsLabel = formatSavingsLabel(product.price, transferPrice);
+
 
   return (
-    <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-[#003B73]/15 bg-[#F7F9FC] p-5">
+    <div className="mt-4 overflow-hidden rounded-2xl border border-[#003B73]/15 bg-[#F7F9FC] p-4">
       {showTransferPrice ? (
-        <div className="grid min-w-0 gap-4">
+        <div className="grid min-w-0 grid-cols-[1fr_auto] gap-3">
           <div className="min-w-0">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
               Precio por transferencia
@@ -163,19 +158,9 @@ function PricePanel({
             <p className="mt-2 whitespace-nowrap text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
               {currencyFormatter.format(transferPrice)}
             </p>
-            {savingsLabel ? (
-              <span className="mt-3 inline-flex max-w-full rounded-full bg-[#0072CE] px-3 py-1 text-sm font-semibold text-white">
-                {savingsLabel}
-              </span>
-            ) : null}
-            <p className="mt-3 break-words text-sm font-medium text-[#0072CE]">
-              Transferencia con 25% de descuento sobre el precio de lista.
-            </p>
-            <p className="mt-2 break-words text-sm text-[#102033]/55">
-              Aboná el 100% por transferencia. Para retirar, esperá la confirmación del local.
-            </p>
+            <p className="mt-1 text-xs text-[#102033]/65">25% OFF · pago completo</p>
           </div>
-          <div className="min-w-0 rounded-2xl border border-[#003B73]/15 bg-white/70 p-4">
+          <div className="min-w-0 self-start text-right">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
               Precio lista
             </p>
@@ -196,12 +181,12 @@ function PricePanel({
       )}
 
       {isAvailable ? (
-        <p className="mt-4 break-words text-sm font-medium text-[#0072CE]">
+        <p className="mt-2 break-words text-sm font-medium text-[#0072CE]">
           {product.kind === "combo" ? "Disponibilidad según componentes" : "Stock disponible"}: {product.stock} unidad
           {product.stock === 1 ? "" : "es"}
         </p>
       ) : (
-        <p className="mt-4 break-words text-sm font-medium text-[#003B73]">
+        <p className="mt-2 break-words text-sm font-medium text-[#003B73]">
           Sin stock por ahora. Consultanos y te avisamos si vuelve a entrar.
         </p>
       )}
@@ -235,15 +220,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <SiteHeader />
-      <section className="mx-auto max-w-6xl px-5 py-8 sm:px-8 lg:py-12">
+      <section className="mx-auto max-w-6xl px-5 py-5 sm:px-8 sm:py-8 lg:py-12">
         <a
           href={categoryPaths[product.category]}
-          className="mb-5 inline-flex max-w-full items-center rounded-full border border-[#003B73]/25 bg-white/60 px-4 py-2 text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] hover:text-[#0072CE]"
+          className="mb-3 inline-flex max-w-full items-center rounded-full border border-[#003B73]/25 bg-white/60 px-4 py-2 text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] hover:text-[#0072CE] sm:mb-5"
         >
           &larr; Volver a {categoryLabels[product.category].toLowerCase()}
         </a>
 
-        <nav className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-[#102033]/60">
+        <nav aria-label="Ruta del producto" className="hidden min-w-0 flex-wrap items-center gap-2 text-sm text-[#102033]/60 sm:flex">
           <Link
             className="font-medium text-[#003B73] transition hover:text-[#0072CE]"
             href="/"
@@ -264,8 +249,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </span>
         </nav>
 
-        <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-          <div className="min-w-0 overflow-hidden rounded-[2rem] border border-[#003B73]/15 bg-[#102033] shadow-2xl shadow-[#102033]/10">
+        <div className="mt-4 grid min-w-0 gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+          <div className="order-2 min-w-0 overflow-hidden rounded-[2rem] border border-[#003B73]/15 bg-[#102033] shadow-2xl shadow-[#102033]/10 lg:order-1">
             <ProductImageGallery
               images={getProductGalleryImages(product)}
               placeholder={product.imagePlaceholder}
@@ -273,7 +258,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
           </div>
 
-          <article className="min-w-0 overflow-hidden rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-6 shadow-sm sm:p-8">
+          <article className="order-1 min-w-0 overflow-hidden rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-4 shadow-sm sm:p-8 lg:order-2">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
               <span className="max-w-full break-words rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
                 {categoryLabels[product.category]}
@@ -294,15 +279,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
               ) : null}
             </div>
 
-            <h1 className="mt-6 break-words text-4xl font-semibold leading-tight sm:text-5xl">
+            <h1 className="mt-3 break-words text-2xl font-semibold leading-tight sm:text-4xl">
               {product.name}
             </h1>
-            <p className="mt-5 break-words text-lg leading-8 text-[#102033]/70">
-              {product.description ?? product.shortDescription}
-            </p>
-
+            <p className="mt-2 text-sm leading-6">{product.shortDescription}</p>
             <PricePanel product={product} isAvailable={isAvailable} />
             <ProductActions product={product} />
+            <details className="mt-4 border-t border-[#003B73]/15 pt-3">
+              <summary className="cursor-pointer font-semibold">Información del producto</summary>
+              <p className="mt-3 text-sm leading-6">{product.description ?? product.shortDescription}</p>
+              <p className="mt-3 text-sm leading-6">Aboná el 100% por transferencia. Para retirar, esperá la confirmación del local.</p>
+            </details>
             {product.kind !== "combo" ? <Suspense fallback={<p role="status" className="mt-4 text-sm">Consultando conjuntos…</p>}><ComponentOffers headId={product.id}/></Suspense> : null}
           </article>
         </div>

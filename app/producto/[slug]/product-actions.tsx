@@ -36,7 +36,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   }
 
   return (
-    <div className="mt-8 min-w-0">
+    <div className="mt-4 min-w-0">
       <div className="grid min-w-0 gap-3 sm:grid-cols-2">
         {isAvailable ? (
           <button
@@ -70,7 +70,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           {feedback}
         </p>
       <p className="mt-4 break-words text-sm leading-6 text-[#102033]/60">
-        Te ayudamos a elegir según tus gustos, ocasión y presupuesto.
+        {product.kind === "combo" ? "¿Dudas sobre el conector o la compatibilidad con tu equipo? Consultanos antes de comprar." : "Te ayudamos a elegir según tus gustos, ocasión y presupuesto."}
       </p>
     </div>
   );

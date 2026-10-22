@@ -113,3 +113,10 @@
 ---
 
 **Próxima decisión comercial sugerida:** aprobar una nueva comunicación para reemplazar el banner de «3 cuotas sin interés» por un mensaje verdadero y claro sobre el pago actual, antes de ordenar cambios visuales más amplios.
+
+
+### 22/10/2026 — Experiencia de compra: implementación local
+
+P01, P05 y P08: **En validación local; no publicado**. Rama `codex/charger-purchase-ux-20261022`, basada en `5884b0e`. Se elimina la promesa visual de cuotas de los banners públicos, se separa la sección Accesorios de la taxonomía matera y se priorizan precio, conector y compra en móvil. Carrito y checkout usan el cálculo unitario por transferencia existente y conservan el bloqueo de envío sin cotizar. No cambia inventario, precios, descuentos ni autorización del servidor.
+
+Evidencia y límites: [revisión comparativa](auditorias/2026-10-22-MEJORAS-EXPERIENCIA-COMPRA.md). Fotografías y especificaciones verificadas de cargadores siguen pendientes del propietario. Sin métricas de conversión ni afirmaciones de mejoras porcentuales en ventas.

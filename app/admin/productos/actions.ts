@@ -245,6 +245,7 @@ function revalidateProductPaths({
       continue;
     }
 
+    paths.add("/accesorios");
     paths.add(categorySlug === "perfumes" ? "/perfumes" : "/mates");
   }
 
