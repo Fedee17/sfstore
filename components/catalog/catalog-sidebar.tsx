@@ -95,7 +95,7 @@ export function CatalogSidebar({
     <div className="min-w-0 lg:min-h-[32rem] transition-[opacity,transform] duration-200">
       {!selectedCategoryItem ? (
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-[#102033]">Categorías</h2>
+          <h2 className="sr-only">Explorá el catálogo</h2>
           <nav className="mt-3 grid min-w-0 gap-1" aria-label={ariaLabel}>
             <button
               type="button"

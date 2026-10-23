@@ -8,7 +8,7 @@ Referencia: propuesta combinada aprobada del worktree `mobile-navigation-proposa
 - Espaciado: categorías en una fila, introducción compacta y tarjeta en primer viewport. Panel 58dvh y pie separado del scroll; no hay panel de pantalla completa ni doble scroll de fondo.
 - Tokens: azul #0072CE, navy #003B73, texto #102033 y superficie #F7F9FC existentes. Selección se identifica por estado accesible y color; sección activa también subrayada.
 - Imágenes: tarjetas y assets originales, datos sintéticos sin fotos ficticias. La tarjeta horizontal ilustrativa del mock no se implementa: conservar tarjetas actuales era condición documentada.
-- Contenido: Aplicar filtros como CTA; ayuda no duplicada; copy y datos comerciales reales no se reemplazan por ejemplos del diseño. Los filtros y opciones originales se conservan completos.
+- Contenido: Ver productos como CTA (texto final aprobado); encabezado «Encontrá lo que buscás» y acceso «Elegí a tu gusto»; ayuda no duplicada; copy y datos comerciales reales no se reemplazan por ejemplos del diseño. Los filtros y opciones originales se conservan completos.
 
 ## Hallazgos resueltos
 

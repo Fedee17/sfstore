@@ -45,3 +45,10 @@ No hay certificación WCAG completa ni prueba en un teléfono físico/iOS/Instag
 Para probar localmente: `node tests/fixtures/mobile-navigation-preview.mjs` y abrir `http://127.0.0.1:3153/perfumes?categoria=arabe`. Para repetir build sin credenciales: mismo comando con `--build`. El entorno rechaza archivos `.env` y no se conecta a Production.
 
 **Estado:** implementado y validado localmente, pendiente de revisión y autorización de publicación.
+
+
+## Textos finales aprobados y preparación de publicación
+
+Se reemplaza la terminología técnica por «Elegí a tu gusto», «Encontrá lo que buscás», preguntas específicas y «Ver productos», sin modificar opciones ni parámetros. Encabezado Categorías oculto visualmente, semántica accesible conservada. Icono Heroicons local con licencia MIT. Las capturas de lenguaje previas conservan el subtítulo anterior como evidencia histórica; el código final utiliza exclusivamente el texto aprobado.
+
+Nueva validación del candidato: 20 pruebas focalizadas (estado, búsqueda y servicio público), build sintético sin escrituras, TypeScript y ESLint sin errores. Advertencia previa del logo conservada. Autorizada la publicación controlada; resultado productivo se documentará tras verificar el dominio.

@@ -127,3 +127,8 @@ Evidencia y límites: [revisión comparativa](auditorias/2026-10-22-MEJORAS-EXPE
 **Implementado y validado localmente; no publicado.** Rama `codex/mobile-navigation-filters-20261023`, base `acbcd47`. Categorías horizontales, encabezado móvil compacto, panel de filtros cerrado por defecto de 58dvh con borrador y Aplicar fijo, cierre accesible y WhatsApp sin superposición móvil. Se conservan filtros, sidebar de notebook, tarjetas, precios y lógica comercial.
 
 17 pruebas automatizadas y 17 controles en navegador aprobados; build, TypeScript y lint focalizado sin errores. Evidencia y límites: [entrega local](auditorias/2026-10-23-NAVEGACION-MOVIL-FILTROS.md). No se modificó Production ni se atribuyen mejoras de conversión medidas. La publicación requiere autorización posterior.
+
+
+### 23/10/2026 — P07 / UX-N03: candidato de publicación autorizado
+
+**En publicación autorizada, pendiente de verificación productiva.** Se consolidan categorías horizontales, panel inferior de 58dvh cerrado por defecto, acceso «Elegí a tu gusto», encabezado «Encontrá lo que buscás», preguntas por categoría y CTA «Ver productos» fijo. WhatsApp sin superposición móvil; notebook conserva navegación y sidebar. Base remota `acbcd47`. Sin cambios comerciales ni de Supabase. Validación focalizada: 20 pruebas aprobadas, build, TypeScript y lint sin errores; una advertencia previa del logo. Se verificará el deployment protegido antes de promover y se restaurará Automatic. No se atribuyen resultados de conversión medidos.
