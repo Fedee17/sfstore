@@ -1,0 +1,21 @@
+{
+  "status": "LOCAL_REBUILD_PASSED",
+  "productionModified": false,
+  "remoteExecuted": false,
+  "baseCommit": "9c6f36728c48f1c99936955019b55082099ad209",
+  "branch": "codex/explicit-grants-rebuild-20261023",
+  "postgres": "17.6",
+  "steps": 37,
+  "canonicalMigrationsUnchanged": 34,
+  "canonicalBaselineUnchanged": true,
+  "dockerTests": 73,
+  "manifestStaticTests": 1,
+  "failures": 0,
+  "skipped": 0,
+  "eslintErrors": 0,
+  "viewsSecurityInvoker": true,
+  "publicTablesWithRLS": 39,
+  "automaticTableSequenceFunctionGrants": false,
+  "populatedDatabaseGuardPassed": true,
+  "supabaseFullStackResetExecuted": false
+}

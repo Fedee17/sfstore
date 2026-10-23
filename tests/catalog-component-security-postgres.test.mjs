@@ -43,7 +43,7 @@ describe('versioned joint security / isolated PostgreSQL 17.6', { skip: !docker,
     assert.ok(db);
     await q('create role anon; create role authenticated; create role service_role bypassrls');
     await q(read('tests/fixtures/storage-permissions.sql'));
-    for (const entry of JSON.parse(read('staging/migration-manifest.json')).applicationOrder) await q(read(entry.stagingFile));
+    for (const entry of JSON.parse(read('staging/migration-manifest.json')).applicationOrder.filter(e=>e.source.split('/').at(-1)<'202610190001')) await q(read(entry.stagingFile));
     await q(read('supabase/migrations/202610190001_component_inventory.sql'));
     await q(read('supabase/migrations/202610200001_component_combo_pricing.sql'));
   });
