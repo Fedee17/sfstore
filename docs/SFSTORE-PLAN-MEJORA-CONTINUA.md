@@ -132,3 +132,17 @@ Evidencia y límites: [revisión comparativa](auditorias/2026-10-22-MEJORAS-EXPE
 ### 23/10/2026 — P07 / UX-N03: candidato de publicación autorizado
 
 **En publicación autorizada, pendiente de verificación productiva.** Se consolidan categorías horizontales, panel inferior de 58dvh cerrado por defecto, acceso «Elegí a tu gusto», encabezado «Encontrá lo que buscás», preguntas por categoría y CTA «Ver productos» fijo. WhatsApp sin superposición móvil; notebook conserva navegación y sidebar. Base remota `acbcd47`. Sin cambios comerciales ni de Supabase. Validación focalizada: 20 pruebas aprobadas, build, TypeScript y lint sin errores; una advertencia previa del logo. Se verificará el deployment protegido antes de promover y se restaurará Automatic. No se atribuyen resultados de conversión medidos.
+
+
+### 23/10/2026 — P07 / UX-N03: publicación detenida por acceso CLI
+
+**Bloqueado para publicación; no publicado.** Candidato `223ca7b0b3f4d1c929761d6dc7c561f16b411456` consolidado y enviado a main por fast-forward con builds bloqueados y verificados. CLI 59.25.4 rechazó la creación con `scope-not-accessible` (sin deployment nuevo). Dominio conserva `dpl_Dt1JKWoYAPDiuqPsuiVjMV3eeqfv` / `acbcd47`. Ignored Build Step restaurado a Automatic y verificado tras recarga; cero builds pendientes. 20 pruebas focalizadas, TypeScript, build y lint sin errores. Falta recuperar el acceso CLI al equipo existente, construir protegido y verificar móvil/notebook antes de promover. No se modificaron Supabase, precios, inventario ni checkout. Este cierre documental permanece local para no disparar otro build.
+
+
+### 23/10/2026 — P07 / UX-N03: publicado y comprobado
+
+**Publicado.** Código aprobado `223ca7b0b3f4d1c929761d6dc7c561f16b411456`, deployment `dpl_ATk4WoDC8JEkrCQ2kujDn542dhoo` (READY), dominio `sfstore-ten.vercel.app`. Sesión CLI recuperada mediante ingreso oficial, sin modificar permisos. Los 596 archivos fuente subidos coinciden con el candidato; las 20 pruebas, TypeScript y build aprobados se reutilizaron sin repetirlos. Build remoto y TypeScript también aprobaron.
+
+Verificación antes y después de promover: categorías horizontales desplazables; primer producto Perfumes a 435px en 390×844; panel cerrado por defecto, 489,5px (58%), scroll interno y CTA visible; «Elegí a tu gusto» / «Encontrá lo que buscás» / preguntas específicas. Preferencia Fresco aplica `familia=fresco`, con resultados y restauración del scroll. Mates y sidebar de notebook comprobados en 1366×900, sin overflow horizontal. WhatsApp flotante no ocupa controles móviles, ayuda conservada. GET 200 para Mates, Accesorios, búsqueda de cargador, carrito, checkout y login administrativo; sin pedidos ni escrituras. [Capturas productivas](auditorias/assets/2026-10-23-navegacion-publicada/).
+
+Incidencias recuperadas: autenticación CLI ausente y guardado inicialmente bloqueado por sandbox; resueltos usando el ingreso oficial con permiso de escritura en el perfil habitual. Una lectura inicial del dominio tras promoción mostró la versión anterior; recarga y consulta del alias confirmaron la versión nueva. Se conserva la evidencia histórica. Este cierre documental se sincroniza con builds bloqueados; restauración de Automatic y cola se registran en el resultado privado final. Sin medición de conversión ni prueba en dispositivo físico/Instagram WebView.

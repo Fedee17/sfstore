@@ -52,3 +52,17 @@ Para probar localmente: `node tests/fixtures/mobile-navigation-preview.mjs` y ab
 Se reemplaza la terminología técnica por «Elegí a tu gusto», «Encontrá lo que buscás», preguntas específicas y «Ver productos», sin modificar opciones ni parámetros. Encabezado Categorías oculto visualmente, semántica accesible conservada. Icono Heroicons local con licencia MIT. Las capturas de lenguaje previas conservan el subtítulo anterior como evidencia histórica; el código final utiliza exclusivamente el texto aprobado.
 
 Nueva validación del candidato: 20 pruebas focalizadas (estado, búsqueda y servicio público), build sintético sin escrituras, TypeScript y ESLint sin errores. Advertencia previa del logo conservada. Autorizada la publicación controlada; resultado productivo se documentará tras verificar el dominio.
+
+
+## Cierre productivo del 23/10/2026
+
+Publicado el código `223ca7b0b3f4d1c929761d6dc7c561f16b411456` en `dpl_ATk4WoDC8JEkrCQ2kujDn542dhoo`. Navegación y panel verificados antes de promoción y en `https://sfstore-ten.vercel.app` después de promover. 390×844: primer producto 435px, panel 489,5px, scroll interno y CTA fijo; «Encontrá lo que buscás» exacto. Preferencia Fresco conserva URL y devuelve 23 publicaciones en esta lectura; conteo no fijado como expectativa permanente. Mates: preguntas por estilo/material/color/uso; notebook 1366×900 con sidebar, sin overflow. Sin operaciones comerciales.
+
+Evidencia real de Production:
+
+- [Perfumes móvil](assets/2026-10-23-navegacion-publicada/01-perfumes-movil.jpg).
+- [Panel Perfumes](assets/2026-10-23-navegacion-publicada/02-panel-perfumes-movil.jpg).
+- [Panel Mates](assets/2026-10-23-navegacion-publicada/03-panel-mates-movil.jpg).
+- [Mates notebook](assets/2026-10-23-navegacion-publicada/04-mates-notebook.jpg).
+
+Las capturas locales anteriores se conservan como historial. No se midió efecto sobre conversión; Safari físico/Instagram WebView no comprobados. La advertencia previa del logo no impidió build ni publicación. Ningún cambio a Supabase, precios, recetas, inventario o checkout.
