@@ -1,0 +1,73 @@
+{
+  "localOnly": true,
+  "production": false,
+  "viewports": [
+    {
+      "width": 1366,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "searches": [
+    {
+      "viewport": "notebook",
+      "term": "perfume",
+      "count": 1
+    },
+    {
+      "viewport": "notebook",
+      "term": "mate",
+      "count": 1
+    },
+    {
+      "viewport": "notebook",
+      "term": "termo",
+      "count": 2
+    },
+    {
+      "viewport": "notebook",
+      "term": "cable",
+      "count": 4
+    },
+    {
+      "viewport": "notebook",
+      "term": "cargador",
+      "count": 2
+    },
+    {
+      "viewport": "mobile",
+      "term": "perfume",
+      "count": 1
+    },
+    {
+      "viewport": "mobile",
+      "term": "mate",
+      "count": 1
+    },
+    {
+      "viewport": "mobile",
+      "term": "termo",
+      "count": 2
+    },
+    {
+      "viewport": "mobile",
+      "term": "cable",
+      "count": 4
+    },
+    {
+      "viewport": "mobile",
+      "term": "cargador",
+      "count": 2
+    }
+  ],
+  "categories": {
+    "perfumes": 1,
+    "mates": 3,
+    "accesorios": 6
+  },
+  "allPublications": 10,
+  "ordersCreated": 0
+}

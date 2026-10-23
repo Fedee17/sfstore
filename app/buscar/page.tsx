@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ProductGrid } from "@/components/product-grid";
 import { SiteHeader } from "@/components/site-header";
 import { searchProducts } from "@/lib/catalog/search";
-import { getProductsByCategorySlug } from "@/services/products";
+import { getCatalogPublications } from "@/services/products";
 
 export const metadata = { title: "Buscar productos" };
 
@@ -11,11 +11,8 @@ export default async function SearchPage({ searchParams }: {
 }) {
   const params = await searchParams;
   const query = (Array.isArray(params.buscar) ? params.buscar[0] : params.buscar ?? "").trim();
-  const catalogs = await Promise.all([
-    getProductsByCategorySlug("perfumes"),
-    getProductsByCategorySlug("mates"),
-  ]);
-  const products = searchProducts(catalogs.flat(), query);
+  const catalog = await getCatalogPublications();
+  const products = searchProducts(catalog, query);
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
