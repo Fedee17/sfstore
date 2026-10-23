@@ -11,7 +11,7 @@ export function WhatsAppFloatingButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Consultar por WhatsApp"
-      className="fixed bottom-5 right-4 z-50 inline-flex h-14 min-w-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-semibold text-white shadow-xl shadow-[#102033]/20 transition hover:bg-[#1DA851] focus:outline-none focus:ring-2 focus:ring-[#0072CE] focus:ring-offset-2 focus:ring-offset-[#F7F9FC] sm:right-6 sm:px-5"
+      className="fixed bottom-5 right-4 z-50 hidden lg:inline-flex h-14 min-w-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-semibold text-white shadow-xl shadow-[#102033]/20 transition hover:bg-[#1DA851] focus:outline-none focus:ring-2 focus:ring-[#0072CE] focus:ring-offset-2 focus:ring-offset-[#F7F9FC] sm:right-6 sm:px-5"
     >
       <svg
         aria-hidden="true"

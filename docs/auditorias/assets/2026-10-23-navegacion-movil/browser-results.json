@@ -1,0 +1,123 @@
+{
+  "base": "http://127.0.0.1:3153",
+  "syntheticOnly": true,
+  "checks": [
+    {
+      "test": "panel58PercentInternalScrollAndFixedFooter",
+      "passed": true,
+      "geometry": {
+        "bodyLocked": true,
+        "dialog": {
+          "bottom": 844,
+          "height": 489.515625,
+          "left": 0,
+          "right": 390,
+          "top": 354.484375,
+          "width": 390,
+          "x": 0,
+          "y": 354.484375
+        },
+        "footer": {
+          "bottom": 844,
+          "height": 77,
+          "left": 0,
+          "right": 390,
+          "top": 767,
+          "width": 390,
+          "x": 0,
+          "y": 767
+        },
+        "ratio": 0.5799948163507109,
+        "scrollBottom": 767,
+        "scrollable": true
+      }
+    },
+    {
+      "test": "closeDiscardsDraftWithoutNavigation",
+      "passed": true
+    },
+    {
+      "test": "applyFiltersShowsMatchingProduct",
+      "passed": true
+    },
+    {
+      "test": "escapeRestoresFocusAndBody",
+      "passed": true
+    },
+    {
+      "test": "backdropClosesPanel",
+      "passed": true
+    },
+    {
+      "test": "internalScrollDoesNotMoveApply",
+      "passed": true
+    },
+    {
+      "test": "combinedFiltersEmptyState",
+      "passed": true
+    },
+    {
+      "test": "clearPreservesCategoryRestoresProducts",
+      "passed": true
+    },
+    {
+      "test": "responsive360",
+      "passed": true,
+      "geom": {
+        "first": 476.8317260742187,
+        "helpFloating": false,
+        "overflow": false,
+        "viewport": 640
+      },
+      "fit": {
+        "footerInScreen": true,
+        "ratio": 0.57998046875,
+        "scrollHeight": 233
+      }
+    },
+    {
+      "test": "responsive430",
+      "passed": true,
+      "geom": {
+        "first": 427,
+        "helpFloating": false,
+        "overflow": false,
+        "viewport": 932
+      },
+      "fit": {
+        "footerInScreen": true,
+        "ratio": 0.5799859173819742,
+        "scrollHeight": 403
+      }
+    },
+    {
+      "test": "categoryChangeClearsIncompatibleFilters",
+      "passed": true
+    },
+    {
+      "test": "browserBackRestoresCategoryClosedPanel",
+      "passed": true
+    },
+    {
+      "test": "resizeToNotebookClosesPanelRestoresSidebar",
+      "passed": true
+    },
+    {
+      "test": "notebookSidebarFiltersRemainImmediate",
+      "passed": true
+    },
+    {
+      "test": "keyboardFocusWrapsBothDirections",
+      "passed": true
+    },
+    {
+      "test": "matesAndCategoryWithoutExtraFilters",
+      "passed": true
+    },
+    {
+      "test": "accessoriesAndBothVirtualOffersRetained",
+      "passed": true
+    }
+  ],
+  "browserErrors": []
+}

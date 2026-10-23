@@ -120,3 +120,10 @@
 P01, P05 y P08: **En validación local; no publicado**. Rama `codex/charger-purchase-ux-20261022`, basada en `5884b0e`. Se elimina la promesa visual de cuotas de los banners públicos, se separa la sección Accesorios de la taxonomía matera y se priorizan precio, conector y compra en móvil. Carrito y checkout usan el cálculo unitario por transferencia existente y conservan el bloqueo de envío sin cotizar. No cambia inventario, precios, descuentos ni autorización del servidor.
 
 Evidencia y límites: [revisión comparativa](auditorias/2026-10-22-MEJORAS-EXPERIENCIA-COMPRA.md). Fotografías y especificaciones verificadas de cargadores siguen pendientes del propietario. Sin métricas de conversión ni afirmaciones de mejoras porcentuales en ventas.
+
+
+### 23/10/2026 — P07 / UX-N03: navegación móvil combinada
+
+**Implementado y validado localmente; no publicado.** Rama `codex/mobile-navigation-filters-20261023`, base `acbcd47`. Categorías horizontales, encabezado móvil compacto, panel de filtros cerrado por defecto de 58dvh con borrador y Aplicar fijo, cierre accesible y WhatsApp sin superposición móvil. Se conservan filtros, sidebar de notebook, tarjetas, precios y lógica comercial.
+
+17 pruebas automatizadas y 17 controles en navegador aprobados; build, TypeScript y lint focalizado sin errores. Evidencia y límites: [entrega local](auditorias/2026-10-23-NAVEGACION-MOVIL-FILTROS.md). No se modificó Production ni se atribuyen mejoras de conversión medidas. La publicación requiere autorización posterior.

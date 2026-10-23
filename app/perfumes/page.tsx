@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MobileCatalogFilters } from "@/components/catalog/mobile-catalog-filters";
 import { CatalogSidebar } from "@/components/catalog/catalog-sidebar";
 import { ProductGrid } from "@/components/product-grid";
 import { SiteHeader } from "@/components/site-header";
@@ -81,49 +82,27 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <SiteHeader />
-      <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">
-        <div className="mt-10 flex min-w-0 flex-col justify-between gap-6 overflow-hidden rounded-[2rem] border border-[#003B73]/15 bg-white/55 p-6 shadow-sm md:flex-row md:items-end sm:p-8">
+      <section className="mx-auto max-w-6xl px-5 py-5 sm:px-8 lg:py-16">
+        <div className="flex min-w-0 flex-col justify-between gap-2 lg:mt-10 lg:gap-6 lg:overflow-hidden lg:rounded-[2rem] lg:border lg:border-[#003B73]/15 lg:bg-white/55 lg:p-8 lg:shadow-sm lg:flex-row lg:items-end">
           <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
+            <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73] lg:block">
               Catálogo
             </p>
-            <h1 className="mt-3 break-words text-4xl font-semibold leading-tight sm:text-5xl">
+            <h1 className="break-words text-2xl font-semibold leading-tight lg:mt-3 lg:text-5xl">
               Perfumes importados
             </h1>
-            <p className="mt-4 max-w-2xl break-words text-sm leading-6 text-[#0072CE]">
+            <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-[#0072CE] lg:mt-4">
               No elijas por marca: elegí según cómo querés oler.
             </p>
           </div>
-          <p className="max-w-xl break-words text-base leading-7 text-[#102033]/70">
+          <p className="hidden max-w-xl break-words text-base leading-7 text-[#102033]/70 lg:block">
             Te ayudamos a elegir según tu estilo, ocasión y presupuesto. Aromas para todos los días, regalos, salidas y momentos con presencia.
           </p>
         </div>
 
-        <div className="mt-6 lg:hidden">
-          <details className="group overflow-hidden rounded-2xl border border-[#DCE3EA] bg-white shadow-sm">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold text-[#003B73] marker:content-none">
-              <span>Categorías y filtros</span>
-              <span
-                aria-hidden="true"
-                className="text-xl leading-none transition group-open:rotate-45"
-              >
-                +
-              </span>
-            </summary>
-            <div className="border-t border-[#DCE3EA] p-4">
-              <CatalogSidebar
-                ariaLabel="Categorías comerciales de perfumes"
-                basePath="/perfumes"
-                categories={PERFUME_CATALOG_CATEGORIES}
-                filtersByCategory={PERFUME_FILTERS_BY_CATEGORY}
-                selectedCategory={selectedCategory}
-                viewAllLabel="Ver todos de esta categoría"
-              />
-            </div>
-          </details>
-        </div>
+        <MobileCatalogFilters basePath="/perfumes" categories={PERFUME_CATALOG_CATEGORIES} filtersByCategory={PERFUME_FILTERS_BY_CATEGORY} selectedCategory={selectedCategory} />
 
-        <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
+        <div className="mt-3 grid min-w-0 gap-6 lg:mt-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
           <aside className="hidden min-w-0 rounded-2xl border border-[#DCE3EA] bg-white p-5 shadow-sm lg:block">
             <CatalogSidebar
               ariaLabel="Categorías comerciales de perfumes"
@@ -136,12 +115,12 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
           </aside>
 
           <div className="min-w-0">
-            <div className="flex min-w-0 flex-col gap-2 border-b border-[#DCE3EA] pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex min-w-0 flex-col gap-2 border-b border-[#DCE3EA] pb-2 lg:pb-5 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-[#0072CE]">
                   {selectedCategoryItem ? selectedCategoryItem.label : "Todos los perfumes"}
                 </p>
-                <h2 className="mt-1 break-words text-2xl font-semibold text-[#102033]">
+                <h2 className="hidden mt-1 break-words text-2xl font-semibold text-[#102033] lg:block">
                   Encontrá el aroma que mejor acompaña tu estilo.
                 </h2>
               </div>
@@ -170,6 +149,7 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
             )}
           </div>
         </div>
+        <p className="mt-8 text-sm leading-6 text-[#526479] lg:hidden">Te ayudamos a elegir según tu estilo, ocasión y presupuesto. Aromas para todos los días, regalos, salidas y momentos con presencia.</p>
       </section>
     </main>
   );

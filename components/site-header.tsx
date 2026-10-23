@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { PERFUME_CATALOG_CATEGORIES } from "@/lib/catalog/perfume-filters";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -132,6 +133,7 @@ function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }:
 }
 
 export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
+  const pathname = usePathname();
   const totalItems = useCartStore((state) => state.totalItems);
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
   const helpHref = buildWhatsAppUrl(
@@ -141,7 +143,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
   return (
     <header className="relative z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)] lg:sticky lg:top-0">
       <div className="bg-[#0072CE] text-white">
-        <div className="grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-5 py-3 sm:px-8 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:gap-6 lg:px-10">
+        <div className="grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-4 py-2 sm:px-8 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:gap-6 lg:px-10 lg:py-3">
           <Link
             href="/"
             className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-[76px] sm:w-[76px] lg:justify-self-start"
@@ -184,7 +186,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:px-4"
             >
               <HelpIcon />
-              <span className="hidden sm:inline">Ayuda</span>
+              <span className="text-xs sm:text-sm">Ayuda</span>
             </a>
             <a
               href="/carrito"
@@ -204,7 +206,13 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
       </div>
 
       <nav className="relative border-t border-white/10 bg-[#003B73] text-white" aria-label="Navegación principal">
-        <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-1 overflow-visible px-3 py-2 text-sm font-semibold sm:px-8">
+        <div className="flex min-h-11 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-4 lg:hidden" aria-label="Secciones del catálogo">
+          <Link href="/perfumes" prefetch={false} aria-current={pathname.startsWith("/perfumes") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Perfumes</Link>
+          <Link href="/mates" prefetch={false} aria-current={pathname.startsWith("/mates") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Mates</Link>
+          <Link href="/accesorios" prefetch={false} aria-current={pathname.startsWith("/accesorios") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Accesorios</Link>
+          <Link href="/ayuda" prefetch={false} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-white">Preguntas frecuentes</Link>
+        </div>
+        <div className="mx-auto hidden max-w-6xl flex-wrap justify-center gap-1 overflow-visible px-3 py-2 text-sm font-semibold sm:px-8 lg:flex">
           <Link
             href="/"
             className="hidden shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:block"

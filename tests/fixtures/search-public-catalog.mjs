@@ -56,7 +56,7 @@ export function filterFixtureRows(rows, params) {
   return result.slice(0, 1);
 }
 
-export async function startPublicFixtureServer() {
+export async function startPublicFixtureServer({ rows = publicRows, offers = publicOffers } = {}) {
   const requests = [];
   const server = createServer((req, res) => {
     const url = new URL(req.url, 'http://127.0.0.1');
@@ -65,7 +65,7 @@ export async function startPublicFixtureServer() {
     if (req.method !== 'GET' || !['public_catalog_skus', 'public_component_offers'].includes(table)) {
       res.writeHead(405); res.end('FIXTURE_READ_ONLY'); return;
     }
-    const data = filterFixtureRows(table === 'public_catalog_skus' ? publicRows : publicOffers, url.searchParams);
+    const data = filterFixtureRows(table === 'public_catalog_skus' ? rows : offers, url.searchParams);
     res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(data));
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
