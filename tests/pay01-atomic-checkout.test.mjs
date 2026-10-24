@@ -25,10 +25,11 @@ describe('PAY-01 real transactions against synthetic isolated PostgreSQL', {skip
     const listener=createServer();await new Promise(r=>listener.listen(0,'127.0.0.1',r));const port=listener.address().port;await new Promise(r=>listener.close(r));
     run('pg_ctl',['-D',join(dir,'data'),'-l',join(dir,'log'),'-o',`-h 127.0.0.1 -p ${port} -c fsync=off -c statement_timeout=10000`,'-w','start']);started=true;
     connection={host:'127.0.0.1',port,user:'postgres',database:'postgres'};db=new Client(connection);await db.connect();
-    await db.query('create role anon; create role authenticated; create role service_role bypassrls; alter default privileges in schema public grant all on tables to service_role;');
+    await db.query('create role anon; create role authenticated; create role service_role bypassrls; ');
     await db.query(readFileSync(join(root,'supabase/schema.sql'),'utf8'));
+    await db.query(readFileSync(join(root,'supabase/rebuild/202609100002_explicit_base_permissions.sql'),'utf8'));
     await db.query(readFileSync(join(root,'tests/fixtures/storage-permissions.sql'),'utf8'));
-    for(const file of readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort())await db.query(readFileSync(join(root,'supabase/migrations',file),'utf8'));
+    for(const file of readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort()){ await db.query(readFileSync(join(root,'supabase/migrations',file),'utf8')); if(file==='202609160001_purchase_draft_foundation.sql') await db.query(readFileSync(join(root,'supabase/rebuild/202609160002_purchase_explicit_permissions.sql'),'utf8')); }
     await db.query('set role service_role');
   });
   after(async()=>{await db?.end();if(started)run('pg_ctl',['-D',join(dir,'data'),'-m','immediate','-w','stop']);if(dir)rmSync(dir,{recursive:true,force:true});});

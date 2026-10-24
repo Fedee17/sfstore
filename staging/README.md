@@ -5,7 +5,7 @@ Solo para una **base local nueva y vacía**. No usar con Production, un proyecto
 ## Qué está preparado
 
 - `supabase/config.toml`: proyecto local `sfstore-checkout-synthetic-staging`, API 54331, DB 54332, shadow 54330, Studio 54333, correo local 54334, aplicación 3107. Revisar que estén libres. Anonymous Sign-ins y CAPTCHA Turnstile activados en la configuración; secret obligatorio por variable de entorno.
-- `migration-manifest.json`: 23 pasos con hashes, baseline sintético y todas las migraciones. `node scripts/prepare-checkout-staging.mjs` reconstruye copias en `staging/supabase/migrations` (ignoradas por Git). No ejecuta SQL ni llama APIs.
+- `migration-manifest.json`: 37 pasos con hashes: baseline versionado, permisos mínimos iniciales, permisos de compras y las 34 migraciones canónicas. `node scripts/prepare-checkout-staging.mjs` reconstruye copias en `staging/supabase/migrations` (ignoradas por Git). No ejecuta SQL ni llama APIs.
 - Dos versiones originales 202609180002 permanecen intactas en el repositorio. En el paquete **nuevo de staging** suppliers_admin tiene alias único 202609180003 con contenido idéntico; store_sales_checkout conserva 002. No renombra archivos aplicados ni repara un ledger existente. Verificación y orden completos en el manifest.
 - `supabase/seed.sql`: producto sintético, retiro y tarifa de prueba a Córdoba/Synthetic City/5000, 12.50. Fuera de ese destino no hay tarifa; se puede cotizar para toda Argentina. Configuración habilitada solo en esta base sintética; flag de app requiere configuración explícita. Seed exige marcador de staging y tablas comerciales vacías; no sobrescribe datos. No contiene usuarios ni carga `supabase/seed.sql` histórico del proyecto.
 
@@ -56,3 +56,18 @@ El segundo comando **inicia los contenedores locales y aplica las 23 migraciones
 **Todavía no ejecutar** este arranque mientras el registro siga bloqueado: no se solucionan rechazos repitiendo pulls. Al iniciar correctamente, usar las variables privadas de app solamente en el proceso local, sin imprimirlas, y revisar los escenarios de aceptación de arriba con Auth/PostgREST reales. El launcher no despliega la app ni habilita Production. Como Studio se excluye, crear el admin sintético mediante Admin API local y service key del mismo entorno, o incluir Studio solo en este stack si se necesita la UI; no enviar correo real.
 
 Pruebas del launcher: `python3 -m unittest discover -s tests -p staging_runtime_safety_test.py`. No sustituyen pruebas reales de integración. Los datos y credenciales del runtime no se versionan.
+
+
+## Reconstrucción con permisos explícitos — 23/10/2026
+
+Base de esta entrega: `9c6f367`, rama local `codex/explicit-grants-rebuild-20261023`. El historial de reconstrucción se genera desde `supabase/rebuild/` y las migraciones canónicas, sin editar estas últimas. Leer [alcance y ACL](../supabase/rebuild/README.md).
+
+- PostgreSQL 17 (ensayo: 17.6). Se incorpora el schema inicial como SQL versionado para bases vacías; rechaza tablas/vistas/secuencias public existentes.
+- Antes de habilitar consumidores se instalan grants exactos de tablas base y compras. No hay GRANT ALL ni defaults de acceso para service_role en las pruebas de compatibilidad.
+- Manifiesto actualizado hasta `202610210001_public_catalog_component_security.sql`; 37 versiones locales únicas. El alias 202609180003 no cambia el ledger ni los dos archivos productivos 202609180002.
+- Las suites que prueban la aplicación individual de componentes cargan expresamente el prefijo anterior al 19/10; no vuelven a aplicar una migración ya contenida en el paquete completo.
+- Para regenerar: `node scripts/prepare-checkout-staging.mjs`. El generador no ejecuta SQL ni permite sobrescribir copias locales modificadas. Revisar una copia divergente antes de cualquier regeneración.
+- Para el ensayo PostgreSQL: definir SFSTORE_TEST_DOCKER con el ejecutable local oficial y ejecutar `node --test tests/explicit-grants-rebuild-postgres.test.mjs`. Crea exclusivamente un contenedor propio postgres:17.6 con almacenamiento tmpfs y puerto 127.0.0.1 aleatorio, sin credenciales o datos remotos; lo elimina al finalizar.
+- El fixture storage simula sólo metadatos para PostgreSQL. No representa una instalación completa de GoTrue/PostgREST/Storage. No crear ese esquema falso dentro de un stack Supabase real.
+
+No ejecutar este paquete sobre Production ni usarlo para reparar su historial. No se ejecutó Supabase CLI reset remoto ni local durante esta entrega.

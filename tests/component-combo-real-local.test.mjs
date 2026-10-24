@@ -57,7 +57,7 @@ test('combo: actual Auth, HTTP actions/services and PostgREST with isolated busi
   for(let i=0;i<80;i++){const c=new Client({host:'127.0.0.1',port,user:'postgres',database:'postgres',statement_timeout:15000});try{await c.connect();db=c;break;}catch{await c.end().catch(()=>{});await delay(250);}}assert.ok(db);
   await q('create role anon;create role authenticated;create role service_role bypassrls;create role authenticator login noinherit;grant anon,authenticated,service_role to authenticator;');
   await q(read('tests/fixtures/storage-permissions.sql'));
-  for(const e of JSON.parse(read('staging/migration-manifest.json')).applicationOrder)await q(read(e.stagingFile));
+  for(const e of JSON.parse(read('staging/migration-manifest.json')).applicationOrder.filter(e=>e.source.split('/').at(-1)<'202610190001'))await q(read(e.stagingFile));
   await q(read('staging/supabase/seed.sql'));
   await q(read('supabase/migrations/202610190001_component_inventory.sql'));
   await q(read('supabase/migrations/202610200001_component_combo_pricing.sql'));

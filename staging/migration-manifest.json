@@ -5,10 +5,16 @@
   "collisionResolution": "202609180002_suppliers_admin.sql is byte-identical under staging-only version 202609180003; canonical applied files and ledgers remain untouched",
   "applicationOrder": [
     {
-      "source": "supabase/schema.sql",
-      "stagingFile": "staging/supabase/migrations/202609100001_staging_baseline.sql",
-      "sourceSha256": "1f587f3d121e84947c95c0f9038aff4ffa400f318f80f8269f4ed278da17f179",
-      "stagingSha256": "384f00907656dab51561a964b2fedbf61c321aef0ff87a10ac2900f0415a19e4"
+      "source": "supabase/rebuild/202609100001_initial_schema.sql",
+      "stagingFile": "staging/supabase/migrations/202609100001_initial_schema.sql",
+      "sourceSha256": "871f50ccd7a563a0e5e03fb82392c4cd521cf96fa160373c48213971e0e0df28",
+      "stagingSha256": "871f50ccd7a563a0e5e03fb82392c4cd521cf96fa160373c48213971e0e0df28"
+    },
+    {
+      "source": "supabase/rebuild/202609100002_explicit_base_permissions.sql",
+      "stagingFile": "staging/supabase/migrations/202609100002_explicit_base_permissions.sql",
+      "sourceSha256": "4bdcd7a5fc65cfb7893db9d662ba65cc166ad292a32cf9ce98c4f2696bc7b621",
+      "stagingSha256": "4bdcd7a5fc65cfb7893db9d662ba65cc166ad292a32cf9ce98c4f2696bc7b621"
     },
     {
       "source": "supabase/migrations/202609110001_document_products_transfer_price.sql",
@@ -21,6 +27,12 @@
       "stagingFile": "staging/supabase/migrations/202609160001_purchase_draft_foundation.sql",
       "sourceSha256": "4d0da36f2865d983bce62795a2ae159d851a901f038dd8505fe6ec8589378358",
       "stagingSha256": "4d0da36f2865d983bce62795a2ae159d851a901f038dd8505fe6ec8589378358"
+    },
+    {
+      "source": "supabase/rebuild/202609160002_purchase_explicit_permissions.sql",
+      "stagingFile": "staging/supabase/migrations/202609160002_purchase_explicit_permissions.sql",
+      "sourceSha256": "26427a894c5e0bdc3792c1299a8b8ba971712d8851bdd4c7a01fd3e88b13dff4",
+      "stagingSha256": "26427a894c5e0bdc3792c1299a8b8ba971712d8851bdd4c7a01fd3e88b13dff4"
     },
     {
       "source": "supabase/migrations/202609170001_purchase_confirmation.sql",
@@ -195,6 +207,24 @@
       "stagingFile": "staging/supabase/migrations/202610180002_variant_commercial_integration.sql",
       "sourceSha256": "3fb73f5dffb77edbe99f58a6e071186b1d220538d75f78fd572dc541efb9c2a0",
       "stagingSha256": "3fb73f5dffb77edbe99f58a6e071186b1d220538d75f78fd572dc541efb9c2a0"
+    },
+    {
+      "source": "supabase/migrations/202610190001_component_inventory.sql",
+      "stagingFile": "staging/supabase/migrations/202610190001_component_inventory.sql",
+      "sourceSha256": "3b65067ecb22003431606f7a667863d91c68068632c71134c96c96ea2bb2c394",
+      "stagingSha256": "3b65067ecb22003431606f7a667863d91c68068632c71134c96c96ea2bb2c394"
+    },
+    {
+      "source": "supabase/migrations/202610200001_component_combo_pricing.sql",
+      "stagingFile": "staging/supabase/migrations/202610200001_component_combo_pricing.sql",
+      "sourceSha256": "b8cf692d065d3fd593e232c6d6ce04f06759201e2cd01418e61deadb20d727ea",
+      "stagingSha256": "b8cf692d065d3fd593e232c6d6ce04f06759201e2cd01418e61deadb20d727ea"
+    },
+    {
+      "source": "supabase/migrations/202610210001_public_catalog_component_security.sql",
+      "stagingFile": "staging/supabase/migrations/202610210001_public_catalog_component_security.sql",
+      "sourceSha256": "35621d198d6e1fc6b1a5bf508fe35842cfd2aef1dd5badf41b0715aa69dd4b5e",
+      "stagingSha256": "35621d198d6e1fc6b1a5bf508fe35842cfd2aef1dd5badf41b0715aa69dd4b5e"
     }
   ]
 }

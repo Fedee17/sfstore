@@ -60,11 +60,13 @@ describe("SEC-01 effective role permissions in isolated PostgreSQL", { skip: !pr
     db = new Client({ host: "127.0.0.1", port, user: "postgres", database: "postgres" });
     await db.connect();
     await db.query(`create role anon; create role authenticated; create role service_role bypassrls;
-      alter default privileges in schema public grant all on tables to service_role;`);
+      `);
     await db.query(readFileSync(join(root, "supabase/schema.sql"), "utf8"));
+    await db.query(readFileSync(join(root,'supabase/rebuild/202609100002_explicit_base_permissions.sql'),'utf8'));
     await db.query(readFileSync(join(root, "tests/fixtures/storage-permissions.sql"), "utf8"));
     for (const file of readdirSync(join(root, "supabase/migrations")).filter(f => f.endsWith(".sql") && f < name).sort()) {
       await db.query(readFileSync(join(root, "supabase/migrations", file), "utf8"));
+      if(file==='202609160001_purchase_draft_foundation.sql') await db.query(readFileSync(join(root,'supabase/rebuild/202609160002_purchase_explicit_permissions.sql'),'utf8'));
     }
     // Model possible legacy drift, without asserting these grants exist in Production.
     await db.query(`grant usage, create on schema public to public, anon, authenticated;

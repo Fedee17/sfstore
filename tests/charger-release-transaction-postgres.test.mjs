@@ -20,7 +20,7 @@ describe('exact release templates: atomic configuration on disposable PostgreSQL
   await admin.query('create role anon;create role authenticated;create role service_role bypassrls');await admin.query('create database release_fixture');
   const db=await connect('release_fixture');
   try{
-   await db.query(read('tests/fixtures/storage-permissions.sql'));for(const e of JSON.parse(read('staging/migration-manifest.json')).applicationOrder)await db.query(read(e.stagingFile));
+   await db.query(read('tests/fixtures/storage-permissions.sql'));for(const e of JSON.parse(read('staging/migration-manifest.json')).applicationOrder.filter(e=>e.source.split('/').at(-1)<'202610190001'))await db.query(read(e.stagingFile));
    await db.query(read('staging/supabase/seed.sql'));await db.query(read('supabase/migrations/202610190001_component_inventory.sql'));await db.query(read('supabase/migrations/202610200001_component_combo_pricing.sql'));
    const category=randomUUID(),supplier=randomUUID();await db.query("insert into categories(id,name,slug) values($1,'SYNTHETIC','mates');",[category]);await db.query("insert into suppliers(id,name,normalized_name) values($1,'SYNTHETIC','synthetic')",[supplier]);
    const products=[[id.source,20,6543.21,0,'draft'],[id.head,1,3650,16590.91,'active'],[id.presentation,0,7300,27019.48,'draft'],[id.legacy,0,3650,11850.65,'active'],[id.other,9,14029.71,30000,'active'],[id.excluded,2,1439,8409.74,'active'],[id.unrelated,2,2939,11756,'active']];

@@ -6,14 +6,14 @@ import { join, resolve } from 'node:path';
 // SQL copies themselves remain byte-identical to their source; no database writes.
 export const hashStagingSql = value => createHash('sha256').update(value.replace(/\r\n/g,'\n')).digest('hex');
 export function prepareStaging(root) {
-  const sources = ['supabase/schema.sql', ...readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort().map(f=>'supabase/migrations/'+f)];
+  const sources = [...readdirSync(join(root,'supabase/rebuild')).filter(f=>f.endsWith('.sql')).sort().map(f=>'supabase/rebuild/'+f), ...readdirSync(join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort().map(f=>'supabase/migrations/'+f)];
   const destination=join(root,'staging/supabase/migrations');mkdirSync(destination,{recursive:true});
-  const expected=new Set(sources.map(source=>source==='supabase/schema.sql'?'202609100001_staging_baseline.sql':source.endsWith('202609180002_suppliers_admin.sql')?'202609180003_suppliers_admin.sql':source.split('/').at(-1)));
+  const expected=new Set(sources.map(source=>source.endsWith('202609180002_suppliers_admin.sql')?'202609180003_suppliers_admin.sql':source.split('/').at(-1)));
   if(readdirSync(destination).some(file=>file.endsWith('.sql')&&!expected.has(file)))throw new Error('Unexpected staging SQL; inspect generated directory before rebuilding');
   const entries=sources.map(source=>{
     const original=readFileSync(join(root,source),'utf8');
-    const name=source==='supabase/schema.sql'?'202609100001_staging_baseline.sql':source.endsWith('202609180002_suppliers_admin.sql')?'202609180003_suppliers_admin.sql':source.split('/').at(-1);
-    const content=source==='supabase/schema.sql'?`-- NEW SYNTHETIC STAGING ONLY. Never apply to an existing project.\ncreate schema sfstore_staging;\ncreate table sfstore_staging.identity (id text primary key check(id='SFSTORE_SYNTHETIC_STAGING'));\ninsert into sfstore_staging.identity values ('SFSTORE_SYNTHETIC_STAGING');\n${original}`:original;
+    const name=source.endsWith('202609180002_suppliers_admin.sql')?'202609180003_suppliers_admin.sql':source.split('/').at(-1);
+    const content=original;
     if(existsSync(join(destination,name)) && readFileSync(join(destination,name),'utf8')!==content)throw new Error('Modified staging copy: '+name+'; inspect before replacing');
     writeFileSync(join(destination,name),content);
     return {source,stagingFile:'staging/supabase/migrations/'+name,sourceSha256:hashStagingSql(original),stagingSha256:hashStagingSql(content)};

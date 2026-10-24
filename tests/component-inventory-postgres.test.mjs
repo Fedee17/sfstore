@@ -20,7 +20,7 @@ describe('component engine / disposable PostgreSQL17.6',{skip:!docker,concurrenc
   connection={host:'127.0.0.1',port:Number(cmd(['port',container,'5432/tcp']).split(':').at(-1)),user:'postgres',database:'postgres'};
   for(let i=0;i<80;i++){try{db=await connect();break;}catch{await delay(250);}}assert.ok(db);
   await q('create role anon;create role authenticated;create role service_role bypassrls');await q(read('tests/fixtures/storage-permissions.sql'));
-  for(const e of JSON.parse(read('staging/migration-manifest.json')).applicationOrder)await q(read(e.stagingFile));
+  for(const e of JSON.parse(read('staging/migration-manifest.json')).applicationOrder.filter(e=>e.source.split('/').at(-1)<'202610190001'))await q(read(e.stagingFile));
   await q(read('staging/supabase/seed.sql'));
   await q(read('supabase/migrations/202610190001_component_inventory.sql'));
   category=randomUUID();supplier=randomUUID();await q("insert into categories(id,name,slug) values($1::uuid,'SYNTHETIC COMPONENTS',$1::text)",[category]);
