@@ -34,7 +34,7 @@ function fixture(gallery = [], initialObjects = []) {
     from(table) {
       let update;
       const chain = {
-        select() { return chain; }, eq() { return chain; }, order() { return chain; },
+        select() { return chain; }, eq(field,value) { if(field === "combo_connector") events.push(`connector:${value}`); return chain; }, order() { return chain; },
         update(value) { assert.equal(table, "product_save_operations"); update = value; return chain; },
         async maybeSingle() {
           events.push("persist");
@@ -59,7 +59,7 @@ function fixture(gallery = [], initialObjects = []) {
         assert.equal(args.p_expected_metadata.path, args.p_storage_path);
         return { data: "task", error: null };
       }
-      if (name === "update_product_atomic") {
+      if (name === "update_product_atomic" || name === "save_component_gallery_atomic") {
         assert.equal(args.p_expected_version, "old");
         payload = args.p_payload;
         operation.status = "committed";
@@ -178,4 +178,17 @@ test("request fingerprint is stable across transport order but changes with busi
   b.set("cost", "101");
   assert.notEqual(await f.service.fingerprintProductSubmission(b, [file()]), hash);
   assert.notEqual(await f.service.fingerprintProductSubmission(a, [new File(["different"], "converted.webp", { type: "image/webp" })]), hash);
+});
+
+test("connector galleries reuse recovery but never send commercial fields to the ordinary product RPC", async () => {
+  for (const connector of ["cc","lightning"]) {
+    const f=fixture();
+    const service=f.service.createProductSaveService(base,[file()],connector);
+    await service.save(async()=>{const {images,uploads}=await service.buildImages("SYNTHETIC");return {requestHash:"hash",payload:{product:{},attributes:[],connector,images},uploads};});
+    assert.ok(f.events.includes(`connector:${connector}`));
+    assert.ok(f.events.includes("save_component_gallery_atomic"));
+    assert.equal(f.events.includes("update_product_atomic"),false);
+    assert.deepEqual(f.getPayload().product,{});
+    assert.ok(f.getPayload().images[0].path.includes(`/${connector}/`));
+  }
 });

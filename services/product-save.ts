@@ -32,10 +32,10 @@ function imageId(productId: string, hash: string) {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-export function createProductSaveService(request: ProductSaveRequest, files: File[]) {
+export function createProductSaveService(request: ProductSaveRequest, files: File[], connector?: "cc" | "lightning") {
   const supabase = getSupabaseAdminClient();
   const bucket = supabase.storage.from(PRODUCT_IMAGES_BUCKET);
-  const folder = `products/${request.productId}`;
+  const folder = `products/${request.productId}${connector ? `/${connector}` : ""}`;
 
   async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
     const { data, error } = await supabase.rpc(name, args);
@@ -79,9 +79,11 @@ export function createProductSaveService(request: ProductSaveRequest, files: Fil
 
   async function buildImages(productName: string) {
     if (!files.length) return { images: null, uploads: [] };
-    const { data, error } = await supabase.from("product_images")
+    let query = supabase.from("product_images")
       .select("id, url, alt, is_primary, sort_order, created_at").eq("product_id", request.productId)
       .order("sort_order").order("created_at").order("id");
+    if (connector) query = query.eq("combo_connector", connector);
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
     const images: AtomicProductImage[] = (data ?? []).map(({ id, url, alt, is_primary }) => ({ id, url, alt, is_primary }));
     const stored = await objects();
@@ -99,7 +101,7 @@ export function createProductSaveService(request: ProductSaveRequest, files: Fil
       const { data: { publicUrl: url } } = bucket.getPublicUrl(path);
       if (images.some((image) => image.url === url)) continue;
       images.push({
-        id: imageId(request.productId, contentHash), url, alt: productName,
+        id: imageId(connector ? `${request.productId}:${connector}` : request.productId, contentHash), url, alt: productName,
         is_primary: images.length === 0, path, content_hash: contentHash, size: file.size, mime: file.type,
       });
       uploads.push({ path, contentHash, size: file.size, mime: file.type, fileIndex });
@@ -135,7 +137,7 @@ export function createProductSaveService(request: ProductSaveRequest, files: Fil
         });
       },
       upload,
-      commit: (plan) => rpc(request.operationType === "create_product" ? "create_product_atomic" : "update_product_atomic", {
+      commit: (plan) => rpc(connector ? "save_component_gallery_atomic" : request.operationType === "create_product" ? "create_product_atomic" : "update_product_atomic", {
         ...operationArgs, p_product_id: request.productId, p_payload: plan.payload as AtomicProductPayload,
         ...(request.operationType === "update_product" ? { p_expected_version: request.expectedVersion } : {}),
       }),

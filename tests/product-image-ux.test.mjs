@@ -158,7 +158,7 @@ test("content identity reuses an existing storage object and prevents retry dupl
     undefined,
   );
   assert.match(saveService, /images\.some\(\(image\) => image\.url === url\)/);
-  assert.match(saveService, /imageId\(request\.productId, contentHash\)/);
+  assert.match(saveService, /imageId\(connector \? `\$\{request\.productId\}:\$\{connector\}` : request\.productId, contentHash\)/);
   assert.match(saveService, /upsert: false/);
 });
 

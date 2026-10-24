@@ -10,7 +10,7 @@ import { InventoryAdjustmentForm } from "@/components/admin/products/inventory-a
 import { requireAdminSession } from "@/lib/admin-session";
 import {
   getAdminCategories,
-  getAdminProducts,
+  getAdminProductPublications,
   type AdminProduct,
   type AdminProductFilters,
 } from "@/services/admin";
@@ -218,7 +218,7 @@ export default async function AdminProductsPage({
   };
 
   const [productsResult, categoriesResult] = await Promise.all([
-    getAdminProducts(productsFilters),
+    getAdminProductPublications(productsFilters),
     getAdminCategories(),
   ]);
   const products = productsResult.data ?? [];
@@ -475,7 +475,7 @@ export default async function AdminProductsPage({
                       <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8B5E3C]">
-                            Stock
+                            {product.component_offer ? "Disponible" : "Stock"}
                           </p>
                           <p className="mt-1 break-words text-lg font-semibold">
                             {product.stock} unidad
@@ -499,6 +499,7 @@ export default async function AdminProductsPage({
                         >
                           Editar
                         </Link>
+                        {!product.component_offer ? <>
                         <form action={toggleProductFeatured} className="min-w-0">
                           <input type="hidden" name="productId" value={product.id} />
                           <input type="hidden" name="slug" value={product.slug} />
@@ -546,6 +547,7 @@ export default async function AdminProductsPage({
                             </PendingSubmitButton>
                           </form>
                         ) : null}
+                        </> : null}
                       </div>
                     </div>
                   </div>

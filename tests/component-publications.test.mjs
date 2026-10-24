@@ -18,6 +18,17 @@ const offers=['cc','lightning'].map(connector=>({id:rid,name:'SYNTHETIC RECIPE',
 const pubs=()=>projectComponentPublications(physical,offers);
 const picturedOffers=()=>offers.map((o,index)=>({...o,image_id:`photo-${index}`,image_url:`https://images.test/${o.connector}.webp`,image_alt:`TEST ${o.connector}`}));
 
+test('connector galleries expose several own photographs and reject images reused in another gallery',()=>{
+ const rows=picturedOffers().map(o=>({...o,image_gallery:[{id:o.image_id,url:o.image_url,alt:o.image_alt,sort_order:0,is_primary:true},{id:`second-${o.connector}`,url:`https://images.test/${o.connector}-2.webp`,alt:'Second',sort_order:1,is_primary:false}]}));
+ const result=projectComponentPublications(physical,rows);
+ assert.equal(result[0].images.length,2);assert.equal(result[1].images.length,2);
+ assert.ok(result[0].images.every(i=>!i.url.includes('lightning')));
+ rows[1].image_gallery.push({...rows[0].image_gallery[0],is_primary:false});
+ const guarded=projectComponentPublications(physical,rows);
+ assert.equal(guarded[0].primaryImageUrl,null);
+ assert.ok(!guarded[0].images.some(i=>i.url===rows[0].image_url));
+});
+
 test('P02 keeps each exact connector image in primary and gallery without changing commercial fields',()=>{
  const before=structuredClone(physical),plain=pubs(),pictured=projectComponentPublications(physical,picturedOffers());
  for(let i=0;i<2;i++){
@@ -111,24 +122,16 @@ test('P02 actual paginated catalog and each detail use the same connector photo'
  }
 });
 
-test('P02 association action requires admin before any database access and validates approval and duplicate IDs',async()=>{
- let reads=0,authorized=false;
- const {saveComponentOfferImages}=load('app/admin/productos/componentes/actions.ts',{'@/lib/admin-session':{requireAdminActionSession:async()=>{if(!authorized)throw Error('DENIED');}},'@/lib/supabase/server':{getSupabaseAdminClient:()=>{reads++;throw Error('UNEXPECTED_DB');}},'next/cache':{revalidatePath:()=>{}},'@/lib/products/component-combos':combo});
- const form=new FormData();form.set('recipeId',rid);form.set('cc',id);form.set('lightning',id);
- await assert.rejects(()=>saveComponentOfferImages({message:''},form),/DENIED/);assert.equal(reads,0);
- authorized=true;assert.match((await saveComponentOfferImages({message:''},form)).message,/Confirmá/);form.set('approved','yes');assert.match((await saveComponentOfferImages({message:''},form)).message,/distinta/);assert.equal(reads,0);
+test('P02 uses the existing editor and removes the separate association form',()=>{
+ const page=source('app/admin/productos/componentes/page.tsx');
+ assert.doesNotMatch(page,/ComponentOfferImageForm|Guardar fotografías por conector/);
+ assert.doesNotMatch(page,/editar\?conector=/);
+ const editor=source('app/admin/productos/[id]/editar/page.tsx');
+ assert.match(editor,/connector \? updateComponentGallery : updateProduct/);
+ assert.match(editor,/image.combo_connector === connector/);
+ assert.doesNotMatch(editor,/Presentación del cargador|aria-current|conector=/);
 });
 
-test('P02 admin form previews each connector separately and leaves save unavailable without photos',()=>{
- const hooks={...React,useState:init=>[init,()=>{}],useActionState:()=>[{message:''},()=>{},false]};
- const {ComponentOfferImageForm}=load('components/admin/component-offer-image-form.tsx',{'react':hooks,'react/jsx-runtime':jsx,'next/link':{default:({children,...props})=>React.createElement('a',props,children)},'@/app/admin/productos/componentes/actions':{saveComponentOfferImages:()=>{}}});
- const images=picturedOffers().map(o=>({id:o.image_id,url:o.image_url,alt:o.image_alt,combo_connector:o.connector}));
- const html=renderToStaticMarkup(React.createElement(ComponentOfferImageForm,{recipeId:rid,presentationId:id,images}));
- assert.match(html,/src="https:\/\/images.test\/cc.webp" alt="Vista previa: cargador completo USB-C a USB-C"/);
- assert.match(html,/src="https:\/\/images.test\/lightning.webp" alt="Vista previa: cargador completo USB-C a Lightning"/);
- assert.match(html,/name="approved"/);
- const empty=renderToStaticMarkup(React.createElement(ComponentOfferImageForm,{recipeId:rid,presentationId:id,images:[]}));assert.match(empty,/<button disabled=""/);assert.match(empty,/Todavía no hay fotografías/);
-});
 test('actual category and search publication source returns all five despite page clamps and equal recipe IDs',async()=>{
  globalThis.__publicationDb=db();const products=await service.getProductsByCategorySlug('mates');assert.equal(products.length,5);assert.equal(products.filter(p=>p.kind==='combo').length,2);
  assert.equal((await service.getCatalogPublications()).length,5);

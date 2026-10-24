@@ -1,5 +1,6 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { readVersionedProduct } from "@/lib/products/atomic-save";
+import {mergeAdminProductPublications,type AdminComponentOffer} from "@/lib/products/admin-component-publications";
 
 import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
 
@@ -48,6 +49,7 @@ export type AdminOrder = {
 };
 
 export type AdminProduct = {
+  component_offer?: boolean;
   save_version?: string;
   family_id?: string | null;
   id: string;
@@ -80,6 +82,7 @@ export type AdminProduct = {
     alt: string | null;
     sort_order: number;
     is_primary: boolean;
+    combo_connector?: string | null;
   }[];
 };
 
@@ -336,6 +339,23 @@ export async function getAdminProducts(
   });
 }
 
+// Only the product administration list uses virtual rows; purchasing/inventory readers remain unchanged.
+export async function getAdminProductPublications(filters:AdminProductFilters={}):Promise<AdminResult<AdminProduct[]>> {
+  return safeRead(async()=>{
+    const products=await getAdminProducts(filters);
+    if(products.error)throw Error(products.error);
+    const db=getSupabaseAdminClient();
+    const {data:offers,error}=await db.from("public_component_offers")
+      .select("presentation_product,connector,head_product,available,combo_list_price,combo_transfer_price,image_id,image_url,image_alt")
+      .order("id").order("connector").limit(101);
+    if(error||(offers?.length??0)>100)throw Error("No se pudo recuperar el listado completo de cargadores.");
+    if(!offers?.length)return products.data??[];
+    const {data:heads,error:headError}=await db.from("products").select("id,category_id,categories(name,slug)").in("id",[...new Set(offers.map(o=>o.head_product))]);
+    if(headError)throw Error("No se pudo verificar la categoría de los cargadores.");
+    return mergeAdminProductPublications(products.data??[],offers as AdminComponentOffer[],heads as unknown as AdminProduct[],filters);
+  });
+}
+
 export async function getAdminCategories(): Promise<AdminResult<AdminCategory[]>> {
   return safeRead(async () => {
     const supabase = getSupabaseAdminClient();
@@ -399,7 +419,8 @@ export async function getAdminProductById(
               url,
               alt,
               sort_order,
-              is_primary
+              is_primary,
+              combo_connector
             )
           `,
           )

@@ -1,4 +1,5 @@
 export type AtomicProductPayload = {
+  connector?: "cc" | "lightning";
   product: Record<string, unknown>;
   attributes: { name: string; value: string; sort_order: number }[];
   images: AtomicProductImage[] | null;

@@ -34,6 +34,7 @@ import {
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { adjustInventoryStock } from "@/services/inventory";
 import { createProductSaveService, fingerprintProductSubmission } from "@/services/product-save";
+import { galleryConnector, componentGalleryPath } from "@/lib/products/component-gallery";
 import { ProductSaveError } from "@/lib/products/atomic-save";
 
 type PersistedProductState = {
@@ -431,10 +432,56 @@ export async function updateProduct(
 ): Promise<ProductFormActionState> {
   try {
     await requireAdminActionSession();
+    const { data: presentation, error } = await getSupabaseAdminClient().from("component_recipes").select("id").eq("presentation_product", String(formData.get("productId") ?? "")).maybeSingle();
+    if (error || presentation) throw new Error("Esta presentación se edita únicamente en modo fotografías.");
     return await saveProductForm(formData, "update_product");
   } catch (error) {
     return productFormErrorState(error);
   }
+}
+
+export async function updateComponentGallery(_state: ProductFormActionState, form: FormData): Promise<ProductFormActionState> {
+  try {
+    await requireAdminActionSession();
+    const connector = galleryConnector(form.get("connector"));
+    const productId = String(form.get("productId") ?? "");
+    const operationKey = String(form.get("operationKey") ?? "");
+    const expectedVersion = String(form.get("expectedVersion") ?? "");
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuid.test(productId) || !uuid.test(operationKey) || !/^[0-9a-f]{64}$/.test(expectedVersion)) throw new Error("Recargá el editor antes de guardar.");
+    const files = getProductImageFiles(form);
+    await validateProductImageContents(files);
+    const requestHash = await fingerprintProductSubmission(form, files);
+    const service = createProductSaveService({operationKey, operationType:"update_product", productId, expectedVersion, requestHash}, files, connector);
+    const { result } = await service.save(async () => {
+      const {data, error} = await getSupabaseAdminClient().from("component_recipes").select("id").eq("presentation_product",productId).single();
+      if (error || !data) throw new Error("Presentación no disponible.");
+      const {images, uploads} = await service.buildImages(`Cargador completo ${connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}`);
+      return {requestHash, payload:{product:{},attributes:[],images,connector},uploads,categorySlugs:[]};
+    });
+    revalidateComponentGallery(productId);
+    return {status:"success",message:"Fotografías guardadas. No se modificaron datos comerciales.",productId,version:result.version,submissionId:crypto.randomUUID()};
+  } catch (error) { return productFormErrorState(error); }
+}
+
+function revalidateComponentGallery(productId: string) {
+  for (const path of ["/", "/accesorios", "/buscar", "/carrito", `/admin/productos/${productId}/editar`, ...(["cc","lightning"] as const).map(c => `/producto/combo-${productId}-${c}`)]) revalidatePath(path);
+}
+
+async function editComponentImage(form: FormData, action: "primary" | "previous" | "next" | "delete") {
+  const connector = galleryConnector(form.get("connector"));
+  const productId = String(form.get("productId") ?? "");
+  const {error} = await getSupabaseAdminClient().rpc("edit_component_gallery_image", {
+    p_product_id:productId,p_connector:connector,p_image_id:String(form.get("imageId") ?? ""),p_action:action,
+  });
+  if (error) throw new Error("No se pudo actualizar la fotografía. Recargá el editor y verificá el resultado.");
+  revalidateComponentGallery(productId);
+  return componentGalleryPath(productId,connector);
+}
+
+async function requireOrdinaryImageEditor(form: FormData) {
+  const {data,error} = await getSupabaseAdminClient().from("component_recipes").select("id").eq("presentation_product",String(form.get("productId") ?? "")).maybeSingle();
+  if (error || data) throw new Error("Abrí el editor de fotografías con el conector correspondiente.");
 }
 
 export async function archiveProduct(formData: FormData) {
@@ -560,6 +607,8 @@ export async function updateProductStock(
 
 export async function setPrimaryProductImage(formData: FormData) {
   await requireAdminActionSession();
+  if (formData.has("connector")) redirect(await editComponentImage(formData,"primary"));
+  await requireOrdinaryImageEditor(formData);
 
   const productId = String(formData.get("productId") ?? "");
   const imageId = String(formData.get("imageId") ?? "");
@@ -612,6 +661,12 @@ export async function setPrimaryProductImage(formData: FormData) {
 
 export async function moveProductImage(formData: FormData) {
   await requireAdminActionSession();
+  if (formData.has("connector")) {
+    const direction = String(formData.get("direction"));
+    if (direction !== "previous" && direction !== "next") throw new Error("Dirección inválida.");
+    redirect(await editComponentImage(formData,direction));
+  }
+  await requireOrdinaryImageEditor(formData);
 
   const productId = String(formData.get("productId") ?? "");
   const imageId = String(formData.get("imageId") ?? "");
@@ -696,6 +751,11 @@ export async function deleteProductImage(
 
     const productId = String(formData.get("productId") ?? "");
     const imageId = String(formData.get("imageId") ?? "");
+    if (formData.has("connector")) {
+      await editComponentImage(formData,"delete");
+      return {status:"success",message:"La imagen se quitó de esta presentación. El archivo se conserva para limpieza segura.",submissionId:crypto.randomUUID()};
+    }
+    await requireOrdinaryImageEditor(formData);
 
     if (!productId || !imageId) {
       throw new Error("Faltan datos para eliminar la imagen.");

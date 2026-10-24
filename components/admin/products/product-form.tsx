@@ -43,6 +43,7 @@ type ProductFormProps = {
   categories: AdminCategory[];
   product?: AdminProduct;
   submitLabel: string;
+  connector?: "cc" | "lightning";
 };
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
@@ -255,9 +256,11 @@ function ProductStatusControl({ initialStatus }: { initialStatus: string }) {
 function DeleteProductImageForm({
   productId,
   imageId,
+  connector,
 }: {
   productId: string;
   imageId: string;
+  connector?: "cc" | "lightning";
 }) {
   const router = useRouter();
   const handledSubmissionRef = useRef<string | undefined>(undefined);
@@ -283,6 +286,7 @@ function DeleteProductImageForm({
     <form action={formAction} className="grid gap-2">
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="imageId" value={imageId} />
+      {connector ? <input type="hidden" name="connector" value={connector} /> : null}
       <PendingSubmitButton
         pendingLabel="Eliminando..."
         disabled={isPending || state.status === "success"}
@@ -304,9 +308,9 @@ function DeleteProductImageForm({
   );
 }
 
-function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
+function ProductImageGalleryAdmin({ product, connector }: { product: AdminProduct; connector?: "cc" | "lightning" }) {
   const images = getSortedImages(product);
-  const returnTo = `/admin/productos/${product.id}/editar`;
+  const returnTo = `/admin/productos/${connector ? `combo-${product.id}-${connector}` : product.id}/editar`;
 
   return (
     <section className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm">
@@ -366,6 +370,7 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                     <form action={setPrimaryProductImage}>
                       <input type="hidden" name="productId" value={product.id} />
                       <input type="hidden" name="imageId" value={image.id} />
+                      {connector ? <input type="hidden" name="connector" value={connector} /> : null}
                       <input type="hidden" name="slug" value={product.slug} />
                       <input type="hidden" name="returnTo" value={returnTo} />
                       <PendingSubmitButton
@@ -384,6 +389,7 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                   <DeleteProductImageForm
                     productId={product.id}
                     imageId={image.id}
+                    connector={connector}
                   />
                 </div>
 
@@ -395,6 +401,7 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                     <form action={moveProductImage}>
                       <input type="hidden" name="productId" value={product.id} />
                       <input type="hidden" name="imageId" value={image.id} />
+                      {connector ? <input type="hidden" name="connector" value={connector} /> : null}
                       <input type="hidden" name="direction" value="previous" />
                       <input type="hidden" name="slug" value={product.slug} />
                       <input type="hidden" name="returnTo" value={returnTo} />
@@ -411,6 +418,7 @@ function ProductImageGalleryAdmin({ product }: { product: AdminProduct }) {
                     <form action={moveProductImage}>
                       <input type="hidden" name="productId" value={product.id} />
                       <input type="hidden" name="imageId" value={image.id} />
+                      {connector ? <input type="hidden" name="connector" value={connector} /> : null}
                       <input type="hidden" name="direction" value="next" />
                       <input type="hidden" name="slug" value={product.slug} />
                       <input type="hidden" name="returnTo" value={returnTo} />
@@ -440,6 +448,7 @@ export function ProductForm({
   categories,
   product,
   submitLabel,
+  connector,
 }: ProductFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -640,7 +649,7 @@ export function ProductForm({
 
   return (
     <>
-      {product ? <ProductImageGalleryAdmin product={product} /> : null}
+      {product ? <ProductImageGalleryAdmin product={product} connector={connector} /> : null}
 
       <form
         ref={formRef}
@@ -655,8 +664,10 @@ export function ProductForm({
         className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm"
       >
         {product ? <input type="hidden" name="productId" value={product.id} /> : null}
+        {connector ? <input type="hidden" name="connector" value={connector} /> : null}
 
         <fieldset disabled={isSubmitting || actionState.retryMode === "retry" || actionState.retryMode === "reload"} className="grid min-w-0 gap-5 md:grid-cols-2">
+          {!connector ? <>
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Categoria</span>
             <select
@@ -856,7 +867,8 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Destacado</span>
           </label>
 
-          <div className="grid gap-3 md:col-span-2">
+          </> : null}
+          <div className="grid min-w-0 gap-3 md:col-span-2">
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Agregar imagenes</span>
             <input
               ref={imageInputRef}
@@ -866,7 +878,7 @@ export function ProductForm({
               multiple
               disabled={isOptimizingImage}
               onChange={handleProductImagesChange}
-              className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 text-sm outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[#556B2F] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#F7F4ED] focus:border-[#556B2F]"
+              className="min-w-0 w-full max-w-full rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 text-sm outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[#556B2F] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#F7F4ED] focus:border-[#556B2F]"
             />
             {imageStatus ? (
               <span className="text-xs font-semibold text-[#556B2F]">
