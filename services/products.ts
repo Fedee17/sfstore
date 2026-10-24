@@ -163,7 +163,7 @@ async function readPublicSkuRows(slug?: string, family?: string, slugs?: string[
  throw new Error("PUBLIC_CATALOG_INCOMPLETE");
 }
 const mapRows=(rows:SupabaseProductRow[])=>rows.map(mapSupabaseProduct).filter((p):p is PublicProduct=>p!==null);
-const OFFER_COLUMNS="id,name,connector,head_slug,cable_slug,presentation_product,combo_list_price,combo_transfer_price,price_version";
+const OFFER_COLUMNS="id,name,connector,head_slug,cable_slug,presentation_product,combo_list_price,combo_transfer_price,price_version,image_id,image_url,image_alt";
 async function readPublicComboRows(selection?: {presentationId:string;connector:string}): Promise<PublicComponentOfferRow[]> {
  const rows: PublicComponentOfferRow[] = []; let after: PublicComponentOfferRow | undefined;
  for(let page=0;page<500;page++) {

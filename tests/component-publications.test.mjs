@@ -16,6 +16,32 @@ const id='11111111-1111-4111-8111-111111111111',rid='22222222-2222-4222-8222-222
 const physical=[['head','Cabezal iPhone',22000],['cc','Cable USB-C a USB-C',15800],['lightning','Cable USB-C a Lightning',15800]].map(([id,name,price])=>({id,name,price,slug:id,stock:id==='head'?2:10,kind:'simple',category:'mates',categoryId:'category',featured:false,shortDescription:'SYNTHETIC',imagePlaceholder:'SY'}));
 const offers=['cc','lightning'].map(connector=>({id:rid,name:'SYNTHETIC RECIPE',connector,presentation_product:id,head_slug:'head',cable_slug:connector,combo_list_price:'30666.67',combo_transfer_price:'23000.00',price_version:'v1'}));
 const pubs=()=>projectComponentPublications(physical,offers);
+const picturedOffers=()=>offers.map((o,index)=>({...o,image_id:`photo-${index}`,image_url:`https://images.test/${o.connector}.webp`,image_alt:`TEST ${o.connector}`}));
+
+test('P02 keeps each exact connector image in primary and gallery without changing commercial fields',()=>{
+ const before=structuredClone(physical),plain=pubs(),pictured=projectComponentPublications(physical,picturedOffers());
+ for(let i=0;i<2;i++){
+  const p=pictured[i],url=`https://images.test/${p.combo.connector}.webp`;
+  assert.equal(p.primaryImageUrl,url);assert.equal(p.images.length,1);assert.equal(p.images[0].url,url);assert.match(p.primaryImageAlt,new RegExp(p.name));
+  for(const field of ['id','slug','name','price','transferPrice','stock','combo'])assert.deepEqual(p[field],plain[i][field]);
+ }
+ assert.deepEqual(physical,before);
+});
+test('P02 missing connector photo never borrows a component, untagged primary or other combo photo',()=>{
+ const source=physical.map(p=>({...p,primaryImageUrl:'https://images.test/component.webp'}));
+ const selected=picturedOffers();delete selected[1].image_id;delete selected[1].image_url;
+ const result=projectComponentPublications(source,selected);
+ assert.equal(result[0].primaryImageUrl,'https://images.test/cc.webp');assert.equal(result[1].primaryImageUrl,null);assert.deepEqual(result[1].images,[]);
+ assert.ok(pubs().every(p=>!p.primaryImageUrl&&p.images.length===0));
+});
+test('P02 duplicate photo IDs or URLs fail closed for both connectors; unsafe URLs are not rendered',()=>{
+ for(const field of ['image_id','image_url']){
+  const rows=picturedOffers();rows[1][field]=rows[0][field];assert.ok(projectComponentPublications(physical,rows).every(p=>p.primaryImageUrl===null));
+ }
+ for(const url of ['javascript:alert(1)','data:image/png;base64,TEST','']){
+  const rows=picturedOffers();rows[0].image_url=url;assert.equal(projectComponentPublications(physical,rows)[0].primaryImageUrl,null);
+ }
+});
 const storage=new Map();const {useCartStore,cartItemKey}=load('store/cart-store.ts',{'@/lib/products/component-combos':combo},{localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}});
 
 test('one recipe yields exactly five presentations, with distinct names, slugs and publication IDs',()=>{
@@ -75,7 +101,34 @@ const service=await import(moduleUrl(source('services/products.ts')
  .replace('@/lib/products/yara-rosa-consolidation',new URL('../lib/products/yara-rosa-consolidation.ts',import.meta.url).href)
  .replace('@/lib/supabase/client',moduleUrl('export const getSupabaseClient=()=>globalThis.__publicationDb;'))));
 const raw=physical.map((p,i)=>({...p,id:`00000000-0000-4000-8000-00000000000${i}`,status:'active',historical_identity:false,short_description:'SYNTHETIC',category_id:'category',category_slug:'mates',categories:{id:'category',name:'Accesorios',slug:'mates',is_active:true}}));
-function db(offerError=false,visible=raw){const calls=[];return{calls,from(table){let rows=[...(table==='public_catalog_skus'?visible:offers)];const q={select(){return q;},order(){return q;},limit(){return q;},eq(k,v){rows=rows.filter(r=>r[k]===v);return q;},neq(k,v){rows=rows.filter(r=>r[k]!==v);return q;},in(k,v){rows=rows.filter(r=>v.includes(r[k]));return q;},gt(k,v){rows=rows.filter(r=>r[k]>v);return q;},or(v){const m=/id.gt.([^,]+),and\(id.eq.[^,]+,connector.gt.([^)]*)\)/.exec(v);assert.ok(m);rows=rows.filter(r=>r.id>m[1]||(r.id===m[1]&&r.connector>m[2]));return q;},then(ok,bad){calls.push(table);return Promise.resolve({data:rows.slice(0,1),error:table==='public_component_offers'&&offerError?{code:'SYNTHETIC'}:null}).then(ok,bad);}};return q;}};}
+function db(offerError=false,visible=raw,offered=offers){const calls=[];return{calls,from(table){let rows=[...(table==='public_catalog_skus'?visible:offered)];const q={select(){return q;},order(){return q;},limit(){return q;},eq(k,v){rows=rows.filter(r=>r[k]===v);return q;},neq(k,v){rows=rows.filter(r=>r[k]!==v);return q;},in(k,v){rows=rows.filter(r=>v.includes(r[k]));return q;},gt(k,v){rows=rows.filter(r=>r[k]>v);return q;},or(v){const m=/id.gt.([^,]+),and\(id.eq.[^,]+,connector.gt.([^)]*)\)/.exec(v);assert.ok(m);rows=rows.filter(r=>r.id>m[1]||(r.id===m[1]&&r.connector>m[2]));return q;},then(ok,bad){calls.push(table);return Promise.resolve({data:rows.slice(0,1),error:table==='public_component_offers'&&offerError?{code:'SYNTHETIC'}:null}).then(ok,bad);}};return q;}};}
+
+test('P02 actual paginated catalog and each detail use the same connector photo',async()=>{
+ globalThis.__publicationDb=db(false,raw,picturedOffers());
+ const catalog=await service.getCatalogPublications();
+ for(const p of catalog.filter(p=>p.kind==='combo')){
+  const detail=await service.getProductBySlug(p.slug);assert.equal(detail.primaryImageUrl,p.primaryImageUrl);assert.equal(p.primaryImageUrl,`https://images.test/${p.combo.connector}.webp`);
+ }
+});
+
+test('P02 association action requires admin before any database access and validates approval and duplicate IDs',async()=>{
+ let reads=0,authorized=false;
+ const {saveComponentOfferImages}=load('app/admin/productos/componentes/actions.ts',{'@/lib/admin-session':{requireAdminActionSession:async()=>{if(!authorized)throw Error('DENIED');}},'@/lib/supabase/server':{getSupabaseAdminClient:()=>{reads++;throw Error('UNEXPECTED_DB');}},'next/cache':{revalidatePath:()=>{}},'@/lib/products/component-combos':combo});
+ const form=new FormData();form.set('recipeId',rid);form.set('cc',id);form.set('lightning',id);
+ await assert.rejects(()=>saveComponentOfferImages({message:''},form),/DENIED/);assert.equal(reads,0);
+ authorized=true;assert.match((await saveComponentOfferImages({message:''},form)).message,/Confirmá/);form.set('approved','yes');assert.match((await saveComponentOfferImages({message:''},form)).message,/distinta/);assert.equal(reads,0);
+});
+
+test('P02 admin form previews each connector separately and leaves save unavailable without photos',()=>{
+ const hooks={...React,useState:init=>[init,()=>{}],useActionState:()=>[{message:''},()=>{},false]};
+ const {ComponentOfferImageForm}=load('components/admin/component-offer-image-form.tsx',{'react':hooks,'react/jsx-runtime':jsx,'next/link':{default:({children,...props})=>React.createElement('a',props,children)},'@/app/admin/productos/componentes/actions':{saveComponentOfferImages:()=>{}}});
+ const images=picturedOffers().map(o=>({id:o.image_id,url:o.image_url,alt:o.image_alt,combo_connector:o.connector}));
+ const html=renderToStaticMarkup(React.createElement(ComponentOfferImageForm,{recipeId:rid,presentationId:id,images}));
+ assert.match(html,/src="https:\/\/images.test\/cc.webp" alt="Vista previa: cargador completo USB-C a USB-C"/);
+ assert.match(html,/src="https:\/\/images.test\/lightning.webp" alt="Vista previa: cargador completo USB-C a Lightning"/);
+ assert.match(html,/name="approved"/);
+ const empty=renderToStaticMarkup(React.createElement(ComponentOfferImageForm,{recipeId:rid,presentationId:id,images:[]}));assert.match(empty,/<button disabled=""/);assert.match(empty,/Todavía no hay fotografías/);
+});
 test('actual category and search publication source returns all five despite page clamps and equal recipe IDs',async()=>{
  globalThis.__publicationDb=db();const products=await service.getProductsByCategorySlug('mates');assert.equal(products.length,5);assert.equal(products.filter(p=>p.kind==='combo').length,2);
  assert.equal((await service.getCatalogPublications()).length,5);

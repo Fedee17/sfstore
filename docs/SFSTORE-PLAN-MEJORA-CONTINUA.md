@@ -158,3 +158,9 @@ Incidencias recuperadas: autenticación CLI ausente y guardado inicialmente bloq
 **Publicado.** Código `8f3c7ad6b4ea8f53d56a69ef349d29c02c9a60f9`, deployment `dpl_9DAtHX7BGcNzaUgZPbFp2M9w2Koo`, READY, en `sfstore-ten.vercel.app`. Integración por fast-forward desde `1ff392d`; las 17 pruebas previas se conservaron sin repetir. Build remoto y TypeScript aprobados; 616 archivos fuente cotejados, sin diferencias de contenido salvo saltos de línea.
 
 Comprobados Ayuda, retiro lunes a sábados 17:30–20:30, Regalos y enlaces directos, navegación móvil 390×844 y notebook 1366×900 sin overflow. Carrito y checkout conservaron el mismo total y 25% por transferencia; sin enviar formulario, crear pedido ni acreditar pagos. Se vació la selección local al terminar. Sin cambios de Supabase, inventario o lógica comercial. Detalle y límites: [verificación publicada](auditorias/2026-10-24-P09-PUBLICADO.md). Se conserva la evidencia de la etapa local anterior.
+
+### 24/10/2026 — P02: preparación técnica de fotos para combos
+
+**Implementado y validado localmente; no publicado.** Asociación explícita por conector sobre `product_images`, usando Storage/editor existentes. Cada ficha virtual recibe solo su fotografía; sin foto conserva el placeholder. Asignación administrativa transaccional, confirmación visual y rechazo de IDs/URLs compartidos entre C/C y Lightning. Migración aditiva preparada, sin aplicar; no cambia recetas, precios ni inventario. 20 pruebas de contratos/UI y 8 comprobaciones PostgreSQL aisladas aprobadas; build/TypeScript y revisión visual del estado vacío móvil/notebook. [Resultados y pasos de carga](auditorias/2026-10-24-P02-ASOCIACION-COMBOS-LOCAL.md).
+
+P02 sigue pendiente de fotografías reales aprobadas para las ocho publicaciones. Esta entrega resuelve únicamente la preparación técnica de los dos combos; no supone que se hayan cargado imágenes o publicado la mejora.
