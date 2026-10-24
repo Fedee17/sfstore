@@ -152,3 +152,9 @@ Incidencias recuperadas: autenticación CLI ausente y guardado inicialmente bloq
 **Implementado y validado localmente; no publicado.** Ayuda describe transferencia con 25% de descuento, comprobante dentro del pedido y acreditación manual disponible; diferencia pago confirmado de autorización de retiro (lunes a sábados, 17:30–20:30). Explica envíos nacionales, selección de transporte y cotización cuando falta tarifa. Regalos ofrece Perfumes/Mates sin conversación y aclara que «Consultar regalos» abre WhatsApp. No cambia lógica comercial, checkout, inventario ni Supabase.
 
 17 pruebas focalizadas aprobadas, revisión local móvil/notebook y accesibilidad de acordeones/enlaces. No se promete confirmación bancaria automática ni se atribuyen resultados medidos de conversión. Evidencia, límites y validaciones: [P09 local](auditorias/2026-10-24-P09-PAGOS-ENTREGAS-REGALOS.md). Publicación pendiente de autorización.
+
+### 24/10/2026 — P09 publicado y comprobado
+
+**Publicado.** Código `8f3c7ad6b4ea8f53d56a69ef349d29c02c9a60f9`, deployment `dpl_9DAtHX7BGcNzaUgZPbFp2M9w2Koo`, READY, en `sfstore-ten.vercel.app`. Integración por fast-forward desde `1ff392d`; las 17 pruebas previas se conservaron sin repetir. Build remoto y TypeScript aprobados; 616 archivos fuente cotejados, sin diferencias de contenido salvo saltos de línea.
+
+Comprobados Ayuda, retiro lunes a sábados 17:30–20:30, Regalos y enlaces directos, navegación móvil 390×844 y notebook 1366×900 sin overflow. Carrito y checkout conservaron el mismo total y 25% por transferencia; sin enviar formulario, crear pedido ni acreditar pagos. Se vació la selección local al terminar. Sin cambios de Supabase, inventario o lógica comercial. Detalle y límites: [verificación publicada](auditorias/2026-10-24-P09-PUBLICADO.md). Se conserva la evidencia de la etapa local anterior.
