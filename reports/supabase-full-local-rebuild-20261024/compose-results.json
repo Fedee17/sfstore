@@ -1,0 +1,39 @@
+{
+  "project": "sfstore-rebuild-d917286c",
+  "remoteConnected": false,
+  "checks": [
+    {
+      "name": "isolated stack and Auth health",
+      "passed": true
+    },
+    {
+      "name": "real Auth user/session verified without external mail or CAPTCHA bypass",
+      "passed": true
+    },
+    {
+      "name": "anon and authenticated public catalog projections",
+      "passed": true
+    },
+    {
+      "name": "private data and commercial RPC denied by PostgREST",
+      "passed": true
+    },
+    {
+      "name": "service checkout RPC is reachable through real PostgREST",
+      "passed": true
+    },
+    {
+      "name": "Storage service upload works and private downloads remain protected",
+      "passed": true
+    },
+    {
+      "name": "catalog remains readable after real Auth and Storage operations",
+      "passed": true
+    }
+  ],
+  "started": true,
+  "cleaned": true,
+  "prestartIsolationVerified": true,
+  "apiOrigin": "http://127.0.0.1:57350",
+  "status": "FULL_LOCAL_STACK_PASSED"
+}

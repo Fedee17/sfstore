@@ -31,3 +31,8 @@ Los escenarios reutilizados incluyen cinco presentaciones comerciales, ambos con
 - Autenticación externa, buckets/configuración real y datos semilla comerciales requieren su procedimiento separado; el paquete no los inventa ni los copia desde Production.
 
 Reproducir: generar copias con `node scripts/prepare-checkout-staging.mjs`; definir SFSTORE_TEST_DOCKER con el ejecutable Docker local y ejecutar `node --test tests/explicit-grants-rebuild-postgres.test.mjs`. Ver `supabase/rebuild/README.md` y `staging/README.md`. No usar una conexión remota.
+
+
+## Cierre integrado — 24/10/2026
+
+La validación adicional del stack real quedó aprobada mediante Compose descartable, con aislamiento verificado antes de arrancar y siete comprobaciones HTTP. Supera el pendiente de Auth/PostgREST/Storage descrito en el informe original, conservando sus límites comerciales. Ver [informe final](../supabase-full-local-rebuild-20261024/FINAL-RESULTADO.md). Las 73 pruebas PostgreSQL no se repitieron. No hay autorización implícita de cambios productivos.
