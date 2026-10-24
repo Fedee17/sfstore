@@ -1,4 +1,6 @@
 import { connection } from "next/server";
+import type { ReactNode } from "react";
+import Link from "next/link";
 ﻿import type { Metadata } from "next";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
@@ -192,6 +194,7 @@ function CategoryCard({
   product,
   tone,
   isExternal = false,
+  actions,
 }: {
   href?: string;
   title: string;
@@ -200,6 +203,7 @@ function CategoryCard({
   product?: PublicProduct | null;
   tone: "olive" | "leather" | "cream" | "dark";
   isExternal?: boolean;
+  actions?: ReactNode;
 }) {
   const toneClasses = {
     olive: "border-[#0072CE]/20 bg-[#0072CE]/10 text-[#0072CE]",
@@ -226,6 +230,7 @@ function CategoryCard({
     return (
       <article className={`grid min-w-0 gap-5 overflow-hidden rounded-3xl border p-4 sm:p-5 ${toneClasses}`}>
         {content}
+        {actions}
       </article>
     );
   }
@@ -409,13 +414,17 @@ export default async function Home() {
             tone="leather"
           />
           <CategoryCard
-            href={giftWhatsAppLink}
             eyebrow="Regalos"
-            title="Sin dar vueltas"
-            description="Opciones para quedar bien sin comprar a ciegas."
+            title="Elegí con ayuda o a tu manera"
+            description="Explorá perfumes y mates para regalar, o consultanos por WhatsApp."
             product={featuredProducts[2] ?? featuredProducts[0] ?? perfumeVisual}
             tone="cream"
-            isExternal
+            actions={<div className="grid min-w-0 gap-3">
+              <a href={giftWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#0072CE] px-4 py-3 text-center text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></a>
+              <p className="text-xs leading-5 text-[#526479]">Abre WhatsApp en una pestaña nueva.</p>
+              <Link href="/perfumes" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#003B73]/30 px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Explorar Perfumes</Link>
+              <Link href="/mates" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#003B73]/30 px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Explorar Mates</Link>
+            </div>}
           />
           <CategoryCard
             href="/accesorios"
@@ -486,10 +495,10 @@ export default async function Home() {
             <a
               href={giftWhatsAppLink}
               target="_blank"
-              rel="noreferrer"
-              className="rounded-full bg-[#F7F9FC] px-6 py-3 text-center text-sm font-semibold text-[#102033] transition hover:bg-[#DCE3EA]"
+              rel="noopener noreferrer"
+              className="min-h-11 rounded-full bg-[#F7F9FC] px-6 py-3 text-center text-sm font-semibold text-[#102033] transition hover:bg-[#DCE3EA] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
             >
-              Pedinos ayuda para armarlo
+              Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span>
             </a>
             <a
               href="/perfumes"
@@ -497,6 +506,8 @@ export default async function Home() {
             >
               Ver perfumes para regalar
             </a>
+            <a href="/mates" className="min-h-11 rounded-full border border-[#F7F9FC]/25 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#F7F9FC]/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Ver mates para regalar</a>
+            <p className="text-center text-xs leading-5 text-white/70 sm:col-span-2 lg:col-span-1">«Consultar regalos» abre WhatsApp en una pestaña nueva.</p>
           </div>
         </div>
       </section>
