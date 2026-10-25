@@ -79,3 +79,25 @@ test('all dimensions remain required; an incomplete combination never resolves a
  assert.match(render({Color:'Negro',Capacidad:'1 L'},p),/data-cart-product="black"/);
  assert.doesNotMatch(render({Color:'Negro',Capacidad:'2 L'},p),/data-cart-product/);
 });
+
+function renderGallery(props){
+ const require=createRequire(import.meta.url),exports={};
+ const source=readFileSync(new URL('../components/product-image-gallery.tsx',import.meta.url),'utf8');
+ new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(require,exports);
+ return renderToStaticMarkup(React.createElement(exports.ProductImageGallery,{images:[image],productName:'Prueba',placeholder:'PR',...props}));
+}
+test('gallery natural mobile sizing is opt-in and retains containment and the square notebook frame',()=>{
+ const standard=renderGallery({}),natural=renderGallery({naturalSizeOnMobile:true});
+ assert.match(standard,/class="aspect-square overflow-hidden"/);
+ assert.match(standard,/class="h-full w-full object-contain"/);
+ assert.match(natural,/class="overflow-hidden lg:aspect-square"/);
+ assert.match(natural,/class="h-auto w-full object-contain lg:h-full"/);
+ assert.doesNotMatch(natural,/object-cover/);
+});
+test('a missing image remains an honest placeholder with either mobile sizing mode',()=>{
+ for(const naturalSizeOnMobile of [false,true]){
+  const html=renderGallery({images:[],naturalSizeOnMobile});
+  assert.match(html,/Imagen no disponible de Prueba/);
+  assert.doesNotMatch(html,/<img/);
+ }
+});
