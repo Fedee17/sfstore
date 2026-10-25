@@ -56,8 +56,8 @@ test('initial family renders the representative cover without any selected optio
  assert.match(html,/Imagen representativa: Gris/);assert.match(html,/synthetic-grey.svg/);
  assert.doesNotMatch(html,/aria-pressed="true"|data-cart-product/);
  assert.match(html,/<button[^>]*disabled[^>]*>Agregar al carrito/);
- assert.equal(html.split('Elegí un color para continuar').length-1,1);
- assert.doesNotMatch(html,/Todavía no|Elegí tu color|Elegí tu variante|Elegí un color para agregar/);
+ assert.equal(html.split('Elegí tu color').length-1,1);
+ assert.doesNotMatch(html,/Todavía no|Elegí un color para continuar|Elegí tu variante|Elegí un color para agregar/);
  assert.match(html,/Desde .*75/);assert.match(html,/Verde · Agotado/);
 });
 test('selected SKU controls its own price, availability and images, not the cover SKU',()=>{
@@ -101,5 +101,18 @@ test('a missing image remains an honest placeholder with either mobile sizing mo
   const html=renderGallery({images:[],naturalSizeOnMobile});
   assert.match(html,/Imagen no disponible de Prueba/);
   assert.doesNotMatch(html,/<img/);
+ }
+});
+
+test('light thumbnails preserve the same images and selection controls without changing the default gallery',()=>{
+ const props={images:grey.images};
+ const normal=renderGallery(props),light=renderGallery({...props,lightThumbnails:true});
+ assert.match(normal,/border-\[#F7F9FC\]\/10 bg-\[#102033\]/);
+ assert.match(light,/border-\[#DCE3EA\] bg-\[#FFFDFA\]/);
+ for(const html of [normal,light]){
+  assert.match(html,/aria-label="Ver imagen 1 de Prueba" aria-pressed="true"/);
+  assert.match(html,/aria-label="Ver imagen 2 de Prueba" aria-pressed="false"/);
+  assert.match(html,/synthetic-grey.svg/);
+  assert.match(html,/synthetic-grey-detail.svg/);
  }
 });

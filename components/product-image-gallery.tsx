@@ -14,6 +14,7 @@ type ProductImageGalleryProps = {
   placeholder: string;
   productName: string;
   naturalSizeOnMobile?: boolean;
+  lightThumbnails?: boolean;
 };
 
 function sortImages(images: ProductGalleryImage[]) {
@@ -35,6 +36,7 @@ export function ProductImageGallery({
   placeholder,
   productName,
   naturalSizeOnMobile = false,
+  lightThumbnails = false,
 }: ProductImageGalleryProps) {
   const sortedImages = sortImages(images).filter((image) => image.url);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -77,7 +79,7 @@ export function ProductImageGallery({
       </div>
 
       {sortedImages.length > 1 ? (
-        <div className="grid grid-cols-4 gap-2 border-t border-[#F7F9FC]/10 bg-[#102033] p-3 sm:grid-cols-5">
+        <div className={`grid grid-cols-4 gap-2 border-t p-3 sm:grid-cols-5 ${lightThumbnails ? "border-[#DCE3EA] bg-[#FFFDFA]" : "border-[#F7F9FC]/10 bg-[#102033]"}`}>
           {sortedImages.map((image, index) => (
             <button
               key={`${image.url}-${index}`}
@@ -86,7 +88,7 @@ export function ProductImageGallery({
               className={`aspect-square min-w-0 overflow-hidden rounded-2xl border transition ${
                 index === activeIndex
                   ? "border-[#0072CE] opacity-100"
-                  : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
+                  : lightThumbnails ? "border-[#DCE3EA] opacity-70 hover:opacity-100" : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
               }`}
               aria-label={`Ver imagen ${index + 1} de ${productName}`}
               aria-pressed={index === activeIndex}
