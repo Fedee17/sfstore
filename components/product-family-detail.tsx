@@ -30,7 +30,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
       <Link href={publicCategoryPaths[product.category]} className="text-sm font-semibold text-[#003B73] underline underline-offset-4">← Volver al catálogo</Link>
       <h1 className="my-5 break-words text-2xl font-semibold leading-tight sm:text-4xl">{product.name}</h1>
       <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start">
-        <div className="order-2 min-w-0 overflow-hidden rounded-3xl border border-[#003B73]/20 lg:order-1">
+        <div className="order-1 min-w-0 overflow-hidden rounded-3xl border border-[#003B73]/20">
           <ProductImageGallery key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} />
           <p className="bg-white px-4 py-3 text-xs leading-5 text-[#102033]/75">
             {selected ? "La galería muestra fotografías de la variante elegida. Recorrerlas no cambia tu selección."
@@ -38,14 +38,14 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
                 : "Elegí una variante para ver su fotografía. Todavía no seleccionaste ninguna."}
           </p>
         </div>
-        <div className="order-1 min-w-0 space-y-4 rounded-3xl border border-[#003B73]/20 bg-white p-4 sm:p-6 lg:order-2">
-          <div aria-live="polite" aria-atomic="true" className="space-y-1">
+        <div className="order-2 flex min-w-0 flex-col gap-4 rounded-3xl border border-[#003B73]/20 bg-white p-4 sm:p-6">
+          <div aria-live="polite" aria-atomic="true" className="order-2 space-y-1 lg:order-1">
             <p data-testid="variant-transfer-price" className="break-words text-3xl font-bold">{selected ? "" : "Desde "}{money.format(getWebTransferPrice(price))}</p>
             <p className="text-sm text-[#003B73]">Por transferencia · 25% de descuento</p>
             <p data-testid="variant-list-price" className="text-sm text-[#102033]/70">Precio de lista: {selected ? "" : "desde "}{money.format(price)}</p>
             <p className="text-xs text-[#102033]/70">Pago completo por transferencia.</p>
           </div>
-          {dimensions.map(d => <fieldset key={d} className="min-w-0">
+          {dimensions.map(d => <fieldset key={d} className="order-1 min-w-0 lg:order-2">
             <legend className="mb-2 break-words font-semibold">{choices[d] ? `${d}: ${choices[d]}` : isColor ? "Elegí tu color" : `Elegí ${d.toLowerCase()}`}</legend>
             <div className="flex flex-wrap gap-2">
               {[...new Set(variants.map(p => p.variantOptions?.[d]).filter((v): v is string => !!v))].sort().map(value => {
@@ -59,16 +59,17 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
               })}
             </div>
           </fieldset>)}
-          <div role="status" aria-live="polite" aria-atomic="true" className="space-y-1 text-sm">
+          <div role="status" aria-live="polite" aria-atomic="true" className="order-3 space-y-1 text-sm">
             {selected ? <>
               <p className="break-words font-semibold">{dimensions.map(d => `${d}: ${choices[d]}`).join(" · ")}</p>
               <p data-testid="variant-stock">{selected.stock > 0 ? `Disponible: ${selected.stock} unidad${selected.stock === 1 ? "" : "es"}` : "Sin stock de esta variante"}</p>
               <p className="break-all text-xs text-[#102033]/60">SKU: {selected.sku}</p>
             </> : <p>{complete ? "Esta combinación no está disponible." : isColor ? "Todavía no elegiste un color." : "Todavía no elegiste todas las opciones."}</p>}
           </div>
-          {cartProduct ? <AddToCartButton key={cartProduct.id} product={cartProduct} />
+          <div className="order-4">{cartProduct ? <AddToCartButton key={cartProduct.id} product={cartProduct} />
             : <button type="button" disabled className="min-h-12 w-full rounded-full bg-[#526479] px-5 py-3 text-sm font-semibold text-white">{isColor ? "Elegí un color para agregar" : "Elegí una variante para agregar"}</button>}
-          <p className="text-xs leading-5 text-[#102033]/70">La disponibilidad se verifica nuevamente al preparar el pedido. Agregar al carrito no reserva stock.</p>
+          </div>
+          <p className="order-5 text-xs leading-5 text-[#102033]/70">La disponibilidad se verifica nuevamente al preparar el pedido. Agregar al carrito no reserva stock.</p>
         </div>
       </div>
     </section>
