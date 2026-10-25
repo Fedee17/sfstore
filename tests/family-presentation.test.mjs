@@ -45,7 +45,7 @@ function render(choices={},product=family){
   '@/lib/catalog/public-product-visibility':{publicCategoryPaths:{mates:'/mates'}},
   '@/lib/products/family-presentation':{getFamilyRepresentativeImage:p=>getFamilyRepresentativeImage(p,approvals)},
   '@/lib/web-transfer-pricing':prices,'@/components/site-header':{SiteHeader:()=>null},
-  '@/components/product-image-gallery':{ProductImageGallery:({images=[]})=>React.createElement('div',{'data-gallery':JSON.stringify(images.map(i=>i.url))})},
+  '@/components/product-image-gallery':{ProductImageGallery:({images=[],showThumbnails=true})=>React.createElement('div',{'data-gallery':JSON.stringify(images.map(i=>i.url)),'data-thumbnails':showThumbnails})},
   '@/components/add-to-cart-button':{AddToCartButton:({product:p})=>React.createElement('button',{disabled:p.stock<=0,'data-cart-product':p.id,'data-cart-price':p.price},'Agregar al carrito')},
  };
  new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n]??require(n),exports);
@@ -68,6 +68,7 @@ test('selected SKU controls its own price, availability and images, not the cove
  const greyHtml=render({Color:'Gris'});
  assert.match(greyHtml,/data-cart-product="grey"/);assert.match(greyHtml,/data-cart-price="120"/);
  assert.match(greyHtml,/90/);assert.match(greyHtml,/synthetic-grey-detail.svg/);
+ assert.match(greyHtml,/data-thumbnails="false"/);
 });
 test('sold-out and invalid selections cannot create a purchasable cart line',()=>{
  assert.match(render({Color:'Verde'}),/Sin stock de esta variante/);
@@ -104,15 +105,15 @@ test('a missing image remains an honest placeholder with either mobile sizing mo
  }
 });
 
-test('light thumbnails preserve the same images and selection controls without changing the default gallery',()=>{
+test('family thumbnails can be omitted without removing stored photos or changing the default gallery',()=>{
  const props={images:grey.images};
- const normal=renderGallery(props),light=renderGallery({...props,lightThumbnails:true});
- assert.match(normal,/border-\[#F7F9FC\]\/10 bg-\[#102033\]/);
- assert.match(light,/border-\[#DCE3EA\] bg-\[#FFFDFA\]/);
- for(const html of [normal,light]){
-  assert.match(html,/aria-label="Ver imagen 1 de Prueba" aria-pressed="true"/);
-  assert.match(html,/aria-label="Ver imagen 2 de Prueba" aria-pressed="false"/);
-  assert.match(html,/synthetic-grey.svg/);
-  assert.match(html,/synthetic-grey-detail.svg/);
- }
+ const before=JSON.stringify(props);
+ const normal=renderGallery(props),hidden=renderGallery({...props,showThumbnails:false});
+ assert.match(normal,/aria-label="Ver imagen 1 de Prueba" aria-pressed="true"/);
+ assert.match(normal,/aria-label="Ver imagen 2 de Prueba" aria-pressed="false"/);
+ assert.match(normal,/synthetic-grey-detail.svg/);
+ assert.match(hidden,/synthetic-grey.svg/);
+ assert.doesNotMatch(hidden,/<button|grid-cols-4|synthetic-grey-detail.svg/);
+ assert.equal(JSON.stringify(props),before);
+ assert.equal((hidden.match(/<img/g)??[]).length,1);
 });

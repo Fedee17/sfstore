@@ -14,7 +14,7 @@ type ProductImageGalleryProps = {
   placeholder: string;
   productName: string;
   naturalSizeOnMobile?: boolean;
-  lightThumbnails?: boolean;
+  showThumbnails?: boolean;
 };
 
 function sortImages(images: ProductGalleryImage[]) {
@@ -36,7 +36,7 @@ export function ProductImageGallery({
   placeholder,
   productName,
   naturalSizeOnMobile = false,
-  lightThumbnails = false,
+  showThumbnails = true,
 }: ProductImageGalleryProps) {
   const sortedImages = sortImages(images).filter((image) => image.url);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -61,7 +61,7 @@ export function ProductImageGallery({
         {failedImages[selectedImage.url] ? (
           <div className="flex h-full flex-col items-center justify-center px-4 text-center text-[#F7F9FC]" role="img" aria-label={`Imagen no disponible de ${productName}`}>
             <span className="text-5xl font-semibold">{placeholder}</span>
-            <span className="mt-3 text-sm">Imagen no disponible. Probá otra foto.</span>
+            <span className="mt-3 text-sm">{showThumbnails ? "Imagen no disponible. Probá otra foto." : "Imagen no disponible."}</span>
           </div>
         ) : (
           <img
@@ -78,8 +78,8 @@ export function ProductImageGallery({
         )}
       </div>
 
-      {sortedImages.length > 1 ? (
-        <div className={`grid grid-cols-4 gap-2 border-t p-3 sm:grid-cols-5 ${lightThumbnails ? "border-[#DCE3EA] bg-[#FFFDFA]" : "border-[#F7F9FC]/10 bg-[#102033]"}`}>
+      {showThumbnails && sortedImages.length > 1 ? (
+        <div className="grid grid-cols-4 gap-2 border-t border-[#F7F9FC]/10 bg-[#102033] p-3 sm:grid-cols-5">
           {sortedImages.map((image, index) => (
             <button
               key={`${image.url}-${index}`}
@@ -88,7 +88,7 @@ export function ProductImageGallery({
               className={`aspect-square min-w-0 overflow-hidden rounded-2xl border transition ${
                 index === activeIndex
                   ? "border-[#0072CE] opacity-100"
-                  : lightThumbnails ? "border-[#DCE3EA] opacity-70 hover:opacity-100" : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
+                  : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
               }`}
               aria-label={`Ver imagen ${index + 1} de ${productName}`}
               aria-pressed={index === activeIndex}
