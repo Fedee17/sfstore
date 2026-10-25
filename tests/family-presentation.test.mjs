@@ -55,7 +55,9 @@ test('initial family renders the representative cover without any selected optio
  const html=render();
  assert.match(html,/Imagen representativa: Gris/);assert.match(html,/synthetic-grey.svg/);
  assert.doesNotMatch(html,/aria-pressed="true"|data-cart-product/);
- assert.match(html,/<button[^>]*disabled[^>]*>Elegí un color para agregar/);
+ assert.match(html,/<button[^>]*disabled[^>]*>Agregar al carrito/);
+ assert.equal(html.split('Elegí un color para continuar').length-1,1);
+ assert.doesNotMatch(html,/Todavía no|Elegí tu color|Elegí tu variante|Elegí un color para agregar/);
  assert.match(html,/Desde .*75/);assert.match(html,/Verde · Agotado/);
 });
 test('selected SKU controls its own price, availability and images, not the cover SKU',()=>{

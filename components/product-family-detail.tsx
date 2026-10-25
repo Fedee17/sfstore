@@ -32,23 +32,19 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
       <div className="grid min-w-0 gap-3 lg:grid-cols-2 lg:items-start lg:gap-5">
         <div className="order-1 -mx-3 min-w-0 overflow-hidden rounded-2xl border border-[#003B73]/20 lg:mx-0 lg:rounded-3xl">
           <ProductImageGallery key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} naturalSizeOnMobile />
-          <p className={`${selected ? "hidden lg:block" : ""} bg-white px-3 py-2 text-xs leading-5 text-[#102033]/75 lg:px-4 lg:py-3`}>
-            <span className="lg:hidden">{selected ? null : representative ? `Imagen representativa: ${representative.label}` : "Elegí una variante para ver su fotografía."}</span>
-            <span className="hidden lg:inline">{selected ? "La galería muestra fotografías de la variante elegida. Recorrerlas no cambia tu selección."
-              : representative ? `Imagen representativa: ${representative.label}. Elegí tu variante para comprar.`
-                : "Elegí una variante para ver su fotografía. Todavía no seleccionaste ninguna."}</span>
-          </p>
+          {!selected && representative ? <p className="bg-white px-3 py-2 text-xs leading-5 text-[#102033]/75 lg:px-4 lg:py-3">
+            Imagen representativa: {representative.label}
+          </p> : null}
         </div>
         <div className="order-2 flex min-w-0 flex-col gap-3 lg:gap-4 lg:rounded-3xl lg:border lg:border-[#003B73]/20 lg:bg-white lg:p-6">
           <div aria-live="polite" aria-atomic="true" className="order-2 space-y-1 lg:order-1">
-            {selected ? <p className="text-xs font-semibold text-[#003B73] lg:hidden">Precio de la variante elegida</p> : null}
+            {selected ? <p className="text-xs font-semibold text-[#003B73]">Precio de la variante elegida</p> : null}
             <p data-testid="variant-transfer-price" className={`break-words font-bold ${selected ? "text-3xl" : "text-2xl lg:text-3xl"}`}>{selected ? "" : "Desde "}{money.format(getWebTransferPrice(price))}</p>
-            <p className="text-sm text-[#003B73]"><span className="lg:hidden">Transferencia · 25% OFF · pago completo</span><span className="hidden lg:inline">Por transferencia · 25% de descuento</span></p>
+            <p className="text-sm text-[#003B73]">Transferencia · 25% OFF · pago completo</p>
             <p data-testid="variant-list-price" className="text-sm text-[#102033]/70">Precio de lista: {selected ? "" : "desde "}{money.format(price)}</p>
-            <p className="hidden text-xs text-[#102033]/70 lg:block">Pago completo por transferencia.</p>
           </div>
-          {dimensions.map(d => <fieldset key={d} className="order-1 min-w-0 rounded-2xl border border-[#0072CE]/25 bg-[#0072CE]/5 px-3 pb-3 pt-1 lg:order-2 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0">
-            <legend className="mb-2 break-words px-1 font-semibold text-[#003B73] lg:px-0 lg:text-[#102033]">{choices[d] ? `${d}: ${choices[d]}` : isColor ? "Elegí tu color" : `Elegí ${d.toLowerCase()}`}</legend>
+          {dimensions.map(d => <fieldset key={d} className="order-1 min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#FFFDFA] px-3 pb-3 pt-1 lg:order-2">
+            <legend className="mb-2 break-words px-1 font-semibold text-[#003B73]">{choices[d] ? `${d}: ${choices[d]}` : isColor ? "Elegí un color para continuar" : `Elegí ${d.toLowerCase()}`}</legend>
             <div className="flex flex-wrap gap-2">
               {[...new Set(variants.map(p => p.variantOptions?.[d]).filter((v): v is string => !!v))].sort().map(value => {
                 const matching = variants.filter(p => p.variantOptions?.[d] === value && dimensions.every(other => other === d || !choices[other] || p.variantOptions?.[other] === choices[other]));
@@ -56,23 +52,23 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
                 return <button key={value} type="button" aria-pressed={chosen}
                   onClick={() => setChoices(current => ({ ...current, [d]: value }))}
                   className={`min-h-12 max-w-full break-words rounded-xl border px-3 py-2 text-sm transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0072CE] lg:min-h-11 ${chosen ? "border-[#0072CE] bg-[#0072CE]/10 font-semibold text-[#003B73] ring-1 ring-[#0072CE] lg:ring-0" : "border-[#003B73]/40 bg-white text-[#102033]"}`}>
-                  {chosen ? <span aria-hidden="true" className="mr-1 lg:hidden">✓</span> : null}
+                  {chosen ? <span aria-hidden="true" className="mr-1">✓</span> : null}
                   {value}{!available ? matching.length ? " · Agotado" : " · No disponible" : ""}
                 </button>;
               })}
             </div>
           </fieldset>)}
-          <div role="status" aria-live="polite" aria-atomic="true" className={`order-3 space-y-1 text-sm ${!selected && !complete ? "hidden lg:block" : ""}`}>
+          {selected || complete ? <div role="status" aria-live="polite" aria-atomic="true" className="order-3 space-y-1 text-sm">
             {selected ? <>
               <p className="hidden break-words font-semibold lg:block">{dimensions.map(d => `${d}: ${choices[d]}`).join(" · ")}</p>
               <p data-testid="variant-stock">{selected.stock > 0 ? `Disponible: ${selected.stock} unidad${selected.stock === 1 ? "" : "es"}` : "Sin stock de esta variante"}</p>
               <p className="hidden break-all text-xs text-[#102033]/60 lg:block">SKU: {selected.sku}</p>
-            </> : <p>{complete ? "Esta combinación no está disponible." : isColor ? "Todavía no elegiste un color." : "Todavía no elegiste todas las opciones."}</p>}
-          </div>
+            </> : <p>Esta combinación no está disponible.</p>}
+          </div> : null}
           <div className="order-4">{cartProduct ? <AddToCartButton key={cartProduct.id} product={cartProduct} />
-            : <button type="button" disabled className="min-h-12 w-full rounded-full bg-[#526479] px-5 py-3 text-sm font-semibold text-white">{isColor ? "Elegí un color para agregar" : "Elegí una variante para agregar"}</button>}
+            : <button type="button" disabled className="min-h-12 w-full rounded-full bg-[#DCE3EA] px-5 py-3 text-sm font-semibold text-[#45576A]">Agregar al carrito</button>}
           </div>
-          <p className="order-5 text-xs leading-5 text-[#102033]/70"><span className="lg:hidden">Agregar al carrito no reserva stock; se verifica al preparar el pedido.</span><span className="hidden lg:inline">La disponibilidad se verifica nuevamente al preparar el pedido. Agregar al carrito no reserva stock.</span></p>
+          <p className="order-5 text-xs leading-5 text-[#102033]/70">Agregar al carrito no reserva stock; se verifica al preparar el pedido.</p>
         </div>
       </div>
     </section>
