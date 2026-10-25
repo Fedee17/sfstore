@@ -2,6 +2,8 @@
 
 **Versión:** 1.0 · **Fecha:** 19/10/2026 · **Estado:** propuesta para adopción · **Responsables:** propietario (decisiones comerciales) y Codex (implementación supervisada por riesgo)
 
+**Seguimiento vigente:** sección 9, actualizada el 25/10/2026. Los registros anteriores se conservan como antecedentes fechados.
+
 **Documentos rectores:** `docs/SFSTORE-DIRECTRICES-MAESTRAS.md` y `docs/SFSTORE-ESTANDARES-DISENO-DESARROLLO.md`. La estrategia editorial de redes sociales se mantiene en su manual independiente.
 
 **Fuente de evidencia inicial:** `docs/auditorias/2026-10-19-AUDITORIA-UX-UI-CRO-MEDICION.md`, auditoría realizada el 18–19/10/2026 sobre `sfstore-ten.vercel.app`. Este plan es un **backlog propuesto**, no constancia de cambios ejecutados. El sitio auditado estaba publicado con el deployment `dpl_6rrP8EnsEJbYmHvKH1kua8zRgBHU`.
@@ -164,3 +166,69 @@ Comprobados Ayuda, retiro lunes a sábados 17:30–20:30, Regalos y enlaces dire
 **Implementado y validado localmente; no publicado.** Asociación explícita por conector sobre `product_images`, usando Storage/editor existentes. Cada ficha virtual recibe solo su fotografía; sin foto conserva el placeholder. Asignación administrativa transaccional, confirmación visual y rechazo de IDs/URLs compartidos entre C/C y Lightning. Migración aditiva preparada, sin aplicar; no cambia recetas, precios ni inventario. 20 pruebas de contratos/UI y 8 comprobaciones PostgreSQL aisladas aprobadas; build/TypeScript y revisión visual del estado vacío móvil/notebook. [Resultados y pasos de carga](auditorias/2026-10-24-P02-ASOCIACION-COMBOS-LOCAL.md).
 
 P02 sigue pendiente de fotografías reales aprobadas para las ocho publicaciones. Esta entrega resuelve únicamente la preparación técnica de los dos combos; no supone que se hayan cargado imágenes o publicado la mejora.
+
+## 9. Diagnóstico consolidado y cola única — actualización del 25/10/2026
+
+Esta sección es la única cola vigente. Las secciones anteriores conservan el historial de decisiones y entregas; sus estados antiguos de «no publicado» no sustituyen los cierres siguientes. No se abren tareas nuevas para hallazgos ya corregidos.
+
+**Conciliación documental:** la sección 9 del 22/10 quedó en el worktree de UX y no llegó al archivo de `main`. Se recuperan aquí sus IDs, prioridades y alcance, incorporando las publicaciones posteriores. Los originales se conservan localmente en el worktree `charger-purchase-ux-20261022`: sección 9 original, informe `2026-10-22-ACTUALIZACION-DIAGNOSTICO-UX.md` y auditoría con capturas `2026-10-22-AUDITORIA-CONVERSION-INTEGRAL.md`. No se copian ni se alteran esas evidencias; esta sección contiene el estado operativo necesario sin depender de enlaces a otro worktree. La incorporación documental a `main` está autorizada; queda condicionada a verificar el bloqueo de builds para evitar un despliegue. Los cambios funcionales locales se integrarán por separado sólo cuando estén autorizados.
+
+### Estado productivo y estabilización
+
+El 25/10 se confirmó que `sfstore-ten.vercel.app` publica `ba09b18bb3d5048d28aa16ca587f55e9c6580009`, deployment `dpl_4oK4UpbRSh9fxMDNmpiiBGen7YfA`, READY. `refs/heads/main` remoto apunta al mismo commit. El `main` local permanece en otro commit; no se modificó durante esta lectura.
+
+La verificación directa de PostgreSQL terminó en READ ONLY y ROLLBACK:
+
+- `delete_product_image_metadata_and_queue(uuid,uuid,text,text)` y `edit_component_gallery_image(uuid,text,uuid,text)` existen y sus argumentos coinciden con el código publicado.
+- Ambas y `save_component_gallery_atomic` son SECURITY INVOKER; EXECUTE está permitido a `service_role` y denegado a `anon` y `authenticated`. El administrador exige sesión autorizada en servidor antes de invocarlas.
+- Las columnas `product_images.combo_connector`, `component_offer_publications.image_gallery` y su proyección pública existen; los triggers de sincronización están habilitados. `public_component_offers` conserva `security_invoker=true` y `security_barrier=true`.
+- El índice que limitaba a una imagen por conector está retirado; la guarda de URL distinta se conserva. La antigua RPC de selectores `set_component_offer_images` no tiene EXECUTE para ninguno de esos tres roles.
+- Los contratos resultantes de `202610240001`, `202610240002` y la reparación `202610100002` están presentes. Esto comprueba el esquema aplicado; no afirma una reconciliación del registro `supabase_migrations`.
+- Los hashes LF de la reparación y del editor coinciden con los archivos ejecutados: `4af7264e7988c047a742ee90690b0559e62d4d70a69db781ce3f369e8710b23f` y `18d00f97400a6e11c33f8e7ebb12e2b6df863f425c84d62e0cc56aefe7dc4469`, respectivamente.
+
+**Conclusión:** no se encontró incompatibilidad de contratos pendiente. La causa confirmada de eliminación —RPC ausente— está resuelta. No se borró ninguna fotografía para ensayar la operación en Production ni se afirma una nueva prueba destructiva de extremo a extremo. No hace falta otra migración ni interfaz para cerrar este incidente. Si aparece un error nuevo, se investiga con su mensaje y contexto, sin reutilizar el diagnóstico antiguo como si siguiera vigente.
+
+### Cierres que no deben volver a desarrollarse
+
+| ID | Estado y alcance cerrado | Límite conservado |
+|---|---|---|
+| P01 | Publicado: retirada la promesa de cuotas incompatible | No agregar medios de pago inexistentes |
+| UX-N01 | Publicado en `acbcd47`: buscador común incluye Accesorios y combos públicos | Conservar sus pruebas; no rehacer búsqueda |
+| P07 / UX-N03 | Publicado en `223ca7b`: categorías horizontales, panel «Elegí a tu gusto», «Encontrá lo que buscás» y WhatsApp sin superposición móvil | No equivale al cierre de todos los puntos de P10 |
+| P09 | Publicado y verificado: Ayuda, pagos, retiro, entregas y Regalos | Transferencia con acreditación manual disponible; no prometer automatización bancaria |
+| P05, núcleo | Publicado: resumen de lista/descuento/transferencia | Sólo queda el subhallazgo UX-N02; no reimplementar cálculos |
+| P02, técnica | Publicada: ambas presentaciones individuales reutilizan el editor y su galería; RPC y permisos compatibles | La carga y aprobación de fotografías corresponden al propietario; no es cierre del contenido de P02 |
+
+### Cola única priorizada
+
+El orden recupera la sección 9 y descuenta lo ya publicado. «Pendiente conocido» conserva evidencia fechada, no representa una auditoría nueva de todas las pantallas. El impacto comercial es esperado, no medido.
+
+| Orden / ID | Problema y estado | Solución mínima | Impacto esperado | Dependencias | Aprobación necesaria |
+|---|---|---|---|---|---|
+| 0 · P02, estabilización | RPC faltante corregida; verificación de contratos cerrada | Mantener reparación existente; actuar sólo ante evidencia nueva | Evitar errores al gestionar fotos | Ninguna incompatibilidad detectada | No hay cambio correctivo pendiente; cualquier intervención productiva nueva requiere aprobación |
+| 1 · P02 · P1 | Técnica publicada; cobertura fotográfica pendiente de completar por el propietario | Cargar fotos reales de Khamrah, Hawas Elixir, Yara Candy, cabezal, ambos cables y ambos combos desde el editor existente; revisar identidad/conector y portada | Reconocer el artículo y comprar con más confianza | Material aprobado y carga del propietario; verificar cobertura tras esa carga, sin repetir la búsqueda de fotos | Propietario valida y carga; Codex no sube ni borra fotos sin autorización |
+| 2 · P03 · P1 | Diseño pendiente de aprobación; propuesta preparada a partir de F05 | Portada representativa identificada, selector próximo a precio y compra; ningún SKU preseleccionado. Propuesta detallada debajo | Facilitar elegir color y reducir dudas en la ficha | Aprobar foto real Gris como portada del ejemplo y jerarquía; preservar reglas de variantes | Aprobar propuesta visual y portada antes de implementar |
+| 3 · P04 · P1 | Identificación de variante en carrito/checkout: pendiente conocido F06 | Reutilizar líneas actuales con miniatura exacta, nombre y color claros; conservar IDs y carritos antiguos | Reducir errores de variante y vueltas a la ficha | Imagen exacta disponible y coherencia con P03 | Aprobar presentación; publicación separada. Sin cambiar checkout comercial |
+| 4 · P08 · P1 | Parcial; corrección de etiqueta validada localmente, sin publicar | «Ideal para: árabe» cambia a «Categoría: Árabe», conservando la taxonomía. El contenido y relacionados restantes esperan fuentes verificables | Evitar una recomendación engañosa y ayudar a comparar | Fuentes fiables para el resto del contenido | Publicar la corrección requiere autorización; validar afirmaciones y autorizar cualquier edición de datos reales |
+| 5 · P05 / UX-N02 · P1 | Momento de mostrar datos de transferencia: pendiente F10 | Explicar pasos antes del pedido; alias/copiar sólo cuando exista pedido. Reutilizar el flujo actual | Evitar pagos anticipados o confusión sobre el estado del pedido | Comprobación focalizada del flujo seguro y textos de P09 | Aprobar propuesta de presentación; no cambiar pagos, descuentos ni reservas |
+| Paralelo · P06 · P1 habilitadora | Medición pendiente; sin atribución de resultados | Definir pocos eventos de búsqueda, ficha, carrito, checkout, consulta y conversión; distinguir pedido y cobro, deduplicar | Saber dónde se pierde intención de compra y priorizar con datos | Consultar instalación vigente sólo al iniciar; privacidad, consentimiento y criterio de conversión | Aprobar herramienta, esquema y activación; no instalar ahora |
+| 6 · P10 · P2 | Parcial; H1 del inicio validado localmente, sin publicar; UX-N03 ya cerrado | H1 estable y accesible con el título comercial existente, sin modificar el diseño visual ni los banners. Conservar otros controles pendientes hasta verificar el punto concreto | Mejor orientación para tecnologías de asistencia y estructura semántica | No cambiar redondeo; verificar sólo controles aún abiertos | Publicar requiere autorización; no se declara conformidad WCAG completa |
+| Posterior · UX-RES01 · P1 técnica | Mensaje de límite de reserva: evidencia aislada, no incidente productivo demostrado | Reproducir únicamente el caso sintético afectado y mejorar el mensaje, sin relajar guardas | Facilitar recuperación cuando se rechaza una reserva | Entorno aislado; escalar prioridad sólo ante evidencia real | Encargo de corrección y publicación posterior; no pedidos productivos de prueba |
+| Posterior · P11 | Ajuste de navegación de cargadores encargado y validado localmente, sin publicar; resto pendiente de evidencia | Quitar acceso de Productos y mantener la misma pantalla en Configuración: conserva consulta y registro de composición. Los cinco productos y editores individuales siguen en Productos | Simplificar la operación habitual sin perder configuración especializada | Reutiliza la misma ruta, permisos y formulario; no cambia recetas, inventario o precios | Publicación del ajuste requiere autorización; otras mejoras esperan problema operativo concreto |
+| Posterior · P12 · P2 | Refinamientos visuales, contraste y rendimiento: requieren evidencia | Medir el problema puntual antes de optimizar imágenes/componentes; reutilizar tokens. SEO adicional sólo ante fallo demostrado | Menor fricción y carga, sin prometer mejoras no medidas | Evidencia de rendimiento/contraste; P02 aporta material real para evaluar imágenes | Aprobar cambios de identidad; optimizaciones justificadas se encargan aparte |
+
+### P03 — propuesta mínima pendiente de aprobación
+
+En celular: nombre de familia, precio por transferencia y lista, opciones de color, estado y CTA, seguidos por la galería. En notebook se conserva la galería a la izquierda y la compra a la derecha. La portada será una fotografía real explícitamente aprobada, con leyenda de su color representativo. El ejemplo visual utiliza la foto ya asociada a Gris del Stanley MateSystem; no supone que el visitante eligió Gris.
+
+Los colores aparecen con sus nombres; ninguno empieza seleccionado. Antes de elegir, el CTA indica «Elegí un color para agregar» y está deshabilitado. Tras elegir, la imagen principal corresponde a ese SKU, se muestra «Color: Gris» y el CTA se habilita únicamente si hay disponibilidad. El agotado permanece identificable y no comprable. Recorrer fotos no cambia el SKU. Se reutilizan galería y selección existentes; no se implementó esta propuesta. Si no hay portada verificada, no se asigna automáticamente la primera foto ni la primera variante.
+
+### Avance local del 25/10/2026
+
+- Rama funcional `codex/admin-components-navigation-20261025`, base publicada `ba09b18`: navegación especializada trasladada de Productos a Configuración; etiquetas y H1 ajustados. No hay cambios de datos, contratos comerciales o esquema.
+- Se reutilizan las cuatro pruebas de publicaciones individuales aprobadas después del ajuste de navegación. Una comprobación de render con datos sintéticos valida seis condiciones: guard administrativo, enlace a la misma pantalla, ausencia de formularios duplicados, único H1, diseño inicial conservado y categoría presentada sin recomendación. Sin conexiones ni escrituras de esa comprobación.
+- P03 queda detenida sólo para aprobación visual/portada. P04, el contenido pendiente de P08 y la presentación de UX-N02 esperan las decisiones indicadas. P06 espera definición de privacidad/herramienta. No se salta hacia un rediseño o infraestructura nuevos para evitar esas dependencias.
+
+**Próxima decisión:** aprobar o ajustar la propuesta visual mínima de P03. El propietario puede completar fotografías desde el editor existente. Los cambios locales listos conservan su estado «sin publicar» hasta autorización de publicación.
+
+**Control de cierre:** Publicado no significa Medido. No se repitieron auditorías ni pruebas comerciales; se reutilizó la evidencia y sólo se consultaron deployment, Git, esquema y permisos necesarios para P02. Esta actualización no autoriza nuevas funcionalidades ni operaciones productivas.
