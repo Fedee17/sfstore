@@ -312,6 +312,8 @@ export default async function Home() {
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <SiteHeader />
 
+      <h1 className="sr-only">Perfumes, mates y regalos importados</h1>
+
       <HomeHeroSlider slides={heroSlides} />
 
 

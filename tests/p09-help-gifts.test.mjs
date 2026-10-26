@@ -67,6 +67,8 @@ test('gift help keeps browsing internal and explicitly identifies the external W
 test('home gifts offers three separate actions without a nested link or changing other category destinations', async () => {
   const page = await load('app/page.tsx')();
   const html = renderToStaticMarkup(page);
+  assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
+  assert.match(html, /<h1 class="sr-only">Perfumes, mates y regalos importados<\/h1>/);
   const gift = (html.match(/<article\b[\s\S]*?<\/article>/g) ?? []).find(article => article.includes('Elegí con ayuda o a tu manera'));
   assert.ok(gift);
   assert.equal((gift.match(/<a /g) ?? []).length, 3);
