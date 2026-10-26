@@ -4,6 +4,7 @@ import { publicCategoryLabels as categoryLabels, publicCategoryPaths } from "@/l
 import { getWebTransferPrice, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
 
 import { SiteHeader } from "@/components/site-header";
+import { CartItemIdentity } from "@/components/cart-item-identity";
 
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -98,12 +99,7 @@ export default function CartPage() {
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
                         {categoryLabels[item.category]}
                       </p>
-                      <a
-                        href={`/producto/${item.slug}`}
-                        className="mt-2 block break-words text-2xl font-semibold transition hover:text-[#0072CE]"
-                      >
-                        {item.name}
-                      </a>
+                      <div className="mt-2"><CartItemIdentity item={item} /></div>
                       <p className="mt-2 text-sm text-[#102033]/60">
                         Lista por unidad: {currencyFormatter.format(item.price)}
                       </p>

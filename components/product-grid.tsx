@@ -28,11 +28,11 @@ function getAttribute(product: PublicProduct, name: string) {
   );
 }
 
-function ProductImage({ product }: { product: PublicProduct }) {
+export function ProductImage({ product, compact = false }: { product: Pick<PublicProduct, "primaryImageUrl" | "primaryImageAlt" | "name" | "imagePlaceholder">; compact?: boolean }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   if (product.primaryImageUrl && failedUrl !== product.primaryImageUrl) {
     return (
-      <div className="aspect-[4/3] overflow-hidden bg-[#102033]">
+      <div className={compact ? "aspect-square overflow-hidden bg-[#FFFDFA]" : "aspect-[4/3] overflow-hidden bg-[#102033]"}>
         <img
           src={product.primaryImageUrl}
           ref={(image) => {
@@ -42,18 +42,18 @@ function ProductImage({ product }: { product: PublicProduct }) {
           loading="lazy"
           decoding="async"
           onError={() => setFailedUrl(product.primaryImageUrl ?? null)}
-          className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.03]"
+          className={compact ? "h-full w-full object-contain" : "h-full w-full object-contain transition duration-500 group-hover:scale-[1.03]"}
         />
       </div>
     );
   }
 
   return (
-    <div className="flex aspect-[4/3] flex-col items-center justify-center bg-[#102033] text-[#F7F9FC]" role="img" aria-label={`Imagen no disponible de ${product.name}`}>
-      <span className="break-all px-4 text-center text-5xl font-semibold tracking-wide text-[#DCE3EA]">
+    <div className={compact ? "flex aspect-square items-center justify-center bg-[#FFFDFA] px-1 text-center text-[10px] leading-tight text-[#526479]" : "flex aspect-[4/3] flex-col items-center justify-center bg-[#102033] text-[#F7F9FC]"} role="img" aria-label={`Imagen no disponible de ${product.name}`}>
+      {!compact ? <span className="break-all px-4 text-center text-5xl font-semibold tracking-wide text-[#DCE3EA]">
         {product.imagePlaceholder}
-      </span>
-      <span className="mt-2 text-sm">Imagen no disponible</span>
+      </span> : null}
+      <span className={compact ? "" : "mt-2 text-sm"}>Imagen no disponible</span>
     </div>
   );
 }

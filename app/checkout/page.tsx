@@ -5,6 +5,7 @@ import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getWebTransferSubtotal, getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { TransferAlias } from "@/components/transfer-alias";
+import { CartItemIdentity } from "@/components/cart-item-identity";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
 import { ARGENTINA_PROVINCES, type ShippingQuote } from "@/lib/checkout/argentina";
@@ -494,14 +495,14 @@ function CheckoutContent() {
                     key={cartItemKey(item)}
                     className="border-b border-[#003B73]/15 pb-4 last:border-b-0"
                   >
-                    <div className="flex justify-between gap-4">
-                      <div>
-                        <p className="font-semibold">{item.name}</p>
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <div className="min-w-0">
+                        <CartItemIdentity item={item} />
                         <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
                           {categoryLabels[item.category]} · {item.quantity} unidad(es) · transferencia
                         </p>
                       </div>
-                      <p className="font-semibold text-[#003B73]">
+                      <p className="self-end break-words font-semibold text-[#003B73]">
                         {currencyFormatter.format(
                           getWebTransferPrice(item.price) *
                             item.quantity,
