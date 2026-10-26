@@ -274,7 +274,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </span>
               {commercialCategory ? (
                 <span className="max-w-full break-words rounded-full bg-[#EEF2F6] px-3 py-1 text-xs font-semibold text-[#003B73]">
-                  Ideal para: {commercialCategory.toLowerCase()}
+                  Categoría: {commercialCategory}
                 </span>
               ) : null}
             </div>
