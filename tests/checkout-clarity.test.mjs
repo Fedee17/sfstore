@@ -1,3 +1,4 @@
+import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -10,6 +11,7 @@ import * as prices from '../lib/web-transfer-pricing.ts';
 const require=createRequire(import.meta.url);
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 function load(file,modules,append=''){
+ modules={...analyticsRenderStubs,...modules};
  const exports={};new Function('require','exports',ts.transpileModule(read(file)+append,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>Object.hasOwn(modules,n)?modules[n]:require(n),exports);return exports;
 }
 const render=Component=>renderToStaticMarkup(React.createElement(Component));

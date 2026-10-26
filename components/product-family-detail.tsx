@@ -1,4 +1,6 @@
 "use client";
+import { AnalyticsView } from "@/components/analytics-view";
+import { analyticsItem, track } from "@/lib/analytics/client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -28,6 +30,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
   return <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
     <SiteHeader />
     <section className="mx-auto max-w-6xl px-4 py-3 sm:py-8 lg:px-5">
+      <AnalyticsView event="view_item" identity={product.id} params={{ items: [analyticsItem(product)].filter(Boolean) }} />
       <Link href={publicCategoryPaths[product.category]} className="text-sm font-semibold text-[#003B73] underline underline-offset-4">← Volver al catálogo</Link>
       <h1 className="my-3 break-words text-2xl font-semibold leading-tight sm:text-4xl lg:my-5">{product.name}</h1>
       <div className="grid min-w-0 gap-3 lg:grid-cols-2 lg:items-start lg:gap-5">
@@ -51,7 +54,14 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
                 const matching = variants.filter(p => p.variantOptions?.[d] === value && dimensions.every(other => other === d || !choices[other] || p.variantOptions?.[other] === choices[other]));
                 const available = matching.some(p => p.stock > 0), chosen = choices[d] === value;
                 return <button key={value} type="button" aria-pressed={chosen}
-                  onClick={() => setChoices(current => ({ ...current, [d]: value }))}
+                  onClick={() => {
+                    if (choices[d] === value) return;
+                    const next = { ...choices, [d]: value };
+                    const variant = variants.find(p => dimensions.every(dimension => p.variantOptions?.[dimension] === next[dimension]));
+                    const item = variant ? analyticsItem(variant) : null;
+                    if (item) track("select_item_variant", { items: [item] });
+                    setChoices(next);
+                  }}
                   className={`min-h-12 max-w-full break-words rounded-xl border px-3 py-2 text-sm transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0072CE] lg:min-h-11 ${chosen ? "border-[#0072CE] bg-[#0072CE]/10 font-semibold text-[#003B73] ring-1 ring-[#0072CE] lg:ring-0" : "border-[#003B73]/40 bg-white text-[#102033]"}`}>
                   {chosen ? <span aria-hidden="true" className="mr-1">✓</span> : null}
                   {value}{!available ? matching.length ? " · Agotado" : " · No disponible" : ""}

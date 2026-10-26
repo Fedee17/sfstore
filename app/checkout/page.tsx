@@ -11,6 +11,8 @@ import { ARGENTINA_PROVINCES, type ShippingQuote } from "@/lib/checkout/argentin
 import { CheckoutCaptcha } from "@/components/checkout-captcha";
 import { createOrderFromCheckout, getCheckoutOperationKey } from "@/services/orders";
 import { useCartStore, cartItemKey } from "@/store/cart-store";
+import { AnalyticsView } from "@/components/analytics-view";
+import { analyticsItem, trackCreatedOrder } from "@/lib/analytics/client";
 
 
 type DeliveryMethod = "pickup" | "shipping";
@@ -160,6 +162,7 @@ function CheckoutContent() {
         items,
       });
 
+      void trackCreatedOrder(createdOrder.id, createdOrder.total);
       clearCart();
       router.push(
         `/checkout/exito?order=${createdOrder.id}`,
@@ -218,6 +221,7 @@ function CheckoutContent() {
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">
+        {items.length > 0 && !unsupportedPayment ? <AnalyticsView event="begin_checkout" identity="checkout" params={{ items: items.map(analyticsItem).filter(Boolean) }} /> : null}
         <a
           href="/carrito"
           className="text-sm font-semibold text-[#003B73] transition hover:text-[#0072CE]"

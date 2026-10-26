@@ -14,6 +14,8 @@ import { Suspense } from "react";
 import { ComponentOffers } from "@/components/component-offers";
 import { getProductCommercialInformation } from "@/lib/products/commercial-information";
 import { ProductInformation } from "@/components/product-information";
+import { AnalyticsView } from "@/components/analytics-view";
+import { analyticsItem } from "@/lib/analytics/client";
 
 type ProductPageProps = {
   params: Promise<{
@@ -222,6 +224,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
+      <AnalyticsView event="view_item" identity={product.id} params={{ items: [analyticsItem(product)].filter(Boolean) }} />
       <SiteHeader />
       <section className="mx-auto max-w-6xl px-5 py-5 sm:px-8 sm:py-8 lg:py-12">
         <a

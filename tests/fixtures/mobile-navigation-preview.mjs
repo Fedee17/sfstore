@@ -23,6 +23,11 @@ Object.assign(env, {
   NEXT_PUBLIC_SUPABASE_ANON_KEY: 'synthetic-fixture-no-privileges',
   CHECKOUT_GUEST_ENABLED: 'false', NEXT_TELEMETRY_DISABLED: '1',
 });
+// Synthetic ID only. The P06 browser test intercepts ALL Google traffic locally.
+if (process.argv.includes('--analytics')) Object.assign(env, {
+  NEXT_PUBLIC_GA4_MEASUREMENT_ID: 'G-SYNTHETIC',
+  NEXT_PUBLIC_GA4_SITE_ORIGIN: 'http://127.0.0.1:3153',
+});
 const buildOnly = process.argv.includes('--build');
 const args = buildOnly ? ['build', '--webpack'] : ['dev', '--hostname', '127.0.0.1', '--port', '3153', '--webpack'];
 const child = spawn(process.execPath, [resolve(root, 'node_modules/next/dist/bin/next'), ...args], {

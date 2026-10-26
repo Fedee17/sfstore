@@ -7,6 +7,8 @@ import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
 import type { PublicProduct } from "@/services/products";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { AnalyticsView } from "@/components/analytics-view";
+import { analyticsItem } from "@/lib/analytics/client";
 
 type ProductGridProps = {
   products: PublicProduct[];
@@ -83,12 +85,13 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
         return (
           <article
             key={product.id}
-            className={`group flex min-h-[520px] min-w-0 flex-col overflow-hidden rounded-[1.75rem] border bg-white/75 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#102033]/10 ${
+            className={`group relative flex min-h-[520px] min-w-0 flex-col overflow-hidden rounded-[1.75rem] border bg-white/75 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#102033]/10 ${
               isAvailable
                 ? "border-[#003B73]/15"
                 : "border-[#102033]/10 opacity-75"
             }`}
           >
+            <AnalyticsView event="view_item_list" identity={`${label}:${product.id}`} params={{ items: [analyticsItem(product)].filter(Boolean) }} />
             <a
               href={`/producto/${product.slug}`}
               className="flex min-w-0 flex-1 flex-col text-inherit outline-none transition focus-visible:ring-2 focus-visible:ring-[#0072CE] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F9FC]"

@@ -1,3 +1,4 @@
+import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -39,7 +40,7 @@ test('approved Stanley reference resolves only its published image, independent 
 function render(choices={},product=family){
  const require=createRequire(import.meta.url),exports={};
  const source=readFileSync(new URL('../components/product-family-detail.tsx',import.meta.url),'utf8');
- const modules={
+ const modules={...analyticsRenderStubs,
   'react':{...React,useState:()=>[choices,()=>{}]},'react/jsx-runtime':jsx,
   'next/link':{default:({children,...props})=>React.createElement('a',props,children)},
   '@/lib/catalog/public-product-visibility':{publicCategoryPaths:{mates:'/mates'}},

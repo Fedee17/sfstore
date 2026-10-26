@@ -1,3 +1,4 @@
+import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -8,7 +9,7 @@ import * as jsx from 'react/jsx-runtime';
 import {renderToStaticMarkup} from 'react-dom/server';
 import * as prices from '../lib/web-transfer-pricing.ts';
 const require=createRequire(import.meta.url);
-function load(file,modules={}){const exports={};new Function('require','exports',ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(name=>Object.hasOwn(modules,name)?modules[name]:require(name),exports);return exports;}
+function load(file,modules={}){modules={...analyticsRenderStubs,...modules};const exports={};new Function('require','exports',ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(name=>Object.hasOwn(modules,name)?modules[name]:require(name),exports);return exports;}
 const config=load('lib/catalog/attribute-config.ts');
 const info=load('lib/products/commercial-information.ts',{'@/lib/catalog/attribute-config':config});
 const {getProductCommercialInformation:describe}=info;
