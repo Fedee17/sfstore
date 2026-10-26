@@ -18,6 +18,7 @@ const modules={'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-ide
 
 test('before order creation cart and checkout never render transfer destination; retain total and essential conditions',()=>{
  const Cart=load('app/carrito/page.tsx',modules).default;
+ assert.match(render(Cart),/>Consultar carrito por WhatsApp<\/a>/);
  const Checkout=load('app/checkout/page.tsx',modules,'\nexport {CheckoutContent};').CheckoutContent;
  for(const Component of [Cart,Checkout]){
   const html=render(Component);assert.doesNotMatch(html,/Alias:|Copiar alias|Datos para transferir|Mercado Pago/);assert.match(html,/150,00/);assert.match(html,/No transfieras/);
@@ -41,10 +42,11 @@ test('authorized created order alone supplies definitive total and transfer dest
 test('unauthorized, non-transfer, closed, already paid and reported orders do not invite another transfer',async()=>{
  for(const order of [null,{...receipt,payment_method:'card'},{...receipt,state:'cancelled'},{...receipt,state:'expired'},{...receipt,expired:true},{...receipt,payment_status:'paid'},{...receipt,report:{status:'pending'}}]) assert.doesNotMatch(await renderReceipt(order),/SYNTHETIC-ALIAS/);
 });
-test('WhatsApp stays in document flow throughout purchase, preserving the existing catalog access',()=>{
+test('global WhatsApp is absent throughout purchase, preserving the existing catalog access',()=>{
  for(const pathname of ['/carrito','/checkout','/checkout/exito','/perfumes','/mates','/']){
   const Button=load('components/whatsapp-floating-button.tsx',{'react/jsx-runtime':jsx,'next/navigation':{usePathname:()=>pathname},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic-whatsapp'}}).WhatsAppFloatingButton;
-  const html=render(Button);assert.match(html,/aria-label="Consultar por WhatsApp"/);assert.match(html,/href="\/synthetic-whatsapp"/);assert.match(html,/noopener noreferrer/);
-  if(pathname==='/carrito'||pathname.startsWith('/checkout')){assert.doesNotMatch(html,/fixed|z-50/);assert.match(html,/self-end/);}else assert.match(html,/fixed bottom-5/);
+  const html=render(Button);
+  if(pathname==='/carrito'||pathname.startsWith('/checkout')) assert.equal(html,'');
+  else {assert.match(html,/fixed bottom-5/);assert.match(html,/aria-label="Consultar por WhatsApp"/);assert.match(html,/href="\/synthetic-whatsapp"/);assert.match(html,/noopener noreferrer/);}
  }
 });
