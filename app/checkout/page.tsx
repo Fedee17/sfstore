@@ -4,7 +4,6 @@ import { publicCategoryLabels as categoryLabels } from "@/lib/catalog/public-pro
 import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getWebTransferSubtotal, getWebTransferPrice } from "@/lib/web-transfer-pricing";
-import { TransferAlias } from "@/components/transfer-alias";
 import { CartItemIdentity } from "@/components/cart-item-identity";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
@@ -236,8 +235,7 @@ function CheckoutContent() {
             </h1>
           </div>
           <p className="max-w-xl text-base leading-7 text-[#102033]/70">
-            Completá tus datos para preparar el pedido. La disponibilidad y el importe
-            se verifican al preparar el pedido. El pago se confirma manualmente.
+            Completá tus datos y elegí cómo recibir tu compra.
           </p>
         </div>
 
@@ -356,7 +354,7 @@ function CheckoutContent() {
                       Retiro en el local · Sin costo
                     </span>
                     <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Pagás por transferencia. Esperá la confirmación del local antes de retirar; coordinaremos los detalles.
+                      Retiro sin cargo. Esperá la confirmación del local antes de retirar.
                     </p>
                   </button>
 
@@ -474,15 +472,8 @@ function CheckoutContent() {
 
               {paymentMethod === "transfer" ? (
                 <section className="rounded-[2rem] border border-[#0072CE]/20 bg-[#0072CE]/10 p-6 shadow-sm">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-2xl font-semibold text-[#102033]">
-                      Cómo pagar por transferencia
-                    </h2>
-                    <span className="rounded-full bg-[#0072CE] px-3 py-1 text-xs font-semibold text-white">
-                      Recomendado
-                    </span>
-                  </div>
-                  {shippingRequired && !selectedQuoteKey ? <p className="mt-4">Primero conocé y aceptá el total definitivo, incluido el envío. No transfieras ni informes un pago mientras falta la cotización.</p> : <><ol className="mt-5 grid gap-3 text-sm leading-6"><li>1. Preparás el pedido con el total final.</li><li>2. Transferís el 100% del importe exacto a Naranja X.</li><li>3. Informás el pago y adjuntás el comprobante en la pantalla del pedido.</li><li>4. El local verifica la acreditación antes de confirmar la venta.</li></ol><div className="mt-5"><TransferAlias /></div></>}
+                  <h2 className="text-2xl font-semibold text-[#102033]">Cómo sigue tu compra</h2>
+                  {shippingRequired && !selectedQuoteKey ? <p className="mt-4">Primero conocé y aceptá el total definitivo, incluido el envío. No transfieras mientras falta la cotización.</p> : <ol className="mt-5 grid gap-3 text-sm leading-6"><li>1. Preparás el pedido: verificamos precios y disponibilidad.</li><li>2. En la pantalla del pedido ves el importe definitivo y los datos para transferir.</li><li>3. Informás el pago y adjuntás el comprobante allí. El local verifica la acreditación.</li></ol>}
                 </section>
               ) : null}
             </div>
@@ -499,7 +490,7 @@ function CheckoutContent() {
                       <div className="min-w-0">
                         <CartItemIdentity item={item} />
                         <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-                          {categoryLabels[item.category]} · {item.quantity} unidad(es) · transferencia
+                          {categoryLabels[item.category]} · {item.quantity} unidad(es)
                         </p>
                       </div>
                       <p className="self-end break-words font-semibold text-[#003B73]">
@@ -524,7 +515,7 @@ function CheckoutContent() {
                     {currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Productos por transferencia (25% OFF)</span><span>{currencyFormatter.format(getWebTransferSubtotal(items))}</span></div><p>Revisamos precios y disponibilidad al preparar tu pedido. No transfieras antes de obtener su confirmación.</p>
+                <div className="flex justify-between"><span>Productos por transferencia (25% OFF)</span><span>{currencyFormatter.format(getWebTransferSubtotal(items))}</span></div>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
                   <span className="font-semibold">{shippingRequired ? "Total con envío" : "Total por transferencia · retiro"}</span>
                   <span className="font-semibold text-[#003B73]">
@@ -539,17 +530,10 @@ function CheckoutContent() {
 
               {paymentMethod === "transfer" ? (
                 <div className="mt-5 rounded-2xl border border-[#0072CE]/25 bg-[#0072CE]/10 p-4 text-sm leading-6 text-[#102033]/75">
-                  <span className="font-semibold text-[#0072CE]">
-                    Recomendado:
-                  </span>{" "}
-                  Primero aceptás el total definitivo al preparar el pedido; el precio queda fijo entonces. Tenés 24 horas para transferir el 100% del total e informar el pago con comprobante. No se admiten señas ni pagos parciales.
+                  No transfieras todavía: los datos de pago aparecen al crear el pedido. Desde su creación tenés 24 horas para transferir el 100% del importe e informar el pago. No se admiten señas ni pagos parciales.
                 </div>
               ) : null}
 
-              <label className="mt-5 grid gap-2 text-sm font-semibold">
-                Método de pago
-                <select value={paymentMethod} disabled className="rounded-xl border p-3"><option value="transfer">Transferencia bancaria</option></select>
-              </label>
               {unsupportedPayment ? <p role="alert" className="mt-3">El método solicitado no está habilitado. Volvé al carrito para elegir un pago manual.</p> : null}
               <CheckoutCaptcha onToken={setCaptchaToken} />
               {submitError ? (

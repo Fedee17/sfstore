@@ -56,7 +56,7 @@ export default function CartPage() {
             </h1>
           </div>
           <p className="max-w-xl text-base leading-7 text-[#102033]/70 md:text-right">
-            Revisá cantidades y continuá con el pago por transferencia.
+            Revisá los productos antes de preparar tu pedido.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export default function CartPage() {
 
             <aside className="h-fit rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Resumen de compra</h2>
-              <p className="mt-3 text-sm">Pago completo por transferencia · 25% OFF en productos. Revisamos precios y disponibilidad al preparar el pedido.</p>
+              <p className="mt-3 text-sm">25% OFF por transferencia · pago completo.</p>
               <div className="mt-6 space-y-3 border-b border-[#003B73]/15 pb-5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#102033]/65">Productos</span>
@@ -182,40 +182,9 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <div className="mt-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#003B73]">
-                  Método de pago
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                  Transferencia con 25% de descuento sobre lista. Pago del 100% del total.
-                </p>
-                <div className="mt-4 grid gap-3">
-                  <button
-                    type="button"
-
-                    className={`rounded-2xl border p-4 text-left transition ${
-                      selectedPaymentMethod === "transfer"
-                        ? "border-[#0072CE] bg-[#0072CE]/10"
-                        : "border-[#003B73]/15 bg-[#F7F9FC]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-semibold text-[#0072CE]">
-                        Transferencia bancaria
-                      </span>
-                      <span className="rounded-full bg-[#0072CE] px-3 py-1 text-xs font-semibold text-white">
-                        Recomendado
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      El precio de transferencia se verifica al preparar el pedido.
-                    </p>
-                    <p className="mt-2 text-xs font-semibold text-[#102033]/55">
-                      No transfieras hasta preparar tu pedido.
-                    </p>
-                  </button>
-                </div>
-              </div>
+              <p className="mt-4 text-sm leading-6 text-[#102033]/70">
+                Verificamos precios y disponibilidad al preparar el pedido. No transfieras hasta ver su total definitivo.
+              </p>
 
               <a
                 href={checkoutHref}

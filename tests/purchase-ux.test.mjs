@@ -14,7 +14,7 @@ function load(f,modules){const out={};new Function('require','exports',ts.transp
 const items=['cc','lightning'].map(connector=>({productId:'synthetic',comboConnector:connector,name:'Cargador '+connector,slug:connector,category:'accesorios',price:30666.67,quantity:1,stock:2}));
 const store={useCartStore:()=>({items,totalItems:2,subtotal:61333.34}),cartItemKey:i=>i.comboConnector};
 const hooks={...React,useState:v=>[v,()=>{}],useRef:()=>({current:null}),useEffect:()=>{}};
-const modules={'react':hooks,'react/jsx-runtime':jsx,'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':store,'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'}};
+const modules={'react':hooks,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:({item})=>React.createElement('span',null,item.name)},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':store,'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'}};
 
 test('cart labels list, discount and transfer subtotal without applying the discount twice',()=>{
  const Cart=load('app/carrito/page.tsx',modules).default;
