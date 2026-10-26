@@ -12,6 +12,8 @@ import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
 import { Suspense } from "react";
 import { ComponentOffers } from "@/components/component-offers";
+import { getProductCommercialInformation } from "@/lib/products/commercial-information";
+import { ProductInformation } from "@/components/product-information";
 
 type ProductPageProps = {
   params: Promise<{
@@ -203,6 +205,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   if (product.kind === "family") return <ProductFamilyDetail product={product}/>;
+  const information = getProductCommercialInformation(product);
   const isAvailable = product.stock > 0;
   const productAttributes =
     "attributes" in product && Array.isArray(product.attributes)
@@ -212,10 +215,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.category === "perfumes"
       ? getPerfumeCommercialCategory(productAttributes)
       : "";
-  const relatedProducts = await getRelatedProducts(
+  const relatedProducts = (await getRelatedProducts(
     product.categoryId,
     product.id,
-  );
+  )).filter(related => related.category === product.category && related.id !== product.id);
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
@@ -282,14 +285,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <h1 className="mt-3 break-words text-2xl font-semibold leading-tight sm:text-4xl">
               {product.name}
             </h1>
-            <p className="mt-2 text-sm leading-6">{product.shortDescription}</p>
+            {information.shortDescription ? <p className="mt-2 whitespace-pre-line break-words text-sm leading-6">{information.shortDescription}</p> : null}
             <PricePanel product={product} isAvailable={isAvailable} />
             <ProductActions product={product} />
-            <details className="mt-4 border-t border-[#003B73]/15 pt-3">
-              <summary className="cursor-pointer font-semibold">Información del producto</summary>
-              <p className="mt-3 text-sm leading-6">{product.description ?? product.shortDescription}</p>
-              <p className="mt-3 text-sm leading-6">Aboná el 100% por transferencia. Para retirar, esperá la confirmación del local.</p>
-            </details>
+            <ProductInformation product={product} />
             {product.kind !== "combo" ? <Suspense fallback={<p role="status" className="mt-4 text-sm">Consultando conjuntos…</p>}><ComponentOffers headId={product.id}/></Suspense> : null}
           </article>
         </div>
@@ -299,10 +298,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="flex min-w-0 flex-col justify-between gap-4 border-t border-[#003B73]/15 pt-10 sm:flex-row sm:items-end">
           <div className="min-w-0">
             <p className="break-words text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-              También te puede gustar
+              Seguí explorando
             </p>
             <h2 className="mt-3 break-words text-3xl font-semibold">
-              Productos relacionados
+              Más en {categoryLabels[product.category]}
             </h2>
           </div>
           <a
@@ -315,7 +314,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         {relatedProducts.length === 0 ? (
           <div className="mt-8 rounded-[2rem] border border-[#003B73]/15 bg-white/65 p-6 text-sm leading-6 text-[#102033]/65">
-            PodÃ©s seguir explorando perfumes y mates para encontrar otra opciÃ³n.
+            Podés seguir explorando el catálogo.
           </div>
         ) : (
           <div className="mt-8 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-4">

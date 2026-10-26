@@ -9,6 +9,7 @@ import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { SiteHeader } from "@/components/site-header";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { ProductInformation } from "@/components/product-information";
 
 const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
 
@@ -69,6 +70,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
             : <button type="button" disabled className="min-h-12 w-full rounded-full bg-[#DCE3EA] px-5 py-3 text-sm font-semibold text-[#45576A]">Agregar al carrito</button>}
           </div>
           <p className="order-5 text-xs leading-5 text-[#102033]/70">Agregar al carrito no reserva stock; se verifica al preparar el pedido.</p>
+          {selected ? <div className="order-6"><ProductInformation key={selected.id} product={selected} showSummary /></div> : null}
         </div>
       </div>
     </section>

@@ -10,14 +10,17 @@ const env={...process.env};for(const key of Object.keys(env))if(/SUPABASE|TURNST
 const cover='https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/5585ed23-1d19-40b0-a443-81953a999e9c/7b39b57749fafde6eddde539961f1724.webp';
 const syntheticImage=(label)=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect width="500" height="500" fill="#eef2f6"/><text x="250" y="220" text-anchor="middle" fill="#102033" font-family="Arial" font-size="24">PRUEBA LOCAL</text><text x="250" y="265" text-anchor="middle" fill="#102033" font-family="Arial" font-size="20">${label}</text></svg>`);
 const colors=['Negro','Gris','Morado','Rosa claro','Verde'];
+const commercialPreview=process.argv.includes('--commercial-information');
 const rows=colors.map((color,i)=>({...publicRows[2],id:color==='Gris'?'475f74c8-622e-5f0b-801b-309041a3dc3e':fixtureId(300+i),
  name:`Termo Stanley 1L — Pico MateSystem — ${color} · PRUEBA LOCAL`,slug:`stanley-${i}-prueba`,
  family_id:'e0eab95c-2f62-5e54-8d12-69870bffbaf8',family_name:'Termo Stanley 1L — Pico MateSystem · PRUEBA LOCAL',family_slug:'familia-p03-prueba',
  variant_options:{Color:color},sku:`PRUEBA-${i}`,price:color==='Morado'?60000:46666.67,stock:color==='Verde'?0:2,
  product_images:[{url:color==='Gris'?cover:syntheticImage(color),alt:`${color} — prueba local`,is_primary:true,sort_order:0},
  {url:syntheticImage(`Detalle ${color}`),alt:`Detalle ${color} — prueba local`,is_primary:false,sort_order:1}],
+ ...(commercialPreview ? {short_description:`SKU ${color} — descripción sintética.`,description:`Información sintética de ${color}.\n\nSegundo párrafo de prueba.`,product_attributes:[{name:'material',value:'acero'},{name:'Capacidad',value:color==='Gris'?'750 ml':'1 L'}]} : {}),
 }));
-const fixture=await startPublicFixtureServer({rows:[...rows,publicRows[0]],offers:[]});
+const perfume=commercialPreview ? {...publicRows[0],short_description:'Descripción sintética para revisar la presentación.',description:'Primer párrafo de prueba.\n\nSegundo párrafo: información registrada, sin promesas de duración.',product_attributes:[{name:'Marca',value:'Marca sintética'},{name:'olfactory_family',value:'citrico'},{name:'olfactory_family',value:'floral'},{name:'intensity',value:'media'},{name:'occasion',value:'diario'},{name:'Proveedor',value:'NO MOSTRAR'},{name:'Notas',value:'NO CERTIFICADAS'}]} : publicRows[0];
+const fixture=await startPublicFixtureServer({rows:[...rows,perfume],offers:[]});
 Object.assign(env,{NEXT_PUBLIC_SUPABASE_URL:fixture.url,NEXT_PUBLIC_SUPABASE_ANON_KEY:'synthetic-fixture-no-privileges',NEXT_TELEMETRY_DISABLED:'1',CHECKOUT_GUEST_ENABLED:'false'});
 const build=process.argv.includes('--build');
 const child=spawn(process.execPath,[resolve(root,'node_modules/next/dist/bin/next'),...(build?['build','--webpack']:['dev','--hostname','127.0.0.1','--port','3154','--webpack'])],{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});

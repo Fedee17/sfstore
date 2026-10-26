@@ -45,6 +45,7 @@ function render(choices={},product=family){
   '@/lib/catalog/public-product-visibility':{publicCategoryPaths:{mates:'/mates'}},
   '@/lib/products/family-presentation':{getFamilyRepresentativeImage:p=>getFamilyRepresentativeImage(p,approvals)},
   '@/lib/web-transfer-pricing':prices,'@/components/site-header':{SiteHeader:()=>null},
+  '@/components/product-information':{ProductInformation:()=>null},
   '@/components/product-image-gallery':{ProductImageGallery:({images=[],showThumbnails=true})=>React.createElement('div',{'data-gallery':JSON.stringify(images.map(i=>i.url)),'data-thumbnails':showThumbnails})},
   '@/components/add-to-cart-button':{AddToCartButton:({product:p})=>React.createElement('button',{disabled:p.stock<=0,'data-cart-product':p.id,'data-cart-price':p.price},'Agregar al carrito')},
  };
