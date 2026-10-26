@@ -218,7 +218,7 @@ La verificación directa de PostgreSQL terminó en READ ONLY y ROLLBACK:
 |---|---|---|
 | P01 | Publicado: retirada la promesa de cuotas incompatible | No agregar medios de pago inexistentes |
 | UX-N01 | Publicado en `acbcd47`: buscador común incluye Accesorios y combos públicos | Conservar sus pruebas; no rehacer búsqueda |
-| P07 / UX-N03 | Publicado en `223ca7b`: categorías horizontales, panel «Elegí a tu gusto», «Encontrá lo que buscás» y WhatsApp sin superposición móvil | No equivale al cierre de todos los puntos de P10 |
+| P07 / UX-N03 | Publicado en `223ca7b`: categorías horizontales, panel «Elegí a tu gusto», «Encontrá lo que buscás» y WhatsApp sin superposición móvil. Ajuste de barra nativa validado localmente el 26/10, aún sin publicar | No equivale al cierre de todos los puntos de P10; desplazamiento y teclado conservados |
 | P09 | Publicado y verificado: Ayuda, pagos, retiro, entregas y Regalos | Transferencia con acreditación manual disponible; no prometer automatización bancaria |
 | P05 / UX-N02 | Publicado: resumen de lista/descuento/transferencia y datos de pago sólo tras crear el pedido; cierre `07ec2e6` | No reimplementar cálculos ni exponer alias antes del pedido |
 | P02, técnica | Publicada: ambas presentaciones individuales reutilizan el editor y su galería; RPC y permisos compatibles | La carga y aprobación de fotografías corresponden al propietario; no es cierre del contenido de P02 |
@@ -406,3 +406,11 @@ Validación focalizada: prueba existente del inicio/Regalos ampliada para compro
 - Evidencias `p10-protected-mobile.jpg`, `p10-protected-notebook.jpg`, `p10-production-mobile.jpg`, `p10-production-notebook.jpg` en visualizaciones locales. **P10/H1 publicada**, sin declarar WCAG completa ni mejora de conversión/SEO medida. El resto de P10 conserva su alcance pendiente.
 
 Cierre actualizado localmente, sin push documental adicional que provoque otro deployment. Main y Production conservan el commit exacto aprobado.
+
+### P07 / UX-N03 — barra de categorías móvil, ajuste local del 26/10/2026
+
+En Production `10651b5`, Chromium real a 390×844 reproduce una barra nativa de 15 px: fila de categorías con offsetHeight=59 y clientHeight=44, overflow-x:auto y scrollbar-width:auto. No es un artefacto de captura; su visibilidad depende del navegador y la configuración del sistema. No se ensayó en un teléfono físico ni Safari iOS.
+
+Cambio limitado a la clase del contenedor existente en `components/site-header.tsx`: ocultar la barra mediante scrollbar-width:none y ::-webkit-scrollbar. Se conservan enlaces, orden, overflow, control táctil nativo y overscroll; sin cambiar menú o filtros. En fixture sintético local: offsetHeight=clientHeight=44, ancho desplazable=506 y clientWidth=375; scroll horizontal en ambos sentidos y Tab/Shift+Tab alcanzan los enlaces, incluido el último con desplazamiento automático. Notebook 1366×900 conserva header, navegación y ausencia de overflow del documento. No se declara una prueba táctil en dispositivo físico.
+
+Ocho pruebas existentes de estado de filtros aprobadas; ESLint focalizado sin errores, con una advertencia de imagen preexistente. Evidencias conservadas: `mobile-category-scrollbar-before.jpg` (Production, viewport) y `mobile-category-scrollbar-after.jpg` (fixture local, recorte de encabezado) en visualizaciones locales. Rama `codex/mobile-category-scrollbar-20261026`. **Implementado localmente, sin publicar.** Sin cambios de Supabase ni instrumentación de P06; la propuesta de medición se mantiene en sección 5 para aprobación.

@@ -206,7 +206,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
       </div>
 
       <nav className="relative border-t border-white/10 bg-[#003B73] text-white" aria-label="Navegación principal">
-        <div className="flex min-h-11 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-4 lg:hidden" aria-label="Secciones del catálogo">
+        <div className="flex min-h-11 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden" aria-label="Secciones del catálogo">
           <Link href="/perfumes" prefetch={false} aria-current={pathname.startsWith("/perfumes") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Perfumes</Link>
           <Link href="/mates" prefetch={false} aria-current={pathname.startsWith("/mates") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Mates</Link>
           <Link href="/accesorios" prefetch={false} aria-current={pathname.startsWith("/accesorios") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Accesorios</Link>
