@@ -16,7 +16,6 @@ export function ProductInformation({ product, showSummary = false }: { product: 
         </div>)}
       </dl> : null}
       {information.description ? <p className="mt-3 whitespace-pre-line break-words text-sm leading-6">{information.description}</p> : null}
-      <p className="mt-3 text-sm leading-6">Aboná el 100% por transferencia. Para retirar, esperá la confirmación del local.</p>
     </details>
   </>;
 }

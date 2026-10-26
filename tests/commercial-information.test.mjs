@@ -39,6 +39,8 @@ test('existing details block renders accessible fields, safe escaped text and pa
  const html=renderToStaticMarkup(React.createElement(ProductInformation,{product:{...base,attributes:[attr('Marca','<script>test</script>')],description:'Párrafo uno.\n\nPárrafo dos.'}}));
  assert.match(html,/<summary[^>]*>Información del producto/);assert.match(html,/<dl aria-label="Características del producto"/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);assert.match(html,/whitespace-pre-line/);assert.match(html,/Párrafo uno\.\n\nPárrafo dos\./);
  const empty=renderToStaticMarkup(React.createElement(ProductInformation,{product:{category:'mates'}}));assert.doesNotMatch(empty,/<dl|No disponible|null|undefined/);
+ assert.doesNotMatch(html+empty,/Aboná el 100% por transferencia|Para retirar, esperá la confirmación del local/);
+ assert.doesNotMatch(html,/<details[^>]*\sopen(?:=|\s|>)/);
 });
 
 const renderFamily=choices=>{
