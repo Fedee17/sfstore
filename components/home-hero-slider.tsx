@@ -39,18 +39,19 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
         <div
           className="block min-w-0 overflow-hidden rounded-[2rem] border border-[#DCE3EA] bg-white shadow-2xl shadow-[#102033]/10 "
         >
-          <div className={`grid bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)] ${hasImage ? "sm:grid-cols-[0.85fr_1.65fr]" : ""}`}>
-            <div aria-live="polite" aria-atomic="true" className="flex flex-col justify-center gap-3 p-5 sm:p-8">
-              <h2 className="max-w-2xl text-2xl font-semibold text-[#102033] sm:text-3xl lg:text-4xl">{activeSlide.title}</h2>
-              <p className="max-w-xl text-base text-[#102033]/75">{activeSlide.subtitle}</p>
-              <a href={activeSlide.primaryCtaHref} className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">{activeSlide.primaryCtaLabel}</a>
+          <div className={hasImage ? "relative grid h-[520px] bg-[#102033] sm:h-auto sm:grid-cols-[0.85fr_1.65fr] sm:bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)]" : "grid bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)]"}>
+            <div aria-live="polite" aria-atomic="true" className={`flex flex-col justify-center sm:p-8 ${hasImage ? "absolute inset-x-0 top-0 z-20 gap-2 p-4 sm:static sm:z-auto sm:gap-3" : "gap-3 p-5"}`}>
+              <h2 className={`max-w-2xl font-semibold sm:text-3xl lg:text-4xl ${hasImage ? "text-[1.375rem] leading-tight text-white sm:leading-9 sm:text-[#102033] lg:leading-10" : "text-2xl text-[#102033]"}`}>{activeSlide.title}</h2>
+              <p className={`max-w-xl sm:text-base ${hasImage ? "text-sm leading-5 text-white sm:text-[#102033]/75 sm:leading-normal" : "text-base text-[#102033]/75"}`}>{activeSlide.subtitle}</p>
+              <a href={activeSlide.primaryCtaHref} className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white sm:text-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">{activeSlide.primaryCtaLabel}</a>
             </div>
             {hasImage ? (
-              <picture className="block min-w-0">
+              <picture className="absolute inset-0 block min-w-0 pt-14 sm:static sm:pt-0">
                 <source media="(min-width: 640px)" srcSet={activeSlide.imageSrcSet ?? activeSlide.imageSrc} sizes="(min-width: 1152px) 730px, 65vw" />
-                <img src={activeSlide.mobileImageSrc ?? activeSlide.imageSrc} srcSet={activeSlide.mobileImageSrcSet} sizes="calc(100vw - 40px)" alt={activeSlide.imageAlt} width={1600} height={666} loading="eager" fetchPriority={activeIndex === 0 ? "high" : "auto"} decoding="async" className="aspect-[4/5] h-full w-full object-cover sm:aspect-[12/5] sm:object-contain" />
+                <img src={activeSlide.mobileImageSrc ?? activeSlide.imageSrc} srcSet={activeSlide.mobileImageSrcSet} sizes="calc(100vw - 40px)" alt={activeSlide.imageAlt} width={1600} height={666} loading="eager" fetchPriority={activeIndex === 0 ? "high" : "auto"} decoding="async" className="h-full w-full object-contain object-bottom sm:aspect-[12/5] sm:object-center" />
               </picture>
             ) : null}
+            {hasImage ? <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[232px] bg-[linear-gradient(to_bottom,rgba(16,32,51,0.96)_0%,rgba(16,32,51,0.76)_75%,transparent_100%)] sm:hidden" /> : null}
           </div>
         </div>
 
