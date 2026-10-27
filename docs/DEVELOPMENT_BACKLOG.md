@@ -1,3 +1,5 @@
+> **Referencia histórica (10/10/2026), no cola vigente.** No ejecutar ni priorizar sus tareas por este archivo. Usar exclusivamente la sección 9 de [SFSTORE-PLAN-MEJORA-CONTINUA](SFSTORE-PLAN-MEJORA-CONTINUA.md) y el [estado de continuidad](PROJECT_CONTEXT.md). El contenido original siguiente se conserva como evidencia de esa fecha.
+
 # Backlog propuesto — 2026-10-10
 
 Base: main `7a8a105`. Ninguna tarea de este backlog fue iniciada durante la preparación. Los cambios Storage/lint existentes se referencian para revisión, no como implementaciones pendientes a repetir. Autonomía aplica al desarrollo autorizado; integración/publicación/Production conservan sus límites propios.

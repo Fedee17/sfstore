@@ -1,3 +1,34 @@
+# SFSTORE — Publicación controlada
+
+## Reglas vigentes de integración y publicación
+
+Leer esta sección al preparar push, integración, migración o despliegue, no en tareas documentales locales rutinarias. El estado activo está en [PROJECT_CONTEXT](PROJECT_CONTEXT.md); no inferirlo del checklist histórico inferior.
+
+La rama `main` debe representar siempre la versión de código aprobada para Production y conservar todas las funcionalidades productivas vigentes.
+
+Antes de preparar una integración o publicación:
+
+- Identificar el commit exacto que sirve el dominio productivo y compararlo con `main` y con el candidato. No asumir que el último deployment registrado es el activo.
+- Si Production contiene cambios ausentes en `main`, preparar primero su integración, conservando las funcionalidades productivas y las directrices documentales aprobadas. No incorporar diferencias históricas que eliminen esas funcionalidades.
+- Verificar el diff y ejecutar las pruebas pertinentes antes de integrar. Resolver conflictos sin descartar código productivo.
+- No publicar desde una rama independiente dejando funcionalidades productivas fuera de `main` sin un procedimiento explícito de sincronización, autorizado por el propietario, que identifique commits, orden de integración, verificaciones y recuperación.
+- Comprobar los disparadores automáticos de despliegue antes de publicar ramas o integrar cambios. Preparar el bloqueo temporal necesario para evitar un despliegue accidental; modificar Vercel, integrar a `main` o desplegar requiere la autorización correspondiente.
+- Registrar el commit aprobado, el commit efectivamente publicado y el estado de sincronización de `main` al cerrar una publicación. No declarar completada la sincronización mientras sólo exista una rama candidata local.
+
+Esta política no autoriza por sí sola merges, pushes, despliegues ni cambios en servicios o datos productivos.
+
+### Corte y recuperación
+
+Usar el runbook específico aprobado para el candidato exacto. Registrar configuración original de Ignored Build Step y deployment activo; confirmar ausencia de builds pendientes. Si el procedimiento requiere bloquear builds, hacerlo sólo con autorización específica, verificar el bloqueo antes de push/migraciones y conservar el deployment vigente. Crear/verificar el deployment sin asignar aún el dominio y promover sólo tras los controles aprobados. Restaurar el valor original (habitualmente Automatic) y comprobarlo; no asumirlo por historial.
+
+Si falla un control, detenerse y priorizar restaurar la configuración original de Vercel; informar el estado real. Nunca improvisar SQL, repetir una transacción incierta o restaurar inventario/DB sobre ventas posteriores. Las pausas operativas, respaldo, hashes y permisos de cada corte se revalidan cuando corresponda; no se heredan como vigentes de otro corte. No crear compras/pedidos reales ni alterar stock para verificar.
+
+Los commits puramente documentales pueden activar Vercel: sin autorización para controlarlo, conservarlos locales. Ni el commit ni un texto de continuidad constituyen autorización de push, main o despliegue.
+
+## Checklist histórico — referencia por tema
+
+Los ejemplos, variables, rutas, PR y pendientes siguientes son históricos. Consultar contratos/entorno vigentes antes de usarlos; no activar integraciones porque aparezcan en esta referencia.
+
 # Checklist de produccion SFSTORE
 
 Este documento conserva la referencia histórica de deploy y registra correcciones de documentación. No confirma la configuración activa ni autoriza cambios en Vercel/Supabase, pagos, push, merge o deploy. Esas operaciones requieren aprobación explícita; consultar [contexto](PROJECT_CONTEXT.md) y [seguridad](SECURITY_RULES.md).

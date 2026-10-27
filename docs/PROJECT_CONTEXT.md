@@ -1,62 +1,44 @@
-# SFSTORE — Contexto del proyecto
+# SFSTORE — Continuidad actual
 
-Estado documentado el 2026-10-10 sobre `origin/main` (`7a8a105c968f84ba9f58ee1dfd018f27bf6ac3a6`). Esta preparación vive en `codex/semiautonomous-development-preparation`; no incorpora cambios de otras ramas. El negocio vende perfumes importados y árabes, decants, mates y otros artículos; las secciones públicas implementadas son Perfumes y Mates. No se inventan categorías, condiciones comerciales ni integraciones.
+Actualizado: 27/10/2026 (Argentina). **Única fuente de continuidad mutable**, no nueva cola. Última evidencia conocida: revalidar lo que pueda cambiar antes de una operación sensible; este archivo no concede autorizaciones.
 
-## Índice y fuentes
+## Entorno y Production conocidos
 
-- [Arquitectura](ARCHITECTURE.md): rutas, servicios y límites de datos.
-- [Reglas comerciales](BUSINESS_RULES.md): comportamiento actual y decisiones pendientes.
-- [Diseño](DESIGN_SYSTEM.md): identidad existente y diferencias con admin.
-- [Seguridad](SECURITY_RULES.md): límites para trabajar y riesgos observados.
-- [Backlog](DEVELOPMENT_BACKLOG.md): propuestas y estado por tarea; Fase 2 completa tres en rama local, sin integración.
-- [Auditoría y validaciones](PROJECT_AUDIT_2026-10-10.md): evidencia, resultados y limitaciones.
-- [Modelo del catálogo](catalog-data-model.md), [sincronización Sheets](google-sheets-product-sync.md) y [checklist de Production](production-checklist.md) conservan su contenido histórico. Sus cifras y estados de despliegue no son una lectura actual de Production.
+| Campo | Última evidencia / regla para retomar |
+|---|---|
+| Repositorio | Fedee17/sfstore; dominio https://sfstore-ten.vercel.app; Vercel sfstore |
+| Código productivo | `d77e714ea89440e606222c82ac464ce098e6659b`; último cierre P05/EXT-C1 verificado el 27/10 |
+| Deployment | `dpl_E98zh2Ew6XXFLd6M3kSnRgnrVBx1`, según ese cierre; no se volvió a consultar Vercel durante la compactación documental |
+| main remoto | `d77e714ea89440e606222c82ac464ce098e6659b`, confirmado por `git ls-remote` el 27/10; main local en otro worktree puede estar atrasado, no confundirlo con origin/main |
+| Vercel | Último cierre: Automatic y cero builds pendientes. No es una lectura en vivo; reconfirmar antes de publicar |
+| Supabase autorizado conocido | `xspvoicelbxlmtqoiolc` (con e después de voic); no conectar ni escribir por esta referencia |
+| Datos P08 Lote 01 | Aplicado una vez y verificado en Production el 27/10: seis perfumes, 100 ml y contenido aprobado, nombre Liquid Brun corregido. No volver a ejecutar por retomar un chat; [cierre y límites](contenido/P08-PERFUMES-LOTE-01-20261027.md#cierre-de-ejecución-autorizada--27102026) |
 
-## Funcionalidad real
+## Trabajo actual y siguiente paso
 
-| Área | Evidencia y estado |
-| --- | --- |
-| Catálogo público | Listados, filtros, ficha, relacionados y galería implementados. `services/products.ts` consulta Supabase pero retorna `data/products.ts` ante errores, ausencia de configuración o listados vacíos; verlo renderizar no demuestra disponibilidad del catálogo real. |
-| Carrito | Zustand persistido en localStorage; cantidades limitadas por el stock de la instantánea. No es una reserva ni una validación autoritativa de inventario. |
-| Admin | Login Supabase, allowlist de correo, páginas y acciones protegidas. Productos, proveedores, compras, ventas, pedidos, inventario y métricas tienen servicios reales. Operación en Production no comprobada en esta auditoría. |
-| Productos e imágenes | Guardado atómico con versión e idempotencia, uploads separados y tareas de recuperación. Las pruebas locales cubren RPC, concurrencia y formulario. Procesador Storage y nueva retención segura siguen fuera de main. |
-| Recomendaciones | Motor determinista en `/admin/consulta`, con preferencias, atributos y grupos de coincidencia. No usa un servicio de IA ni recomienda automáticamente en el catálogo público. Calidad actual de atributos reales no comprobada. |
-| Checkout | Formulario y creación de cliente/pedido/items implementados mediante cliente anon, en llamadas separadas; precios vienen del carrito. Requiere rediseño de confianza y atomicidad antes de declararlo cerrado. |
-| Pagos | Transferencia y Mercado Pago implementados; preferencia y webhook consultan servicios externos. No hubo transacciones reales, sandbox MP ni prueba integral de pago en esta ejecución. |
-| Configuración | `/admin/configuracion` muestra valores de `lib/brand.ts`; no los edita. La tabla `settings` no convierte esa pantalla en un editor operativo. |
-| Analytics | Agregación de pedidos/pagos/productos en `services/admin.ts`; no es un tablero ficticio. Exactitud con datos reales y reconciliación quedan por verificar. |
+- **P07 disponibles primero:** implementado y validado, **no publicado**. Rama `codex/p07-available-first-20261027`, candidato `6080b36f9180092e8cb6c47b9c0afc185956c494`.
+- Alcance aprobado local: Perfumes, Mates, Accesorios y búsqueda; disponibles → agotados, luego destacado → nombre → ID. Familias/combos con disponibilidad existente; sin textos/controles nuevos. Inicio/relacionados, precios, stock y checkout intactos.
+- Evidencia vigente: 38 pruebas afectadas, build, TypeScript, ESLint y navegador sintético 390×844/1366×900 aprobados; [detalle en sección 9](SFSTORE-PLAN-MEJORA-CONTINUA.md#p07--disponibles-primero-implementación-local-del-27102026). No repetir salvo cambio/fallo/evidencia dudosa.
+- **Bloqueo:** falta autorización de publicación P07. No hay autorización de push, merge, Vercel o deploy en el encargo actual. Sin bloqueo técnico conocido; el incidente de Windows fue resuelto por el propietario, no volver a tratarlo como restricción vigente.
+- **Próximo paso:** al encargo del propietario, preparar publicación controlada de P07 o continuar la tarea que indique desde la sección 9; no elegir otro trabajo ni publicar automáticamente.
+- Última entrega: compactación documental local. Rama `codex/progressive-context-20261027`, basada en P07; su diff respecto de `6080b36` debe ser exclusivamente documental. P07 conserva su rama/candidato separados.
+- Commits documentales previos separados: `985975f` (cierre P05) y `078bb0d` (P08 Lote 01). No se publicaron. No incorporar `071633e` ni otras ramas por proximidad histórica.
 
-## Trabajo existente y despliegue
+## Cómo retomar sin confundir checkouts
 
-La [PR #1](https://github.com/Fedee17/sfstore/pull/1) está abierta, draft y sin merge al verificarla el 2026-10-10. Su rama `codex/storage-p1-safe-retention`, commit `be25492`, consolida el procesador y bloquea borrados de objetos existentes. El procesador original está en `codex/product-storage-task-processor`, commit `a5fa94e`. No asumir que main contiene esas protecciones ni repetir su implementación.
+Worktree usado: `C:/dev/sfstore/.worktrees/p03-family-presentation-20261025` (el nombre de carpeta es histórico). Abrir la conversación sobre ese directorio y leer su AGENTS. `C:/dev/sfstore` está en una rama antigua: no representa el candidato actual. Comprobar `Get-Location`, `git status --short`, `git branch --show-current`, `git log -1` y `git worktree list` antes de actuar; no cambiar ramas automáticamente para hacer coincidir este texto.
 
-Worktrees existentes preservados: `/workspace/sfstore` (incluidos dos reports sin confirmar) y `/workspace/sfstore-storage-p1`. La rama remota `codex/autonomous-maintenance` también existe. Se creó un worktree separado para esta documentación.
+Los cambios de contexto sólo están en la rama documental local hasta integración autorizada: una conversación abierta en main u otro worktree no recibirá por sí sola este AGENTS. No copiar informes completos al nuevo chat: indicar directorio y tarea.
 
-El checklist histórico identifica Vercel y Production ligada a main. No se inspeccionó la configuración activa de Vercel/Supabase. Un push futuro a una rama conectada podría disparar un despliegue: revisar esa relación antes de publicar cambios. Esta ejecución no hace commit, push, merge ni deploy.
+## Fuentes por necesidad
 
-## Propuesta de ejecución semiautónoma
+- **Cola/estado de tareas:** [Plan, sección 9](SFSTORE-PLAN-MEJORA-CONTINUA.md#9-diagnóstico-consolidado-y-cola-única--actualización-del-25102026); fila y último cierre del ID. Auditorías citadas sólo si falta evidencia, no como lectura inicial.
+- **Diseño/UX/contenido:** [Directrices](SFSTORE-DIRECTRICES-MAESTRAS.md) y [Estándares](SFSTORE-ESTANDARES-DISENO-DESARROLLO.md): índices + secciones del flujo afectado y aceptación. Sin contenido o características inventadas.
+- **Seguridad y tests:** [reglas permanentes/método](SECURITY_RULES.md); antecedentes sólo del área afectada.
+- **Publicación/rollback:** [checklist vigente](production-checklist.md#reglas-vigentes-de-integración-y-publicación) y runbook aprobado del candidato; consultar artefactos privados sólo al ejecutar su tarea autorizada, sin versionar secretos/dumps.
+- **Arquitectura y negocio:** [ARCHITECTURE](ARCHITECTURE.md), [BUSINESS_RULES](BUSINESS_RULES.md), [catálogo](catalog-data-model.md), [Sheets](google-sheets-product-sync.md); son referencias de sus fechas, contrastar con código actual. No recorrerlos completos por defecto.
+- **Originales conservados:** [PROJECT_CONTEXT del 10/10](PROJECT_CONTEXT-HISTORICO-20261010.md), [AGENTS anterior](AGENTS-HISTORICO-20261027.md), [backlog histórico](DEVELOPMENT_BACKLOG.md). No son una segunda cola ni autorizaciones actuales.
 
-1. El propietario selecciona un alcance del backlog; su existencia no autoriza ejecutarlo.
-2. Leer AGENTS y únicamente los documentos/archivos relacionados. Confirmar branch, estado y cambios existentes.
-3. Clasificar por el efecto de mayor riesgo. Preparar tareas supervisadas en ramas aisladas; aprobar explícitamente tareas restringidas antes de ejecutarlas.
-4. Agrupar un objetivo pequeño por rama; registrar decisiones y alcance. Validar primero lo específico y después los checks generales afectados.
-5. Entregar diff revisable, evidencia y limitaciones. Commit/push según autorización; revisión humana antes de integrar tareas supervisadas. Nunca integrar o desplegar implícitamente.
-6. Actualizar el estado del backlog y documentos cuando cambie la evidencia; evitar auditorías completas repetidas.
+## Mantenimiento de este estado
 
-Orden propuesto: atender DEP-01 y diseñar PAY-01/PAY-02 con autorización, revisar Storage existente STG-01; después verificabilidad local (QA-01/QA-02), deuda rutinaria y mejoras supervisadas. Ver prioridades y dependencias concretas en el backlog.
-
-## Decisiones del propietario pendientes
-
-- Aprobar alcance de revisión/corrección de checkout, pagos y permisos; aportar un entorno de pruebas independiente y sandbox de Mercado Pago si se necesita integración.
-- Decidir política de catálogo de respaldo ante error o catálogo vacío; no ocultar disponibilidad real por una decisión técnica unilateral.
-- Revisar la PR de Storage y aprobar por separado migrations, integración y despliegue. Definir retención de archivos y mecanismo seguro de borrado antes de habilitar eliminación física.
-- Confirmar condiciones de envío, costos, reservas de stock y precio vigente al pagar; hoy no hay reglas autoritativas completas para checkout público.
-- Elegir prioridad de funcionalidades nuevas (configuración editable, recomendaciones públicas, categorías adicionales); no se consideran encargadas.
-- Confirmar identidad visual para admin, datos comerciales/contactos y activos finales. Los documentos históricos de marca/banners discrepan con el código actual.
-- Definir responsables de revisión, política de deploy por rama y gestión de secretos. No hace falta revelar credenciales para revisar esta documentación.
-
-## Fase 2 — mantenimiento local autorizado
-
-La preparación inicial quedó confirmada en commit de documentación `a33bce4`. El pedido posterior autoriza hasta tres tareas autónomas verificadas y commits locales; continúa prohibiendo push, merge y despliegues. SEC-02, TXT-01 y DOC-01 se completaron en `codex/autonomous-maintenance-batch-1` sin tocar archivos de PR #1, pagos, reglas de negocio o datos reales. Las descripciones anteriores de main son el baseline histórico, no el estado integrado de esta rama.
-
-Resultados: 610/610 tests, cero skips; TypeScript, lint focalizado y build aprobados. Lint global mantiene 9 errores y 11 warnings de main. El [informe de Fase 2](../reports/autonomous-maintenance-phase2-20261010.md) detalla cambios; el [triage](../reports/dependency-triage-phase2-20261010.md) analiza 36 entradas sin actualizaciones. Production no fue inspeccionada ni modificada. Decisiones sensibles anteriores siguen pendientes.
+Después de cada avance, actualizar los campos anteriores (sin acumular diarios aquí), fecha, rama/candidato, estado productivo sólo con evidencia, bloqueos, autorización con alcance y próximo paso. Registrar detalles/resultados/historial en la tarea de la sección 9 o su fuente original y enlazarlos. Si se contradicen el archivo y Git/entorno, detener la acción sensible y resolver por evidencia; nunca descartar cambios para adaptar la realidad al resumen. No guardar contraseñas, tokens, correos de clientes, dumps ni costos privados en este estado.
