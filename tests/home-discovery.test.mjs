@@ -44,7 +44,7 @@ async function renderHome(products = []) {
     'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
     'next/server': { connection: async () => {} },
     '@/components/site-header': { SiteHeader: () => React.createElement('header', null, 'Existing header') },
-    '@/components/home-hero-slider': { HomeHeroSlider: ({ slides }) => React.createElement('div', { id: 'hero' }, slides[0].title, slides[0].subtitle) },
+    '@/components/home-hero-slider': { HomeHeroSlider: ({ slides }) => React.createElement('div', { id: 'hero' }, ...slides.map(slide => slide.title + slide.subtitle)) },
     '@/lib/web-transfer-pricing': prices, '@/lib/products/public-families': availability,
     '@/lib/catalog/home-selection': selection,
     '@/lib/whatsapp': { buildWhatsAppUrl: message => 'https://wa.me/000?text=' + encodeURIComponent(message) },
@@ -82,4 +82,60 @@ test('existing hero renders only explicitly supplied photographs with alternativ
   assert.match(html, /<img[^>]+alt="Fotografía real aprobada"/);
   assert.match(html, /object-contain/);
   assert.equal(render([]), '');
+});
+
+
+test('approved banners keep HTML copy, gender destinations and a single responsive picture', async () => {
+  const hooks = index => ({ ...React, useState: () => [index, () => {}] });
+  const pageSource = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8');
+  const slides = [];
+  const Page = load('app/page.tsx', {
+    'react/jsx-runtime': jsx,
+    'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
+    'next/server': { connection: async () => {} },
+    '@/components/site-header': { SiteHeader: () => null },
+    '@/components/home-hero-slider': { HomeHeroSlider: props => { slides.push(...props.slides); return null; } },
+    '@/lib/web-transfer-pricing': prices, '@/lib/products/public-families': availability,
+    '@/lib/catalog/home-selection': selection,
+    '@/lib/whatsapp': { buildWhatsAppUrl: () => 'https://wa.me/000' },
+    '@/services/products': { getCatalogPublications: async () => [] },
+  }).default;
+  renderToStaticMarkup(await Page());
+  assert.equal(slides.length, 2);
+  assert.equal(slides[0].title, 'Un perfume que habla de vos.');
+  assert.equal(slides[1].title, 'Perfumes para hacer sentir presencia.');
+  for (const [i, gender] of ['femenino', 'masculino'].entries()) {
+    assert.equal(slides[i].primaryCtaHref, '/perfumes?categoria=arabe&genero=' + gender);
+    const Hero = load('components/home-hero-slider.tsx', { react: hooks(i), 'react/jsx-runtime': jsx }).HomeHeroSlider;
+    const html = renderToStaticMarkup(React.createElement(Hero, { slides }));
+    assert.match(html, new RegExp('<h2[^>]*>' + slides[i].title.replace('.', '\\.') + '</h2>'));
+    assert.equal((html.match(/<picture/g) ?? []).length, 1);
+    assert.equal((html.match(/<img /g) ?? []).length, 1);
+    assert.match(html, /media="\(min-width: 640px\)"/);
+    assert.ok(html.includes('/home/' + gender + '-mobile-768.webp'));
+    assert.ok(html.includes('/home/' + gender + '-desktop-1600.webp'));
+    assert.doesNotMatch(html, new RegExp('/home/' + (i ? 'femenino' : 'masculino') + '-'));
+    assert.match(html, /aria-live="polite"/);
+    assert.match(html, /<a[^>]+href="\/perfumes\?categoria=arabe&amp;genero=/);
+  }
+  assert.doesNotMatch(pageSource, /home-banner-perfumes\.png|home-banner-mates\.png/);
+});
+
+
+test('all four approved compositions have small responsive WebP derivatives with preserved proportions', async () => {
+  const sharp = require('sharp');
+  const assets = [
+    ['femenino-mobile', [480, 768], 941 / 1672],
+    ['masculino-mobile', [480, 768], 1151 / 1367],
+    ['femenino-desktop', [960, 1600], 1945 / 809],
+    ['masculino-desktop', [960, 1600], 1944 / 809],
+  ];
+  for (const [name, widths, ratio] of assets) for (const width of widths) {
+    const bytes = readFileSync(new URL(`../public/home/${name}-${width}.webp`, import.meta.url));
+    const metadata = await sharp(bytes).metadata();
+    assert.equal(metadata.format, 'webp');
+    assert.equal(metadata.width, width);
+    assert.ok(Math.abs(metadata.width / metadata.height - ratio) < 0.005);
+    assert.ok(bytes.length < 300000);
+  }
 });

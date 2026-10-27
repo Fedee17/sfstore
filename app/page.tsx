@@ -195,22 +195,26 @@ export default async function Home() {
   );
   const heroSlides: HomeHeroSlide[] = [
     {
-      // No hero photograph is selected until the owner approves the real asset.
-      title: "Perfumes para hacer sentir presencia",
-      subtitle: "Perfumes árabes y decants para descubrir tu próxima fragancia.",
+      imageSrc: "/home/femenino-desktop-1600.webp",
+      imageSrcSet: "/home/femenino-desktop-960.webp 960w, /home/femenino-desktop-1600.webp 1600w",
+      mobileImageSrc: "/home/femenino-mobile-768.webp",
+      mobileImageSrcSet: "/home/femenino-mobile-480.webp 480w, /home/femenino-mobile-768.webp 768w",
+      imageAlt: "Perfumes árabes para mujer",
+      title: "Un perfume que habla de vos.",
+      subtitle: "Descubrí nuestra selección de perfumes árabes para mujer.",
       primaryCtaLabel: "Ver perfumes árabes",
-      primaryCtaHref: "/perfumes",
-      secondaryCtaLabel: "Consultar",
-      secondaryCtaHref: generalWhatsAppLink,
+      primaryCtaHref: "/perfumes?categoria=arabe&genero=femenino",
     },
     {
-
-      title: "Todo para tu mate",
-      subtitle: "Mates, termos y accesorios para disfrutar o regalar.",
-      primaryCtaLabel: "Ver mates",
-      primaryCtaHref: "/mates",
-      secondaryCtaLabel: "Pedir recomendación",
-      secondaryCtaHref: generalWhatsAppLink,
+      imageSrc: "/home/masculino-desktop-1600.webp",
+      imageSrcSet: "/home/masculino-desktop-960.webp 960w, /home/masculino-desktop-1600.webp 1600w",
+      mobileImageSrc: "/home/masculino-mobile-768.webp",
+      mobileImageSrcSet: "/home/masculino-mobile-480.webp 480w, /home/masculino-mobile-768.webp 768w",
+      imageAlt: "Perfumes árabes para hombre",
+      title: "Perfumes para hacer sentir presencia.",
+      subtitle: "Descubrí nuestra selección de perfumes árabes para hombre.",
+      primaryCtaLabel: "Ver perfumes árabes",
+      primaryCtaHref: "/perfumes?categoria=arabe&genero=masculino",
     },
   ];
 

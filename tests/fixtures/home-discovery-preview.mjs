@@ -18,7 +18,8 @@ const examples = [
   ['French Avenue Liquid Brun', '6ca63ce3-5694-418f-90a8-5d8043f4c2f5/1789601319065-0-37e6f25d-987d-4ebd-9f61-cb46a2aaf76f-optimizada.webp'],
   ['Decant hawas elixir', '2db67b25-6e37-446a-8e98-5f626d5efc63/1781484221250-img-0191-optimizada.webp'],
 ];
-const rows = [...publicRows, ...examples.map(([name, file], i) => ({ ...base, id: fixtureId(31 + i), name: name + ' · PRUEBA', slug: 'home-photo-' + i, featured: true, price: 10000, stock: 2, short_description: 'Contenido de prueba local. No es una oferta comercial.', product_images: image(31 + i, file, name) }))];
+const genderAttributes = gender => [{ name: 'commercial_category', value: 'arabe' }, { name: 'gender', value: gender }];
+const rows = [...publicRows.map((row,i)=>i === 0 ? {...row,product_attributes:genderAttributes('femenino')} : row), ...examples.map(([name, file], i) => ({ ...base, id: fixtureId(31 + i), name: name + ' · PRUEBA', slug: 'home-photo-' + i, featured: true, price: 10000, stock: 2, short_description: 'Contenido de prueba local. No es una oferta comercial.', product_images: image(31 + i, file, name), product_attributes: genderAttributes('masculino') }))];
 rows.push({ ...base, id: fixtureId(34), name: 'Agotado destacado PRUEBA', slug: 'home-empty', stock: 0, featured: true });
 rows.push({ ...base, id: fixtureId(35), name: 'Consulta precio PRUEBA', slug: 'home-no-price', price: 0, featured: true });
 const fixture = await startPublicFixtureServer({ rows });

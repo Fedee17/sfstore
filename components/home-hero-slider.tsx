@@ -5,6 +5,9 @@ import { useState } from "react";
 export type HomeHeroSlide = {
   imageSrc?: string;
   imageAlt?: string;
+  imageSrcSet?: string;
+  mobileImageSrc?: string;
+  mobileImageSrcSet?: string;
   title: string;
   subtitle: string;
   primaryCtaLabel: string;
@@ -31,24 +34,25 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
   const hasImage = Boolean(activeSlide.imageSrc && activeSlide.imageAlt);
 
   return (
-    <section className="mx-auto max-w-6xl px-5 pb-3 pt-5 sm:px-8 lg:pb-4 lg:pt-8">
+    <section aria-label="Selección de perfumes árabes" aria-roledescription="carrusel" className="mx-auto max-w-6xl px-5 pb-3 pt-5 sm:px-8 lg:pb-4 lg:pt-8">
       <div className="min-w-0">
-        <a
-          href={activeSlide.primaryCtaHref}
-          aria-label={activeSlide.primaryCtaLabel}
-          className="block min-w-0 overflow-hidden rounded-[2rem] border border-[#DCE3EA] bg-white shadow-2xl shadow-[#102033]/10 outline-none transition hover:shadow-[#102033]/15 focus-visible:ring-2 focus-visible:ring-[#0072CE] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F9FC]"
+        <div
+          className="block min-w-0 overflow-hidden rounded-[2rem] border border-[#DCE3EA] bg-white shadow-2xl shadow-[#102033]/10 "
         >
-          <div className={`grid bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)] ${hasImage ? "sm:grid-cols-2" : ""}`}>
-            <div className="flex flex-col justify-center gap-3 p-5 sm:p-8">
-              <h2 className="max-w-2xl text-3xl font-semibold text-[#102033] sm:text-5xl">{activeSlide.title}</h2>
+          <div className={`grid bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)] ${hasImage ? "sm:grid-cols-[0.85fr_1.65fr]" : ""}`}>
+            <div aria-live="polite" aria-atomic="true" className="flex flex-col justify-center gap-3 p-5 sm:p-8">
+              <h2 className="max-w-2xl text-2xl font-semibold text-[#102033] sm:text-3xl lg:text-4xl">{activeSlide.title}</h2>
               <p className="max-w-xl text-base text-[#102033]/75">{activeSlide.subtitle}</p>
-              <span className="w-fit rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white">{activeSlide.primaryCtaLabel}</span>
+              <a href={activeSlide.primaryCtaHref} className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">{activeSlide.primaryCtaLabel}</a>
             </div>
             {hasImage ? (
-              <img src={activeSlide.imageSrc} alt={activeSlide.imageAlt} loading="eager" className="aspect-[4/3] h-full max-h-96 w-full object-contain" />
+              <picture className="block min-w-0">
+                <source media="(min-width: 640px)" srcSet={activeSlide.imageSrcSet ?? activeSlide.imageSrc} sizes="(min-width: 1152px) 730px, 65vw" />
+                <img src={activeSlide.mobileImageSrc ?? activeSlide.imageSrc} srcSet={activeSlide.mobileImageSrcSet} sizes="calc(100vw - 40px)" alt={activeSlide.imageAlt} width={1600} height={666} loading="eager" fetchPriority={activeIndex === 0 ? "high" : "auto"} decoding="async" className="aspect-[4/5] h-full w-full object-cover sm:aspect-[12/5] sm:object-contain" />
+              </picture>
             ) : null}
           </div>
-        </a>
+        </div>
 
         {slides.length > 1 ? (
           <div className="mt-1 flex items-center justify-center gap-2">
