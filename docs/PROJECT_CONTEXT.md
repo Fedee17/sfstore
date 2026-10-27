@@ -7,28 +7,27 @@ Actualizado: 27/10/2026 (Argentina). **Única fuente de continuidad mutable**, n
 | Campo | Última evidencia / regla para retomar |
 |---|---|
 | Repositorio | Fedee17/sfstore; dominio https://sfstore-ten.vercel.app; Vercel sfstore |
-| Código productivo | `d77e714ea89440e606222c82ac464ce098e6659b`; último cierre P05/EXT-C1 verificado el 27/10 |
-| Deployment | `dpl_E98zh2Ew6XXFLd6M3kSnRgnrVBx1`, según ese cierre; no se volvió a consultar Vercel durante la compactación documental |
-| main remoto | `d77e714ea89440e606222c82ac464ce098e6659b`, confirmado por `git ls-remote` el 27/10; main local en otro worktree puede estar atrasado, no confundirlo con origin/main |
-| Vercel | Último cierre: Automatic y cero builds pendientes. No es una lectura en vivo; reconfirmar antes de publicar |
+| Código productivo | `ec28135de1ffeb6e2b9516d58339659e94e5913b`; P07 publicado y verificado el 27/10 |
+| Deployment | `dpl_BFAdajmHoVE29R37XQAyGWwCcCvf`, READY/Production; alias público confirmado después de promover |
+| main remoto | `ec28135de1ffeb6e2b9516d58339659e94e5913b`, confirmado por `git ls-remote` después del fast-forward autorizado el 27/10; main local en otro worktree puede estar atrasado, no confundirlo con origin/main |
+| Vercel | Automatic restaurado y confirmado tras recargar; cero builds pendientes al cierre del 27/10. Reconfirmar antes de publicar otro cambio |
 | Supabase autorizado conocido | `xspvoicelbxlmtqoiolc` (con e después de voic); no conectar ni escribir por esta referencia |
 | Datos P08 Lote 01 | Aplicado una vez y verificado en Production el 27/10: seis perfumes, 100 ml y contenido aprobado, nombre Liquid Brun corregido. No volver a ejecutar por retomar un chat; [cierre y límites](contenido/P08-PERFUMES-LOTE-01-20261027.md#cierre-de-ejecución-autorizada--27102026) |
 
 ## Trabajo actual y siguiente paso
 
-- **P07 disponibles primero:** implementado y validado, **no publicado**. Rama `codex/p07-available-first-20261027`, candidato `6080b36f9180092e8cb6c47b9c0afc185956c494`.
-- Alcance aprobado local: Perfumes, Mates, Accesorios y búsqueda; disponibles → agotados, luego destacado → nombre → ID. Familias/combos con disponibilidad existente; sin textos/controles nuevos. Inicio/relacionados, precios, stock y checkout intactos.
-- Evidencia vigente: 38 pruebas afectadas, build, TypeScript, ESLint y navegador sintético 390×844/1366×900 aprobados; [detalle en sección 9](SFSTORE-PLAN-MEJORA-CONTINUA.md#p07--disponibles-primero-implementación-local-del-27102026). No repetir salvo cambio/fallo/evidencia dudosa.
-- **Bloqueo:** falta autorización de publicación P07. No hay autorización de push, merge, Vercel o deploy en el encargo actual. Sin bloqueo técnico conocido; el incidente de Windows fue resuelto por el propietario, no volver a tratarlo como restricción vigente.
-- **Próximo paso:** al encargo del propietario, preparar publicación controlada de P07 o continuar la tarea que indique desde la sección 9; no elegir otro trabajo ni publicar automáticamente.
-- Última entrega: compactación documental local. Rama `codex/progressive-context-20261027`, basada en P07; su diff respecto de `6080b36` debe ser exclusivamente documental. P07 conserva su rama/candidato separados.
-- Commits documentales previos separados: `985975f` (cierre P05) y `078bb0d` (P08 Lote 01). No se publicaron. No incorporar `071633e` ni otras ramas por proximidad histórica.
+- **P07 disponibles primero: publicado y verificado** en el SHA exacto autorizado `ec28135de1ffeb6e2b9516d58339659e94e5913b`, que integra el candidato funcional `6080b36` y la reorganización documental. Rama `codex/progressive-context-20261027`.
+- Alcance: cuatro listados; disponibles → agotados, luego destacado → nombre → ID. Inicio/relacionados y contratos comerciales intactos.
+- Evidencia: 38 pruebas afectadas, build, TypeScript y ESLint previos aprobados; nuevo build real READY, revisión protegida/pública móvil y notebook, filtros, agotados, familia sin selección automática, ambos combos y Consultar precio. Carrito/checkout: Gris + combo C/C = $58.000 por transferencia; sin pedidos ni formularios enviados; carrito local vaciado. [Cierre en sección 9](SFSTORE-PLAN-MEJORA-CONTINUA.md#p07--disponibles-primero-publicación-controlada-del-27102026).
+- **Bloqueos del corte:** ninguno. Automatic restaurado; un registro automático CANCELED fue el resultado esperado del bloqueo, sin reemplazar el dominio.
+- **Próximo paso:** esperar el siguiente encargo desde la sección 9; decants y orden por precio siguen pendientes por separado. No publicar automáticamente.
+- **Seguimiento:** cierre documental posterior separado localmente, sin push ni deployment adicional. `985975f` y `078bb0d` ya integrados en main/Production mediante la cadena autorizada. `071633e` excluido.
 
 ## Cómo retomar sin confundir checkouts
 
 Worktree usado: `C:/dev/sfstore/.worktrees/p03-family-presentation-20261025` (el nombre de carpeta es histórico). Abrir la conversación sobre ese directorio y leer su AGENTS. `C:/dev/sfstore` está en una rama antigua: no representa el candidato actual. Comprobar `Get-Location`, `git status --short`, `git branch --show-current`, `git log -1` y `git worktree list` antes de actuar; no cambiar ramas automáticamente para hacer coincidir este texto.
 
-Los cambios de contexto sólo están en la rama documental local hasta integración autorizada: una conversación abierta en main u otro worktree no recibirá por sí sola este AGENTS. No copiar informes completos al nuevo chat: indicar directorio y tarea.
+La reorganización documental ya está integrada en main mediante ec28135. El cierre posterior de publicación permanece local hasta integración autorizada; otros worktrees pueden tener copias anteriores. No copiar informes completos al nuevo chat: indicar directorio y tarea.
 
 ## Fuentes por necesidad
 
