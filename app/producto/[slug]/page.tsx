@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { SiteHeader } from "@/components/site-header";
 import { formatSavingsLabel } from "@/lib/pricing";
-import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
@@ -147,13 +147,13 @@ function PricePanel({
   product: NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>;
   isAvailable: boolean;
 }) {
-  const showTransferPrice = product.price > 0;
-  const transferPrice = getWebTransferPrice(product.price);
+  const showTransferPrice = hasValidWebPrice(product.price);
+  const transferPrice = showTransferPrice ? getWebTransferPrice(product.price) : null;
 
 
   return (
     <div className="mt-4 overflow-hidden rounded-2xl border border-[#003B73]/15 bg-[#F7F9FC] p-4">
-      {showTransferPrice ? (
+      {transferPrice !== null ? (
         <div className="grid min-w-0 grid-cols-[1fr_auto] gap-3">
           <div className="min-w-0">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
@@ -176,10 +176,10 @@ function PricePanel({
       ) : (
         <div className="min-w-0">
           <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-            Precio lista
+            Precio a confirmar
           </p>
           <p className="mt-2 whitespace-nowrap text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
-            {currencyFormatter.format(product.price)}
+            Consultar precio
           </p>
         </div>
       )}
@@ -322,8 +322,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ) : (
           <div className="mt-8 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {relatedProducts.map((relatedProduct) => {
-            const relatedHasTransferPrice = relatedProduct.price > 0;
-            const relatedTransferPrice = getWebTransferPrice(relatedProduct.price);
+            const relatedHasTransferPrice = hasValidWebPrice(relatedProduct.price);
+            const relatedTransferPrice = relatedHasTransferPrice ? getWebTransferPrice(relatedProduct.price) : null;
             const relatedSavingsLabel = formatSavingsLabel(
               relatedProduct.price,
               relatedTransferPrice,
@@ -361,7 +361,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <h3 className="mt-3 break-words text-lg font-semibold text-[#102033] group-hover:text-[#0072CE]">
                     {relatedProduct.name}
                   </h3>
-                  {relatedHasTransferPrice ? (
+                  {relatedTransferPrice !== null ? (
                     <div className="mt-3 min-w-0">
                       <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
                         Transferencia bancaria
@@ -380,7 +380,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     </div>
                   ) : (
                     <p className="mt-3 break-words text-lg font-semibold text-[#003B73]">
-                      {currencyFormatter.format(relatedProduct.price)}
+                      Precio a confirmar
                     </p>
                   )}
                 </div>

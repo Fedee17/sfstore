@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
+import { analyticsRenderStubs } from "./fixtures/analytics-render-stubs.mjs";
 import { getWebTransferPrice, getWebTransferSubtotal } from "../lib/web-transfer-pricing.ts";
 
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -40,6 +41,17 @@ test("public catalog ignores the stored internal transfer price without mutating
   assert.equal(row.transfer_price, 80.03);
 });
 
+test("missing or invalid public prices do not break the catalog or invent a transfer price", async () => {
+  for (const price of [null, 0, -1, "not-a-price"]) {
+    const unpriced = { ...row, price };
+    globalThis.__commercialCatalogClient = client([unpriced]);
+    const products = await service.getProductsByCategorySlug("perfumes");
+    assert.equal(products.length, 1);
+    assert.equal(products[0].transferPrice, null);
+    assert.equal(unpriced.price, price);
+  }
+});
+
 test("production never replaces an empty or failed catalog with demo products", async () => {
   const old = process.env.NODE_ENV;
   try {
@@ -72,12 +84,13 @@ test("actual catalog cards never use a legacy 80% transfer field", async () => {
   const pricing = await import("../lib/pricing.ts");
   const web = await import("../lib/web-transfer-pricing.ts");
   const load = (file, modules) => {
+    modules = { ...analyticsRenderStubs, ...modules };
     const exports = {};
     const code = ts.transpileModule(source(file), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
     new Function("require", "exports", code)((name) => { assert.ok(Object.hasOwn(modules, name), name); return modules[name]; }, exports);
     return exports;
   };
-  const add = load("components/add-to-cart-button.tsx", { react: React, "react/jsx-runtime": jsx, "@/store/cart-store": { useCartStore: (selector) => selector({ items: [], addItem() {} }) } });
+  const add = load("components/add-to-cart-button.tsx", { react: React, "react/jsx-runtime": jsx, "@/lib/web-transfer-pricing": web, "@/lib/whatsapp": { getProductWhatsAppLink: () => "/synthetic" }, "@/store/cart-store": { useCartStore: (selector) => selector({ items: [], addItem() {} }) } });
   const { ProductGrid } = load("components/product-grid.tsx", { react: React, "react/jsx-runtime": jsx, "@/lib/products/public-families": await import("../lib/products/public-families.ts"), "@/lib/pricing": pricing, "@/lib/web-transfer-pricing": web, "@/lib/whatsapp": { getProductWhatsAppLink: () => "/synthetic" }, "@/components/add-to-cart-button": add });
   for (const transferPrice of [80, null]) {
     const html = renderToStaticMarkup(React.createElement(ProductGrid, { products: [{ id: "synthetic", name: "Synthetic", slug: "synthetic", category: "perfumes", price: 100, transferPrice, stock: 2, imagePlaceholder: "SY" }], label: "Synthetic" }));

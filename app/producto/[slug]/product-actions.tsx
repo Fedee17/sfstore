@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import { hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
 import { useCartStore, cartItemKey } from "@/store/cart-store";
 import type { Product } from "@/types/product";
@@ -15,7 +16,8 @@ export function ProductActions({ product }: ProductActionsProps) {
   const cartItem = useCartStore((state) => state.items.find((item) => cartItemKey(item) === key));
   const currentQuantity = cartItem?.quantity ?? 0;
   const [feedback, setFeedback] = useState("");
-  const isAvailable = product.stock > 0;
+  const validPrice = hasValidWebPrice(product.price);
+  const isAvailable = product.stock > 0 && validPrice;
   const reachedCartLimit = cartItem ? cartItem.quantity >= cartItem.stock : false;
   const isAtMaxStock = isAvailable && (reachedCartLimit || currentQuantity >= product.stock);
 
@@ -54,17 +56,17 @@ export function ProductActions({ product }: ProductActionsProps) {
             rel="noreferrer"
             className="min-h-12 min-w-0 rounded-full border border-[#0072CE]/35 px-6 py-3.5 text-center text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] hover:bg-[#F7F9FC]"
           >
-            Consultar disponibilidad
+            {validPrice ? "Consultar disponibilidad" : "Consultar precio"}
           </a>
         )}
-        <a
+        {validPrice ? <a
           href={getProductWhatsAppLink(product)}
           target="_blank"
           rel="noreferrer"
           className="min-h-12 min-w-0 rounded-full border border-[#102033]/15 px-6 py-3.5 text-center text-sm font-semibold text-[#102033] transition hover:border-[#0072CE] hover:text-[#0072CE]"
         >
           Consultar por WhatsApp
-        </a>
+        </a> : null}
       </div>
         <p role="status" aria-atomic="true" className="mt-3 break-words text-sm font-semibold text-[#0072CE]">
           {feedback}

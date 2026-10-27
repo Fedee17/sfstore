@@ -1,7 +1,7 @@
 "use client";
 import { publicCategoryLabels as categoryLabels, publicCategoryPaths } from "@/lib/catalog/public-product-visibility";
 
-import { getWebTransferPrice, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
+import { getWebTransferPrice, getWebTransferSubtotal, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 
 import { SiteHeader } from "@/components/site-header";
 import { CartItemIdentity } from "@/components/cart-item-identity";
@@ -30,8 +30,9 @@ export default function CartPage() {
     increaseQuantity,
     decreaseQuantity,
     clearCart,
+    invalidPriceNotice,
   } = useCartStore();
-
+  const hasInvalidPrice = items.some(item => !hasValidWebPrice(item.price));
 
   const checkoutHref = `/checkout?payment=${selectedPaymentMethod}`;
   const whatsappHref = buildWhatsAppUrl([
@@ -60,6 +61,9 @@ export default function CartPage() {
           </p>
         </div>
 
+        {invalidPriceNotice ? <p role="status" className="mt-6 rounded-2xl border border-[#003B73]/20 bg-white p-4 text-sm">
+          Quitamos del carrito productos sin un precio válido. <a className="font-semibold text-[#003B73] underline" href={buildWhatsAppUrl("Hola SFSTORE, quiero consultar el precio de los productos que se quitaron de mi carrito por no tener precio confirmado.")} target="_blank" rel="noopener noreferrer">Consultar precio</a> antes de agregarlos.
+        </p> : null}
         {items.length === 0 ? (
           <div className="mt-12 rounded-[2rem] border border-[#003B73]/15 bg-white/65 p-8 text-center shadow-sm">
             <h2 className="text-2xl font-semibold">
@@ -87,7 +91,7 @@ export default function CartPage() {
           <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
             <div className="space-y-4">
               {items.map((item) => {
-                const selectedUnitPrice = getWebTransferPrice(item.price);
+                const selectedUnitPrice = hasValidWebPrice(item.price) ? getWebTransferPrice(item.price) : null;
 
                 return (
                   <article
@@ -100,12 +104,12 @@ export default function CartPage() {
                         {categoryLabels[item.category]}
                       </p>
                       <div className="mt-2"><CartItemIdentity item={item} /></div>
-                      <p className="mt-2 text-sm text-[#102033]/60">
+                      {selectedUnitPrice !== null ? <><p className="mt-2 text-sm text-[#102033]/60">
                         Lista por unidad: {currencyFormatter.format(item.price)}
                       </p>
                       <p className="mt-1 text-sm font-medium text-[#003B73]">
                         Transferencia por unidad: {currencyFormatter.format(selectedUnitPrice)}
-                      </p>
+                      </p></> : <a href={buildWhatsAppUrl(`Hola SFSTORE, quiero consultar el precio de ${item.name}. ¿Me lo confirmás?`)} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center font-semibold text-[#003B73] underline">Consultar precio</a>}
                     </div>
 
                     <div className="flex min-w-0 flex-wrap items-center gap-3 md:justify-end">
@@ -125,16 +129,14 @@ export default function CartPage() {
                           type="button"
                           aria-label={`Agregar una unidad de ${item.name}`}
                           onClick={() => increaseQuantity(cartItemKey(item))}
-                          disabled={item.quantity >= item.stock}
+                          disabled={selectedUnitPrice === null || item.quantity >= item.stock}
                           className="h-11 w-11 text-lg font-semibold text-[#003B73] transition hover:text-[#0072CE] disabled:cursor-not-allowed disabled:opacity-35"
                         >
                           +
                         </button>
                       </div>
                       <p className="min-w-0 break-words text-right text-lg font-semibold text-[#003B73]">
-                        {currencyFormatter.format(
-                          selectedUnitPrice * item.quantity,
-                        )}
+                        {selectedUnitPrice === null ? "Precio a confirmar" : currencyFormatter.format(selectedUnitPrice * item.quantity)}
                       </p>
                       <button
                         type="button"
@@ -169,15 +171,15 @@ export default function CartPage() {
                 <div className="flex justify-between">
                   <span className="text-[#102033]/65">Subtotal de lista</span>
                   <span className="font-semibold">
-                    {currencyFormatter.format(subtotal)}
+                    {hasInvalidPrice ? "Pendiente de consultar precio" : currencyFormatter.format(subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Descuento por transferencia</span><span>−{currencyFormatter.format(Math.round((subtotal-getWebTransferSubtotal(items))*100)/100)}</span></div>
+                <div className="flex justify-between"><span>Descuento por transferencia</span><span>{hasInvalidPrice ? "Pendiente" : `−${currencyFormatter.format(Math.round((subtotal-getWebTransferSubtotal(items))*100)/100)}`}</span></div>
                 <p>Envío: se define en el siguiente paso. Retiro sin cargo.</p>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
                   <span className="font-semibold">Productos por transferencia</span>
                   <span className="font-semibold text-[#003B73]">
-                    {currencyFormatter.format(getWebTransferSubtotal(items))}
+                    {hasInvalidPrice ? "Pendiente de consultar precio" : currencyFormatter.format(getWebTransferSubtotal(items))}
                   </span>
                 </div>
               </div>
@@ -186,12 +188,12 @@ export default function CartPage() {
                 Verificamos precios y disponibilidad al preparar el pedido. No transfieras hasta ver su total definitivo.
               </p>
 
-              <a
+              {hasInvalidPrice ? <p role="alert" className="mt-6 text-sm font-semibold">Consultá el precio o eliminá los productos sin precio válido para continuar.</p> : <a
                 href={checkoutHref}
                 className="mt-6 flex w-full items-center justify-center rounded-full bg-[#102033] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0072CE]"
               >
                 {checkoutLabel}
-              </a>
+              </a>}
               <a
                 href={publicCategoryPaths[items[items.length - 1]?.category ?? "perfumes"]}
                 className="mt-3 flex w-full items-center justify-center rounded-full border border-[#102033]/10 px-6 py-3.5 text-center text-sm font-semibold text-[#102033]/70 transition hover:border-[#0072CE] hover:text-[#0072CE]"

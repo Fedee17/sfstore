@@ -10,7 +10,7 @@ import * as components from '../lib/products/component-combos.ts';
 import * as webPricing from '../lib/web-transfer-pricing.ts';
 import * as storePricing from '../lib/store-sales.ts';
 const require=createRequire(import.meta.url);
-function load(file,modules={},globals={}){const output={};const code=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',...Object.keys(globals),code)(name=>Object.hasOwn(modules,name)?modules[name]:require(name),output,...Object.values(globals));return output;}
+function load(file,modules={},globals={}){const output={};const code=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',...Object.keys(globals),code)(name=>name==='@/lib/web-transfer-pricing'?require('../lib/web-transfer-pricing.ts'):Object.hasOwn(modules,name)?modules[name]:require(name),output,...Object.values(globals));return output;}
 const {parseCheckoutRequest}=load('lib/checkout/contract.ts');
 const memory=new Map(),storage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
 const {useCartStore,cartItemKey}=load('store/cart-store.ts',{'@/lib/products/component-combos':components},{localStorage:storage});

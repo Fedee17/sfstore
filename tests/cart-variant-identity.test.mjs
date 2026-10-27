@@ -12,7 +12,7 @@ import * as prices from '../lib/web-transfer-pricing.ts';
 const argentina={ARGENTINA_PROVINCES:['Provincia sintética']};
 const require=createRequire(import.meta.url);
 function load(file,modules={},globals={},append=''){
- modules={...analyticsRenderStubs,...modules};
+ modules={...analyticsRenderStubs,'@/lib/web-transfer-pricing':prices,...modules};
  const exports={}; const source=readFileSync(new URL('../'+file,import.meta.url),'utf8')+append;
  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
  new Function('require','exports',...Object.keys(globals),code)(n=>modules[n]??require(n),exports,...Object.values(globals)); return exports;

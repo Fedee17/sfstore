@@ -1,4 +1,10 @@
 // Public web pricing only. Stored transfer prices remain unchanged for internal workflows.
+// Reuse the monetary bounds/rounding below without treating a missing price as free.
+export function hasValidWebPrice(price: unknown): price is number {
+  if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) return false;
+  try { return getWebTransferPrice(price) > 0; } catch { return false; }
+}
+
 // Match PostgreSQL round(price * 0.75, 2) for nonnegative NUMERIC(12,2) prices.
 export function getWebTransferPrice(price: number): number {
   const cents = Math.round(price * 100);

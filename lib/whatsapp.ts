@@ -1,4 +1,5 @@
 import { brand } from "@/lib/brand";
+import { hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getTransferUnitPrice, type PaymentMethod } from "@/lib/pricing";
 import type { Product } from "@/types/product";
 
@@ -32,6 +33,9 @@ export function buildWhatsAppUrl(message: string) {
 }
 
 export function buildProductWhatsAppMessage(product: Product) {
+  if (!hasValidWebPrice(product.price)) {
+    return `Hola SFSTORE, quiero consultar el precio de ${product.name}. ¿Me lo confirmás?`;
+  }
   if (product.kind === "combo") {
     return [`Hola SFSTORE, quiero consultar por ${product.name}.`, "¿Me confirmás la disponibilidad y la compatibilidad de este conector con mi equipo?"].join("\n");
   }

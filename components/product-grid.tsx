@@ -3,7 +3,7 @@ import { publicationAvailable } from "@/lib/products/public-families";
 
 import { useState } from "react";
 import { formatSavingsLabel } from "@/lib/pricing";
-import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
 import type { PublicProduct } from "@/services/products";
 import { AddToCartButton } from "@/components/add-to-cart-button";
@@ -76,10 +76,10 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
     <div className="mt-10 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product) => {
         const isAvailable = publicationAvailable(product);
-        const showTransferPrice = product.price > 0;
-        const transferPrice = getWebTransferPrice(product.price);
+        const showTransferPrice = hasValidWebPrice(product.price);
+        const transferPrice = showTransferPrice ? getWebTransferPrice(product.price) : null;
         const savingsLabel = formatSavingsLabel(product.price, transferPrice);
-        const primaryPrice = showTransferPrice ? transferPrice : product.price;
+        const primaryPrice = transferPrice ?? product.price;
         const brand = getAttribute(product, "Marca");
 
         return (
@@ -135,16 +135,16 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
                   {priceMode === "compact" ? (
                     <div>
                       <p className="text-xs font-semibold text-[#003B73]">
-                        {showTransferPrice ? "Transferencia bancaria" : "Precio lista"}
+                        {showTransferPrice ? "Transferencia bancaria" : "Precio a confirmar"}
                       </p>
                       <p className="mt-1 break-words text-3xl font-semibold leading-tight text-[#102033]">
-                        {product.kind==="family"?"Desde ":""}{currencyFormatter.format(primaryPrice)}
+                        {showTransferPrice ? `${product.kind==="family"?"Desde ":""}${currencyFormatter.format(primaryPrice)}` : "Consultar precio"}
                       </p>
                       {showTransferPrice ? (
                         <p className="mt-2 text-sm text-[#526479]">Lista: {currencyFormatter.format(product.price)}</p>
                       ) : null}
                     </div>
-                  ) : showTransferPrice ? (
+                  ) : transferPrice !== null ? (
                     <div className="min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#EEF2F6] p-4">
                       <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
                         Transferencia bancaria
@@ -164,10 +164,10 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
                   ) : (
                     <div className="min-w-0 rounded-2xl border border-[#003B73]/10 bg-[#F7F9FC] p-4">
                       <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#102033]/45">
-                        Precio lista
+                        Precio a confirmar
                       </p>
                       <p className="mt-1 break-words text-3xl font-semibold text-[#102033]">
-                        {currencyFormatter.format(product.price)}
+                        Consultar precio
                       </p>
                     </div>
                   )}
@@ -176,7 +176,7 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
             </a>
 
             <div className="min-w-0 p-5 pt-5 sm:p-6 sm:pt-5">
-                {isAvailable ? (
+                {isAvailable || !showTransferPrice ? (
                   <div className="mt-5 grid min-w-0 gap-3">
                     {product.kind==="family"?<a href={`/producto/${product.slug}`} className="flex min-h-12 items-center justify-center rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white">Elegir variante</a>:<AddToCartButton product={product} />}
                     <a

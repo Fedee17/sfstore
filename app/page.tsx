@@ -4,7 +4,7 @@ import Link from "next/link";
 ﻿import type { Metadata } from "next";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
-import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getCatalogPublications, type PublicProduct } from "@/services/products";
 
@@ -126,6 +126,7 @@ function ProductVisual({
 }
 
 function SimplePrice({ product }: { product: PublicProduct }) {
+  if (!hasValidWebPrice(product.price)) return <p className="text-sm font-semibold text-[#003B73]">Precio a confirmar</p>;
   const price = getWebTransferPrice(product.price);
 
   return (

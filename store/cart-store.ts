@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import type { Product } from "@/types/product";
 import { commercialLineKey, componentPublicationSlug, fitsComponentInventory, type CableConnector } from "@/lib/products/component-combos";
 
@@ -24,6 +25,7 @@ export type CartItem = {
 };
 
 type CartState = {
+  invalidPriceNotice: boolean;
   items: CartItem[];
   totalItems: number;
   subtotal: number;
@@ -60,6 +62,7 @@ function calculateTotals(items: CartItem[]) {
 }
 
 function withTotals(items: CartItem[]) {
+  items = items.filter(item => hasValidWebPrice(item.price));
   return {
     items,
     ...calculateTotals(items),
@@ -71,13 +74,14 @@ function stockChecked(current: CartItem[], next: CartItem[]) { return withTotals
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
+      invalidPriceNotice: false,
       items: [],
       totalItems: 0,
       subtotal: 0,
       addCombo: (id, name, connector, price, version, head, cable, presentation) => {
         let added = false;
         set(state => {
-          if (!version || !Number.isFinite(price) || price <= 0 || head.id === cable.id) return state;
+          if (!version || !hasValidWebPrice(price) || !hasValidWebPrice(head.price) || !hasValidWebPrice(cable.price) || head.id === cable.id) return state;
           const key = commercialLineKey(id, connector), index = state.items.findIndex(i => cartItemKey(i) === key);
           const item: CartItem = { productId: id, name: `${name} · ${connector === "cc" ? "USB-C a USB-C" : "USB-C a Lightning"}`, slug: componentPublicationSlug(id, connector), category: head.category, price, quantity: (index < 0 ? 0 : state.items[index].quantity) + 1, stock: Math.min(head.stock, cable.stock), comboConnector: connector, comboPriceVersion: version, components: [head, cable].map(p => ({ productId: p.id, stock: p.stock })) };
           const items = state.items.map(i => ({ ...i }));
@@ -92,7 +96,7 @@ export const useCartStore = create<CartState>()(
         let added = false;
         set(state => {
           const products = [head, cable];
-          if (head.id === cable.id || products.some(p => (p.kind === "family" || p.kind === "combo") || p.price <= 0 || !Number.isSafeInteger(p.stock) || p.stock < (state.items.find(i => i.productId === p.id)?.quantity ?? 0) + 1)) return state;
+          if (head.id === cable.id || products.some(p => (p.kind === "family" || p.kind === "combo") || !hasValidWebPrice(p.price) || !Number.isSafeInteger(p.stock) || p.stock < (state.items.find(i => i.productId === p.id)?.quantity ?? 0) + 1)) return state;
           const items = state.items.map(i => ({ ...i }));
           for (const p of products) {
             const index = items.findIndex(i => i.productId === p.id);
@@ -107,6 +111,7 @@ export const useCartStore = create<CartState>()(
         return added;
       },
       addItem: (product) => {
+        if (!hasValidWebPrice(product.price)) return;
         if (product.kind === "combo") {
           const c = product.combo;
           if (c) get().addCombo(c.presentationId, "Cargador completo", c.connector, product.price, c.priceVersion, c.head, c.cable, product);
@@ -185,15 +190,21 @@ export const useCartStore = create<CartState>()(
               .filter((item) => item.quantity > 0),
           ),
         ),
-      clearCart: () => set({ items: [], totalItems: 0, subtotal: 0 }),
+      clearCart: () => set({ items: [], totalItems: 0, subtotal: 0, invalidPriceNotice: false }),
     }),
     {
       name: "sfstore-cart",
       version: 2,
       migrate: (persisted) => {
         const previous=persisted as {items?:CartItem[]};
-        const items=Array.isArray(previous?.items)?previous.items.filter(p=>typeof p.productId==="string"&&Number.isSafeInteger(p.quantity)&&p.quantity>0&&Number.isFinite(p.price)&&p.price>=0):[];
-        return withTotals(items);
+        const items=Array.isArray(previous?.items)?previous.items.filter(p=>p && typeof p.productId==="string"&&Number.isSafeInteger(p.quantity)&&p.quantity>0):[];
+        return { ...withTotals(items), invalidPriceNotice: items.some(item => !hasValidWebPrice(item.price)) };
+      },
+      // Runs for the CURRENT storage version too: migrate alone skips those carts.
+      merge: (persisted, current) => {
+        const previous = persisted as { items?: CartItem[]; invalidPriceNotice?: boolean } | undefined;
+        const rows = Array.isArray(previous?.items) ? previous.items.filter(item => item && typeof item.productId === "string" && Number.isSafeInteger(item.quantity) && item.quantity > 0) : [];
+        return { ...current, ...withTotals(rows), invalidPriceNotice: previous?.invalidPriceNotice === true || rows.some(item => !hasValidWebPrice(item.price)) };
       },
       storage: createJSONStorage(() => localStorage),
     },

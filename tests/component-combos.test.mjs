@@ -17,6 +17,7 @@ function compile(file){return ts.transpileModule(readFileSync(new URL(file,impor
 const memory=new Map();globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
 let storeJS=compile('../store/cart-store.ts');for(const m of ['zustand','zustand/middleware'])storeJS=storeJS.replace(JSON.stringify(m),JSON.stringify(pathToFileURL(require.resolve(m)).href));
 storeJS=storeJS.replace('"@/lib/products/component-combos"',JSON.stringify(new URL("../lib/products/component-combos.ts",import.meta.url).href));
+storeJS=storeJS.replace('"@/lib/web-transfer-pricing"',JSON.stringify(new URL("../lib/web-transfer-pricing.ts",import.meta.url).href));
 const {useCartStore}=await import(url(storeJS));
 const product=(id,stock=2,price=100)=>({id,stock,price,name:id,slug:id,category:'mates',featured:false,shortDescription:'SYNTHETIC',imagePlaceholder:'TEST'});
 test('actual cart adds both components, persists exact SKU and refuses incomplete additions',()=>{useCartStore.getState().clearCart();assert.equal(useCartStore.getState().addComponents(product('head',1),product('lightning',2)),true);const before=structuredClone(useCartStore.getState().items);assert.equal(useCartStore.getState().addComponents(product('head',1),product('cc',2)),false);assert.deepEqual(useCartStore.getState().items,before);assert.deepEqual(before.map(x=>x.productId),['head','lightning']);assert.equal(useCartStore.getState().addComponents(product('head',2),product('cc',1,0)),false);});

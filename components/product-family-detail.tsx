@@ -7,7 +7,7 @@ import Link from "next/link";
 import type { Product } from "@/types/product";
 import { publicCategoryPaths } from "@/lib/catalog/public-product-visibility";
 import { getFamilyRepresentativeImage } from "@/lib/products/family-presentation";
-import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { SiteHeader } from "@/components/site-header";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
@@ -25,7 +25,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
   const representative = getFamilyRepresentativeImage(product);
   const images = selected ? selected.images ?? [] : representative ? [representative.image] : [];
   const isColor = dimensions.length === 1 && dimensions[0].toLowerCase() === "color";
-  const price = selected?.price ?? product.price;
+  const price = selected ? selected.price : product.price;
 
   return <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
     <SiteHeader />
@@ -43,9 +43,9 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
         <div className="order-2 flex min-w-0 flex-col gap-3 lg:gap-4 lg:rounded-3xl lg:border lg:border-[#003B73]/20 lg:bg-white lg:p-6">
           <div aria-live="polite" aria-atomic="true" className="order-2 space-y-1 lg:order-1">
             {selected ? <p className="text-xs font-semibold text-[#003B73]">Precio de la variante elegida</p> : null}
-            <p data-testid="variant-transfer-price" className={`break-words font-bold ${selected ? "text-3xl" : "text-2xl lg:text-3xl"}`}>{selected ? "" : "Desde "}{money.format(getWebTransferPrice(price))}</p>
+            {hasValidWebPrice(price) ? <><p data-testid="variant-transfer-price" className={`break-words font-bold ${selected ? "text-3xl" : "text-2xl lg:text-3xl"}`}>{selected ? "" : "Desde "}{money.format(getWebTransferPrice(price))}</p>
             <p className="text-sm text-[#003B73]">Transferencia · 25% OFF · pago completo</p>
-            <p data-testid="variant-list-price" className="text-sm text-[#102033]/70">Precio de lista: {selected ? "" : "desde "}{money.format(price)}</p>
+            <p data-testid="variant-list-price" className="text-sm text-[#102033]/70">Precio de lista: {selected ? "" : "desde "}{money.format(price)}</p></> : <p className="font-semibold">Precio a confirmar</p>}
           </div>
           {dimensions.map(d => <fieldset key={d} className="order-1 min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#FFFDFA] px-3 pb-3 pt-1 lg:order-2">
             <legend className="mb-2 break-words px-1 font-semibold text-[#003B73]">{choices[d] ? `${d}: ${choices[d]}` : isColor ? "Elegí tu color" : `Elegí ${d.toLowerCase()}`}</legend>

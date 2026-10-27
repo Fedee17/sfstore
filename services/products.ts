@@ -1,7 +1,7 @@
 import { projectComponentPublications, type PublicComponentOfferRow } from "@/lib/products/component-publications";
 import { parseComponentPublicationSlug } from "@/lib/products/component-combos";
 import { groupPublicProducts } from "@/lib/products/public-families";
-import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { products as fallbackProducts } from "@/data/products";
 import {
   resolvePublicCatalogSection,
@@ -119,7 +119,7 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
     slug: row.slug,
     category: publicCategory,
     price: Number(row.price),
-    transferPrice: getWebTransferPrice(Number(row.price)),
+    transferPrice: hasValidWebPrice(Number(row.price)) ? getWebTransferPrice(Number(row.price)) : null,
     stock: row.stock,
     featured: row.featured,
     shortDescription: row.short_description,

@@ -11,7 +11,7 @@ import * as combo from '../lib/products/component-combos.ts';
 import * as pricing from '../lib/store-sales.ts';
 const require=createRequire(import.meta.url);
 const source=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
-function load(f,modules={},globals={}){const out={};const code=ts.transpileModule(source(f),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;new Function('require','exports',...Object.keys(globals),code)(n=>Object.hasOwn(modules,n)?modules[n]:require(n),out,...Object.values(globals));return out;}
+function load(f,modules={},globals={}){const out={};const code=ts.transpileModule(source(f),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;new Function('require','exports',...Object.keys(globals),code)(n=>n==='@/lib/web-transfer-pricing'?require('../lib/web-transfer-pricing.ts'):Object.hasOwn(modules,n)?modules[n]:require(n),out,...Object.values(globals));return out;}
 const id='11111111-1111-4111-8111-111111111111',rid='22222222-2222-4222-8222-222222222222';
 const physical=[['head','Cabezal iPhone',22000],['cc','Cable USB-C a USB-C',15800],['lightning','Cable USB-C a Lightning',15800]].map(([id,name,price])=>({id,name,price,slug:id,stock:id==='head'?2:10,kind:'simple',category:'mates',categoryId:'category',featured:false,shortDescription:'SYNTHETIC',imagePlaceholder:'SY'}));
 const offers=['cc','lightning'].map(connector=>({id:rid,name:'SYNTHETIC RECIPE',connector,presentation_product:id,head_slug:'head',cable_slug:connector,combo_list_price:'30666.67',combo_transfer_price:'23000.00',price_version:'v1'}));

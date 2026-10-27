@@ -175,7 +175,7 @@ export async function POST(request:Request){try{
   });
   // Exercise the real Zustand cart and serializer; no browser or desktop automation.
   const require=createRequire(import.meta.url),memory=new Map(),storage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
-  function load(file,modules,globals){const out={},code=ts.transpileModule(read(file),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',...Object.keys(globals),code)(n=>Object.hasOwn(modules,n)?modules[n]:require(n),out,...Object.values(globals));return out;}
+  function load(file,modules,globals){const out={},code=ts.transpileModule(read(file),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',...Object.keys(globals),code)(n=>n==='@/lib/web-transfer-pricing'?require('../lib/web-transfer-pricing.ts'):Object.hasOwn(modules,n)?modules[n]:require(n),out,...Object.values(globals));return out;}
   const {useCartStore}=load('store/cart-store.ts',{'@/lib/products/component-combos':componentHelpers},{localStorage:storage});
   const {createOrderFromCheckout}=load('services/orders.ts',{}, {sessionStorage:storage,fetch:(url,options)=>fetch(base+url,{...options,headers:{...options.headers,origin:base,cookie:buyer.cookie}})});
   const offers=(await probe({op:'offers',head:f.head})).data;
