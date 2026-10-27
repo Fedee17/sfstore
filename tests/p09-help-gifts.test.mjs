@@ -17,6 +17,8 @@ const modules = {
   '@/lib/whatsapp': { buildWhatsAppUrl: message => `https://wa.me/5490000000000?text=${encodeURIComponent(message)}` },
   '@/lib/web-transfer-pricing': { getWebTransferPrice: () => { throw Error('No prices needed for this content test'); } },
   '@/services/products': { getCatalogPublications: async () => [] },
+  '@/lib/catalog/home-selection': { getHomeFeaturedProducts: () => [] },
+  '@/lib/products/public-families': { publicationAvailable: () => false },
 };
 function load(file) {
   const exports = {};
@@ -64,18 +66,18 @@ test('gift help keeps browsing internal and explicitly identifies the external W
   assert.equal((html.match(/<summary /g) ?? []).length, 8);
 });
 
-test('home gifts offers three separate actions without a nested link or changing other category destinations', async () => {
+test('home gifts keeps browsing and WhatsApp actions in the single consolidated section', async () => {
   const page = await load('app/page.tsx')();
   const html = renderToStaticMarkup(page);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-  assert.match(html, /<h1 class="sr-only">Perfumes, mates y regalos importados<\/h1>/);
-  const gift = (html.match(/<article\b[\s\S]*?<\/article>/g) ?? []).find(article => article.includes('Elegí con ayuda o a tu manera'));
+  assert.match(html, /<h1 class="sr-only">Perfumes árabes, mates y regalos<\/h1>/);
+  const gift = (html.match(/<section\b[\s\S]*?<\/section>/g) ?? []).find(section => section.includes('id="gifts-title"'));
   assert.ok(gift);
-  assert.equal((gift.match(/<a /g) ?? []).length, 3);
+  assert.equal((gift.match(/<a /g) ?? []).length, 4);
   assert.match(gift, /href="\/perfumes"/);
   assert.match(gift, /href="\/mates"/);
   assert.match(gift, /href="https:\/\/wa\.me\//);
-  assert.match(gift, /Abre WhatsApp en una pestaña nueva/);
+  assert.match(gift, /abre WhatsApp en una pestaña nueva/);
   assert.doesNotMatch(gift, /<a\b[^>]*>(?:(?!<\/a>)[\s\S])*<a\b/);
   for (const path of ['/perfumes', '/mates', '/accesorios']) assert.ok(html.includes(`href="${path}"`));
   assert.match(html, /Ver perfumes para regalar/);

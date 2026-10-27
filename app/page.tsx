@@ -1,27 +1,28 @@
 import { connection } from "next/server";
-import type { ReactNode } from "react";
 import Link from "next/link";
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
 import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { getHomeFeaturedProducts } from "@/lib/catalog/home-selection";
+import { publicationAvailable } from "@/lib/products/public-families";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getCatalogPublications, type PublicProduct } from "@/services/products";
 
 export const metadata: Metadata = {
-  title: "Perfumes, mates y regalos importados",
+  title: "Perfumes árabes, mates y regalos",
   description:
-    "Elegí perfumes importados, perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
+    "Elegí perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
   openGraph: {
-    title: "Perfumes, mates y regalos importados",
+    title: "Perfumes árabes, mates y regalos",
     description:
-      "Elegí perfumes importados, perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
+      "Elegí perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
     url: "/",
   },
   twitter: {
-    title: "Perfumes, mates y regalos importados",
+    title: "Perfumes árabes, mates y regalos",
     description:
-      "Elegí perfumes importados, perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
+      "Elegí perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
   },
 };
 
@@ -69,11 +70,6 @@ function getFirstVisualProduct(products: PublicProduct[]) {
 }
 
 
-function getHomeFeaturedProducts(products: PublicProduct[]) {
-  const featured = products.filter((product) => product.featured);
-  return (featured.length > 0 ? featured : products).slice(0, 6);
-}
-
 function ProductVisual({
   product,
   label,
@@ -87,40 +83,21 @@ function ProductVisual({
 }) {
   if (product?.primaryImageUrl) {
     return (
-      <div className={`relative min-w-0 overflow-hidden rounded-[1.5rem] bg-[#102033] ${className}`}>
+      <div className={`relative min-w-0 overflow-hidden rounded-[1.5rem] bg-white ${className}`}>
         <img
           src={product.primaryImageUrl}
           alt={product.primaryImageAlt ?? product.name}
           loading={loading}
-          className="h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
         />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#102033]/90 via-[#102033]/45 to-transparent p-4 text-white">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/75">
-            {label}
-          </p>
-          <p className="mt-1 line-clamp-2 break-words text-sm font-semibold">
-            {product.name}
-          </p>
-        </div>
+
       </div>
     );
   }
 
   return (
-    <div
-      className={`flex min-w-0 flex-col justify-between overflow-hidden rounded-[1.5rem] border border-[#003B73]/15 bg-[#F7F9FC] p-5 ${className}`}
-    >
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-          {label}
-        </p>
-        <p className="mt-3 break-words text-3xl font-semibold text-[#102033]">
-          {product?.imagePlaceholder ?? "SF"}
-        </p>
-      </div>
-      <p className="mt-8 break-words text-sm leading-6 text-[#102033]/65">
-        {product?.name ?? "Selección SFSTORE"}
-      </p>
+    <div role="img" aria-label={`Imagen no disponible de ${product?.name ?? label}`} className={`flex min-w-0 items-center justify-center overflow-hidden rounded-[1.5rem] border border-[#003B73]/15 bg-[#F7F9FC] text-2xl font-semibold text-[#003B73] ${className}`}>
+      <span aria-hidden="true">{product?.imagePlaceholder ?? "SF"}</span>
     </div>
   );
 }
@@ -134,7 +111,7 @@ function SimplePrice({ product }: { product: PublicProduct }) {
       <p className="text-xs font-semibold text-[#003B73]">
         Transferencia bancaria
       </p>
-      <p className="mt-1 break-words text-2xl font-semibold text-[#102033]">
+      <p className="mt-1 break-words text-lg font-semibold text-[#102033] sm:text-2xl">
         {formatCurrency(price)}
       </p>
     </div>
@@ -171,15 +148,15 @@ function BenefitIcon({ type }: { type: (typeof benefits)[number]["icon"] }) {
 
 function BenefitCard({ benefit }: { benefit: (typeof benefits)[number] }) {
   return (
-    <article className="flex min-w-0 gap-4 rounded-3xl border border-[#003B73]/15 bg-white/75 p-5 shadow-sm">
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0072CE]/10 text-[#0072CE]">
+    <article className="flex min-w-0 gap-3 rounded-2xl border border-[#003B73]/15 bg-white/75 p-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#0072CE]/10 text-[#0072CE]">
         <BenefitIcon type={benefit.icon} />
       </div>
       <div className="min-w-0">
         <h3 className="break-words text-base font-semibold text-[#102033]">
           {benefit.title}
         </h3>
-        <p className="mt-1 break-words text-sm leading-6 text-[#102033]/60">
+        <p className="mt-1 break-words text-xs leading-5 text-[#526479]">
           {benefit.description}
         </p>
       </div>
@@ -187,88 +164,17 @@ function BenefitCard({ benefit }: { benefit: (typeof benefits)[number] }) {
   );
 }
 
-function CategoryCard({
-  href,
-  title,
-  eyebrow,
-  description,
-  product,
-  tone,
-  isExternal = false,
-  actions,
-}: {
-  href?: string;
-  title: string;
-  eyebrow: string;
-  description: string;
-  product?: PublicProduct | null;
-  tone: "olive" | "leather" | "cream" | "dark";
-  isExternal?: boolean;
-  actions?: ReactNode;
+function CategoryCard({ href, title, description, product }: {
+  href: string; title: string; description: string; product?: PublicProduct | null;
 }) {
-  const toneClasses = {
-    olive: "border-[#0072CE]/20 bg-[#0072CE]/10 text-[#0072CE]",
-    leather: "border-[#003B73]/20 bg-[#EEF2F6] text-[#003B73]",
-    cream: "border-[#DCE3EA]/45 bg-[#F7F9FC] text-[#003B73]",
-    dark: "border-[#102033]/15 bg-[#102033] text-white",
-  }[tone];
-  const content = (
-    <>
-      <ProductVisual product={product} label={eyebrow} className="aspect-[4/3]" />
-      <div className="min-w-0 px-1 pb-1">
-        <p className="text-sm font-semibold uppercase tracking-[0.12em]">{eyebrow}</p>
-        <h3 className={`mt-3 break-words text-2xl font-semibold ${tone === "dark" ? "text-white" : "text-[#102033]"}`}>
-          {title}
-        </h3>
-        <p className={`mt-3 break-words text-sm leading-6 ${tone === "dark" ? "text-white/70" : "text-[#102033]/65"}`}>
-          {description}
-        </p>
+  return (
+    <Link href={href} className="group grid min-w-0 grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border border-[#003B73]/15 bg-white/75 p-3 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE] sm:grid-cols-1 sm:p-4">
+      <ProductVisual product={product} label={title} className="aspect-square sm:aspect-[4/3]" />
+      <div className="min-w-0 sm:px-1 sm:pb-1">
+        <h3 className="text-lg font-semibold text-[#102033] sm:text-xl">{title}</h3>
+        <p className="mt-1 text-sm leading-6 text-[#526479]">{description}</p>
       </div>
-    </>
-  );
-
-  if (!href) {
-    return (
-      <article className={`grid min-w-0 gap-5 overflow-hidden rounded-3xl border p-4 sm:p-5 ${toneClasses}`}>
-        {content}
-        {actions}
-      </article>
-    );
-  }
-
-  return (
-    <a
-      href={href}
-      target={isExternal ? "_blank" : undefined}
-      rel={isExternal ? "noreferrer" : undefined}
-      className={`group grid min-w-0 gap-5 overflow-hidden rounded-3xl border p-4 transition hover:-translate-y-1 hover:bg-white/80 sm:p-5 ${toneClasses}`}
-    >
-      {content}
-    </a>
-  );
-}
-
-function GuideCard({
-  label,
-  title,
-  description,
-}: {
-  label: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <article className="min-w-0 rounded-3xl border border-[#003B73]/15 bg-white/70 p-5 shadow-sm">
-      <span className="inline-flex rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
-        {label}
-      </span>
-      <h3 className="mt-5 break-words text-xl font-semibold text-[#102033]">
-        {title}
-      </h3>
-      <p className="mt-3 break-words text-sm leading-6 text-[#102033]/65">
-        {description}
-      </p>
-    </article>
+    </Link>
   );
 }
 
@@ -279,7 +185,8 @@ export default async function Home() {
   const mates = allProducts.filter(product => product.category === "mates");
   const featuredProducts = getHomeFeaturedProducts(allProducts);
   const perfumeVisual = getFirstVisualProduct(perfumes);
-  const mateVisual = getFirstVisualProduct(mates);
+  const mateVisual = getFirstVisualProduct(mates.filter(product => /mate|termo/i.test(product.name)));
+  const decantVisual = getFirstVisualProduct(perfumes.filter(product => /\bdecant\b/i.test(product.name)));
   const giftWhatsAppLink = buildWhatsAppUrl(
     "Hola SFSTORE, quiero armar un regalo y necesito ayuda para elegir.",
   );
@@ -288,20 +195,18 @@ export default async function Home() {
   );
   const heroSlides: HomeHeroSlide[] = [
     {
-      imageSrc: "/home-banner-perfumes.png",
-      imageAlt: "Perfumes importados y árabes de SFSTORE",
+      // No hero photograph is selected until the owner approves the real asset.
       title: "Perfumes para hacer sentir presencia",
-      subtitle: "Importados, árabes y decants para probar antes de comprar.",
-      primaryCtaLabel: "Ver perfumes",
+      subtitle: "Perfumes árabes y decants para descubrir tu próxima fragancia.",
+      primaryCtaLabel: "Ver perfumes árabes",
       primaryCtaHref: "/perfumes",
       secondaryCtaLabel: "Consultar",
       secondaryCtaHref: generalWhatsAppLink,
     },
     {
-      imageSrc: "/home-banner-mates.png",
-      imageAlt: "Mates, termos y accesorios de SFSTORE",
+
       title: "Todo para tu mate",
-      subtitle: "Mates, termos y regalos personalizados.",
+      subtitle: "Mates, termos y accesorios para disfrutar o regalar.",
       primaryCtaLabel: "Ver mates",
       primaryCtaHref: "/mates",
       secondaryCtaLabel: "Pedir recomendación",
@@ -313,20 +218,29 @@ export default async function Home() {
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <SiteHeader />
 
-      <h1 className="sr-only">Perfumes, mates y regalos importados</h1>
+      <h1 className="sr-only">Perfumes árabes, mates y regalos</h1>
 
       <HomeHeroSlider slides={heroSlides} />
 
 
-      <section className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-8">
-        <div className="grid gap-4 md:grid-cols-3">
+      <section className="mx-auto max-w-6xl px-5 py-3 sm:px-8 lg:py-4">
+        <div className="grid gap-2 md:grid-cols-3">
           {benefits.map((benefit) => (
             <BenefitCard key={benefit.title} benefit={benefit} />
           ))}
         </div>
       </section>
 
-      <section id="productos" className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-14">
+      <section id="explorar" className="mx-auto max-w-6xl px-5 py-5 sm:px-8 lg:py-8" aria-labelledby="explore-title">
+        <h2 id="explore-title" className="text-2xl font-semibold sm:text-3xl">¿Qué estás buscando?</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." product={perfumeVisual} />
+          <CategoryCard href="/buscar?buscar=decant" title="Decants" description="Probá antes de elegir." product={decantVisual} />
+          <CategoryCard href="/mates" title="Mates y termos" description="Para tu ritual o para regalar." product={mateVisual} />
+        </div>
+      </section>
+
+      <section id="productos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10">
         <div className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
@@ -342,7 +256,7 @@ export default async function Home() {
         </div>
 
         {featuredProducts.length > 0 ? (
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
             {featuredProducts.map((product) => (
               <article
                 key={product.id}
@@ -355,23 +269,24 @@ export default async function Home() {
                     className="aspect-[4/3] rounded-b-none"
                   />
                 </a>
-                <div className="flex min-w-0 flex-1 flex-col justify-between p-5 sm:p-6">
+                <div className="flex min-w-0 flex-1 flex-col justify-between p-3 sm:p-5">
                   <div className="min-w-0">
                     <span className="rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold text-[#0072CE]">
                       {getCategoryLabel(product)}
                     </span>
-                    <h3 className="mt-5 line-clamp-2 break-words text-2xl font-semibold text-[#102033]">
+                    <h3 className="mt-3 line-clamp-2 break-words text-base sm:text-xl font-semibold text-[#102033]">
                       {product.name}
                     </h3>
-                    <p className="mt-4 line-clamp-3 break-words text-sm leading-6 text-[#102033]/65">
+                    <p className="mt-2 line-clamp-2 break-words text-sm leading-6 text-[#102033]/65">
                       {product.shortDescription}
                     </p>
                   </div>
-                  <div className="mt-7 flex min-w-0 flex-col gap-4 border-t border-[#003B73]/15 pt-5">
+                  <div className="mt-4 flex min-w-0 flex-col gap-4 border-t border-[#003B73]/15 pt-3">
+                    <p className="text-xs font-semibold text-[#526479]">{publicationAvailable(product) ? "En stock" : "Agotado · consultar"}</p>
                     <SimplePrice product={product} />
                     <a
                       href={`/producto/${product.slug}`}
-                      className="rounded-full bg-[#102033] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#0072CE]"
+                      className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#102033] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#0072CE]"
                     >
                       Ver producto
                     </a>
@@ -389,129 +304,36 @@ export default async function Home() {
         )}
       </section>
 
-      <section id="explorar" className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-14">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-            Categorías principales
-          </p>
-          <h2 className="mt-3 break-words text-3xl font-semibold sm:text-4xl">
-            Elegí por lo que estás buscando
-          </h2>
-        </div>
-
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <CategoryCard
-            href="/perfumes"
-            eyebrow="Perfumes"
-            title="Aromas con presencia"
-            description="Aromas dulces, frescos, intensos y elegantes."
-            product={perfumeVisual}
-            tone="olive"
-          />
-          <CategoryCard
-            href="/mates"
-            eyebrow="Mates y termos"
-            title="Para tu ritual"
-            description="Para disfrutar todos los días o regalar bien."
-            product={mateVisual}
-            tone="leather"
-          />
-          <CategoryCard
-            eyebrow="Regalos"
-            title="Elegí con ayuda o a tu manera"
-            description="Explorá perfumes y mates para regalar, o consultanos por WhatsApp."
-            product={featuredProducts[2] ?? featuredProducts[0] ?? perfumeVisual}
-            tone="cream"
-            actions={<div className="grid min-w-0 gap-3">
-              <a href={giftWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#0072CE] px-4 py-3 text-center text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></a>
-              <p className="text-xs leading-5 text-[#526479]">Abre WhatsApp en una pestaña nueva.</p>
-              <Link href="/perfumes" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#003B73]/30 px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Explorar Perfumes</Link>
-              <Link href="/mates" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#003B73]/30 px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Explorar Mates</Link>
-            </div>}
-          />
-          <CategoryCard
-            href="/accesorios"
-            eyebrow="Accesorios"
-            title="Completá la compra"
-            description="Detalles útiles para sumar a tu pedido."
-            product={null}
-            tone="dark"
-          />
+      <section className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="decants-title">
+        <div className="grid gap-5 rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-5 sm:p-7 lg:grid-cols-[1fr_0.65fr] lg:items-center">
+          <div>
+            <p className="text-sm font-semibold text-[#003B73]">Decants de perfumes árabes</p>
+            <h2 id="decants-title" className="mt-2 text-2xl font-semibold sm:text-3xl">Probá, conocé, elegí con confianza</h2>
+            <p className="mt-3 text-sm leading-6 text-[#526479]">Explorá las presentaciones disponibles antes de elegir tu próximo perfume.</p>
+            <Link href="/buscar?buscar=decant" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver decants</Link>
+          </div>
+          {decantVisual?.primaryImageUrl ? <ProductVisual product={decantVisual} label="Decants" className="aspect-[4/3] max-h-64" /> : null}
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-14">
-        <div className="grid gap-8 rounded-[2rem] border border-[#003B73]/15 bg-white/60 p-6 shadow-sm sm:p-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-              Venta guiada
-            </p>
-            <h2 className="mt-3 break-words text-3xl font-semibold sm:text-4xl">
-              Te ayudamos a elegir
-            </h2>
-            <p className="mt-4 break-words text-sm leading-6 text-[#102033]/65">
-              Contanos qué buscás y te recomendamos opciones concretas.
-            </p>
-            <a
-              href={generalWhatsAppLink}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 inline-flex rounded-full bg-[#0072CE] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#003B73]"
-            >
-              Consultar por WhatsApp
-            </a>
+      <section id="regalos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="gifts-title">
+        <div className="rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-5 sm:p-7">
+          <h2 id="gifts-title" className="text-2xl font-semibold sm:text-3xl">Elegí un regalo a tu manera</h2>
+          <p className="mt-3 text-sm leading-6 text-[#526479]">Explorá opciones o pedinos ayuda para elegir según sus gustos y tu presupuesto.</p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link href="/perfumes" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver perfumes para regalar</Link>
+            <Link href="/mates" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver mates para regalar</Link>
+            <Link href="/accesorios" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver accesorios y cargadores</Link>
+            <a href={giftWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></a>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <GuideCard
-              label="Gustos"
-              title="Según tu estilo"
-              description="Dulce, fresco, intenso, sobrio o llamativo: afinamos la búsqueda."
-            />
-            <GuideCard
-              label="Presupuesto"
-              title="Sin comprar a ciegas"
-              description="Probá antes con decants y elegí mejor antes del frasco grande."
-            />
-            <GuideCard
-              label="Ocasión"
-              title="Regalos con presencia"
-              description="Armamos opciones lindas, útiles y fáciles de entregar."
-            />
-          </div>
+          <p className="mt-3 text-xs leading-5 text-[#526479]">«Consultar regalos» abre WhatsApp en una pestaña nueva.</p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 pb-16 pt-4 sm:px-8 lg:pb-24">
-        <div className="grid gap-6 overflow-hidden rounded-[2rem] bg-[#102033] p-6 text-white shadow-2xl shadow-[#102033]/10 sm:p-8 lg:grid-cols-[1fr_0.75fr] lg:items-center">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#DCE3EA]">
-              Regalos que no fallan
-            </p>
-            <h2 className="mt-3 break-words text-3xl font-semibold sm:text-4xl">
-              Perfume, mate o combo pensado para quedar bien
-            </h2>
-            <p className="mt-4 max-w-2xl break-words text-sm leading-6 text-white/70">
-              Contanos para quién es, qué presupuesto tenés y si buscás algo clásico, llamativo o útil. Te pasamos opciones concretas.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <a
-              href={giftWhatsAppLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="min-h-11 rounded-full bg-[#F7F9FC] px-6 py-3 text-center text-sm font-semibold text-[#102033] transition hover:bg-[#DCE3EA] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-            >
-              Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span>
-            </a>
-            <a
-              href="/perfumes"
-              className="rounded-full border border-[#F7F9FC]/25 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#F7F9FC]/10"
-            >
-              Ver perfumes para regalar
-            </a>
-            <a href="/mates" className="min-h-11 rounded-full border border-[#F7F9FC]/25 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#F7F9FC]/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Ver mates para regalar</a>
-            <p className="text-center text-xs leading-5 text-white/70 sm:col-span-2 lg:col-span-1">«Consultar regalos» abre WhatsApp en una pestaña nueva.</p>
-          </div>
+      <section className="mx-auto max-w-6xl px-5 pb-16 pt-4 sm:px-8" aria-labelledby="advice-title">
+        <div className="flex flex-col gap-4 rounded-3xl bg-[#102033] p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-7">
+          <div><h2 id="advice-title" className="text-xl font-semibold">¿No sabés qué elegir?</h2><p className="mt-2 text-sm text-white/85">Te asesoramos por WhatsApp.</p></div>
+          <a href={generalWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#102033] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Consultar por WhatsApp<span className="sr-only">, abre una pestaña nueva</span></a>
         </div>
       </section>
     </main>

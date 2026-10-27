@@ -16,12 +16,12 @@ Actualizado: 27/10/2026 (Argentina). **Única fuente de continuidad mutable**, n
 
 ## Trabajo actual y siguiente paso
 
-- **P07 disponibles primero: publicado y verificado** en el SHA exacto autorizado `ec28135de1ffeb6e2b9516d58339659e94e5913b`, que integra el candidato funcional `6080b36` y la reorganización documental. Rama `codex/progressive-context-20261027`.
-- Alcance: cuatro listados; disponibles → agotados, luego destacado → nombre → ID. Inicio/relacionados y contratos comerciales intactos.
-- Evidencia: 38 pruebas afectadas, build, TypeScript y ESLint previos aprobados; nuevo build real READY, revisión protegida/pública móvil y notebook, filtros, agotados, familia sin selección automática, ambos combos y Consultar precio. Carrito/checkout: Gris + combo C/C = $58.000 por transferencia; sin pedidos ni formularios enviados; carrito local vaciado. [Cierre en sección 9](SFSTORE-PLAN-MEJORA-CONTINUA.md#p07--disponibles-primero-publicación-controlada-del-27102026).
-- **Bloqueos del corte:** ninguno. Automatic restaurado; un registro automático CANCELED fue el resultado esperado del bloqueo, sin reemplazar el dominio.
-- **Próximo paso:** esperar el siguiente encargo desde la sección 9; decants y orden por precio siguen pendientes por separado. No publicar automáticamente.
-- **Seguimiento:** cierre documental posterior separado localmente, sin push ni deployment adicional. `985975f` y `078bb0d` ya integrados en main/Production mediante la cadena autorizada. `071633e` excluido.
+- **Tarea activa: primera versión local del inicio**, reorganización P07/P02/P09 aprobada por el propietario. Rama `codex/home-discovery-20261027`, basada en `d237bc9`, que se conserva íntegro y sin publicar su cierre por separado.
+- Alcance: categorías antes de destacados, comunicación de perfumes árabes, hero con título conservado y foto opcional aún sin elegir, beneficios compactos, selección existente de destacados priorizando disponibilidad/foto, Decants por búsqueda existente, regalos/asesoramiento consolidados. Header, identidad, datos, carrito y checkout intactos.
+- Validación: 12 pruebas afectadas aprobadas sin skips; revisión local a 390×844 y 1366×900, overflow también a 320 px, teclado/foco y enlace Decants correctos. ESLint sin errores con dos advertencias img. Build definitivo y TypeScript del build aprobados; evidencia en [último avance de sección 9](SFSTORE-PLAN-MEJORA-CONTINUA.md#p07--p02--p09--inicio-orientado-a-descubrimiento-primera-versión-local-del-27102026).
+- **Pendientes:** aprobación visual y selección de fotografía real del hero; ningún bloqueo de datos exige tocar Production. Revalidar encuadre móvil al elegirla. No hay autorización de publicación del inicio.
+- **Próximo paso:** revisión del propietario de las capturas locales. No publicar ni continuar otra tarea automáticamente.
+- **Estado cerrado:** P07 Disponibles primero ya publicado en ec28135, no repetir sus pruebas/implementación. Production/main y Vercel permanecen según la tabla anterior; no se consultaron ni modificaron durante esta implementación. `071633e` sigue excluido.
 
 ## Cómo retomar sin confundir checkouts
 

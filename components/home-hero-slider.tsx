@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 export type HomeHeroSlide = {
-  imageSrc: string;
-  imageAlt: string;
+  imageSrc?: string;
+  imageAlt?: string;
   title: string;
   subtitle: string;
   primaryCtaLabel: string;
@@ -28,27 +28,33 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
 
 
 
+  const hasImage = Boolean(activeSlide.imageSrc && activeSlide.imageAlt);
+
   return (
-    <section className="mx-auto max-w-6xl px-5 pb-8 pt-6 sm:px-8 lg:pb-10 lg:pt-10">
+    <section className="mx-auto max-w-6xl px-5 pb-3 pt-5 sm:px-8 lg:pb-4 lg:pt-8">
       <div className="min-w-0">
         <a
           href={activeSlide.primaryCtaHref}
           aria-label={activeSlide.primaryCtaLabel}
           className="block min-w-0 overflow-hidden rounded-[2rem] border border-[#DCE3EA] bg-white shadow-2xl shadow-[#102033]/10 outline-none transition hover:shadow-[#102033]/15 focus-visible:ring-2 focus-visible:ring-[#0072CE] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F9FC]"
         >
-          <div className="flex min-h-56 flex-col justify-center gap-4 bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)] p-6 sm:min-h-80 sm:p-12">
-            <h2 className="max-w-2xl text-3xl font-semibold text-[#102033] sm:text-5xl">{activeSlide.title}</h2>
-            <p className="max-w-xl text-base text-[#102033]/75">{activeSlide.subtitle}</p>
-            <p className="font-semibold text-[#003B73]">25% OFF por transferencia · pago completo</p>
-            <span className="w-fit rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white">{activeSlide.primaryCtaLabel}</span>
+          <div className={`grid bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)] ${hasImage ? "sm:grid-cols-2" : ""}`}>
+            <div className="flex flex-col justify-center gap-3 p-5 sm:p-8">
+              <h2 className="max-w-2xl text-3xl font-semibold text-[#102033] sm:text-5xl">{activeSlide.title}</h2>
+              <p className="max-w-xl text-base text-[#102033]/75">{activeSlide.subtitle}</p>
+              <span className="w-fit rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white">{activeSlide.primaryCtaLabel}</span>
+            </div>
+            {hasImage ? (
+              <img src={activeSlide.imageSrc} alt={activeSlide.imageAlt} loading="eager" className="aspect-[4/3] h-full max-h-96 w-full object-contain" />
+            ) : null}
           </div>
         </a>
 
         {slides.length > 1 ? (
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="mt-1 flex items-center justify-center gap-2">
             {slides.map((slide, index) => (
               <button
-                key={slide.imageSrc}
+                key={`${slide.primaryCtaHref}-${index}`}
                 type="button"
                 aria-label={`Ver banner ${index + 1}: ${slide.title}`}
                 aria-current={index === activeIndex ? "true" : undefined}

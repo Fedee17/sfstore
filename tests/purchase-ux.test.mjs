@@ -7,6 +7,7 @@ import React from 'react';
 import * as jsx from 'react/jsx-runtime';
 import {renderToStaticMarkup} from 'react-dom/server';
 import * as prices from '../lib/web-transfer-pricing.ts';
+import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import * as categories from '../lib/catalog/public-product-visibility.ts';
 const require=createRequire(import.meta.url);
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
@@ -14,7 +15,7 @@ function load(f,modules){const out={};new Function('require','exports',ts.transp
 const items=['cc','lightning'].map(connector=>({productId:'synthetic',comboConnector:connector,name:'Cargador '+connector,slug:connector,category:'accesorios',price:30666.67,quantity:1,stock:2}));
 const store={useCartStore:()=>({items,totalItems:2,subtotal:61333.34}),cartItemKey:i=>i.comboConnector};
 const hooks={...React,useState:v=>[v,()=>{}],useRef:()=>({current:null}),useEffect:()=>{}};
-const modules={'react':hooks,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:({item})=>React.createElement('span',null,item.name)},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':store,'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'}};
+const modules={...analyticsRenderStubs,'react':hooks,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:({item})=>React.createElement('span',null,item.name)},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':store,'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'}};
 
 test('cart labels list, discount and transfer subtotal without applying the discount twice',()=>{
  const Cart=load('app/carrito/page.tsx',modules).default;
@@ -34,9 +35,9 @@ test('checkout line totals and pickup summary use the same unit-rounded transfer
  assert.equal(prices.getWebTransferSubtotal([{price:30666.67,quantity:3}]),69000);
  assert.equal(prices.getWebTransferSubtotal([{price:100,quantity:2}]),150);
 });
-test('home hero renders verified payment copy instead of raster installment advertisements',()=>{
+test('home hero does not render an unapproved raster advertisement or duplicate payment conditions',()=>{
  const Hero=load('components/home-hero-slider.tsx',modules).HomeHeroSlider;
  const html=renderToStaticMarkup(React.createElement(Hero,{slides:[{imageSrc:'/old-ad.png',title:'Perfumes',subtitle:'Elegí tu perfume',primaryCtaLabel:'Ver perfumes',primaryCtaHref:'/perfumes'}]}));
- assert.match(html,/25% OFF por transferencia/);assert.match(html,/pago completo/);
+ assert.doesNotMatch(html,/25% OFF por transferencia|pago completo/);
  assert.doesNotMatch(html,/<img|cuotas|old-ad/);
 });
