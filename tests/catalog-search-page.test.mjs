@@ -13,6 +13,8 @@ import * as families from '../lib/products/public-families.ts';
 import * as pricing from '../lib/web-transfer-pricing.ts';
 import * as visibility from '../lib/catalog/public-product-visibility.ts';
 import * as yara from '../lib/products/yara-rosa-consolidation.ts';
+import * as availability from '../lib/catalog/availability-order.ts';
+import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import { publicRows, publicOffers, invalidRows, filterFixtureRows } from './fixtures/search-public-catalog.mjs';
 
 const require = createRequire(import.meta.url);
@@ -49,8 +51,10 @@ function harness({ rows = publicRows, offers = publicOffers, fail = false } = {}
   });
   let result;
   const Page = load('app/buscar/page.tsx', {
+    ...analyticsRenderStubs,
     'react/jsx-runtime': jsx, 'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
     '@/components/site-header': { SiteHeader: () => null }, '@/lib/catalog/search': search, '@/services/products': service,
+    '@/lib/catalog/availability-order': availability,
     '@/components/product-grid': { ProductGrid: ({ products }) => { result = products; return React.createElement('div', null, ...products.map(p => React.createElement('a', { key: p.id, href: '/producto/' + p.slug }, p.name))); } },
   }).default;
   return { calls, service, async query(buscar) {
@@ -133,4 +137,17 @@ test('catalog searches do not mutate prices, inventory, offers or fixture data',
   const h = harness();
   await h.query('cargador'); await h.query(' '); await h.query('cable');
   assert.equal(JSON.stringify({ publicRows, publicOffers }), before);
+});
+
+test('search orders the complete paginated result including combos, without hiding exhausted products', async () => {
+  const rows = publicRows.map(row => ({ ...row,
+    stock: row.slug === 'cable-cc-prueba' ? 0 : row.stock,
+    featured: row.slug === 'cable-cc-prueba',
+  }));
+  const { products } = await harness({ rows }).query('cable');
+  assert.deepEqual(products.map(p => p.name), [
+    'Cable USB-C a Lightning PRUEBA', 'Cargador completo USB-C a Lightning',
+    'Cable USB-C a USB-C PRUEBA', 'Cargador completo USB-C a USB-C',
+  ]);
+  assert.equal(products.length, 4);
 });

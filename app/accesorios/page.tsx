@@ -2,6 +2,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ProductGrid } from "@/components/product-grid";
 import { getProductsByCategorySlug } from "@/services/products";
 import { connection } from "next/server";
+import { availableFirst } from "@/lib/catalog/availability-order";
 
 export const metadata = { title: "Accesorios", description: "Cabezales, cables y cargadores completos. Elegí el conector de tu equipo." };
 
@@ -12,6 +13,6 @@ export default async function AccessoriesPage() {
     <section className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
       <h1 className="text-3xl font-semibold">Accesorios</h1>
       <p className="mt-3 text-sm">Cabezales y cables por separado o cargadores completos. Revisá el conector antes de elegir.</p>
-      <ProductGrid products={products} label="Accesorios" />
+      <ProductGrid products={availableFirst(products)} label="Accesorios" />
     </section></main>;
 }

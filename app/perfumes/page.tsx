@@ -15,6 +15,7 @@ import {
   type CatalogAttributeKey,
 } from "@/lib/catalog/attribute-config";
 import { getProductsByCategorySlug } from "@/services/products";
+import { availableFirst } from "@/lib/catalog/availability-order";
 
 export const metadata: Metadata = {
   title: "Perfumes importados y árabes",
@@ -130,7 +131,7 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
             </div>
 
             {filteredProducts.length > 0 ? (
-              <ProductGrid products={filteredProducts} label="Perfume" />
+              <ProductGrid products={availableFirst(filteredProducts)} label="Perfume" />
             ) : (
               <div className="mt-8 rounded-2xl border border-[#DCE3EA] bg-white p-8 text-center shadow-sm">
                 <h3 className="text-xl font-semibold text-[#102033]">

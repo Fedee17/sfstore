@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { searchProducts } from "@/lib/catalog/search";
 import { getCatalogPublications } from "@/services/products";
 import { AnalyticsView } from "@/components/analytics-view";
+import { availableFirst } from "@/lib/catalog/availability-order";
 
 export const metadata = { title: "Buscar productos" };
 
@@ -24,7 +25,7 @@ export default async function SearchPage({ searchParams }: {
           {query ? `Resultados para “${query}”` : "Todos los productos"}
         </h1>
         <p className="mt-3 text-sm text-[#526479]">{products.length} {products.length === 1 ? "producto encontrado" : "productos encontrados"}</p>
-        {products.length ? <ProductGrid products={products} label="Producto" /> : (
+        {products.length ? <ProductGrid products={availableFirst(products)} label="Producto" /> : (
           <div className="mt-8 rounded-2xl border border-[#DCE3EA] bg-white p-6">
             <h2 className="text-xl font-semibold">No encontramos productos con esa búsqueda.</h2>
             <p className="mt-3">Probá con el nombre, la marca o una palabra más corta.</p>

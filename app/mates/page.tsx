@@ -15,6 +15,7 @@ import {
   type CatalogAttributeKey,
 } from "@/lib/catalog/attribute-config";
 import { getProductsByCategorySlug } from "@/services/products";
+import { availableFirst } from "@/lib/catalog/availability-order";
 
 export const metadata: Metadata = {
   title: "Mates, termos y accesorios",
@@ -139,7 +140,7 @@ export default async function MatesPage({ searchParams }: MatesPageProps) {
             </div>
 
             {filteredProducts.length > 0 ? (
-              <ProductGrid products={filteredProducts} label="Mate" priceMode="compact" />
+              <ProductGrid products={availableFirst(filteredProducts)} label="Mate" priceMode="compact" />
             ) : (
               <div className="mt-8 rounded-2xl border border-[#DCE3EA] bg-white p-8 text-center shadow-sm">
                 <h3 className="text-xl font-semibold text-[#102033]">
