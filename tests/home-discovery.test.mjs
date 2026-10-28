@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
 import React from 'react';
@@ -70,6 +71,28 @@ test('missing photographs and prices never create fictional images or free offer
   assert.equal((html.match(/Precio a confirmar/g) ?? []).length, 2);
   assert.doesNotMatch(html, /Agregar al carrito|\$\s*0|<img[^>]+src=""/);
   assert.match(html, /75/);
+});
+
+test('Arabic category reuses its link with the supplied image, HTML copy and decorative arrow only', async () => {
+  const html = await renderHome();
+  const category = html.match(/<a href="\/perfumes" class="photoCard[\s\S]*?<\/a>/)?.[0];
+  assert.ok(category);
+  assert.match(category, /src="\/home\/a_wide_cinematic_high_resolution_tropical_sunset.png"/);
+  assert.match(category, /<h3>Perfumes árabes<\/h3>/);
+  assert.match(category, /<p>Encontrá tu próxima fragancia\.<\/p>/);
+  assert.match(category, /<svg aria-hidden="true"/);
+  assert.match(category, /alt=""/);
+  assert.equal((html.match(/class="photoCard/g) ?? []).length, 1);
+  for (const href of ['/buscar?buscar=decant', '/mates']) {
+    assert.ok(html.includes(`<a href="${href}" class="group grid`));
+  }
+});
+
+test('Arabic category preserves the supplied original bytes and dimensions', () => {
+  const original = readFileSync(new URL('../public/home/a_wide_cinematic_high_resolution_tropical_sunset.png', import.meta.url));
+  assert.equal(original.readUInt32BE(16), 1670);
+  assert.equal(original.readUInt32BE(20), 942);
+  assert.equal(createHash('sha256').update(original).digest('hex'), '93a7c348156b625416bbd9b431559a1cb8556d56adb007163f5639b2c9d2c56b');
 });
 
 test('existing hero renders only explicitly supplied photographs with alternative text', () => {

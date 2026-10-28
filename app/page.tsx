@@ -8,6 +8,7 @@ import { getHomeFeaturedProducts } from "@/lib/catalog/home-selection";
 import { publicationAvailable } from "@/lib/products/public-families";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getCatalogPublications, type PublicProduct } from "@/services/products";
+import categoryStyles from "./home-category.module.css";
 
 export const metadata: Metadata = {
   title: "Perfumes árabes, mates y regalos",
@@ -164,9 +165,24 @@ function BenefitCard({ benefit }: { benefit: (typeof benefits)[number] }) {
   );
 }
 
-function CategoryCard({ href, title, description, product }: {
-  href: string; title: string; description: string; product?: PublicProduct | null;
+function CategoryCard({ href, title, description, product, imageSrc }: {
+  href: string; title: string; description: string; product?: PublicProduct | null; imageSrc?: string;
 }) {
+  if (imageSrc) {
+    return (
+      <Link href={href} className={`${categoryStyles.photoCard} group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]`}>
+        <img src={imageSrc} alt="" width={1670} height={942} loading="lazy" className={categoryStyles.photo} />
+        <span aria-hidden="true" className={categoryStyles.shade} />
+        <div className={categoryStyles.copy}>
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </div>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={categoryStyles.arrow}>
+          <path d="M4 12h16m-6-6 6 6-6 6" />
+        </svg>
+      </Link>
+    );
+  }
   return (
     <Link href={href} className="group grid min-w-0 grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border border-[#003B73]/15 bg-white/75 p-3 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE] sm:grid-cols-1 sm:p-4">
       <ProductVisual product={product} label={title} className="aspect-square sm:aspect-[4/3]" />
@@ -184,7 +200,6 @@ export default async function Home() {
   const perfumes = allProducts.filter(product => product.category === "perfumes");
   const mates = allProducts.filter(product => product.category === "mates");
   const featuredProducts = getHomeFeaturedProducts(allProducts);
-  const perfumeVisual = getFirstVisualProduct(perfumes);
   const mateVisual = getFirstVisualProduct(mates.filter(product => /mate|termo/i.test(product.name)));
   const decantVisual = getFirstVisualProduct(perfumes.filter(product => /\bdecant\b/i.test(product.name)));
   const giftWhatsAppLink = buildWhatsAppUrl(
@@ -241,7 +256,7 @@ export default async function Home() {
       <section id="explorar" className="mx-auto max-w-6xl px-5 py-5 sm:px-8 lg:py-8" aria-labelledby="explore-title">
         <h2 id="explore-title" className="text-2xl font-semibold sm:text-3xl">¿Qué estás buscando?</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." product={perfumeVisual} />
+          <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/a_wide_cinematic_high_resolution_tropical_sunset.png" />
           <CategoryCard href="/buscar?buscar=decant" title="Decants" description="Probá antes de elegir." product={decantVisual} />
           <CategoryCard href="/mates" title="Mates y termos" description="Para tu ritual o para regalar." product={mateVisual} />
         </div>
