@@ -11,7 +11,7 @@ import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import * as categories from '../lib/catalog/public-product-visibility.ts';
 const require=createRequire(import.meta.url);
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
-function load(f,modules){const out={};new Function('require','exports',ts.transpileModule(read(f),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>Object.hasOwn(modules,n)?modules[n]:require(n),out);return out;}
+function load(f,modules){const out={};new Function('require','exports',ts.transpileModule(read(f),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>Object.hasOwn(modules,n)?modules[n]:(n.endsWith('.module.css')?{default:new Proxy({}, {get:(_,key)=>key})}:require(n)),out);return out;}
 const items=['cc','lightning'].map(connector=>({productId:'synthetic',comboConnector:connector,name:'Cargador '+connector,slug:connector,category:'accesorios',price:30666.67,quantity:1,stock:2}));
 const store={useCartStore:()=>({items,totalItems:2,subtotal:61333.34}),cartItemKey:i=>i.comboConnector};
 const hooks={...React,useState:v=>[v,()=>{}],useRef:()=>({current:null}),useEffect:()=>{}};

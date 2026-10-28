@@ -195,6 +195,7 @@ export default async function Home() {
   );
   const heroSlides: HomeHeroSlide[] = [
     {
+      composition: "continuous",
       imageSrc: "/home/femenino-desktop-1600.webp",
       imageSrcSet: "/home/femenino-desktop-960.webp 960w, /home/femenino-desktop-1600.webp 1600w",
       mobileImageSrc: "/home/femenino-mobile-768.webp",
@@ -206,6 +207,8 @@ export default async function Home() {
       primaryCtaHref: "/perfumes?categoria=arabe&genero=femenino",
     },
     {
+      composition: "continuous",
+      desktopImagePosition: "85% center",
       imageSrc: "/home/masculino-desktop-1600.webp",
       imageSrcSet: "/home/masculino-desktop-960.webp 960w, /home/masculino-desktop-1600.webp 1600w",
       mobileImageSrc: "/home/masculino-mobile-768.webp",

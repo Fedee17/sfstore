@@ -1,6 +1,6 @@
 # SFSTORE — Continuidad actual
 
-Actualizado: 27/10/2026 (Argentina). **Única fuente de continuidad mutable**, no nueva cola. Última evidencia conocida: revalidar lo que pueda cambiar antes de una operación sensible; este archivo no concede autorizaciones.
+Actualizado: 28/10/2026 (Argentina). **Única fuente de continuidad mutable**, no nueva cola. Última evidencia conocida: revalidar lo que pueda cambiar antes de una operación sensible; este archivo no concede autorizaciones.
 
 ## Entorno y Production conocidos
 
@@ -16,11 +16,14 @@ Actualizado: 27/10/2026 (Argentina). **Única fuente de continuidad mutable**, n
 
 ## Trabajo actual y siguiente paso
 
-- **Tarea activa: refinamiento móvil del hero del inicio**, reorganización P07/P02/P09 aprobada por el propietario. Rama `codex/home-discovery-20261027`, basada en `d237bc9`, que se conserva íntegro y sin publicar su cierre por separado.
-- Alcance: categorías antes de destacados, comunicación de perfumes árabes, hero con banners femenino/masculino aprobados, texto/CTA superpuestos sólo en móvil y composición de escritorio conservada, beneficios compactos, selección existente de destacados priorizando disponibilidad/foto, Decants por búsqueda existente, regalos/asesoramiento consolidados. Header, identidad, datos, carrito y checkout intactos.
-- Validación previa de banners conservada; ajuste móvil revisado en ambos banners a 320, 390 y 640 px sin overflow, frascos visibles, 7 pruebas afectadas aprobadas y ESLint sin errores. Build final y TypeScript del ajuste aprobados con fixture sintético GET-only; evidencia en [último avance de sección 9](SFSTORE-PLAN-MEJORA-CONTINUA.md#p07--p02--p09--inicio-orientado-a-descubrimiento-primera-versión-local-del-27102026); último avance: banners aprobados, misma sección 9.
-- **Pendientes:** aprobación visual de la composición móvil superpuesta. Archivos y textos aprobados intactos; no avanzar con categorías antes de aprobar el hero. No hay autorización de publicación del inicio.
-- **Próximo paso:** revisión del propietario de las capturas locales. No publicar ni continuar otra tarea automáticamente.
+- **Estado: diseño e integración responsive de ambos banners aprobados visualmente de forma definitiva el 28/10; pendientes de publicación**, rama codex/home-discovery-20261027; cambios locales sobre 71c2c46, preservando d237bc9. Cuatro originales aprobados conservados: composiciones 2021×778 escritorio y 1024×1536 móvil; derivados WebP proporcionales sin retoques de frascos/etiquetas.
+- Ambos reutilizan HomeHeroSlider y sus estilos responsive, textos HTML, CTA y controles actuales. Ajuste exclusivo de encuadre masculino horizontal a 85% center para separar CTA y frasco negro a 640 px; fallback femenino idéntico. Categorías, beneficios, header, datos y contratos comerciales intactos.
+- Validación: ocho pruebas afectadas sin skips; TypeScript, build y ESLint sin errores (warning preexistente img en app/page.tsx). Build con fixture sintético: 18 GET, cero escrituras. Navegación comprobada a Árabe + Femenino/Masculino y control de slider con teclado.
+- Capturas completas y detalles de ambos banners a 320/390/640/768/1024/1366/1440 mediante Edge + Playwright existente, perfil temporal y solicitudes externas bloqueadas. Sin overflow, tres frascos completos, fondo continuo y alturas idénticas al alternar: 480/500/260/300/380/380/380 px. La comprobación de capturas femeninas idénticas píxel a píxel corresponde al ajuste de encuadre masculino anterior; no al cambio posterior del degradado, que modificó visualmente ambos banners. Los archivos WebP femeninos conservaron sus SHA-256.
+- Último ajuste: sólo dos declaraciones de degradado en home-hero-slider.module.css. Azul reemplazado por negro neutro: móvil opacidad .60/.56, fin 205 px (antes 240); horizontal .65/.52, fin 44% (antes 46%). Más transparente, sin extenderlo sobre frascos. Textos, geometría, imágenes, posiciones, CTA, enlaces y controles intactos, comprobados por medidas y hashes.
+- Validación focalizada 390/1366, femenino y masculino: contraste mínimo conservador de descripción sobre todo su rectángulo 5,93 / 5,45 / 8,74 / 4,59:1; CTA 4,89:1. Títulos contrastados bajo píxeles interiores de glifos. Ocho tests afectados aprobados, sin repetir build/TypeScript por cambio exclusivamente CSS. Comparado con mockup original: se elimina velo azul y se conserva fotografía cálida continua.
+- **Cierre aprobado:** ambos banners y el último degradado neutro están aprobados visualmente. Evidencia conservada: hero-overlay-{femenino,masculino}-{390,1366}-{antes,despues}.png en visualizaciones. Pendientes de publicación; no existe autorización para merge, push ni despliegue por este cierre. HEAD verificado 71c2c469db7403b5e7a2f1c28dcd0f8c9f7b4da6; implementación y documentos locales sin commit.
+- **Próximo paso en sección 9:** rediseñar «¿Qué estás buscando?» según el mockup aprobado, reutilizando componentes, identidad y destinos existentes de Perfumes árabes, Decants y Mates y termos. Sólo registrado en este cierre documental, sin comenzar la implementación. Conservar íntegros los banners aprobados y las restricciones comerciales/técnicas vigentes.
 - **Estado cerrado:** P07 Disponibles primero ya publicado en ec28135, no repetir sus pruebas/implementación. Production/main y Vercel permanecen según la tabla anterior; no se consultaron ni modificaron durante esta implementación. `071633e` sigue excluido.
 
 ## Cómo retomar sin confundir checkouts
