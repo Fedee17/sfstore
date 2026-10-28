@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { hashStagingSql } from '../scripts/prepare-checkout-staging.mjs';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync,readFileSync,rmSync } from 'node:fs';
+import { mkdtempSync,readFileSync,readdirSync,rmSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join,resolve } from 'node:path';
@@ -14,10 +14,19 @@ const read=file=>readFileSync(join(root,file),'utf8');
 test('staging history has unique versions and keeps canonical applied SQL byte-identical',()=>{
   assert.equal(hashStagingSql('select 1;\n'),hashStagingSql('select 1;\r\n'));
   assert.notEqual(hashStagingSql('select 1;\n'),hashStagingSql('select 2;\n'));
+  const expected = ['supabase/rebuild', 'supabase/migrations']
+    .flatMap(directory => readdirSync(resolve(root, directory)).filter(file => file.endsWith('.sql')).map(file => {
+      const source = directory + '/' + file;
+      const name = file === '202609180002_suppliers_admin.sql' ? '202609180003_suppliers_admin.sql' : file;
+      return { source, stagingFile: 'staging/supabase/migrations/' + name };
+    }))
+    .sort((a, b) => a.stagingFile.localeCompare(b.stagingFile));
+  assert.deepEqual(manifest.applicationOrder.map(({ source, stagingFile }) => ({ source, stagingFile })), expected);
+  assert.equal(new Set(manifest.applicationOrder.map(entry => entry.source)).size, expected.length);
   const versions=manifest.applicationOrder.map(e=>e.stagingFile.split('/').at(-1).split('_')[0]);assert.equal(new Set(versions).size,versions.length);
   for(const e of manifest.applicationOrder){assert.equal(hashStagingSql(read(e.source)),e.sourceSha256);assert.equal(hashStagingSql(read(e.stagingFile)),e.stagingSha256);if(e.source!=='supabase/schema.sql')assert.equal(read(e.source),read(e.stagingFile));}
   assert.match(manifest.applicationOrder.find(e=>e.source.endsWith('202609180002_suppliers_admin.sql')).stagingFile,/202609180003_suppliers_admin/);
-  assert.ok(manifest.applicationOrder.at(-1).source.endsWith('202610210001_public_catalog_component_security.sql'));
+  assert.equal(manifest.applicationOrder.at(-1).source, expected.at(-1).source);
 });
 describe('synthetic staging package: complete checkout and reservation lifecycle',{skip:!process.env.SFSTORE_TEST_PG_BIN,concurrency:false},()=>{
   let dir,db,connection,started=false,paidOrder;

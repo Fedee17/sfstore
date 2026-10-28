@@ -13,7 +13,15 @@ const read = path => readFileSync(resolve(root, path), 'utf8');
 const manifest = JSON.parse(read('staging/migration-manifest.json'));
 test('complete rebuild has unique versions, exact sources and all canonical migrations', () => {
   const entries = manifest.applicationOrder;
-  assert.equal(entries.length, 37);
+  const expected = ['supabase/rebuild', 'supabase/migrations']
+    .flatMap(directory => readdirSync(resolve(root, directory)).filter(file => file.endsWith('.sql')).map(file => {
+      const source = directory + '/' + file;
+      const name = file === '202609180002_suppliers_admin.sql' ? '202609180003_suppliers_admin.sql' : file;
+      return { source, stagingFile: 'staging/supabase/migrations/' + name };
+    }))
+    .sort((a, b) => a.stagingFile.localeCompare(b.stagingFile));
+  assert.deepEqual(manifest.applicationOrder.map(({ source, stagingFile }) => ({ source, stagingFile })), expected);
+  assert.equal(new Set(manifest.applicationOrder.map(entry => entry.source)).size, expected.length);
   assert.equal(new Set(entries.map(e => e.stagingFile.split('/').at(-1).split('_')[0])).size, entries.length);
   for (const e of entries) {
     assert.equal(read(e.source), read(e.stagingFile));
@@ -25,7 +33,7 @@ test('complete rebuild has unique versions, exact sources and all canonical migr
   }
   assert.match(entries[0].source, /rebuild\/202609100001_initial_schema/);
   assert.ok(read(entries[0].source).includes(read('supabase/schema.sql')));
-  assert.match(entries.at(-1).source, /202610210001_public_catalog_component_security/);
+  assert.equal(entries.at(-1).source, expected.at(-1).source);
 });
 test('purchase ACL precedes its first confirmation consumer; broad test defaults removed', () => {
   const order = manifest.applicationOrder.map(e => e.source.split('/').at(-1));
