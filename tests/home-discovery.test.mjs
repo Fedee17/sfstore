@@ -82,10 +82,26 @@ test('Arabic category reuses its link with the supplied image, HTML copy and dec
   assert.match(category, /<p>Encontrá tu próxima fragancia\.<\/p>/);
   assert.match(category, /<svg aria-hidden="true"/);
   assert.match(category, /alt=""/);
-  assert.equal((html.match(/class="photoCard/g) ?? []).length, 1);
-  for (const href of ['/buscar?buscar=decant', '/mates']) {
+  assert.doesNotMatch(category, /tallMobileCard/);
+  assert.equal((html.match(/class="photoCard/g) ?? []).length, 2);
+  for (const href of ['/buscar?buscar=decant']) {
     assert.ok(html.includes(`<a href="${href}" class="group grid`));
   }
+});
+
+test('Mates reuses the same photo card with its approved copy, original image and existing destination', async () => {
+  const html = await renderHome();
+  const card = html.match(/<a href="\/mates" class="photoCard[\s\S]*?<\/a>/)?.[0];
+  assert.ok(card);
+  assert.match(card, /<h3>Mates y termos<\/h3>/);
+  assert.match(card, /<p>El ritual de cada día<\/p>/);
+  assert.match(card, /class="photoCard tallMobileCard group/);
+  assert.match(card, /class="photo"/);
+  assert.match(card, /<svg aria-hidden="true"/);
+  const original = readFileSync(new URL('../public/home/a_wide_cinematic_photorealistic_outdoor_rustic_s.png', import.meta.url));
+  assert.equal(original.readUInt32BE(16), 1669);
+  assert.equal(original.readUInt32BE(20), 942);
+  assert.equal(createHash('sha256').update(original).digest('hex'), 'f432f6ca99e3e356490b58de8ea3858e8163d4d2d418965faace40b8835cb026');
 });
 
 test('Arabic category preserves the supplied original bytes and dimensions', () => {

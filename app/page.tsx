@@ -165,12 +165,12 @@ function BenefitCard({ benefit }: { benefit: (typeof benefits)[number] }) {
   );
 }
 
-function CategoryCard({ href, title, description, product, imageSrc }: {
-  href: string; title: string; description: string; product?: PublicProduct | null; imageSrc?: string;
+function CategoryCard({ href, title, description, product, imageSrc, tallMobile = false }: {
+  href: string; title: string; description: string; product?: PublicProduct | null; imageSrc?: string; tallMobile?: boolean;
 }) {
   if (imageSrc) {
     return (
-      <Link href={href} className={`${categoryStyles.photoCard} group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]`}>
+      <Link href={href} className={`${categoryStyles.photoCard}${tallMobile ? ` ${categoryStyles.tallMobileCard}` : ""} group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]`}>
         <img src={imageSrc} alt="" width={1670} height={942} loading="lazy" className={categoryStyles.photo} />
         <span aria-hidden="true" className={categoryStyles.shade} />
         <div className={categoryStyles.copy}>
@@ -198,9 +198,7 @@ export default async function Home() {
   await connection(); // Current catalog/stock at request time, never frozen during build.
   const allProducts = await getCatalogPublications();
   const perfumes = allProducts.filter(product => product.category === "perfumes");
-  const mates = allProducts.filter(product => product.category === "mates");
   const featuredProducts = getHomeFeaturedProducts(allProducts);
-  const mateVisual = getFirstVisualProduct(mates.filter(product => /mate|termo/i.test(product.name)));
   const decantVisual = getFirstVisualProduct(perfumes.filter(product => /\bdecant\b/i.test(product.name)));
   const giftWhatsAppLink = buildWhatsAppUrl(
     "Hola SFSTORE, quiero armar un regalo y necesito ayuda para elegir.",
@@ -258,7 +256,7 @@ export default async function Home() {
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/a_wide_cinematic_high_resolution_tropical_sunset.png" />
           <CategoryCard href="/buscar?buscar=decant" title="Decants" description="Probá antes de elegir." product={decantVisual} />
-          <CategoryCard href="/mates" title="Mates y termos" description="Para tu ritual o para regalar." product={mateVisual} />
+          <CategoryCard href="/mates" title="Mates y termos" description="El ritual de cada día" imageSrc="/home/a_wide_cinematic_photorealistic_outdoor_rustic_s.png" tallMobile />
         </div>
       </section>
 
