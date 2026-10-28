@@ -84,24 +84,29 @@ test('Arabic category reuses its link with the supplied image, HTML copy and dec
   assert.match(category, /alt=""/);
   assert.doesNotMatch(category, /tallMobileCard/);
   assert.equal((html.match(/class="photoCard/g) ?? []).length, 2);
-  for (const href of ['/buscar?buscar=decant']) {
-    assert.ok(html.includes(`<a href="${href}" class="group grid`));
-  }
+  const categories = html.match(/<section id="explorar"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(categories);
+  assert.doesNotMatch(categories, /Decants|Mates y termos|href="\/buscar/);
+  assert.equal((categories.match(/href="\/mates"/g) ?? []).length, 1);
+  assert.match(html, /id="decants-title"/);
+  assert.match(html, /href="\/buscar\?buscar=decant"/);
 });
 
 test('Mates reuses the same photo card with its approved copy, original image and existing destination', async () => {
   const html = await renderHome();
   const card = html.match(/<a href="\/mates" class="photoCard[\s\S]*?<\/a>/)?.[0];
   assert.ok(card);
-  assert.match(card, /<h3>Mates y termos<\/h3>/);
-  assert.match(card, /<p>El ritual de cada día<\/p>/);
+  assert.match(card, /<h3>Mates<\/h3>/);
+  assert.match(card, /<p>Tradición en cada cebada<\/p>/);
   assert.match(card, /class="photoCard tallMobileCard group/);
-  assert.match(card, /class="photo"/);
+  assert.match(card, /class="photo threeMatesPhoto"/);
   assert.match(card, /<svg aria-hidden="true"/);
-  const original = readFileSync(new URL('../public/home/a_wide_cinematic_photorealistic_outdoor_rustic_s.png', import.meta.url));
+  const original = readFileSync(new URL('../public/home/a_wide_cinematic_photorealistic_still_life_scene.png', import.meta.url));
   assert.equal(original.readUInt32BE(16), 1669);
   assert.equal(original.readUInt32BE(20), 942);
-  assert.equal(createHash('sha256').update(original).digest('hex'), 'f432f6ca99e3e356490b58de8ea3858e8163d4d2d418965faace40b8835cb026');
+  assert.equal(createHash('sha256').update(original).digest('hex'), 'effac8f425684ab20be4e0c6868756e80acd60d545d7c959d8a00bb8ebd6b328');
+  const previousImage = readFileSync(new URL('../public/home/a_wide_cinematic_photorealistic_outdoor_rustic_s.png', import.meta.url));
+  assert.equal(createHash('sha256').update(previousImage).digest('hex'), 'f432f6ca99e3e356490b58de8ea3858e8163d4d2d418965faace40b8835cb026');
 });
 
 test('Arabic category preserves the supplied original bytes and dimensions', () => {

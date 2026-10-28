@@ -19,6 +19,9 @@
 .copy h3 { font-size: 18px; line-height: 22px; font-weight: 600; }
 .copy p { margin-top: 4px; font-size: 14px; line-height: 20px; }
 .arrow { position: absolute; left: 16px; bottom: 10px; width: 20px; height: 20px; }
+@media (min-width: 640px) and (max-width: 1023px) {
+  .photo.threeMatesPhoto { object-position: 75% center; }
+}
 @media (min-width: 640px) {
   .photoCard { height: 184px; }
   .photo { object-position: 61% center; }

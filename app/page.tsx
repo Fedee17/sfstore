@@ -165,13 +165,13 @@ function BenefitCard({ benefit }: { benefit: (typeof benefits)[number] }) {
   );
 }
 
-function CategoryCard({ href, title, description, product, imageSrc, tallMobile = false }: {
-  href: string; title: string; description: string; product?: PublicProduct | null; imageSrc?: string; tallMobile?: boolean;
+function CategoryCard({ href, title, description, product, imageSrc, imageClassName, tallMobile = false }: {
+  href: string; title: string; description: string; product?: PublicProduct | null; imageSrc?: string; imageClassName?: string; tallMobile?: boolean;
 }) {
   if (imageSrc) {
     return (
       <Link href={href} className={`${categoryStyles.photoCard}${tallMobile ? ` ${categoryStyles.tallMobileCard}` : ""} group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]`}>
-        <img src={imageSrc} alt="" width={1670} height={942} loading="lazy" className={categoryStyles.photo} />
+        <img src={imageSrc} alt="" width={1670} height={942} loading="lazy" className={`${categoryStyles.photo}${imageClassName ? ` ${imageClassName}` : ""}`} />
         <span aria-hidden="true" className={categoryStyles.shade} />
         <div className={categoryStyles.copy}>
           <h3>{title}</h3>
@@ -255,8 +255,7 @@ export default async function Home() {
         <h2 id="explore-title" className="text-2xl font-semibold sm:text-3xl">¿Qué estás buscando?</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/a_wide_cinematic_high_resolution_tropical_sunset.png" />
-          <CategoryCard href="/buscar?buscar=decant" title="Decants" description="Probá antes de elegir." product={decantVisual} />
-          <CategoryCard href="/mates" title="Mates y termos" description="El ritual de cada día" imageSrc="/home/a_wide_cinematic_photorealistic_outdoor_rustic_s.png" tallMobile />
+          <CategoryCard href="/mates" title="Mates" description="Tradición en cada cebada" imageSrc="/home/a_wide_cinematic_photorealistic_still_life_scene.png" imageClassName={categoryStyles.threeMatesPhoto} tallMobile />
         </div>
       </section>
 
