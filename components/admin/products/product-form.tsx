@@ -34,6 +34,8 @@ import {
   isSupportedProductImageSourceMimeType,
 } from "@/lib/products/product-image-files";
 import type { AdminCategory, AdminProduct } from "@/services/admin";
+import { calculateListFromSpecial, suggestSpecialFromCost, parseAdminMoneyCents } from "@/lib/products/admin-price-calculation";
+import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 
 type ProductFormProps = {
   action: (
@@ -451,6 +453,23 @@ export function ProductForm({
   connector,
 }: ProductFormProps) {
   const router = useRouter();
+  const calculatePriceEnabled = !product?.family_id && !connector;
+  const [costInput, setCostInput] = useState(String(product?.cost ?? ""));
+  const [specialInput, setSpecialInput] = useState(String(product?.transfer_price ?? ""));
+  const [listInput, setListInput] = useState(String(product?.price ?? 0));
+  const [listPriceApplied, setListPriceApplied] = useState(false);
+  let proposedList: ReturnType<typeof calculateListFromSpecial> | null = null;
+  let calculationError = "";
+  let suggestedSpecial: string | null = null;
+  let effectiveTransfer: number | null = null;
+  if (calculatePriceEnabled) {
+    try { if (specialInput.trim()) proposedList = calculateListFromSpecial(specialInput); }
+    catch (error) { calculationError = error instanceof Error ? error.message : "Revisá el precio especial."; }
+    try { suggestedSpecial = suggestSpecialFromCost(costInput); } catch { /* Invalid cost remains subject to form/server validation. */ }
+    try { effectiveTransfer = getWebTransferPrice(Number(parseAdminMoneyCents(listInput)) / 100); } catch { /* Display no fabricated amount. */ }
+  }
+  const displayMoney = (value: number | string) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(Number(value));
+
   const formRef = useRef<HTMLFormElement>(null);
   const requestRef = useRef<FormData | null>(null);
   const lastSubmissionRef = useRef<FormData | null>(null);
@@ -746,7 +765,8 @@ export function ProductForm({
               min="0"
               step="0.01"
               required
-              defaultValue={product?.price ?? 0}
+              value={listInput}
+              onChange={(event) => { setListInput(event.target.value); setListPriceApplied(false); }}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
           </label>
@@ -758,10 +778,35 @@ export function ProductForm({
               type="number"
               min="0"
               step="0.01"
-              defaultValue={product?.transfer_price ?? ""}
+              value={specialInput}
+              onChange={(event) => {
+                const special = event.target.value;
+                setSpecialInput(special);
+                setListPriceApplied(false);
+                if (calculatePriceEnabled && !product) {
+                  try { const calculated = calculateListFromSpecial(special); setListInput(calculated.listText); setListPriceApplied(true); }
+                  catch { /* Keep the last reviewed list value until a valid amount is entered. */ }
+                }
+              }}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
           </label>
+
+          {calculatePriceEnabled ? (
+            <div className="grid gap-2 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] px-4 py-3 md:col-span-2" aria-live="polite">
+              <input type="hidden" name="listPriceCalculation" value={listPriceApplied ? "applied" : "manual"} />
+              {proposedList ? <p className="text-sm">Especial ingresado: <strong>{displayMoney(proposedList.special)}</strong> · Lista calculada: <strong>{displayMoney(proposedList.list)}</strong>.</p> : <p className="text-sm">Ingresá un precio especial para calcular la lista.</p>}
+              {effectiveTransfer !== null ? <p className="text-sm">Transferencia con la lista actual: <strong>{displayMoney(effectiveTransfer)}</strong>.</p> : null}
+              {calculationError ? <p role="alert" className="text-sm font-semibold">{calculationError}</p> : null}
+              {product ? <>
+                <p className="text-xs leading-5">La lista existente se conserva hasta aplicar el cálculo. Modificar el costo no cambia los precios.</p>
+                <button type="button" disabled={!proposedList || isSubmitting} onClick={() => {
+                  if (proposedList) { setListInput(proposedList.listText); setListPriceApplied(true); }
+                }} className="min-h-11 justify-self-start rounded-full border border-[#556B2F]/30 px-4 py-2 text-sm font-semibold text-[#556B2F] disabled:opacity-50">Aplicar precio de lista</button>
+              </> : null}
+              {listPriceApplied ? <p role="status" className="text-sm">Cálculo aplicado al formulario. Revisá los importes antes de guardar.</p> : null}
+            </div>
+          ) : null}
 
           <div className="grid gap-2 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] px-4 py-3">
             <span className="text-sm font-semibold text-[#1F1F1F]/75">
@@ -790,9 +835,11 @@ export function ProductForm({
               type="number"
               min="0"
               step="0.01"
-              defaultValue={product?.cost ?? ""}
+              value={costInput}
+              onChange={(event) => setCostInput(event.target.value)}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
+            {calculatePriceEnabled ? <span className="text-xs leading-5 text-[#1F1F1F]/60">{suggestedSpecial !== null ? "Especial sugerido (costo × 1,50): " + displayMoney(suggestedSpecial) + "." : "Ingresá un costo válido para ver la sugerencia."} Es orientativo: no modifica el precio especial manual.</span> : null}
           </label>
 
           <label className="grid gap-2">

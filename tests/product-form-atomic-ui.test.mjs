@@ -20,6 +20,9 @@ function browserBundle() {
   }
   for (const [name, path] of [
     ["form", "../components/admin/products/product-form.tsx"],
+    ["@/lib/products/admin-price-calculation", "../lib/products/admin-price-calculation.ts"],
+    ["../web-transfer-pricing.ts", "../lib/web-transfer-pricing.ts"],
+    ["@/lib/web-transfer-pricing", "../lib/web-transfer-pricing.ts"],
     ["@/lib/catalog/attribute-config", "../lib/catalog/attribute-config.ts"],
     ["@/lib/product-taxonomy", "../lib/product-taxonomy.ts"],
     ["@/lib/products/product-image-files", "../lib/products/product-image-files.ts"],
@@ -55,9 +58,9 @@ function browserBundle() {
     window.response = null;
     window.finish = (result) => window.resolveAction(result);
     const root = require('react-dom/client').createRoot(document.getElementById('root'));
-    window.mount = (editing = true) => root.render(require('react').createElement(require('form').ProductForm, {
-      key: String(editing), submitLabel: 'Guardar', categories: [{id: 'cat', name: 'Perfumes', slug: 'perfumes', is_active: true}],
-      product: editing ? {id: '00000000-0000-4000-8000-000000000001', category_id: 'cat', name: 'Original', slug: 'original', status: 'active', price: 100, stock: 0, featured: false, save_version: 'a'.repeat(64), product_images: []} : undefined,
+    window.mount = (editing = true, overrides = {}) => root.render(require('react').createElement(require('form').ProductForm, {
+      key: String(editing) + String(overrides.id ?? ''), submitLabel: 'Guardar', categories: [{id: 'cat', name: 'Perfumes', slug: 'perfumes', is_active: true}],
+      product: editing ? {id: '00000000-0000-4000-8000-000000000001', category_id: 'cat', name: 'Original', slug: 'original', status: 'active', price: 100, stock: 0, featured: false, save_version: 'a'.repeat(64), product_images: [], ...overrides} : undefined,
       action: async (_previous, data) => {
         window.requests.push([...data].map(([k,v]) => [k, typeof v === 'string' ? v : {name: v.name, size: v.size, type: v.type}]));
         if (window.response) return window.response;
@@ -135,4 +138,47 @@ test("real React form: HEIC success, lost-response retry, double submit, new ver
     await browser?.close();
     await new Promise((resolve) => server.close(resolve));
   }
+});
+
+
+test("real pricing editor: preserve manual prices, explicit apply, cost-only changes and creation", { skip: !playwrightPath }, async () => {
+  const { chromium } = require(playwrightPath);
+  const bundle=browserBundle();
+  const server=createServer((_req,res)=>{res.writeHead(200,{"Content-Type":"text/html; charset=utf-8"});res.end('<div id="root"></div><script>'+bundle+'</script>');});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  let browser;
+  try {
+    browser=await chromium.launch({headless:true,channel:process.env.SFSTORE_TEST_BROWSER_CHANNEL});
+    for(const width of [390,1366]){
+      const page=await browser.newPage({viewport:{width,height:1000}});
+      const errors=[];page.on('pageerror',error=>errors.push(error.message));
+      await page.goto('http://127.0.0.1:'+server.address().port);
+      await page.evaluate(()=>window.mount(true,{id:"00000000-0000-4000-8000-000000000004",cost:10000,transfer_price:16500,price:21999}));
+      const list=page.locator('input[name="price"]'),special=page.locator('input[name="transferPrice"]'),cost=page.locator('input[name="cost"]');
+      await page.waitForFunction(()=>document.querySelector('input[name="price"]')?.value==='21999');assert.equal(await list.inputValue(),'21999');assert.equal(await special.inputValue(),'16500');
+      await cost.fill('20000');assert.equal(await list.inputValue(),'21999');assert.equal(await special.inputValue(),'16500');
+      await special.fill('23000');assert.equal(await list.inputValue(),'21999');
+      await page.getByRole('button',{name:'Aplicar precio de lista',exact:true}).click();assert.equal(await list.inputValue(),'30666.67');
+      assert.equal(await page.locator('input[name="listPriceCalculation"]').inputValue(),'applied');
+      await list.fill('40000');assert.equal(await page.locator('input[name="listPriceCalculation"]').inputValue(),'manual');
+      await special.fill('11850');assert.equal(await list.inputValue(),'40000');
+      await page.getByRole('button',{name:'Aplicar precio de lista',exact:true}).click();assert.equal(await list.inputValue(),'15800.00');
+      await cost.fill('10000');assert.equal(await special.inputValue(),'11850');assert.equal(await list.inputValue(),'15800.00');
+      await page.locator('input[name="name"]').fill('Otro nombre');assert.equal(await list.inputValue(),'15800.00');
+      await page.evaluate(()=>{window.response={status:'error',retryMode:'new',message:'Error sintético para revisar valores'};});
+      await page.getByRole('button',{name:'Guardar',exact:true}).click();
+      await page.waitForFunction(()=>window.requests.length===1);
+      const sent=Object.fromEntries(await page.evaluate(()=>window.requests[0]));
+      assert.equal(sent.price,'15800.00');assert.equal(sent.transferPrice,'11850');assert.equal(sent.cost,'10000');assert.equal(sent.listPriceCalculation,'applied');
+      await special.fill('0');assert.equal(await page.getByRole('button',{name:'Aplicar precio de lista',exact:true}).isDisabled(),true);
+      await page.evaluate(()=>window.mount(false));await page.waitForFunction(()=>document.querySelector('input[name="price"]')?.value==='0');
+      await special.fill('23000');assert.equal(await list.inputValue(),'30666.67');
+      await cost.fill('123');assert.equal(await special.inputValue(),'23000');assert.equal(await list.inputValue(),'30666.67');
+      await page.evaluate(()=>window.mount(true,{id:'00000000-0000-4000-8000-000000000005',family_id:'family',price:200,transfer_price:150,cost:100}));
+      await page.waitForFunction(()=>document.querySelector('input[name="price"]')?.value==='200');
+      assert.equal(await list.getAttribute('readonly'),'');assert.equal(await page.locator('input[name="listPriceCalculation"]').count(),0);
+      await cost.fill('300');assert.equal(await list.inputValue(),'200');assert.equal(await special.inputValue(),'150');
+      assert.deepEqual(errors,[]);await page.close();
+    }
+  } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
 });

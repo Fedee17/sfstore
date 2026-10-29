@@ -36,6 +36,7 @@ import { adjustInventoryStock } from "@/services/inventory";
 import { createProductSaveService, fingerprintProductSubmission } from "@/services/product-save";
 import { galleryConnector, componentGalleryPath } from "@/lib/products/component-gallery";
 import { ProductSaveError } from "@/lib/products/atomic-save";
+import { parseAdminMoneyCents, assertCalculatedListPrice } from "@/lib/products/admin-price-calculation";
 
 type PersistedProductState = {
   id: string;
@@ -73,30 +74,12 @@ function productFormErrorState(error: unknown): ProductFormActionState {
 }
 
 function parseMoney(value: FormDataEntryValue | null, fieldName: string) {
-  const normalized = String(value ?? "").replace(",", ".").trim();
-  const number = normalized === "" ? 0 : Number(normalized);
-
-  if (!Number.isFinite(number) || number < 0) {
-    throw new Error(`${fieldName} debe ser mayor o igual a 0.`);
-  }
-
-  return number;
+  try { return Number(parseAdminMoneyCents(String(value ?? "").trim() || "0")) / 100; }
+  catch { throw new Error(fieldName + ": ingresá un importe no negativo con hasta dos decimales."); }
 }
 
 function parseOptionalMoney(value: FormDataEntryValue | null, fieldName: string) {
-  const normalized = String(value ?? "").replace(",", ".").trim();
-
-  if (!normalized) {
-    return null;
-  }
-
-  const number = Number(normalized);
-
-  if (!Number.isFinite(number) || number < 0) {
-    throw new Error(`${fieldName} debe ser mayor o igual a 0.`);
-  }
-
-  return number;
+  return String(value ?? "").trim() ? parseMoney(value, fieldName) : null;
 }
 
 function parseStock(value: FormDataEntryValue | null) {
@@ -302,13 +285,14 @@ type OperationalProductSnapshot = {
   cost: number | null;
   cost_source_purchase_item_id: string | null;
   historical_identity: boolean;
+  family_id: string | null;
 };
 
 async function assertOperationalProduct(productId: string) {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
     .select(
-      "id, slug, status, category_id, cost, cost_source_purchase_item_id, historical_identity",
+      "id, slug, status, category_id, cost, cost_source_purchase_item_id, historical_identity, family_id",
     )
     .eq("id", productId)
     .maybeSingle();
@@ -361,6 +345,8 @@ async function revalidateOperationalProductPaths(
 
 async function saveProductForm(formData: FormData, operationType: "create_product" | "update_product"): Promise<ProductFormActionState> {
   const payload = readProductForm(formData);
+  const calculatedPrice = formData.get("listPriceCalculation") === "applied";
+  if (calculatedPrice) assertCalculatedListPrice(payload.product.price, payload.product.transfer_price);
   const operationKey = String(formData.get("operationKey") ?? "");
   const productId = payload.productId;
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -376,6 +362,7 @@ async function saveProductForm(formData: FormData, operationType: "create_produc
   const { result, plan } = await service.save(async () => {
     const existing = operationType === "update_product" ? await assertOperationalProduct(productId) : null;
     if (existing) {
+      if (calculatedPrice && existing.family_id) throw new Error("El precio de este SKU se administra desde su familia.");
       assertProductStatusTransition({
         currentStatus: existing.status, nextStatus: payload.product.status,
         historicalIdentity: existing.historical_identity,
