@@ -66,10 +66,6 @@ function getCategoryLabel(product: PublicProduct) {
   return product.categoryName ?? categoryLabels[product.category];
 }
 
-function getFirstVisualProduct(products: PublicProduct[]) {
-  return products.find((product) => product.primaryImageUrl) ?? products[0] ?? null;
-}
-
 
 function ProductVisual({
   product,
@@ -197,9 +193,7 @@ function CategoryCard({ href, title, description, product, imageSrc, imageClassN
 export default async function Home() {
   await connection(); // Current catalog/stock at request time, never frozen during build.
   const allProducts = await getCatalogPublications();
-  const perfumes = allProducts.filter(product => product.category === "perfumes");
   const featuredProducts = getHomeFeaturedProducts(allProducts);
-  const decantVisual = getFirstVisualProduct(perfumes.filter(product => /\bdecant\b/i.test(product.name)));
   const giftWhatsAppLink = buildWhatsAppUrl(
     "Hola SFSTORE, quiero armar un regalo y necesito ayuda para elegir.",
   );
@@ -323,18 +317,6 @@ export default async function Home() {
             </p>
           </div>
         )}
-      </section>
-
-      <section className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="decants-title">
-        <div className="grid gap-5 rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-5 sm:p-7 lg:grid-cols-[1fr_0.65fr] lg:items-center">
-          <div>
-            <p className="text-sm font-semibold text-[#003B73]">Decants de perfumes árabes</p>
-            <h2 id="decants-title" className="mt-2 text-2xl font-semibold sm:text-3xl">Probá, conocé, elegí con confianza</h2>
-            <p className="mt-3 text-sm leading-6 text-[#526479]">Explorá las presentaciones disponibles antes de elegir tu próximo perfume.</p>
-            <Link href="/buscar?buscar=decant" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver decants</Link>
-          </div>
-          {decantVisual?.primaryImageUrl ? <ProductVisual product={decantVisual} label="Decants" className="aspect-[4/3] max-h-64" /> : null}
-        </div>
       </section>
 
       <section id="regalos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="gifts-title">

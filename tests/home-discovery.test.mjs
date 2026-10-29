@@ -54,13 +54,18 @@ async function renderHome(products = []) {
   return renderToStaticMarkup(await load('app/page.tsx', modules).default());
 }
 
-test('discovery precedes featured, uses the existing decant search, and consolidates gifts/advice', async () => {
+test('discovery precedes featured and gifts/advice remain after featured without the paused decant promotion', async () => {
   const html = await renderHome();
   assert.ok(html.indexOf('id="explorar"') < html.indexOf('id="productos"'));
   assert.match(html, /Perfumes para hacer sentir presencia/);
-  assert.match(html, /href="\/buscar\?buscar=decant"/);
+  assert.doesNotMatch(html, /id="decants-title"|Decants de perfumes árabes|Probá, conocé, elegí con confianza|Ver decants|href="\/buscar\?buscar=decant"/);
   for (const href of ['/perfumes', '/mates', '/accesorios']) assert.ok(html.includes(`href="${href}"`));
   for (const id of ['gifts-title', 'advice-title']) assert.equal((html.match(new RegExp(`id="${id}"`, 'g')) ?? []).length, 1);
+  const sections = [...html.matchAll(/<section\b[^>]*>/g)].map(match => match[0]);
+  const featured = sections.findIndex(section => section.includes('id="productos"'));
+  assert.ok(featured >= 0);
+  assert.match(sections[featured + 1], /id="regalos"/);
+  assert.match(sections[featured + 2], /aria-labelledby="advice-title"/);
   assert.match(html, /25% de descuento\. Pago del 100%/);
   assert.match(html, /Entregas a todo el país/);
   assert.doesNotMatch(html, /diseñador|perfumes importados|cuotas|envío gratis/i);
@@ -88,8 +93,8 @@ test('Arabic category reuses its link with the supplied image, HTML copy and dec
   assert.ok(categories);
   assert.doesNotMatch(categories, /Decants|Mates y termos|href="\/buscar/);
   assert.equal((categories.match(/href="\/mates"/g) ?? []).length, 2);
-  assert.match(html, /id="decants-title"/);
-  assert.match(html, /href="\/buscar\?buscar=decant"/);
+  assert.doesNotMatch(html, /id="decants-title"/);
+  assert.doesNotMatch(html, /href="\/buscar\?buscar=decant"/);
 });
 
 test('Termos uses the existing filtered catalog and preserves the approved original', async () => {
