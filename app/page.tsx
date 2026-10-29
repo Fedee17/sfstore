@@ -99,7 +99,7 @@ function ProductVisual({
   );
 }
 
-function SimplePrice({ product }: { product: PublicProduct }) {
+function SimplePrice({ product, from = false }: { product: PublicProduct; from?: boolean }) {
   if (!hasValidWebPrice(product.price)) return <p className="text-sm font-semibold text-[#003B73]">Precio a confirmar</p>;
   const price = getWebTransferPrice(product.price);
 
@@ -109,7 +109,7 @@ function SimplePrice({ product }: { product: PublicProduct }) {
         Transferencia bancaria
       </p>
       <p className="mt-1 break-words text-lg font-semibold text-[#102033] sm:text-2xl">
-        {formatCurrency(price)}
+        {from ? "Desde " : ""}{formatCurrency(price)}
       </p>
     </div>
   );
@@ -255,7 +255,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="productos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10">
+      {featuredProducts.length > 0 ? <section id="productos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10">
         <div className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
@@ -270,7 +270,6 @@ export default async function Home() {
           </p>
         </div>
 
-        {featuredProducts.length > 0 ? (
           <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
             {featuredProducts.map((product) => (
               <article
@@ -298,7 +297,7 @@ export default async function Home() {
                   </div>
                   <div className="mt-4 flex min-w-0 flex-col gap-4 border-t border-[#003B73]/15 pt-3">
                     <p className="text-xs font-semibold text-[#526479]">{publicationAvailable(product) ? "En stock" : "Agotado · consultar"}</p>
-                    <SimplePrice product={product} />
+                    <SimplePrice product={product} from={product.homePriceFrom} />
                     <a
                       href={`/producto/${product.slug}`}
                       className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#102033] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#0072CE]"
@@ -310,14 +309,7 @@ export default async function Home() {
               </article>
             ))}
           </div>
-        ) : (
-          <div className="mt-8 rounded-3xl border border-[#003B73]/15 bg-white/65 p-8 text-center">
-            <p className="break-words text-sm leading-6 text-[#102033]/65">
-              La vidriera está lista para recibir productos. Mientras tanto, podés explorar perfumes y mates o consultarnos por WhatsApp.
-            </p>
-          </div>
-        )}
-      </section>
+      </section> : null}
 
       <section id="regalos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="gifts-title">
         <div className="rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-5 sm:p-7">

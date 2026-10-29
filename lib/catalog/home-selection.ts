@@ -1,13 +1,37 @@
 import type { PublicProduct } from "../../services/products";
 import { publicationAvailable } from "../products/public-families";
+import { getWebTransferPrice, hasValidWebPrice } from "../web-transfer-pricing";
+import { isDecantProduct } from "./perfume-recommendation";
 
-/** Curate the existing featured pool for the homepage only; never mutate catalog order or data. */
-export function getHomeFeaturedProducts(products: PublicProduct[]) {
-  const featured = products.filter(product => product.featured);
-  const pool = featured.length ? featured : products;
-  return [...pool].sort((a, b) =>
-    Number(publicationAvailable(b)) - Number(publicationAvailable(a)) ||
-    Number(Boolean(b.primaryImageUrl)) - Number(Boolean(a.primaryImageUrl)) ||
-    a.name.localeCompare(b.name, "es") || a.id.localeCompare(b.id)
-  ).slice(0, 6);
+export type HomeFeaturedProduct = PublicProduct & { homePriceFrom?: boolean };
+
+function isDecant(product: PublicProduct) {
+  return isDecantProduct({ id: product.id, name: product.name, slug: product.slug, attributes: product.attributes });
+}
+
+function hasPhoto(product: PublicProduct) {
+  return Boolean(product.primaryImageUrl?.trim());
+}
+
+/** Home-only projection: never mutate a publication, its SKU, price or catalog order. */
+export function getHomeFeaturedProducts(products: PublicProduct[]): HomeFeaturedProduct[] {
+  const eligible: HomeFeaturedProduct[] = [];
+  for (const product of products) {
+    if (!product.featured || isDecant(product)) continue;
+    if (product.kind === "family") {
+      const variants = (product.variants ?? []).filter(variant =>
+        publicationAvailable(variant) && hasValidWebPrice(variant.price) && !isDecant(variant)
+      );
+      if (!variants.length) continue;
+      const priceSource = variants.reduce((a, b) => a.price <= b.price ? a : b);
+      const photoSource = hasPhoto(priceSource) ? priceSource : hasPhoto(product) ? product : variants.find(hasPhoto);
+      if (!photoSource) continue;
+      eligible.push({ ...product, price: priceSource.price, transferPrice: getWebTransferPrice(priceSource.price),
+        primaryImageUrl: photoSource.primaryImageUrl, primaryImageAlt: photoSource.primaryImageAlt,
+        homePriceFrom: variants.some(variant => variant.price !== priceSource.price) });
+    } else if (publicationAvailable(product) && hasValidWebPrice(product.price) && hasPhoto(product)) {
+      eligible.push(product);
+    }
+  }
+  return eligible.sort((a, b) => a.name.localeCompare(b.name, "es") || a.id.localeCompare(b.id)).slice(0, 6);
 }

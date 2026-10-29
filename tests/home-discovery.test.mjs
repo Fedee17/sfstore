@@ -9,6 +9,7 @@ import * as jsx from 'react/jsx-runtime';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as prices from '../lib/web-transfer-pricing.ts';
 import * as availability from '../lib/products/public-families.ts';
+import * as recommendations from '../lib/catalog/perfume-recommendation.ts';
 
 const require = createRequire(import.meta.url);
 function load(file, modules = {}) {
@@ -18,25 +19,52 @@ function load(file, modules = {}) {
   new Function('require', 'exports', js)(id => modules[id] ?? (id.endsWith('.module.css') ? { default: new Proxy({}, { get: (_, key) => key }) } : require(id)), out);
   return out;
 }
-const selection = load('lib/catalog/home-selection.ts', { '../products/public-families': availability });
-const product = (id, extra = {}) => ({ id, name: id, slug: id, category: 'perfumes', stock: 1, price: 100, featured: true, shortDescription: 'Prueba', ...extra });
+const selection = load('lib/catalog/home-selection.ts', { '../products/public-families': availability, '../web-transfer-pricing': prices, './perfume-recommendation': recommendations });
+const product = (id, extra = {}) => ({ id, name: id, slug: id, category: 'perfumes', stock: 1, price: 100, featured: true, shortDescription: 'Prueba', primaryImageUrl: '/test.webp', ...extra });
 
-test('home ranks only the featured pool by actual publication availability and photograph, without mutation', () => {
-  const input = [product('empty', { stock: 0, primaryImageUrl: '/empty.webp' }), product('missing'), product('photo', { primaryImageUrl: '/photo.webp' }), product('not-featured', { featured: false, primaryImageUrl: '/other.webp' })];
+test('home requires featured, availability, valid price and a configured photograph, without mutation', () => {
+  const input = [product('empty', {stock:0}), product('missing', {primaryImageUrl:null}), product('blank', {primaryImageUrl:'  '}), product('zero', {price:0}), product('null', {price:null}), product('nan', {price:NaN}), product('negative', {price:-10}), product('infinite', {price:Infinity}), product('photo'), product('not-featured', {featured:false})];
   const before = structuredClone(input);
-  assert.deepEqual(selection.getHomeFeaturedProducts(input).map(p => p.id), ['photo', 'missing', 'empty']);
+  assert.deepEqual(selection.getHomeFeaturedProducts(input).map(p => p.id), ['photo']);
   assert.deepEqual(input, before);
 });
 
-test('families, virtual combos, unknown prices and deterministic ties retain their contracts', () => {
-  const input = [product('combo', { kind: 'combo', stock: 0 }), product('family', { kind: 'family', stock: 0, variants: [product('sku')], primaryImageUrl: '/family.webp' }), product('zero', { price: 0 }), product('null', { price: null })];
-  assert.deepEqual(selection.getHomeFeaturedProducts(input).map(p => p.id), ['family', 'null', 'zero', 'combo']);
-  assert.equal(input[0].stock, 0);
-  assert.equal(input[1].stock, 0);
-  assert.equal(input[2].price, 0);
-  const fallback = Array.from({ length: 9 }, (_, i) => product(String(i), { featured: false }));
-  assert.equal(selection.getHomeFeaturedProducts(fallback).length, 6);
+test('home excludes decants using the existing type and legacy-name identification', () => {
+  const input = [product('typed', {attributes:[{name:'Tipo',value:'Decant'}]}), product('named', {name:'Decant Hawas'}), product('legacy', {name:'Decant Elixir',attributes:[{name:'Tipo',value:'Accesorios'}]}), product('bottle')];
+  assert.deepEqual(selection.getHomeFeaturedProducts(input).map(p=>p.id), ['bottle']);
+});
+
+test('home never fills from non-featured publications, caps at six and keeps deterministic name/id order', () => {
+  assert.deepEqual(selection.getHomeFeaturedProducts([product('ordinary',{featured:false})]), []);
   assert.deepEqual(selection.getHomeFeaturedProducts([]), []);
+  assert.equal(selection.getHomeFeaturedProducts(Array.from({length:9},(_,i)=>product(String(i)))).length,6);
+  assert.deepEqual(selection.getHomeFeaturedProducts([product('b',{name:'Igual'}),product('a',{name:'Igual'})]).map(p=>p.id),['a','b']);
+  assert.equal(selection.getHomeFeaturedProducts([product('one'),product('other',{featured:false})]).length,1);
+});
+
+test('family projection uses available valid variants and a configured photo without mutating catalog prices or SKU', () => {
+  const family=product('family',{kind:'family',stock:0,price:0,primaryImageUrl:null,variants:[product('sold',{stock:0,price:10}),product('invalid',{price:0}),product('cheap',{price:100}),product('expensive',{price:200})]});
+  const before=structuredClone(family);
+  const [shown]=selection.getHomeFeaturedProducts([family]);
+  assert.equal(shown.id,'family');assert.equal(shown.slug,'family');
+  assert.equal(shown.price,100);assert.equal(shown.transferPrice,75);assert.equal(shown.homePriceFrom,true);
+  assert.equal(shown.primaryImageUrl,'/test.webp');assert.deepEqual(family,before);
+  assert.equal(shown.variants,family.variants);
+});
+
+test('families with equal eligible prices do not say Desde and invalid/unavailable families stay hidden', () => {
+  const equal=product('equal',{kind:'family',variants:[product('a',{price:100}),product('b',{price:100}),product('sold',{price:50,stock:0})]});
+  assert.equal(selection.getHomeFeaturedProducts([equal])[0].homePriceFrom,false);
+  for(const variants of [[],[product('sold',{stock:0})],[product('bad',{price:0})]])assert.deepEqual(selection.getHomeFeaturedProducts([product('empty',{kind:'family',variants})]),[]);
+  assert.deepEqual(selection.getHomeFeaturedProducts([product('no-photo',{kind:'family',primaryImageUrl:null,variants:[product('a',{primaryImageUrl:null})]})]),[]);
+  assert.equal(selection.getHomeFeaturedProducts([product('family-photo',{kind:'family',variants:[product('a',{primaryImageUrl:null})]})]).length,1);
+});
+
+test('home uses derived combo availability and approved prices without changing component data', () => {
+  const combo=product('combo',{kind:'combo',price:30666.67});
+  assert.equal(selection.getHomeFeaturedProducts([combo])[0],combo);
+  assert.equal(prices.getWebTransferPrice(combo.price),23000);
+  assert.deepEqual(selection.getHomeFeaturedProducts([{...combo,stock:0}]),[]);
 });
 
 async function renderHome(products = []) {
@@ -55,7 +83,7 @@ async function renderHome(products = []) {
 }
 
 test('discovery precedes featured and gifts/advice remain after featured without the paused decant promotion', async () => {
-  const html = await renderHome();
+  const html = await renderHome([product('valid')]);
   assert.ok(html.indexOf('id="explorar"') < html.indexOf('id="productos"'));
   assert.match(html, /Perfumes para hacer sentir presencia/);
   assert.doesNotMatch(html, /id="decants-title"|Decants de perfumes árabes|Probá, conocé, elegí con confianza|Ver decants|href="\/buscar\?buscar=decant"/);
@@ -73,7 +101,7 @@ test('discovery precedes featured and gifts/advice remain after featured without
 
 test('missing photographs and prices never create fictional images or free offers', async () => {
   const html = await renderHome([product('zero', { price: 0 }), product('null', { price: null }), product('valid')]);
-  assert.equal((html.match(/Precio a confirmar/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /Precio a confirmar/);
   assert.doesNotMatch(html, /Agregar al carrito|\$\s*0|<img[^>]+src=""/);
   assert.match(html, /75/);
 });
@@ -237,4 +265,23 @@ test('Accesorios materos reuses the existing matero catalog without inventing a 
   assert.match(card, /<svg aria-hidden="true"/);
   const original = readFileSync(new URL('../public/home/wide_cozy_warm_toned_photorealistic_product_sti.png', import.meta.url));
   assert.equal(createHash('sha256').update(original).digest('hex'), '9e39f3d942cad4fdd6784262518bb3397659869c5942a7da9cfd71b297cc622a');
+});
+
+
+test('home omits the entire featured section when none are eligible, leaving gifts after categories', async () => {
+  for (const products of [[],[product('no',{featured:false})],[product('sold',{stock:0})]]) {
+    const html=await renderHome(products);
+    assert.doesNotMatch(html,/id="productos"|Productos para mirar primero|La vidriera está lista/);
+    const sections=[...html.matchAll(/<section\b[^>]*>/g)].map(m=>m[0]);
+    const categories=sections.findIndex(s=>s.includes('id="explorar"'));
+    assert.match(sections[categories+1],/id="regalos"/);
+  }
+});
+
+test('family card shows the actual minimum transfer price and family destination with Desde only when needed', async () => {
+  const family=product('f',{name:'Familia',slug:'familia-real',kind:'family',price:0,variants:[product('a',{price:100}),product('b',{price:200})]});
+  const html=await renderHome([family]);
+  assert.match(html,/Desde .*75/);assert.equal((html.match(/href="\/producto\/familia-real"/g)??[]).length,2);
+  assert.doesNotMatch(await renderHome([product('simple')]),/Desde /);
+  assert.doesNotMatch(await renderHome([{...family,variants:[product('a'),product('b')]}]),/Desde /);
 });
