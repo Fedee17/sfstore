@@ -83,13 +83,27 @@ test('Arabic category reuses its link with the supplied image, HTML copy and dec
   assert.match(category, /<svg aria-hidden="true"/);
   assert.match(category, /alt=""/);
   assert.doesNotMatch(category, /tallMobileCard/);
-  assert.equal((html.match(/class="photoCard/g) ?? []).length, 2);
+  assert.equal((html.match(/class="photoCard/g) ?? []).length, 3);
   const categories = html.match(/<section id="explorar"[\s\S]*?<\/section>/)?.[0];
   assert.ok(categories);
   assert.doesNotMatch(categories, /Decants|Mates y termos|href="\/buscar/);
   assert.equal((categories.match(/href="\/mates"/g) ?? []).length, 1);
   assert.match(html, /id="decants-title"/);
   assert.match(html, /href="\/buscar\?buscar=decant"/);
+});
+
+test('Termos uses the existing filtered catalog and preserves the approved original', async () => {
+  const html = await renderHome();
+  const card = html.match(/<a href="\/mates\?categoria=termos" class="photoCard[\s\S]*?<\/a>/)?.[0];
+  assert.ok(card);
+  assert.match(card, /<h3>Termos<\/h3>/);
+  assert.match(card, /<p>Compañeros en cada aventura<\/p>/);
+  assert.match(card, /class="photo thermosPhoto"/);
+  assert.match(card, /<svg aria-hidden="true"/);
+  const original = readFileSync(new URL('../public/home/outdoor_sunset_landscape_product_photo_a_warm_gol.png', import.meta.url));
+  assert.equal(original.readUInt32BE(16), 1672);
+  assert.equal(original.readUInt32BE(20), 941);
+  assert.equal(createHash('sha256').update(original).digest('hex'), '847e437b2e52395dc41d7d9b085263b02f15d47edcaf93a467a48a633d689f2b');
 });
 
 test('Mates reuses the same photo card with its approved copy, original image and existing destination', async () => {

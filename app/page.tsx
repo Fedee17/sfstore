@@ -256,6 +256,7 @@ export default async function Home() {
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/a_wide_cinematic_high_resolution_tropical_sunset.png" />
           <CategoryCard href="/mates" title="Mates" description="Tradición en cada cebada" imageSrc="/home/a_wide_cinematic_photorealistic_still_life_scene.png" imageClassName={categoryStyles.threeMatesPhoto} tallMobile />
+          <CategoryCard href="/mates?categoria=termos" title="Termos" description="Compañeros en cada aventura" imageSrc="/home/outdoor_sunset_landscape_product_photo_a_warm_gol.png" imageClassName={categoryStyles.thermosPhoto} tallMobile />
         </div>
       </section>
 
