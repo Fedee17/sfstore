@@ -1,48 +1,43 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
 .photoCard {
   position: relative;
   isolation: isolate;
   display: block;
   min-width: 0;
-  height: 122px;
+  aspect-ratio: 350 / 180;
   overflow: hidden;
   border-radius: 1.5rem;
   color: white;
   background: #102033;
 }
-.tallMobileCard .photo { object-position: 50% 50%; }
-@media (max-width: 639px) {
-  .tallMobileCard { height: 180px; }
-}
-.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 56%; }
-.photo.mateAccessoriesPhoto { object-position: 61% center; }
+.photoCard.tallMobileCard { min-width: 0; }
+.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.photo.threeMatesPhoto, .photo.thermosPhoto, .photo.mateAccessoriesPhoto { object-position: center; }
 .shade { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,.85), rgba(0,0,0,.70) 43%, transparent 53%); }
-.copy { position: relative; width: 164px; padding: 12px 0 0 16px; }
+.copy { position: relative; width: 32%; min-width: 118px; max-width: 190px; padding: 12px 0 0 16px; }
 .copy h3 { font-size: 18px; line-height: 22px; font-weight: 600; }
 .copy p { margin-top: 4px; font-size: 14px; line-height: 20px; }
 .arrow { position: absolute; left: 16px; bottom: 10px; width: 20px; height: 20px; }
-.photoCard:has(.thermosPhoto) .copy { width: 123px; }
-@media (min-width: 640px) and (max-width: 1023px) {
-  .photo.threeMatesPhoto { object-position: 75% center; }
-  .photo.thermosPhoto { object-position: 60% center; }
-  .photoCard:has(.thermosPhoto) .copy { position: static; width: auto; padding: 0; }
-  .photoCard:has(.thermosPhoto) .copy h3 { position: absolute; top: 4px; left: 14px; }
-  .photoCard:has(.thermosPhoto) .copy p { position: absolute; bottom: 3px; left: 14px; right: 14px; margin: 0; }
-  .photoCard:has(.thermosPhoto) .arrow { top: 4px; right: 14px; bottom: auto; left: auto; }
-  .photoCard:has(.thermosPhoto) .shade { background: linear-gradient(to bottom, rgba(0,0,0,.85), transparent 28%), linear-gradient(to top, rgba(0,0,0,.85), transparent 25%); }
-}
 @media (min-width: 640px) {
-  .photoCard { height: 184px; }
-  .photo { object-position: 61% center; }
-  .copy { width: 104px; padding: 14px 0 0 14px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .photoCard { aspect-ratio: 346 / 196; }
+  .copy { min-width: 110px; padding: 14px 0 0 14px; }
   .copy h3 { font-size: 16px; line-height: 20px; }
   .copy p { font-size: 12px; line-height: 16px; }
-  .shade { background: linear-gradient(to right, rgba(0,0,0,.85), rgba(0,0,0,.75) 40%, transparent 47%); }
   .arrow { left: 14px; bottom: 14px; }
 }
+@media (min-width: 640px) and (max-width: 719px) {
+  .copy p { max-width: 76px; }
+}
 @media (min-width: 1024px) {
-  .photoCard { height: 200px; }
-  .photo { object-position: center; }
-  .copy { width: 165px; padding: 20px 0 0 20px; }
+  .grid { gap: 16px; }
+  .photoCard { aspect-ratio: 536 / 302; }
+  .copy { padding: 20px 0 0 20px; }
   .copy h3 { font-size: 20px; line-height: 24px; }
   .copy p { font-size: 14px; line-height: 20px; }
   .arrow { left: 20px; bottom: 20px; }
