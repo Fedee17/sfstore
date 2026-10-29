@@ -257,6 +257,7 @@ export default async function Home() {
           <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/a_wide_cinematic_high_resolution_tropical_sunset.png" />
           <CategoryCard href="/mates" title="Mates" description="Tradición en cada cebada" imageSrc="/home/a_wide_cinematic_photorealistic_still_life_scene.png" imageClassName={categoryStyles.threeMatesPhoto} tallMobile />
           <CategoryCard href="/mates?categoria=termos" title="Termos" description="Compañeros en cada aventura" imageSrc="/home/outdoor_sunset_landscape_product_photo_a_warm_gol.png" imageClassName={categoryStyles.thermosPhoto} tallMobile />
+          <CategoryCard href="/mates" title="Accesorios materos" description="Todo para acompañar tu ritual" imageSrc="/home/wide_cozy_warm_toned_photorealistic_product_sti.png" imageClassName={categoryStyles.mateAccessoriesPhoto} tallMobile />
         </div>
       </section>
 

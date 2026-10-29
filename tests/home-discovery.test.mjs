@@ -83,11 +83,11 @@ test('Arabic category reuses its link with the supplied image, HTML copy and dec
   assert.match(category, /<svg aria-hidden="true"/);
   assert.match(category, /alt=""/);
   assert.doesNotMatch(category, /tallMobileCard/);
-  assert.equal((html.match(/class="photoCard/g) ?? []).length, 3);
+  assert.equal((html.match(/class="photoCard/g) ?? []).length, 4);
   const categories = html.match(/<section id="explorar"[\s\S]*?<\/section>/)?.[0];
   assert.ok(categories);
   assert.doesNotMatch(categories, /Decants|Mates y termos|href="\/buscar/);
-  assert.equal((categories.match(/href="\/mates"/g) ?? []).length, 1);
+  assert.equal((categories.match(/href="\/mates"/g) ?? []).length, 2);
   assert.match(html, /id="decants-title"/);
   assert.match(html, /href="\/buscar\?buscar=decant"/);
 });
@@ -219,4 +219,17 @@ test('continuous composition is reusable while preserving legacy slides', () => 
   const css = readFileSync(new URL('../components/home-hero-slider.module.css', import.meta.url), 'utf8');
   assert.match(css, /object-fit: cover/);
   assert.doesNotMatch(css, /url\(|transform:|filter:/);
+});
+
+
+test('Accesorios materos reuses the existing matero catalog without inventing a filter or changing the approved image', async () => {
+  const html = await renderHome();
+  const categories = html.match(/<section id="explorar"[\s\S]*?<\/section>/)?.[0];
+  const card = categories.match(/<a href="\/mates" class="photoCard[\s\S]*?<\/a>/g).find(card => card.includes('<h3>Accesorios materos</h3>'));
+  assert.ok(card);
+  assert.match(card, /<p>Todo para acompañar tu ritual<\/p>/);
+  assert.match(card, /class="photo mateAccessoriesPhoto"/);
+  assert.match(card, /<svg aria-hidden="true"/);
+  const original = readFileSync(new URL('../public/home/wide_cozy_warm_toned_photorealistic_product_sti.png', import.meta.url));
+  assert.equal(createHash('sha256').update(original).digest('hex'), '9e39f3d942cad4fdd6784262518bb3397659869c5942a7da9cfd71b297cc622a');
 });

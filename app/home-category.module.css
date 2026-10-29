@@ -14,6 +14,7 @@
   .tallMobileCard { height: 180px; }
 }
 .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 56%; }
+.photo.mateAccessoriesPhoto { object-position: 61% center; }
 .shade { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,.85), rgba(0,0,0,.70) 43%, transparent 53%); }
 .copy { position: relative; width: 164px; padding: 12px 0 0 16px; }
 .copy h3 { font-size: 18px; line-height: 22px; font-weight: 600; }
