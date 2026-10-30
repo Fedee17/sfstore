@@ -25,7 +25,7 @@ function load(file) {
   const code = ts.transpileModule(readFileSync(new URL('../' + file, import.meta.url), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
-  new Function('require', 'exports', code)(name => Object.hasOwn(modules, name) ? modules[name] : require(name), exports);
+  new Function('require', 'exports', code)(name => Object.hasOwn(modules, name) ? modules[name] : name.endsWith('.module.css') ? { default: new Proxy({}, { get: (_, key) => key }) } : require(name), exports);
   return exports.default;
 }
 const help = () => renderToStaticMarkup(React.createElement(load('app/ayuda/page.tsx')));

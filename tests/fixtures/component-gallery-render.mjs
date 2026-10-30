@@ -19,7 +19,7 @@ const mocks={
  '@/lib/catalog/attribute-config':{getAttributeFieldsForCategory:()=>[],getCatalogAttributeValues:()=>[]},
  '@/lib/product-taxonomy':{MATE_PRODUCT_TYPES:[],PRODUCT_ATTRIBUTE_NAMES:{}},
 };
-function load(file){const out={};const code=ts.transpileModule(readFileSync(new URL(file,root),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',code)(n=>mocks[n]??(n.startsWith('@/')?load(n.slice(2)+'.ts'):require(n)),out);return out;}
+function load(file){const out={};const code=ts.transpileModule(readFileSync(new URL(file,root),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',code)(n=>mocks[n]??(n.startsWith('@/')?load(n.slice(2)+'.ts'):n==='../web-transfer-pricing.ts'?load('lib/web-transfer-pricing.ts'):require(n)),out);return out;}
 const {ProductForm}=load('components/admin/products/product-form.tsx');
 export function renderGallery(connector='cc'){
  const product={id:'11111111-1111-4111-8111-111111111111',name:'PRUEBA LOCAL',slug:'synthetic',status:'draft',price:30666.67,stock:0,featured:false,category_id:'category',categories:null,product_images:[]};
