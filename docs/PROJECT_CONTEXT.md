@@ -1,6 +1,6 @@
 # SFSTORE — Continuidad actual
 
-Actualizado: 29/10/2026 (Argentina). **Única fuente de continuidad mutable**, no nueva cola. Última evidencia conocida: revalidar lo que pueda cambiar antes de una operación sensible; este archivo no concede autorizaciones.
+Actualizado: 30/10/2026 (Argentina). **Única fuente de continuidad mutable**, no nueva cola. Última evidencia conocida: revalidar lo que pueda cambiar antes de una operación sensible; este archivo no concede autorizaciones.
 
 ## Entorno y Production conocidos
 
@@ -13,6 +13,7 @@ Actualizado: 29/10/2026 (Argentina). **Única fuente de continuidad mutable**, n
 | Vercel | Automatic restaurado y confirmado tras recargar; cero builds pendientes al cierre del 27/10. Reconfirmar antes de publicar otro cambio |
 | Supabase autorizado conocido | `xspvoicelbxlmtqoiolc` (con e después de voic); no conectar ni escribir por esta referencia |
 | Datos P08 Lote 01 | Aplicado una vez y verificado en Production el 27/10: seis perfumes, 100 ml y contenido aprobado, nombre Liquid Brun corregido. No volver a ejecutar por retomar un chat; [cierre y límites](contenido/P08-PERFUMES-LOTE-01-20261027.md#cierre-de-ejecución-autorizada--27102026) |
+| Datos P08 Lote 02 | **Aplicado y verificado en Production el 30/10/2026, 10:18:53 Argentina**: Momento Riffs, La voie Maison Alhambra, Hawas Tropical y Club de Nuit Iconic; ocho textos y 40 atributos nuevos, seis anteriores conservados, campos comerciales e imágenes intactos; cuatro fichas públicas verificadas. Iconic sin volumen declarado. SHA-256 SQL `58ef05e4795982433f3a917e4e46ec09dd59a3920ab6fff9602447c967235125`. No volver a ejecutar; cierre en sección 9 del Plan. |
 
 ## Trabajo actual y siguiente paso
 
