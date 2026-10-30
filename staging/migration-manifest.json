@@ -237,6 +237,12 @@
       "stagingFile": "staging/supabase/migrations/202610240002_component_gallery_editor.sql",
       "sourceSha256": "18d00f97400a6e11c33f8e7ebb12e2b6df863f425c84d62e0cc56aefe7dc4469",
       "stagingSha256": "18d00f97400a6e11c33f8e7ebb12e2b6df863f425c84d62e0cc56aefe7dc4469"
+    },
+    {
+      "source": "supabase/migrations/202610300001_public_attribute_boundary.sql",
+      "stagingFile": "staging/supabase/migrations/202610300001_public_attribute_boundary.sql",
+      "sourceSha256": "101058fbedb909581e21d858db0cf4ba57f6e9ec0c3cca7f9e767f825b294675",
+      "stagingSha256": "101058fbedb909581e21d858db0cf4ba57f6e9ec0c3cca7f9e767f825b294675"
     }
   ]
 }
