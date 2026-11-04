@@ -18,6 +18,7 @@ const modules = {
   '@/lib/web-transfer-pricing': { getWebTransferPrice: () => { throw Error('No prices needed for this content test'); } },
   '@/services/products': { getCatalogPublications: async () => [] },
   '@/lib/catalog/home-selection': { getHomeFeaturedProducts: () => [] },
+  '@/lib/catalog/home-card-presentation': { getHomeCardPricing: () => null, getHomeCardRecommendation: () => null },
   '@/lib/products/public-families': { publicationAvailable: () => false },
 };
 function load(file) {

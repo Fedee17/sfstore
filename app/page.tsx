@@ -3,12 +3,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
-import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { getHomeCardPricing, getHomeCardRecommendation } from "@/lib/catalog/home-card-presentation";
 import { getHomeFeaturedProducts } from "@/lib/catalog/home-selection";
 import { publicationAvailable } from "@/lib/products/public-families";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getCatalogPublications, type PublicProduct } from "@/services/products";
 import categoryStyles from "./home-category.module.css";
+import featuredStyles from "./home-featured.module.css";
 
 export const metadata: Metadata = {
   title: "Perfumes árabes, mates y regalos",
@@ -59,7 +60,9 @@ const benefits = [
 ] as const;
 
 function formatCurrency(value: number) {
-  return currencyFormatter.format(value);
+  return Number.isInteger(value) ? currencyFormatter.format(value) : new Intl.NumberFormat("es-AR", {
+    style: "currency", currency: "ARS", minimumFractionDigits: 2, maximumFractionDigits: 2,
+  }).format(value);
 }
 
 function getCategoryLabel(product: PublicProduct) {
@@ -100,17 +103,17 @@ function ProductVisual({
 }
 
 function SimplePrice({ product, from = false }: { product: PublicProduct; from?: boolean }) {
-  if (!hasValidWebPrice(product.price)) return <p className="text-sm font-semibold text-[#003B73]">Precio a confirmar</p>;
-  const price = getWebTransferPrice(product.price);
-
+  const pricing = getHomeCardPricing(product);
+  if (!pricing) return <p className={featuredStyles.stock}>Precio a confirmar</p>;
   return (
     <div>
-      <p className="text-xs font-semibold text-[#003B73]">
-        Transferencia bancaria
+      <p className={featuredStyles.list}>
+        {pricing.reduced ? <><span className="sr-only">Precio de lista: </span><s>{from ? "Desde " : ""}{formatCurrency(pricing.list)}</s></> : null}
       </p>
-      <p className="mt-1 break-words text-lg font-semibold text-[#102033] sm:text-2xl">
-        {from ? "Desde " : ""}{formatCurrency(price)}
-      </p>
+      <div className={featuredStyles.priceRow}>
+        <p className={featuredStyles.special} data-compact={formatCurrency(pricing.special).replace(/s/g, "").length > 9 || from || undefined}><span className="sr-only">Precio especial: </span>{from ? <span className={featuredStyles.from}>Desde </span> : null}{formatCurrency(pricing.special)}</p>
+        {pricing.savings !== null ? <span className={featuredStyles.discount}>{pricing.savings}% OFF</span> : null}
+      </div>
     </div>
   );
 }
@@ -255,7 +258,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {featuredProducts.length > 0 ? <section id="productos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10">
+      {featuredProducts.length > 0 ? <section id="productos" className={`${featuredStyles.section} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`}>
         <div className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
@@ -271,43 +274,31 @@ export default async function Home() {
         </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
-            {featuredProducts.map((product) => (
-              <article
-                key={product.id}
-                className="flex min-h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-[#003B73]/15 bg-white/70 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#102033]/10"
-              >
-                <a href={`/producto/${product.slug}`} className="block min-w-0">
-                  <ProductVisual
-                    product={product}
-                    label={getCategoryLabel(product)}
-                    className="aspect-[3/4] max-h-[380px] rounded-b-none"
-                  />
-                </a>
-                <div className="flex min-w-0 flex-1 flex-col justify-between p-3 sm:p-5">
-                  <div className="min-w-0">
-                    <span className="rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold text-[#0072CE]">
-                      {getCategoryLabel(product)}
-                    </span>
-                    <h3 className="mt-3 line-clamp-2 break-words text-base sm:text-xl font-semibold text-[#102033]">
-                      {product.name}
-                    </h3>
-                    <p className="mt-2 line-clamp-2 break-words text-sm leading-6 text-[#102033]/65">
-                      {product.shortDescription}
-                    </p>
+            {featuredProducts.map((product) => {
+              const available = publicationAvailable(product);
+              const recommendation = getHomeCardRecommendation(product);
+              return (
+                <article key={product.id} className={featuredStyles.card} data-product-slug={product.slug}>
+                  <a href={`/producto/${product.slug}`} className="block min-w-0">
+                    <ProductVisual product={product} label={getCategoryLabel(product)} className={featuredStyles.photo} />
+                  </a>
+                  <div className={featuredStyles.body}>
+                    <span className={featuredStyles.category}>{getCategoryLabel(product)}</span>
+                    <h3 className={featuredStyles.name} title={product.name}>{product.name}</h3>
+                    <p className={featuredStyles.recommendation}>{recommendation}</p>
+                    <div className={featuredStyles.bottom}>
+                      {!available ? <p className={featuredStyles.stock}>Agotado · consultar</p> : null}
+                      <SimplePrice product={product} from={product.homePriceFrom} />
+                      <p className={featuredStyles.payment}>
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M5 8h2M17 16h2" /></svg>
+                        <span>Efectivo o transferencia</span>
+                      </p>
+                      <a href={`/producto/${product.slug}`} className={featuredStyles.button}>Ver producto</a>
+                    </div>
                   </div>
-                  <div className="mt-4 flex min-w-0 flex-col gap-4 border-t border-[#003B73]/15 pt-3">
-                    <p className="text-xs font-semibold text-[#526479]">{publicationAvailable(product) ? "En stock" : "Agotado · consultar"}</p>
-                    <SimplePrice product={product} from={product.homePriceFrom} />
-                    <a
-                      href={`/producto/${product.slug}`}
-                      className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#102033] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#0072CE]"
-                    >
-                      Ver producto
-                    </a>
-                  </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
       </section> : null}
 

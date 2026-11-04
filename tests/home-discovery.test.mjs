@@ -8,6 +8,7 @@ import React from 'react';
 import * as jsx from 'react/jsx-runtime';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as prices from '../lib/web-transfer-pricing.ts';
+import * as savings from '../lib/pricing.ts';
 import * as availability from '../lib/products/public-families.ts';
 import * as recommendations from '../lib/catalog/perfume-recommendation.ts';
 
@@ -20,7 +21,8 @@ function load(file, modules = {}) {
   return out;
 }
 const selection = load('lib/catalog/home-selection.ts', { '../products/public-families': availability, '../web-transfer-pricing': prices, './perfume-recommendation': recommendations });
-const product = (id, extra = {}) => ({ id, name: id, slug: id, category: 'perfumes', stock: 1, price: 100, featured: true, shortDescription: 'Prueba', primaryImageUrl: '/test.webp', ...extra });
+const cardPresentation = load('lib/catalog/home-card-presentation.ts', { '../pricing': savings });
+const product = (id, extra = {}) => ({ id, name: id, slug: id, category: 'perfumes', stock: 1, price: 100, transferPrice: 75, featured: true, shortDescription: 'Prueba', primaryImageUrl: '/test.webp', ...extra });
 
 test('home requires featured, availability, valid price and a configured photograph, without mutation', () => {
   const input = [product('empty', {stock:0}), product('missing', {primaryImageUrl:null}), product('blank', {primaryImageUrl:'  '}), product('zero', {price:0}), product('null', {price:null}), product('nan', {price:NaN}), product('negative', {price:-10}), product('infinite', {price:Infinity}), product('photo'), product('not-featured', {featured:false})];
@@ -67,7 +69,7 @@ test('home uses derived combo availability and approved prices without changing 
   assert.deepEqual(selection.getHomeFeaturedProducts([{...combo,stock:0}]),[]);
 });
 
-async function renderHome(products = []) {
+async function renderHome(products = [], featuredSelection = selection) {
   const modules = {
     react: React, 'react/jsx-runtime': jsx,
     'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
@@ -75,7 +77,8 @@ async function renderHome(products = []) {
     '@/components/site-header': { SiteHeader: () => React.createElement('header', null, 'Existing header') },
     '@/components/home-hero-slider': { HomeHeroSlider: ({ slides }) => React.createElement('div', { id: 'hero' }, ...slides.map(slide => slide.title + slide.subtitle)) },
     '@/lib/web-transfer-pricing': prices, '@/lib/products/public-families': availability,
-    '@/lib/catalog/home-selection': selection,
+    '@/lib/catalog/home-selection': featuredSelection,
+    '@/lib/catalog/home-card-presentation': cardPresentation,
     '@/lib/whatsapp': { buildWhatsAppUrl: message => 'https://wa.me/000?text=' + encodeURIComponent(message) },
     '@/services/products': { getCatalogPublications: async () => products },
   };
@@ -188,6 +191,7 @@ test('approved banners keep HTML copy, gender destinations and a single responsi
     '@/components/home-hero-slider': { HomeHeroSlider: props => { slides.push(...props.slides); return null; } },
     '@/lib/web-transfer-pricing': prices, '@/lib/products/public-families': availability,
     '@/lib/catalog/home-selection': selection,
+    '@/lib/catalog/home-card-presentation': cardPresentation,
     '@/lib/whatsapp': { buildWhatsAppUrl: () => 'https://wa.me/000' },
     '@/services/products': { getCatalogPublications: async () => [] },
   }).default;
@@ -284,4 +288,34 @@ test('family card shows the actual minimum transfer price and family destination
   assert.match(html,/Desde .*75/);assert.equal((html.match(/href="\/producto\/familia-real"/g)??[]).length,2);
   assert.doesNotMatch(await renderHome([product('simple')]),/Desde /);
   assert.doesNotMatch(await renderHome([{...family,variants:[product('a'),product('b')]}]),/Desde /);
+});
+
+
+test('home card uses the supplied special price, derives savings and never defaults to 25 percent', () => {
+  for (const [special, percent] of [[90,10],[75,25],[50,50],[100,null],[110,null]]) {
+    const input={price:100,transferPrice:special};
+    assert.deepEqual(cardPresentation.getHomeCardPricing(input), {list:100,special,savings:percent,reduced:special<100});
+    assert.deepEqual(input,{price:100,transferPrice:special});
+  }
+  for(const special of [undefined,null,NaN,0,-1]) assert.deepEqual(cardPresentation.getHomeCardPricing({price:100,transferPrice:special}),{list:100,special:100,savings:null,reduced:false});
+  for(const price of [0,-1,NaN,Infinity]) assert.equal(cardPresentation.getHomeCardPricing({price}),null);
+});
+
+test('home recommendations require current catalog evidence and never reuse unsupported mockup claims', () => {
+  const input={slug:'homme-black-100ml',name:'HOMME BLACK',shortDescription:'Una propuesta cálida y dulce para perfumes envolventes.'};
+  assert.equal(cardPresentation.getHomeCardRecommendation(input),'Para gustos dulces y cálidos.');
+  assert.notEqual(cardPresentation.getHomeCardRecommendation({...input,shortDescription:'Un perfume fresco.'}),'Para gustos dulces y cálidos.');
+  assert.equal(cardPresentation.getHomeCardRecommendation({...input,slug:'other',shortDescription:'x'.repeat(120)}),null);
+  assert.equal(cardPresentation.getHomeCardRecommendation({...input,slug:'other',shortDescription:'Descripción completa. Texto restante.'}),'Descripción completa.');
+});
+
+test('featured render preserves exhausted state and links and only strikes a genuinely reduced list price', async () => {
+  const input=product('sold',{stock:0,price:100,transferPrice:90});
+  const html=await renderHome([input],{getHomeFeaturedProducts:()=>[input]});
+  const section=html.match(/<section id="productos"[\s\S]*?<\/section>/)[0];
+  assert.match(section,/Agotado · consultar/); assert.match(section,/10% OFF/);
+  assert.match(section,/<s>[^<]*100/); assert.match(section,/Efectivo o transferencia/);
+  assert.equal((section.match(/href="\/producto\/sold"/g)||[]).length,2);
+  const equal=await renderHome([product('equal',{transferPrice:100})]);
+  assert.doesNotMatch(equal.match(/<section id="productos"[\s\S]*?<\/section>/)[0],/<s>|% OFF/);
 });
