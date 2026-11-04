@@ -136,17 +136,17 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
   const pathname = usePathname();
   const totalItems = useCartStore((state) => state.totalItems);
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
-  const helpHref = buildWhatsAppUrl(
+  const contactHref = buildWhatsAppUrl(
     "Hola SFSTORE, quiero hacer una consulta desde la web.",
   );
 
   return (
     <header className="relative z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)] lg:sticky lg:top-0">
       <div className="bg-[#0072CE] text-white">
-        <div className="grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-4 py-2 sm:px-8 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:gap-6 lg:px-10 lg:py-3">
+        <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2 sm:px-8 lg:grid-cols-[100px_minmax(0,1fr)_auto] lg:gap-5 lg:px-10 lg:py-3">
           <Link
             href="/"
-            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-[76px] sm:w-[76px] lg:justify-self-start"
+            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-12 sm:w-12 lg:h-14 lg:w-14 lg:justify-self-start"
             aria-label="Ir al inicio de SFSTORE"
             prefetch={false}
           >
@@ -157,18 +157,18 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
             />
           </Link>
 
-          <form action="/buscar" method="get" className="order-3 col-span-2 min-w-0 lg:order-none lg:col-span-1 lg:mx-auto lg:w-full lg:max-w-[820px]" role="search">
+          <form action="/buscar" method="get" className="min-w-0 lg:mx-auto lg:w-full lg:max-w-[820px]" role="search">
             <label className="sr-only" htmlFor="site-search">
               Buscar productos
             </label>
-            <div className="flex min-w-0 items-center rounded-full bg-white px-4 py-1.5 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
+            <div className="flex min-w-0 items-center rounded-full bg-white px-2 py-0 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
               <input
                 key={searchQuery}
                 id="site-search"
                 name="buscar"
                 type="search"
                 defaultValue={searchQuery}
-                placeholder="¿Qué estás buscando?"
+                placeholder="Buscar productos"
                 className="min-w-0 flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#526479] sm:text-lg"
               />
               <button type="submit" aria-label="Buscar" className="ml-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#0072CE] transition hover:bg-[#EEF2F6] focus-visible:outline-2">
@@ -179,11 +179,9 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
 
           <div className="flex min-w-0 items-center justify-end gap-2 justify-self-end sm:gap-3 lg:ml-auto">
             <a
-              href={helpHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Consultar por WhatsApp"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:px-4"
+              href="/ayuda"
+              aria-label="Ayuda y preguntas frecuentes"
+              className="hidden min-h-11 items-center gap-2 rounded-full border border-white/25 sm:inline-flex px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:px-4"
             >
               <HelpIcon />
               <span className="text-xs sm:text-sm">Ayuda</span>
@@ -206,11 +204,11 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
       </div>
 
       <nav className="relative border-t border-white/10 bg-[#003B73] text-white" aria-label="Navegación principal">
-        <div className="flex min-h-11 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden" aria-label="Secciones del catálogo">
-          <Link href="/perfumes" prefetch={false} aria-current={pathname.startsWith("/perfumes") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Perfumes</Link>
-          <Link href="/mates" prefetch={false} aria-current={pathname.startsWith("/mates") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Mates</Link>
-          <Link href="/accesorios" prefetch={false} aria-current={pathname.startsWith("/accesorios") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Accesorios</Link>
-          <Link href="/ayuda" prefetch={false} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-white">Preguntas frecuentes</Link>
+        <div className="flex min-h-11 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden" aria-label="Secciones del catálogo">
+          <Link href="/perfumes" prefetch={false} aria-current={pathname.startsWith("/perfumes") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Perfumes</Link>
+          <Link href="/mates" prefetch={false} aria-current={pathname.startsWith("/mates") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Mates</Link>
+          <Link href="/accesorios" prefetch={false} aria-current={pathname.startsWith("/accesorios") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Accesorios</Link>
+          <Link href="/ayuda" prefetch={false} aria-label="Preguntas frecuentes" className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-white">Ayuda</Link>
         </div>
         <div className="mx-auto hidden max-w-6xl flex-wrap justify-center gap-1 overflow-visible px-3 py-2 text-sm font-semibold sm:px-8 lg:flex">
           <Link
@@ -240,7 +238,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
           />
           <Link href="/accesorios" prefetch={false} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 py-2 text-white hover:bg-white/10">Accesorios</Link>
           <a
-            href={helpHref}
+            href={contactHref}
             target="_blank"
             rel="noopener noreferrer"
             className="hidden shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:block"

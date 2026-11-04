@@ -80,7 +80,7 @@ function ProductVisual({
 }) {
   if (product?.primaryImageUrl) {
     return (
-      <div className={`relative min-w-0 overflow-hidden rounded-[1.5rem] bg-white ${className}`}>
+      <div className={`relative min-w-0 overflow-hidden rounded-[1.5rem] bg-[#FFFDFA] ${className}`}>
         <img
           src={product.primaryImageUrl}
           alt={product.primaryImageAlt ?? product.name}
@@ -280,7 +280,7 @@ export default async function Home() {
                   <ProductVisual
                     product={product}
                     label={getCategoryLabel(product)}
-                    className="aspect-[4/3] rounded-b-none"
+                    className="aspect-[3/4] max-h-[380px] rounded-b-none"
                   />
                 </a>
                 <div className="flex min-w-0 flex-1 flex-col justify-between p-3 sm:p-5">

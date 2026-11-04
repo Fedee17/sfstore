@@ -9,6 +9,8 @@
   isolation: isolate;
   display: block;
   min-width: 0;
+  min-height: 156px;
+  width: 100%;
   aspect-ratio: 350 / 180;
   overflow: hidden;
   border-radius: 1.5rem;
@@ -28,11 +30,8 @@
   .photoCard { aspect-ratio: 346 / 196; }
   .copy { min-width: 110px; padding: 14px 0 0 14px; }
   .copy h3 { font-size: 16px; line-height: 20px; }
-  .copy p { font-size: 12px; line-height: 16px; }
+  .copy p { font-size: 14px; line-height: 20px; }
   .arrow { left: 14px; bottom: 14px; }
-}
-@media (min-width: 640px) and (max-width: 719px) {
-  .copy p { max-width: 76px; }
 }
 @media (min-width: 1024px) {
   .grid { gap: 16px; }

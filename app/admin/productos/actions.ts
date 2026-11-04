@@ -1,5 +1,6 @@
 "use server";
 
+import { assertPerfumePricePolicy, supportsPerfumePricePolicy } from "@/lib/products/perfume-price-policy";
 import { assertUploadFormData } from "@/lib/uploads/limits";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -346,6 +347,7 @@ async function revalidateOperationalProductPaths(
 async function saveProductForm(formData: FormData, operationType: "create_product" | "update_product"): Promise<ProductFormActionState> {
   const payload = readProductForm(formData);
   const calculatedPrice = formData.get("listPriceCalculation") === "applied";
+  const perfumePolicyApplied = formData.get("perfumePricePolicy") === "applied";
   if (calculatedPrice) assertCalculatedListPrice(payload.product.price, payload.product.transfer_price);
   const operationKey = String(formData.get("operationKey") ?? "");
   const productId = payload.productId;
@@ -375,6 +377,18 @@ async function saveProductForm(formData: FormData, operationType: "create_produc
     const category = await getProductCategoryInfo(product.category_id);
     const previousCategory = existing && existing.category_id !== product.category_id
       ? await getProductCategoryInfo(existing.category_id) : null;
+    if (perfumePolicyApplied) {
+      if (existing?.family_id) throw new Error("El precio de este SKU se administra desde su familia.");
+      if (existing) {
+        const { data: current, error } = await getSupabaseAdminClient().from("products")
+          .select("name, categories(slug), product_attributes(name,value)").eq("id", productId).single();
+        if (error || !current) throw new Error("No se pudo verificar la clasificación del perfume.");
+        const currentCategory = Array.isArray(current.categories) ? current.categories[0] : current.categories;
+        const type = current.product_attributes?.find((a: {name:string;value:string}) => a.name.toLowerCase() === "tipo")?.value ?? "";
+        if (!supportsPerfumePricePolicy(currentCategory?.slug ?? "", current.name, type)) throw new Error("El cálculo no corresponde a este producto.");
+      }
+      assertPerfumePricePolicy(category?.slug ?? "", product.name, payload.type, product.cost, product.price, product.transfer_price);
+    }
     const attributes = buildProductAttributes(payload, category?.slug ?? "", formData);
     const { images, uploads } = await service.buildImages(product.name);
     if (existing && await service.version() !== expectedVersion) {

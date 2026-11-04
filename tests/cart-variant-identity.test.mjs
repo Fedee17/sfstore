@@ -64,8 +64,8 @@ test('cart and checkout render the same exact SKU identity and retain original m
  }
 });
 
-test('compact use reuses ProductImage while the existing catalog keeps its standard appearance',()=>{
+test('compact use preserves square thumbnails while catalog uses complete portrait photographs',()=>{
  const product={name:'Prueba',imagePlaceholder:'PR',primaryImageUrl:'/same.svg'};
  const standard=renderToStaticMarkup(React.createElement(ProductImage,{product})),compact=renderToStaticMarkup(React.createElement(ProductImage,{product,compact:true}));
- assert.match(standard,/aspect-\[4\/3\]/);assert.match(standard,/group-hover:scale/);assert.match(compact,/aspect-square/);assert.doesNotMatch(compact,/group-hover:scale/);
+ assert.match(standard,/aspect-\[3\/4\]/);assert.match(standard,/object-contain/);assert.doesNotMatch(standard,/object-cover/);assert.doesNotMatch(standard,/group-hover:scale/);assert.match(compact,/aspect-square/);assert.doesNotMatch(compact,/group-hover:scale/);
 });

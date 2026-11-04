@@ -135,22 +135,7 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
           25% de descuento si todos los pagos son en efectivo o transferencia. Con débito, crédito, QR u otro medio, toda la venta usa precio de lista. El servidor verifica los precios al confirmar.
         </p>
 
-        {recipes.length ? <fieldset className="mt-5 grid gap-3 rounded-2xl border border-[#556B2F]/20 p-4" disabled={completed}>
-          <legend className="px-2 font-semibold">Cargadores completos</legend>
-          <p className="text-sm">Dos presentaciones con precio especial. Cada una consume un cabezal y el cable indicado; comparten stock con los artículos individuales. El descuento se aplica una sola vez.</p>
-          {recipes.flatMap(recipe => (["cc", "lightning"] as const).map(connector => {
-            const parts = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
-            const available = parts.every(Boolean) ? Math.min(...parts.map(p => p!.stock)) : 0;
-            return <article key={`${recipe.id}:${connector}`} className="grid gap-2 rounded-xl border border-[#556B2F]/20 p-3">
-              <h3 className="font-semibold">{componentPublicationName(connector)}</h3>
-              <p className="text-sm">{recipe.combo_list_price ? currencyFormatter.format(calculateStoreSalePricing([{ price: recipe.combo_list_price, quantity: 1 }], payments.map(p => p.method)).total) : "Precio pendiente"} · Disponibles: {available}</p>
-              <button type="button" disabled={!recipe.prices_approved || !recipe.combo_price_version || available < 1} onClick={() => selectCombo(recipe, connector)} className="min-h-11 rounded-xl border border-[#556B2F]/40 px-3 py-3 text-left font-semibold disabled:opacity-50">Agregar {componentPublicationName(connector)}</button>
-            </article>;
-          }))}
-          <p role="alert" className="text-sm">{componentError}</p>
-        </fieldset> : null}
-
-        {!recipes.length && componentError ? <p role="alert" className="mt-3 text-sm">{componentError}</p> : null}
+        {componentError ? <p role="alert" className="mt-3 text-sm">{componentError}</p> : null}
         <div className="relative mt-5">
           <label className="grid gap-2 text-sm font-semibold">
             Buscar por nombre o SKU

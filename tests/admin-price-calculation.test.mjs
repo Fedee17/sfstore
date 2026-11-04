@@ -5,6 +5,7 @@ import ts from 'typescript';
 import * as money from '../lib/products/admin-price-calculation.ts';
 import { getWebTransferPrice, getWebTransferSubtotal } from '../lib/web-transfer-pricing.ts';
 import * as policy from '../lib/products/admin-product-policy.ts';
+import * as perfumePolicy from '../lib/products/perfume-price-policy.ts';
 import * as yaraPolicy from '../lib/products/yara-rosa-consolidation.ts';
 import { ProductSaveError } from '../lib/products/atomic-save.ts';
 
@@ -42,9 +43,10 @@ test('server calculation verification rejects a tampered or missing special/list
 function serverFixture(options={}){
   const plans=[],requests=[];
   const existing={id:'00000000-0000-4000-8000-000000000001',slug:'prueba',status:'active',category_id:'00000000-0000-4000-8000-000000000002',cost:10000,cost_source_purchase_item_id:null,historical_identity:false,family_id:options.family?'family':null};
-  const client={from(table){return {select(){return this},eq(){return this},async maybeSingle(){return {data:table==='categories'?{name:'Perfumes',slug:'perfumes'}:table==='products'?existing:null,error:null}}}}};
+  const client={from(table){return {select(){return this},eq(){return this},async single(){return {data:{name:options.name??'Perfume',categories:{slug:options.category??'perfumes'},product_attributes:[{name:'Tipo',value:options.type??'Perfumes'}]},error:null}},async maybeSingle(){return {data:table==='categories'?{name:'Perfumes',slug:options.category??'perfumes'}:table==='products'?existing:null,error:null}}}}};
   const mocks={
     '@/lib/products/admin-price-calculation':money,
+    '@/lib/products/perfume-price-policy':perfumePolicy,
     '@/lib/products/admin-product-policy':policy,
     '@/lib/products/yara-rosa-consolidation':yaraPolicy,
     '@/lib/products/atomic-save':{ProductSaveError},
@@ -67,8 +69,8 @@ function serverFixture(options={}){
   };
   const code=ts.transpileModule(readFileSync(new URL('../app/admin/productos/actions.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   const actions={};new Function('require','exports',code)(id=>mocks[id]??{},actions);
-  const form=({price='21999',special='16500',cost='10000',applied=false}={})=>{
-    const f=new FormData();for(const [key,value]of Object.entries({productId:existing.id,categoryId:existing.category_id,name:'Prueba',slug:'prueba',shortDescription:'Prueba',description:'Prueba',status:'active',price,transferPrice:special,cost,operationKey:'00000000-0000-4000-8000-000000000003',expectedVersion:'a'.repeat(64),listPriceCalculation:applied?'applied':'manual'}))f.set(key,value);return f;
+  const form=({price='21999',special='16500',cost='10000',applied=false,perfume='manual',type='Perfumes'}={})=>{
+    const f=new FormData();for(const [key,value]of Object.entries({productId:existing.id,categoryId:existing.category_id,name:'Prueba',slug:'prueba',shortDescription:'Prueba',description:'Prueba',status:'active',price,transferPrice:special,cost,operationKey:'00000000-0000-4000-8000-000000000003',expectedVersion:'a'.repeat(64),listPriceCalculation:applied?'applied':'manual',perfumePricePolicy:perfume,type}))f.set(key,value);return f;
   };
   return {actions,plans,requests,form};
 }
@@ -93,5 +95,28 @@ test('actual server rejects malformed money and calculation tampering before a s
 test('stale edits and attempts to calculate a family SKU do not commit a save plan',async()=>{
   for(const options of [{stale:true},{family:true}]){
     const f=serverFixture(options);const r=await f.actions.updateProduct({},f.form({price:'22000',special:'16500',applied:true}));assert.equal(r.status,'error');assert.match(r.message,options.stale?/cambio/:/familia/);assert.equal(f.plans.length,0);
+  }
+});
+
+
+test('perfume policy uses integer cents, upward thousands and the existing exact web discount',()=>{
+  for(const[cost,special,list]of [['0.01','1000.00','1333.33'],['10000','14000.00','18666.67'],['10000.01','15000.00','20000.00'],['67181.82','95000.00','126666.67']]){
+    const value=perfumePolicy.calculatePerfumePricePolicy(cost);
+    assert.equal(value.specialText,special);assert.equal(value.listText,list);assert.equal(getWebTransferPrice(value.list),value.special);
+  }
+  for(const bad of ['','0','-1','NaN','Infinity','1.001','9999999999.99'])assert.throws(()=>perfumePolicy.calculatePerfumePricePolicy(bad));
+  for(const[category,name,type]of [['mates','Mate','Mate'],['accesorios','Cable',''],['perfumes','Decant Hawas','Perfumes'],['perfumes','Hawas','Decant'],['perfumes','Atomizador','Accesorios']])assert.equal(perfumePolicy.supportsPerfumePricePolicy(category,name,type),false);
+});
+
+test('actual server applies the explicit perfume policy through the existing atomic save',async()=>{
+  for(const action of ['createProduct','updateProduct']){
+    const f=serverFixture();const r=await f.actions[action]({},f.form({price:'18666.67',special:'14000',applied:true,perfume:'applied'}));
+    assert.equal(r.status,'success',JSON.stringify(r));assert.equal(f.plans.length,1);assert.equal(f.plans[0].payload.product.cost,10000);
+  }
+});
+
+test('actual server rejects perfume policy tampering, decants, other categories and stale edits',async()=>{
+  for(const[options,input]of [[{}, {special:'15000',price:'20000'}],[{type:'Decant'},{}],[{category:'mates'},{}],[{name:'Decant Hawas'},{}],[{family:true},{}],[{stale:true},{}],[{}, {cost:'0'}],[{}, {type:'Decant'}]]){
+    const f=serverFixture(options);const r=await f.actions.updateProduct({},f.form({price:'18666.67',special:'14000',applied:true,perfume:'applied',...input}));assert.equal(r.status,'error',JSON.stringify({options,input,r}));assert.equal(f.plans.length,0);
   }
 });

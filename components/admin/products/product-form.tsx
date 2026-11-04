@@ -35,6 +35,7 @@ import {
 } from "@/lib/products/product-image-files";
 import type { AdminCategory, AdminProduct } from "@/services/admin";
 import { calculateListFromSpecial, suggestSpecialFromCost, parseAdminMoneyCents } from "@/lib/products/admin-price-calculation";
+import { calculatePerfumePricePolicy, supportsPerfumePricePolicy } from "@/lib/products/perfume-price-policy";
 import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
 
 type ProductFormProps = {
@@ -458,6 +459,9 @@ export function ProductForm({
   const [specialInput, setSpecialInput] = useState(String(product?.transfer_price ?? ""));
   const [listInput, setListInput] = useState(String(product?.price ?? 0));
   const [listPriceApplied, setListPriceApplied] = useState(false);
+  const [perfumePriceApplied, setPerfumePriceApplied] = useState(false);
+  const [pricingType, setPricingType] = useState(getAttribute(product, PRODUCT_ATTRIBUTE_NAMES.type));
+  const [pricingName, setPricingName] = useState(product?.name ?? "");
   let proposedList: ReturnType<typeof calculateListFromSpecial> | null = null;
   let calculationError = "";
   let suggestedSpecial: string | null = null;
@@ -525,6 +529,11 @@ export function ProductForm({
   const catalogAttributeFields = getAttributeFieldsForCategory(
     selectedCategory?.slug ?? "",
   );
+  const perfumePolicyEligible = calculatePriceEnabled && supportsPerfumePricePolicy(selectedCategory?.slug ?? "", pricingName, pricingType);
+  let perfumeSuggestion: ReturnType<typeof calculatePerfumePricePolicy> | null = null;
+  try { if (perfumePolicyEligible && costInput.trim()) perfumeSuggestion = calculatePerfumePricePolicy(costInput); }
+  catch { /* No suggestion until a valid cost is entered; the server validates again on save. */ }
+
 
   useEffect(() => {
     const urls = previewUrlsRef.current;
@@ -693,7 +702,7 @@ export function ProductForm({
               name="categoryId"
               required
               value={selectedCategoryId}
-              onChange={(event) => setSelectedCategoryId(event.target.value)}
+              onChange={(event) => { setSelectedCategoryId(event.target.value); setPerfumePriceApplied(false); }}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             >
               <option value="">Seleccionar categoria</option>
@@ -719,6 +728,7 @@ export function ProductForm({
             <span className="text-sm font-semibold text-[#1F1F1F]/75">Nombre</span>
             <input
               name="name"
+              onChange={(event) => { setPricingName(event.target.value); setPerfumePriceApplied(false); }}
               required
               defaultValue={product?.name ?? ""}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
@@ -766,7 +776,7 @@ export function ProductForm({
               step="0.01"
               required
               value={listInput}
-              onChange={(event) => { setListInput(event.target.value); setListPriceApplied(false); }}
+              onChange={(event) => { setListInput(event.target.value); setListPriceApplied(false); setPerfumePriceApplied(false); }}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
           </label>
@@ -782,6 +792,7 @@ export function ProductForm({
               onChange={(event) => {
                 const special = event.target.value;
                 setSpecialInput(special);
+                setPerfumePriceApplied(false);
                 setListPriceApplied(false);
                 if (calculatePriceEnabled && !product) {
                   try { const calculated = calculateListFromSpecial(special); setListInput(calculated.listText); setListPriceApplied(true); }
@@ -794,14 +805,25 @@ export function ProductForm({
 
           {calculatePriceEnabled ? (
             <div className="grid gap-2 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] px-4 py-3 md:col-span-2" aria-live="polite">
+              <input type="hidden" name="perfumePricePolicy" value={perfumePriceApplied ? "applied" : "manual"} />
               <input type="hidden" name="listPriceCalculation" value={listPriceApplied ? "applied" : "manual"} />
               {proposedList ? <p className="text-sm">Especial ingresado: <strong>{displayMoney(proposedList.special)}</strong> · Lista calculada: <strong>{displayMoney(proposedList.list)}</strong>.</p> : <p className="text-sm">Ingresá un precio especial para calcular la lista.</p>}
               {effectiveTransfer !== null ? <p className="text-sm">Transferencia con la lista actual: <strong>{displayMoney(effectiveTransfer)}</strong>.</p> : null}
               {calculationError ? <p role="alert" className="text-sm font-semibold">{calculationError}</p> : null}
+              {perfumePolicyEligible ? <>
+                <button type="button" disabled={!perfumeSuggestion || isSubmitting} onClick={() => {
+                  if (!perfumeSuggestion) return;
+                  setSpecialInput(perfumeSuggestion.specialText);
+                  setListInput(perfumeSuggestion.listText);
+                  setListPriceApplied(true);
+                  setPerfumePriceApplied(true);
+                }} className="min-h-11 justify-self-start rounded-full border border-[#556B2F]/30 px-4 py-2 text-sm font-semibold text-[#556B2F] disabled:opacity-50">Calcular precio sugerido (+40%)</button>
+                <p className="text-xs leading-5">Redondea el especial hacia arriba a $1.000. Revisá ambos importes antes de guardar.</p>
+              </> : null}
               {product ? <>
                 <p className="text-xs leading-5">La lista existente se conserva hasta aplicar el cálculo. Modificar el costo no cambia los precios.</p>
                 <button type="button" disabled={!proposedList || isSubmitting} onClick={() => {
-                  if (proposedList) { setListInput(proposedList.listText); setListPriceApplied(true); }
+                  if (proposedList) { setListInput(proposedList.listText); setListPriceApplied(true); setPerfumePriceApplied(false); }
                 }} className="min-h-11 justify-self-start rounded-full border border-[#556B2F]/30 px-4 py-2 text-sm font-semibold text-[#556B2F] disabled:opacity-50">Aplicar precio de lista</button>
               </> : null}
               {listPriceApplied ? <p role="status" className="text-sm">Cálculo aplicado al formulario. Revisá los importes antes de guardar.</p> : null}
@@ -836,10 +858,10 @@ export function ProductForm({
               min="0"
               step="0.01"
               value={costInput}
-              onChange={(event) => setCostInput(event.target.value)}
+              onChange={(event) => { setCostInput(event.target.value); setPerfumePriceApplied(false); }}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
-            {calculatePriceEnabled ? <span className="text-xs leading-5 text-[#1F1F1F]/60">{suggestedSpecial !== null ? "Especial sugerido (costo × 1,50): " + displayMoney(suggestedSpecial) + "." : "Ingresá un costo válido para ver la sugerencia."} Es orientativo: no modifica el precio especial manual.</span> : null}
+            {calculatePriceEnabled && !perfumePolicyEligible ? <span className="text-xs leading-5 text-[#1F1F1F]/60">{suggestedSpecial !== null ? "Especial sugerido (costo × 1,50): " + displayMoney(suggestedSpecial) + "." : "Ingresá un costo válido para ver la sugerencia."} Es orientativo: no modifica el precio especial manual.</span> : null}
           </label>
 
           <label className="grid gap-2">
@@ -866,7 +888,8 @@ export function ProductForm({
             <input
               name="type"
               list="mate-product-types"
-              defaultValue={getAttribute(product, PRODUCT_ATTRIBUTE_NAMES.type)}
+              value={pricingType}
+              onChange={(event) => { setPricingType(event.target.value); setPerfumePriceApplied(false); }}
               placeholder="Ej: Mate, Termo, Bombilla"
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />

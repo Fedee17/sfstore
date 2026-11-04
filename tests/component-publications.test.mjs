@@ -145,15 +145,15 @@ test('offer failure leaves physical catalog functional and never invents a combo
  globalThis.__publicationDb=db(false,raw.filter(p=>p.slug!=='cc'));assert.equal((await service.getCatalogPublications()).filter(p=>p.kind==='combo').length,1);
 });
 
-test('counter search and quick choices expose both named virtual presentations without listing a physical combo SKU',()=>{
+test('counter search exposes both virtual presentations without redundant fixed choices or a physical combo SKU',()=>{
  let state=0;
  const hooks={useActionState:()=>[{status:'idle',message:''},()=>{}],useState:init=>{const n=state++;return [n===0?'cargador completo':n===1?true:typeof init==='function'?init():init,()=>{}];},useMemo:fn=>fn(),useRef:()=>({current:{}})};
  const recipe={id:rid,name:'SYNTHETIC',head_product:'head',cable_cc_product:'cc',cable_lightning_product:'lightning',presentation_product:id,prices_approved:true,combo_list_price:30666.67,combo_price_version:'v1'};
  const {StoreSaleForm}=load('components/admin/sales/store-sale-form.tsx',{'react':hooks,'react/jsx-runtime':jsx,'next/link':{default:({children,...props})=>React.createElement('a',props,children)},'@/app/admin/ventas/actions':{createStoreSaleAction:()=>{}},'@/components/admin/pending-submit-button':{PendingSubmitButton:({children,pendingLabel,...props})=>React.createElement('button',{...props,'aria-label':pendingLabel},children)},'@/lib/store-sales':pricing,'@/lib/products/component-combos':combo});
  const html=renderToStaticMarkup(React.createElement(StoreSaleForm,{products:physical,recipes:[recipe]}));
- assert.match(html,/Agregar Cargador completo USB-C a USB-C/);assert.match(html,/Agregar Cargador completo USB-C a Lightning/);
+ assert.doesNotMatch(html,/<legend[^>]*>Cargadores completos/);
  assert.match(html,/<span class="block font-semibold">Cargador completo USB-C a USB-C/);assert.match(html,/<span class="block font-semibold">Cargador completo USB-C a Lightning/);
- assert.match(html,/Disponibles: 2/);assert.match(html,/23.000,00/);assert.doesNotMatch(html,/name="productId"/);
+ assert.match(html,/Stock 2/);assert.match(html,/23.000,00/);assert.doesNotMatch(html,/name="productId"/);
 });
 
 test('combo enquiry retains exact connector without unrelated mate/thermo recommendations',()=>{
