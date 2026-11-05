@@ -13,7 +13,7 @@ import { ProductImageGallery } from "@/components/product-image-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ProductInformation } from "@/components/product-information";
 
-const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
+const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
 
 export function ProductFamilyDetail({ product }: { product: Product }) {
   const variants = product.variants ?? [];

@@ -5,8 +5,8 @@ Actualizado: 05/11/2026 (Argentina). Única continuidad mutable; la única cola 
 ## Entorno y Production conocidos
 
 - Repositorio Fedee17/sfstore; dominio https://sfstore-ten.vercel.app.
-- Base verificada antes de publicar el carrusel: main local y origin/main en b500a64561d3bc07c17f13f633c8e0d8d535fcb7.
-- Deployment público verificado antes del cambio: dpl_AC6tv9QV2KaxtDuWJwpth1V6yKXP, READY/Production, commit b500a64. Punto de recuperación para el carrusel.
+- Main local y origin/main en 40bac0a3ba8eff93a853d1a1581d1881561467a5.
+- Último deployment público verificado: dpl_84Y2LBeNop7WFVnjrRFSkhF3GZZb, READY/Production, commit 40bac0a. Recuperación: dpl_AC6tv9QV2KaxtDuWJwpth1V6yKXP / b500a64.
 - Vercel sfstore: prj_XSoey2X2Oyqr8O5rBT8FBidxMrKV, equipo team_tab21Li6WWDl2lVutglfhidX. Rama de Production main, despliegues Git habilitados y sin comando para ignorar builds. Sin despliegues pendientes en la comprobación previa.
 - Supabase xspvoicelbxlmtqoiolc: lotes de contenido 01/02/03 y migración de privacidad aplicados y verificados; cierres/hashes en sección 9. No repetir operaciones.
 - Lote de 25 precios de perfumes aplicado y verificado: especial techo a $1.000 de costo ×1,40 y lista compatible con transferencia 25%; otros 54 registros preservados.
@@ -16,10 +16,9 @@ Actualizado: 05/11/2026 (Argentina). Única continuidad mutable; la única cola 
 
 ## Trabajo actual y siguiente paso
 
-- Encargo vigente P07: aplicar a la portada el mockup «LOS MÁS ELEGIDOS DE SF STORE». Rama y worktree codex/home-most-chosen-20261105, base b500a64. Main local y origin/main registrado coinciden en b500a64.
-- Candidato local: hasta seis destacados elegibles, ordenados por el precio especial que muestra la tarjeta, con tres visibles en escritorio y dos en celular. Avance automático de a uno cada 8 segundos y flechas laterales. El foco o un toque detienen la rotación y la preferencia de movimiento reducido muestra la selección estática. Las flechas quedan fuera de las tarjetas en 1366 px. En móvil, la fila avanza automáticamente y también admite deslizamiento táctil, con encaje por tarjeta. Las flechas quedan en escritorio.
-- Validado con build estándar Turbopack, TypeScript, 30 pruebas de inicio y precios, ESLint sin errores con dos avisos de img preexistentes y Playwright con catálogo sintético de solo lectura a 390 × 844, 1366 × 517 y 1366 × 768.
-- Publicación del candidato: avanzar main por fast-forward y verificar el despliegue automático, el dominio y el carrusel móvil.
+- P07 «Los más elegidos» publicado y verificado en 40bac0a. Main, GitHub y Production sincronizados en ese commit.
+- P05 / EXT-O1, candidato local sobre 40bac0a en codex/whatsapp-price-format-20261105. Por decisión del propietario, la ficha muestra precios de lista y transferencia redondeados al peso como WhatsApp, también al elegir variantes. El carrito conserva los importes exactos.
+- Verificación local: TypeScript y 38 pruebas pertinentes correctos. ESLint sin errores con dos avisos existentes sobre imágenes. Publicación pendiente de autorización expresa.
 
 ## Fuentes por necesidad
 

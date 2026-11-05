@@ -119,3 +119,11 @@ test('family thumbnails can be omitted without removing stored photos or changin
  assert.equal(JSON.stringify(props),before);
  assert.equal((hidden.match(/<img/g)??[]).length,1);
 });
+
+test('the detail rounds displayed prices while keeping the selected SKU price exact for the cart',()=>{
+ const variant={...black,price:129333.67};
+ const html=render({Color:'Negro'},{...family,variants:[variant,grey,green]});
+ assert.match(html,/data-testid="variant-list-price"[^>]*>Precio de lista: [^<]*129\.334<\/p>/);
+ assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.000<\/p>/);
+ assert.match(html,/data-cart-price="129333\.67"/);
+});

@@ -76,7 +76,7 @@ export async function generateMetadata({
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
   currency: "ARS",
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 0,
 });
 
 
