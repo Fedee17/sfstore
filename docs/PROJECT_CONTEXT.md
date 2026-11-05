@@ -5,9 +5,9 @@ Actualizado: 05/11/2026 (Argentina). Única continuidad mutable; la única cola 
 ## Entorno y Production conocidos
 
 - Repositorio Fedee17/sfstore; dominio https://sfstore-ten.vercel.app.
-- Main local y remoto: 18b3fc7d3d56e633f8c1e8e831453cde6d8be6c0, sincronizados por fast-forward el 05/11. El build automático de ese push fue cancelado por el bloqueo temporal, luego restaurado a Automatic.
-- Deployment público: dpl_35h7aERS79bhpFPPAVzcPTrrnvwG, READY/Production, commit 18b3fc7. El dominio respondió HTTP 200 y sirvió Destacados después de la promoción y la sincronización. Recuperación: dpl_5GLkAmox6jcemusuA7HQJzZqd7d6 / 30625ef.
-- Vercel sfstore: prj_XSoey2X2Oyqr8O5rBT8FBidxMrKV, equipo team_tab21Li6WWDl2lVutglfhidX. Production Branch main; Automatic restaurado y comprobado por lectura nueva; cero builds pendientes. No cambiar configuración por retomar el chat.
+- Base verificada antes de publicar el carrusel: main local y origin/main en b500a64561d3bc07c17f13f633c8e0d8d535fcb7.
+- Deployment público verificado antes del cambio: dpl_AC6tv9QV2KaxtDuWJwpth1V6yKXP, READY/Production, commit b500a64. Punto de recuperación para el carrusel.
+- Vercel sfstore: prj_XSoey2X2Oyqr8O5rBT8FBidxMrKV, equipo team_tab21Li6WWDl2lVutglfhidX. Rama de Production main, despliegues Git habilitados y sin comando para ignorar builds. Sin despliegues pendientes en la comprobación previa.
 - Supabase xspvoicelbxlmtqoiolc: lotes de contenido 01/02/03 y migración de privacidad aplicados y verificados; cierres/hashes en sección 9. No repetir operaciones.
 - Lote de 25 precios de perfumes aplicado y verificado: especial techo a $1.000 de costo ×1,40 y lista compatible con transferencia 25%; otros 54 registros preservados.
 - Cinco perfumes publicados y verificados: Rome Pour Femme, 9AM Pour Femme, Maleka, Club de Nuit Woman y Hawas Malibú, con fichas y fotografías aprobadas.
@@ -16,12 +16,10 @@ Actualizado: 05/11/2026 (Argentina). Única continuidad mutable; la única cola 
 
 ## Trabajo actual y siguiente paso
 
-- Destacados publicado y sincronizado el 05/11. En Production pasaron 375, 390 y 1366 px de ancho, seis fichas, fotografías, importes y disponibilidad, y el recorrido hasta el formulario de checkout sin transacciones. Ver el cierre en la sección 9.
-- Encargo vigente: corregir la oferta del menú Perfumes y el espacio disponible para Destacados en pantallas bajas. Base 18b3fc7, rama codex/storefront-header-featured-fit-20261105 y worktree homónimo.
-- Ajuste local: Diseñador y Nicho salen de la navegación y los filtros públicos. En escritorio de poca altura el encabezado fluye con la página y la foto se ajusta para que se pueda ver la tarjeta completa al desplazarla a pantalla.
-- Verificación local: build Turbopack y TypeScript correctos, 51 pruebas relacionadas aprobadas y ESLint sin errores, con un aviso existente de imagen. Playwright verificó los filtros en celular, el desplegable por teclado y filas completas en cinco tamaños, incluido 1366 × 517 con una altura de tarjeta de 468 px.
-- Refinamiento posterior: las URLs antiguas de Diseñador y Nicho redirigen a Perfumes conservando los filtros restantes. El encuadre de escritorio bajo muestra completos los productos mediante posiciones individuales y laterales suavizados con la misma foto. Revisión de las dos filas a 1366 × 517 y de escritorio normal a 1366 × 768 y celular a 390 × 844. Se conservan las dimensiones previas y los CTA de 44 px. Build y TypeScript correctos, 56 pruebas aprobadas y cuatro redirecciones verificadas con Playwright.
-- Próximo paso: revisar las correcciones locales y autorizar expresamente su publicación. La autorización anterior correspondía al candidato 18b3fc7.
+- Encargo vigente P07: aplicar a la portada el mockup «LOS MÁS ELEGIDOS DE SF STORE». Rama y worktree codex/home-most-chosen-20261105, base b500a64. Main local y origin/main registrado coinciden en b500a64.
+- Candidato local: hasta seis destacados elegibles, ordenados por el precio especial que muestra la tarjeta, con tres visibles en escritorio y dos en celular. Avance automático de a uno cada 8 segundos y flechas laterales. El foco o un toque detienen la rotación y la preferencia de movimiento reducido muestra la selección estática. Las flechas quedan fuera de las tarjetas en 1366 px. En móvil, la fila avanza automáticamente y también admite deslizamiento táctil, con encaje por tarjeta. Las flechas quedan en escritorio.
+- Validado con build estándar Turbopack, TypeScript, 30 pruebas de inicio y precios, ESLint sin errores con dos avisos de img preexistentes y Playwright con catálogo sintético de solo lectura a 390 × 844, 1366 × 517 y 1366 × 768.
+- Publicación del candidato: avanzar main por fast-forward y verificar el despliegue automático, el dominio y el carrusel móvil.
 
 ## Fuentes por necesidad
 

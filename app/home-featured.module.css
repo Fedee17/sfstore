@@ -100,9 +100,46 @@
 @media (min-width:1024px) and (max-width:1279px) and (max-height:700px) {
   .section { padding-inline:5rem; }
 }
-.section > div:first-child h2 { font-weight:700; letter-spacing:-.8px; color:#081126; }
-.section > div:first-child > p { color:#172033; font-size:16px; line-height:24px; }
-@media(max-width:639px) { .section > div:first-child h2 { max-width:310px; font-size:32px; line-height:37px; } }
 .payment svg rect { fill:#176b35; stroke:#176b35; }
 .payment svg circle { fill:#e6e9ea; stroke:#e6e9ea; }
 .payment svg path { stroke:#e6e9ea; }
+
+.title { margin-bottom:16px; color:#003b73; font-size:clamp(25px,4vw,40px); font-weight:500; line-height:1.1; letter-spacing:-.04em; }
+.title strong { color:#081126; font-weight:800; }
+.carousel { --arrow-offset:-27px; position:relative; }
+.track { --columns:2; --gap:12px; display:grid; grid-template-columns:repeat(var(--columns),minmax(0,1fr)); gap:var(--gap); }
+.carousel[data-rotating-layout] .viewport { overflow:clip; padding-block:3px 7px; }
+.carousel[data-rotating-layout] .track {
+  grid-template-columns:none;
+  grid-auto-flow:column;
+  grid-auto-columns:calc((100% + var(--gap)) / var(--columns) - var(--gap));
+  transform:translateX(calc(-1 * var(--featured-index) * (100% + var(--gap)) / var(--columns)));
+}
+.carousel[data-swipe] .viewport { position:relative; overflow:auto hidden; contain:paint; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scrollbar-width:none; }
+.carousel[data-swipe] .track { transform:none; }
+.carousel[data-swipe] .track > div { scroll-snap-align:start; }
+.track[data-animate] { transition:transform 680ms cubic-bezier(.22,.72,.27,1); }
+.previous, .next {
+  position:absolute; z-index:2; top:50%; display:grid; place-items:center;
+  width:44px; height:44px; transform:translateY(-50%);
+  border:1px solid #c8d6e5; border-radius:50%; background:#fff; color:#092e58;
+  box-shadow:0 2px 8px #0c1f3d25; cursor:pointer;
+}
+.previous { left:var(--arrow-offset); }
+.next { right:var(--arrow-offset); }
+.previous:hover, .next:hover { background:#eaf2fb; border-color:#91abca; }
+.previous:focus-visible, .next:focus-visible { outline:3px solid #0072ce; outline-offset:2px; }
+.previous svg, .next svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2.25; stroke-linecap:round; stroke-linejoin:round; }
+@media(min-width:1200px) {
+  .carousel { --arrow-offset:-48px; }
+}
+@media(min-width:1024px) {
+  .track { --columns:3; --gap:20px; }
+}
+@media(min-width:1024px) and (max-height:700px) {
+  .title { font-size:29px; margin-bottom:7px; }
+  .photo { --short-photo-height:max(105px,calc(100svh - 327px)); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .track[data-animate] { transition:none; }
+}

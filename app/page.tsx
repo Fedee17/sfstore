@@ -9,6 +9,7 @@ import { getHomeFeaturedProducts } from "@/lib/catalog/home-selection";
 import { publicationAvailable } from "@/lib/products/public-families";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getCatalogPublications, type PublicProduct } from "@/services/products";
+import { HomeFeaturedCarousel } from "./home-featured-carousel";
 import categoryStyles from "./home-category.module.css";
 import featuredStyles from "./home-featured.module.css";
 
@@ -197,7 +198,9 @@ function CategoryCard({ href, title, description, product, imageSrc, imageClassN
 export default async function Home() {
   await connection(); // Current catalog/stock at request time, never frozen during build.
   const allProducts = await getCatalogPublications();
-  const featuredProducts = getHomeFeaturedProducts(allProducts);
+  const featuredProducts = getHomeFeaturedProducts(allProducts).sort((a, b) =>
+    (getHomeCardPricing(b)?.special ?? 0) - (getHomeCardPricing(a)?.special ?? 0)
+  );
   const giftWhatsAppLink = buildWhatsAppUrl(
     "Hola SFSTORE, quiero armar un regalo y necesito ayuda para elegir.",
   );
@@ -259,55 +262,40 @@ export default async function Home() {
         </div>
       </section>
 
-      {featuredProducts.length > 0 ? <section id="productos" className={`${featuredStyles.section} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`}>
-        <div className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-              Destacados
-            </p>
-            <h2 className="mt-3 break-words text-3xl font-semibold text-[#102033] sm:text-4xl">
-              Productos para mirar primero
-            </h2>
-          </div>
-          <p className="max-w-md break-words text-sm leading-6 text-[#102033]/65">
-            Una selección rápida para regalar, probar o llevar algo distinto.
-          </p>
-        </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
-            {featuredProducts.map((product) => {
-              const available = publicationAvailable(product);
-              const recommendation = getHomeCardRecommendation(product);
-              return (
-                <article
-                  key={product.id}
-                  className={featuredStyles.card}
-                  data-product-slug={product.slug}
-                  style={product.primaryImageUrl ? {
-                    "--featured-photo": `url(${JSON.stringify(product.primaryImageUrl)})`,
-                  } as CSSProperties : undefined}
-                >
-                  <a href={`/producto/${product.slug}`} className="block min-w-0">
-                    <ProductVisual product={product} label={getCategoryLabel(product)} className={featuredStyles.photo} />
-                  </a>
-                  <div className={featuredStyles.body}>
-                    <span className={featuredStyles.category}>{getCategoryLabel(product)}</span>
-                    <h3 className={featuredStyles.name} title={product.name}>{product.name}</h3>
-                    <p className={featuredStyles.recommendation}>{recommendation}</p>
-                    <div className={featuredStyles.bottom}>
-                      {!available ? <p className={featuredStyles.stock}>Agotado · consultar</p> : null}
-                      <SimplePrice product={product} from={product.homePriceFrom} />
-                      <p className={featuredStyles.payment}>
-                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M5 8h2M17 16h2" /></svg>
-                        <span>Efectivo o transferencia</span>
-                      </p>
-                      <a href={`/producto/${product.slug}`} className={featuredStyles.button}>Ver producto</a>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+      {featuredProducts.length > 0 ? <section id="productos" aria-labelledby="home-featured-title" className={`${featuredStyles.section} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`}>
+        <h2 id="home-featured-title" className={featuredStyles.title}><strong>LOS MÁS ELEGIDOS</strong> DE SF STORE</h2>
+        <HomeFeaturedCarousel cards={featuredProducts.map((product) => {
+          const available = publicationAvailable(product);
+          const recommendation = getHomeCardRecommendation(product);
+          return (
+            <article
+              key={product.id}
+              className={featuredStyles.card}
+              data-product-slug={product.slug}
+              style={product.primaryImageUrl ? {
+                "--featured-photo": `url(${JSON.stringify(product.primaryImageUrl)})`,
+              } as CSSProperties : undefined}
+            >
+              <a href={`/producto/${product.slug}`} className="block min-w-0">
+                <ProductVisual product={product} label={getCategoryLabel(product)} className={featuredStyles.photo} />
+              </a>
+              <div className={featuredStyles.body}>
+                <span className={featuredStyles.category}>{getCategoryLabel(product)}</span>
+                <h3 className={featuredStyles.name} title={product.name}>{product.name}</h3>
+                <p className={featuredStyles.recommendation}>{recommendation}</p>
+                <div className={featuredStyles.bottom}>
+                  {!available ? <p className={featuredStyles.stock}>Agotado · consultar</p> : null}
+                  <SimplePrice product={product} from={product.homePriceFrom} />
+                  <p className={featuredStyles.payment}>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M5 8h2M17 16h2" /></svg>
+                    <span>Efectivo o transferencia</span>
+                  </p>
+                  <a href={`/producto/${product.slug}`} className={featuredStyles.button}>Ver producto</a>
+                </div>
+              </div>
+            </article>
+          );
+        })} />
       </section> : null}
 
       <section id="regalos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="gifts-title">

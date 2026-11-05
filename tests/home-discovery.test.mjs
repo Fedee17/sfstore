@@ -13,11 +13,13 @@ import * as availability from '../lib/products/public-families.ts';
 import * as recommendations from '../lib/catalog/perfume-recommendation.ts';
 
 const require = createRequire(import.meta.url);
+const carouselModule = () => load('app/home-featured-carousel.tsx');
+
 function load(file, modules = {}) {
   const out = {};
   const source = readFileSync(new URL('../' + file, import.meta.url), 'utf8');
   const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
-  new Function('require', 'exports', js)(id => modules[id] ?? (id.endsWith('.module.css') ? { default: new Proxy({}, { get: (_, key) => key }) } : require(id)), out);
+  new Function('require', 'exports', js)(id => modules[id] ?? (id === './home-featured-carousel' ? carouselModule() : id.endsWith('.module.css') ? { default: new Proxy({}, { get: (_, key) => key }) } : require(id)), out);
   return out;
 }
 const selection = load('lib/catalog/home-selection.ts', { '../products/public-families': availability, '../web-transfer-pricing': prices, './perfume-recommendation': recommendations });
@@ -275,7 +277,7 @@ test('Accesorios materos reuses the existing matero catalog without inventing a 
 test('home omits the entire featured section when none are eligible, leaving gifts after categories', async () => {
   for (const products of [[],[product('no',{featured:false})],[product('sold',{stock:0})]]) {
     const html=await renderHome(products);
-    assert.doesNotMatch(html,/id="productos"|Productos para mirar primero|La vidriera está lista/);
+    assert.doesNotMatch(html,/id="productos"|LOS MÁS ELEGIDOS|La vidriera está lista/);
     const sections=[...html.matchAll(/<section\b[^>]*>/g)].map(m=>m[0]);
     const categories=sections.findIndex(s=>s.includes('id="explorar"'));
     assert.match(sections[categories+1],/id="regalos"/);
@@ -318,4 +320,14 @@ test('featured render preserves exhausted state and links and only strikes a gen
   assert.equal((section.match(/href="\/producto\/sold"/g)||[]).length,2);
   const equal=await renderHome([product('equal',{transferPrice:100})]);
   assert.doesNotMatch(equal.match(/<section id="productos"[\s\S]*?<\/section>/)[0],/<s>|% OFF/);
+});
+
+test('home featured carousel displays the selected products by descending displayed price', async () => {
+  const html = await renderHome([
+    product('a', { price: 200, transferPrice: 90 }),
+    product('b', { price: 150, transferPrice: 120 }),
+    product('c', { price: 100, transferPrice: null }),
+  ]);
+  assert.ok(html.includes("<strong>LOS MÁS ELEGIDOS</strong> DE SF STORE"));
+  assert.deepEqual([...html.matchAll(/data-product-slug="([^"]+)"/g)].map(match => match[1]), ['b', 'c', 'a']);
 });
