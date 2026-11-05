@@ -11,12 +11,20 @@ import {
 } from "@/lib/catalog/attribute-config";
 import { normalizeTaxonomyValue } from "@/lib/product-taxonomy";
 
+const retiredPerfumeCategories = new Set(["disenador", "de-disenador", "nicho"]);
+
+export function isRetiredPerfumeCategory(value: string) {
+  return retiredPerfumeCategories.has(normalizeTaxonomyValue(value));
+}
+
 export const PERFUME_CATALOG_CATEGORIES: CatalogCategoryOption[] =
-  PERFUME_COMMERCIAL_CATEGORY_OPTIONS.map((item) => ({
-    label: item.label,
-    hrefValue: item.value,
-    matchValue: item.value,
-  }));
+  PERFUME_COMMERCIAL_CATEGORY_OPTIONS
+    .filter(({ value }) => !retiredPerfumeCategories.has(value))
+    .map((item) => ({
+      label: item.label,
+      hrefValue: item.value,
+      matchValue: item.value,
+    }));
 
 const PERFUME_ATTRIBUTE_FILTERS: CatalogFilterGroup[] = [
   {

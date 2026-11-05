@@ -64,7 +64,42 @@
   .button { font-size:18px; line-height:22px; }
   .card:nth-child(n+4) .photo { aspect-ratio:1.42; }
 }
+@media (min-width:1024px) and (max-height:700px) {
+  .photo {
+    --short-photo-height: max(112px, calc(100svh - 310px));
+    max-height: var(--short-photo-height);
+  }
+
+  /* The same image fills the side space while the sharp crop keeps the product in frame. */
+  .photo:has(img)::before {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    background: var(--featured-photo) center / cover no-repeat;
+    filter: blur(9px);
+    opacity: .65;
+  }
+
+  .photo img {
+    left: 50%;
+    right: auto;
+    max-width: calc(var(--short-photo-height) * var(--short-photo-width-ratio, 1.6));
+    object-position: center var(--short-photo-focus, 60%);
+    transform: translateX(-50%);
+    mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+  }
+
+  .card[data-product-slug="al-haramain-dubai-night"] { --short-photo-width-ratio: 1.46; --short-photo-focus: 69%; }
+  .card[data-product-slug="dispenser-de-yerba-en-madera"] { --short-photo-width-ratio: 1.21; --short-photo-focus: 69%; }
+  .card[data-product-slug="french-avenue-liquid-broun"] { --short-photo-width-ratio: 1.47; --short-photo-focus: 66%; }
+  .card[data-product-slug="homme-black-100ml"] { --short-photo-width-ratio: 1.67; --short-photo-focus: 79%; }
+  .card[data-product-slug="la-voie"] { --short-photo-width-ratio: 1.45; --short-photo-focus: 49%; }
+  .card[data-product-slug="lattafa-khamrah"] { --short-photo-width-ratio: 1.35; --short-photo-focus: 63%; }
+}
 .section { font-family:var(--font-geist-sans), Arial, Helvetica, sans-serif; }
+@media (min-width:1024px) and (max-width:1279px) and (max-height:700px) {
+  .section { padding-inline:5rem; }
+}
 .section > div:first-child h2 { font-weight:700; letter-spacing:-.8px; color:#081126; }
 .section > div:first-child > p { color:#172033; font-size:16px; line-height:24px; }
 @media(max-width:639px) { .section > div:first-child h2 { max-width:310px; font-size:32px; line-height:37px; } }

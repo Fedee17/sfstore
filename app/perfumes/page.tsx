@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { MobileCatalogFilters } from "@/components/catalog/mobile-catalog-filters";
 import { CatalogSidebar } from "@/components/catalog/catalog-sidebar";
 import { ProductGrid } from "@/components/product-grid";
@@ -7,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import {
   PERFUME_CATALOG_CATEGORIES,
   PERFUME_FILTERS_BY_CATEGORY,
+  isRetiredPerfumeCategory,
   normalizePerfumeCategory,
 } from "@/lib/catalog/perfume-filters";
 import {
@@ -55,6 +57,21 @@ type PerfumesPageProps = {
 
 export default async function PerfumesPage({ searchParams }: PerfumesPageProps) {
   const params = (await searchParams) ?? {};
+  const query = new URLSearchParams();
+  let removedRetiredCategory = false;
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined) continue;
+    if ((key === "categoria" || key === "estilo") && isRetiredPerfumeCategory(value)) {
+      removedRetiredCategory = true;
+      continue;
+    }
+    query.set(key, value);
+  }
+  if (removedRetiredCategory) {
+    const search = query.toString();
+    redirect(search ? `/perfumes?${search}` : "/perfumes");
+  }
+
   const selectedCategory = normalizePerfumeCategory(
     params.categoria ?? params.estilo ?? "",
   );

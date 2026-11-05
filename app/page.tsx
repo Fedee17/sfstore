@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
 import { getHomeCardPricing, getHomeCardRecommendation } from "@/lib/catalog/home-card-presentation";
@@ -278,7 +279,14 @@ export default async function Home() {
               const available = publicationAvailable(product);
               const recommendation = getHomeCardRecommendation(product);
               return (
-                <article key={product.id} className={featuredStyles.card} data-product-slug={product.slug}>
+                <article
+                  key={product.id}
+                  className={featuredStyles.card}
+                  data-product-slug={product.slug}
+                  style={product.primaryImageUrl ? {
+                    "--featured-photo": `url(${JSON.stringify(product.primaryImageUrl)})`,
+                  } as CSSProperties : undefined}
+                >
                   <a href={`/producto/${product.slug}`} className="block min-w-0">
                     <ProductVisual product={product} label={getCategoryLabel(product)} className={featuredStyles.photo} />
                   </a>

@@ -141,7 +141,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
   );
 
   return (
-    <header className="relative z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)] lg:sticky lg:top-0">
+    <header className="relative z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)] lg:[@media(min-height:701px)]:sticky lg:top-0">
       <div className="bg-[#0072CE] text-white">
         <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2 sm:px-8 lg:grid-cols-[100px_minmax(0,1fr)_auto] lg:gap-5 lg:px-10 lg:py-3">
           <Link
