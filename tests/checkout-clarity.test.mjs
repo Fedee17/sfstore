@@ -46,7 +46,7 @@ test('unauthorized, non-transfer, closed, already paid and reported orders do no
 });
 test('global WhatsApp is absent throughout purchase, preserving the existing catalog access',()=>{
  for(const pathname of ['/carrito','/checkout','/checkout/exito','/perfumes','/mates','/']){
-  const Button=load('components/whatsapp-floating-button.tsx',{'react/jsx-runtime':jsx,'next/navigation':{usePathname:()=>pathname},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic-whatsapp'}}).WhatsAppFloatingButton;
+  const Button=load('components/whatsapp-floating-button.tsx',{'react/jsx-runtime':jsx,'next/navigation':{usePathname:()=>pathname},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic-whatsapp'},'./whatsapp-floating-button.module.css':{default:{floating:'floating',label:'label'}}}).WhatsAppFloatingButton;
   const html=render(Button);
   if(pathname==='/carrito'||pathname.startsWith('/checkout')) assert.equal(html,'');
   else {assert.match(html,/fixed bottom-5/);assert.match(html,/aria-label="Consultar por WhatsApp"/);assert.match(html,/href="\/synthetic-whatsapp"/);assert.match(html,/noopener noreferrer/);}

@@ -1,0 +1,14 @@
+@media (1024px <= width < 1440px) {
+  :global(body:has(#productos)) .floating {
+    inset-inline-end: 12px;
+    bottom: 16px;
+    inline-size: 52px;
+    min-inline-size: 52px;
+    block-size: 52px;
+    padding-inline: 0;
+  }
+
+  :global(body:has(#productos)) .label {
+    display: none;
+  }
+}

@@ -98,7 +98,15 @@
 }
 .section { font-family:var(--font-geist-sans), Arial, Helvetica, sans-serif; }
 @media (min-width:1024px) and (max-width:1279px) and (max-height:700px) {
-  .section { padding-inline:5rem; }
+  .section { --featured-gutter:5rem; padding-inline:var(--featured-gutter); }
+}
+@media (1024px <= width < 1440px) {
+  .section {
+    /* Reserve room for the fixed WhatsApp icon and the carousel's outer arrow. */
+    padding-inline-end:clamp(var(--featured-gutter, 2rem), calc(120px + (72rem - 100vw) / 2), 6rem);
+  }
+  .priceRow { flex-wrap:wrap; row-gap:4px; }
+  .special { flex:0 1 auto; white-space:normal; overflow-wrap:anywhere; }
 }
 .payment svg rect { fill:#176b35; stroke:#176b35; }
 .payment svg circle { fill:#e6e9ea; stroke:#e6e9ea; }
