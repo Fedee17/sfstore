@@ -53,6 +53,8 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           sudo apt-get update -qq
           sudo apt-get install -y postgresql-16
+      - name: Generate isolated staging migrations from verified manifest
+        run: node scripts/prepare-checkout-staging.mjs
       - name: Run actual synthetic order and fictitious manual transfer confirmation
         run: |
           node --test --test-reporter=tap tests/pay01-staging-functional.test.mjs | tee "$RUNNER_TEMP/sfstore-synthetic-checkout.tap"
