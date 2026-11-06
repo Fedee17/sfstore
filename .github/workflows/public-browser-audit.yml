@@ -1,5 +1,7 @@
-name: SFSTORE public browser audit (candidate only)
+name: SFSTORE daily storefront audit
 on:
+  schedule:
+    - cron: '15 7 * * *' # 04:15 Argentina (UTC-3)
   pull_request:
     paths:
       - '.github/workflows/public-browser-audit.yml'
@@ -22,10 +24,19 @@ jobs:
           node-version: '24'
       - name: Install isolated browser runner
         run: |
-          npm install --prefix "$RUNNER_TEMP/sfstore-browser" --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+          npm install --prefix "$RUNNER_TEMP/sfstore-browser" --no-save --package-lock=false --ignore-scripts playwright@1.56.1 lighthouse@13.6.0
           "$RUNNER_TEMP/sfstore-browser/node_modules/.bin/playwright" install --with-deps chromium
       - name: Audit production storefront without mutations
         run: NODE_PATH="$RUNNER_TEMP/sfstore-browser/node_modules" node scripts/audit/public-browser.cjs
+      - name: Measure Lighthouse on mobile (laboratory data)
+        if: always()
+        run: |
+          mkdir -p audit-output/browser
+          BROWSER_BIN=$(NODE_PATH="$RUNNER_TEMP/sfstore-browser/node_modules" node -e "process.stdout.write(require('playwright').chromium.executablePath())")
+          "$RUNNER_TEMP/sfstore-browser/node_modules/.bin/lighthouse" https://sfstore-ten.vercel.app/ --output=json --output-path=./audit-output/browser/lighthouse-mobile.json --chrome-path="$BROWSER_BIN" --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" --only-categories=performance,accessibility,seo,best-practices --quiet || echo "LIGHTHOUSE_UNAVAILABLE: inspect artifact and runner logs"
+      - name: Print audit evidence and findings
+        if: always()
+        run: node scripts/audit/report-browser.cjs
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -33,7 +44,7 @@ jobs:
           name: sfstore-browser-audit-${{ github.run_id }}-${{ github.run_attempt }}
           path: audit-output/browser/
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 14
 
   synthetic-transfer-lifecycle:
     runs-on: ubuntu-24.04
