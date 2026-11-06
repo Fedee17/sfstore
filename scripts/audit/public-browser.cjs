@@ -69,13 +69,20 @@ async function screenshot(page,name){
             if(!item.slug || /Agotado|consultar precio/i.test(item.text)) continue;
             await goto(page,'/producto/'+encodeURIComponent(item.slug));
             const heading=await page.locator('h1').first().innerText();
+            const selectors=page.locator('fieldset');
+            for(let d=0;d<await selectors.count();d++){
+              const fieldset=selectors.nth(d);
+              const option=fieldset.getByRole('button').filter({hasNotText:/Agotado|No disponible/i}).first();
+              if(await option.count()) await option.click();
+            }
             const action=page.getByRole('button',{name:/^Agregar .* al carrito$/}).first();
             if(!await action.isVisible().catch(()=>false) || await action.isDisabled()) continue;
-            const article=page.locator('main article').first();
-            const detail=await article.innerText();
+            const family=await page.locator('[data-testid="variant-list-price"]').count()>0;
+            const detail=family?'':await page.locator('main article').first().innerText();
             const listMatch=detail.match(/Precio lista\s*\n\s*(\$\s*[\d.,]+)/i);
             const transferMatch=detail.match(/Precio por transferencia\s*\n\s*(\$\s*[\d.,]+)/i);
-            const list=money(listMatch?.[1]),transfer=money(transferMatch?.[1]);
+            const list=family?money(await page.locator('[data-testid="variant-list-price"]').innerText()):money(listMatch?.[1]);
+            const transfer=family?money(await page.locator('[data-testid="variant-transfer-price"]').innerText()):money(transferMatch?.[1]);
             note('precio ficha '+item.slug,within(transfer,list*0.75)?'PASS':'FAIL',JSON.stringify({product:heading,list,transfer,expected:list===null?null:list*.75}), 'high');
             await screenshot(page,'product-mobile');
             await action.click({timeout:10000});
@@ -99,7 +106,7 @@ async function screenshot(page,name){
             audited=true;
             break;
           }
-          if(!audited) note('flujo comercial','NO VERIFICADO','No se encontró producto destacado con compra disponible; no se fabricó una operación.');
+          if(!audited) note('flujo comercial','NO VERIFICADO',JSON.stringify({reason:'No se encontró producto destacado con compra disponible; no se fabricó una operación.',candidates:cards.map(x=>({slug:x.slug,name:x.name}))}));
         }
       }catch(e){note('navegación '+size.width+'px','FAIL',safeError(e),'high');}
       finally{await context.close();}
