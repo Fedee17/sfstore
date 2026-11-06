@@ -77,7 +77,7 @@ async function screenshot(page,name){
               if(await option.count()) await option.click();
             }
             const action=page.getByRole('button',{name:/^Agregar .* al carrito$/}).first();
-            if(!await action.isVisible().catch(()=>false) || await action.isDisabled()){rejected.push({slug:item.slug,reason:'no-enabled-buy-button',title:heading,buttons:await page.getByRole('button').allTextContents(),url:page.url()});continue;}
+            if(!await action.isVisible().catch(()=>false) || await action.isDisabled()){rejected.push({slug:item.slug,reason:'no-enabled-buy-button',title:heading,buttonPresent:await action.count(),disabled:await action.count()?await action.isDisabled():null,disabledAttribute:await action.count()?await action.getAttribute('disabled'):null,stockText:(await page.locator('main').innerText()).match(/(?:Stock disponible|Disponible:|Sin stock)[^\n]*/ig)?.slice(0,3),buttons:await page.getByRole('button').allTextContents(),url:page.url()});continue;}
             const family=await page.locator('[data-testid="variant-list-price"]').count()>0;
             const detail=family?'':await page.locator('main article').first().innerText();
             const listMatch=detail.match(/Precio lista\s*\n\s*(\$\s*[\d.,]+)/i);
