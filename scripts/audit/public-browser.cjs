@@ -65,8 +65,9 @@ async function screenshot(page,name){
         if(size.width===390){
           const cards=await page.locator('article[data-product-slug]').evaluateAll(nodes=>nodes.slice(0,12).map(node=>({slug:node.getAttribute('data-product-slug'),name:node.querySelector('h3')?.textContent?.trim()||'',text:node.innerText?.slice(0,400)||''})));
           let audited=false;
+          const rejected=[];
           for(const item of cards){
-            if(!item.slug || /Agotado|consultar precio/i.test(item.text)) continue;
+            if(!item.slug || /Agotado|consultar precio/i.test(item.text)){rejected.push({slug:item.slug,reason:'unavailable-card'});continue;}
             await goto(page,'/producto/'+encodeURIComponent(item.slug));
             const heading=await page.locator('h1').first().innerText();
             const selectors=page.locator('fieldset');
@@ -76,7 +77,7 @@ async function screenshot(page,name){
               if(await option.count()) await option.click();
             }
             const action=page.getByRole('button',{name:/^Agregar .* al carrito$/}).first();
-            if(!await action.isVisible().catch(()=>false) || await action.isDisabled()) continue;
+            if(!await action.isVisible().catch(()=>false) || await action.isDisabled()){rejected.push({slug:item.slug,reason:'no-enabled-buy-button',title:heading,buttons:await page.getByRole('button').allTextContents(),url:page.url()});continue;}
             const family=await page.locator('[data-testid="variant-list-price"]').count()>0;
             const detail=family?'':await page.locator('main article').first().innerText();
             const listMatch=detail.match(/Precio lista\s*\n\s*(\$\s*[\d.,]+)/i);
@@ -106,7 +107,7 @@ async function screenshot(page,name){
             audited=true;
             break;
           }
-          if(!audited) note('flujo comercial','NO VERIFICADO',JSON.stringify({reason:'No se encontró producto destacado con compra disponible; no se fabricó una operación.',candidates:cards.map(x=>({slug:x.slug,name:x.name}))}));
+          if(!audited) note('flujo comercial','NO VERIFICADO',JSON.stringify({reason:'No se encontró producto destacado con compra disponible; no se fabricó una operación.',candidates:cards.map(x=>({slug:x.slug,name:x.name})),rejected}));
         }
       }catch(e){note('navegación '+size.width+'px','FAIL',safeError(e),'high');}
       finally{await context.close();}
