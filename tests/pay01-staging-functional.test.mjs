@@ -39,7 +39,7 @@ describe('synthetic staging package: complete checkout and reservation lifecycle
   before(async()=>{
     dir=mkdtempSync(join(tmpdir(),'sfstore-staging-db-'));run('initdb',['-D',join(dir,'data'),'-U','postgres','--auth=trust','--encoding=UTF8','--no-locale']);
     const listener=createServer();await new Promise(r=>listener.listen(0,'127.0.0.1',r));const port=listener.address().port;await new Promise(r=>listener.close(r));
-    run('pg_ctl',['-D',join(dir,'data'),'-l',join(dir,'log'),'-o',`-h 127.0.0.1 -p ${port} -c fsync=off -c statement_timeout=10000`,'-w','start']);started=true;
+    run('pg_ctl',['-D',join(dir,'data'),'-l',join(dir,'log'),'-o',`-h 127.0.0.1 -p ${port} -c unix_socket_directories=${dir} -c fsync=off -c statement_timeout=10000`,'-w','start']);started=true;
     connection={host:'127.0.0.1',port,user:'postgres',database:'postgres'};db=new Client(connection);await db.connect();
     await db.query('create role anon;create role authenticated;create role service_role bypassrls;');
     await db.query(read('tests/fixtures/storage-permissions.sql'));

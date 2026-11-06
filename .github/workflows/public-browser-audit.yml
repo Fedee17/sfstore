@@ -1,0 +1,80 @@
+name: SFSTORE daily storefront audit
+on:
+  schedule:
+    - cron: '15 7 * * *' # 04:15 Argentina (UTC-3)
+  pull_request:
+    paths:
+      - '.github/workflows/public-browser-audit.yml'
+      - 'scripts/audit/public-browser.cjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      AUDIT_OUTPUT: audit-output/browser
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - name: Install isolated browser runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sfstore-browser" --no-save --package-lock=false --ignore-scripts playwright@1.56.1 lighthouse@13.6.0
+          "$RUNNER_TEMP/sfstore-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Audit production storefront without mutations
+        run: NODE_PATH="$RUNNER_TEMP/sfstore-browser/node_modules" node scripts/audit/public-browser.cjs
+      - name: Measure Lighthouse on mobile (laboratory data)
+        if: always()
+        run: |
+          mkdir -p audit-output/browser
+          BROWSER_BIN=$(NODE_PATH="$RUNNER_TEMP/sfstore-browser/node_modules" node -e "process.stdout.write(require('playwright').chromium.executablePath())")
+          "$RUNNER_TEMP/sfstore-browser/node_modules/.bin/lighthouse" https://sfstore-ten.vercel.app/ --output=json --output-path=./audit-output/browser/lighthouse-mobile.json --chrome-path="$BROWSER_BIN" --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" --only-categories=performance,accessibility,seo,best-practices --quiet || echo "LIGHTHOUSE_UNAVAILABLE: inspect artifact and runner logs"
+      - name: Print audit evidence and findings
+        if: always()
+        run: node scripts/audit/report-browser.cjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sfstore-browser-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: audit-output/browser/
+          if-no-files-found: warn
+          retention-days: 14
+
+  synthetic-transfer-lifecycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SFSTORE_TEST_PG_BIN: /usr/lib/postgresql/16/bin
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies and isolated PostgreSQL
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-16
+      - name: Generate isolated staging migrations from verified manifest
+        run: node scripts/prepare-checkout-staging.mjs
+      - name: Run actual synthetic order and fictitious manual transfer confirmation
+        run: |
+          node --test --test-reporter=tap tests/pay01-staging-functional.test.mjs | tee "$RUNNER_TEMP/sfstore-synthetic-checkout.tap"
+          test "${PIPESTATUS[0]}" -eq 0
+      - name: Upload sanitized synthetic test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sfstore-synthetic-transfer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/sfstore-synthetic-checkout.tap
+          retention-days: 7
+          if-no-files-found: warn
