@@ -256,7 +256,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
         <div className="mt-4 grid min-w-0 gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-          <div className="order-2 min-w-0 overflow-hidden rounded-[2rem] border border-[#003B73]/15 bg-[#102033] shadow-2xl shadow-[#102033]/10 lg:order-1">
+          <div className="order-2 min-w-0 overflow-hidden rounded-[2rem] shadow-2xl shadow-[#102033]/10 lg:order-1">
             <ProductImageGallery
               images={getProductGalleryImages(product)}
               placeholder={product.imagePlaceholder}

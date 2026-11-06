@@ -91,20 +91,15 @@ function renderGallery(props){
  new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(require,exports);
  return renderToStaticMarkup(React.createElement(exports.ProductImageGallery,{images:[image],productName:'Prueba',placeholder:'PR',...props}));
 }
-test('gallery natural mobile sizing is opt-in and retains containment and the square notebook frame',()=>{
- const standard=renderGallery({}),natural=renderGallery({naturalSizeOnMobile:true});
- assert.match(standard,/class="aspect-square overflow-hidden"/);
- assert.match(standard,/class="h-full w-full object-contain"/);
- assert.match(natural,/class="overflow-hidden lg:aspect-square"/);
- assert.match(natural,/class="h-auto w-full object-contain lg:h-full"/);
- assert.doesNotMatch(natural,/object-cover/);
+test('gallery displays the original image at full width and natural aspect ratio',()=>{
+ const html=renderGallery({});
+ assert.match(html,/<img[^>]*class="block h-auto w-full"/);
+ assert.doesNotMatch(html,/aspect-square|object-cover|background-image/);
 });
-test('a missing image remains an honest placeholder with either mobile sizing mode',()=>{
- for(const naturalSizeOnMobile of [false,true]){
-  const html=renderGallery({images:[],naturalSizeOnMobile});
-  assert.match(html,/Imagen no disponible de Prueba/);
-  assert.doesNotMatch(html,/<img/);
- }
+test('a missing image remains an honest placeholder',()=>{
+ const html=renderGallery({images:[]});
+ assert.match(html,/Imagen no disponible de Prueba/);
+ assert.doesNotMatch(html,/<img/);
 });
 
 test('family thumbnails can be omitted without removing stored photos or changing the default gallery',()=>{

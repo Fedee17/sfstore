@@ -34,8 +34,8 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
       <Link href={publicCategoryPaths[product.category]} className="text-sm font-semibold text-[#003B73] underline underline-offset-4">← Volver al catálogo</Link>
       <h1 className="my-3 break-words text-2xl font-semibold leading-tight sm:text-4xl lg:my-5">{product.name}</h1>
       <div className="grid min-w-0 gap-3 lg:grid-cols-2 lg:items-start lg:gap-5">
-        <div className="order-1 -mx-3 min-w-0 overflow-hidden rounded-2xl border border-[#003B73]/20 lg:mx-0 lg:rounded-3xl">
-          <ProductImageGallery key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} naturalSizeOnMobile showThumbnails={false} />
+        <div className="order-1 -mx-3 min-w-0 overflow-hidden rounded-2xl lg:mx-0 lg:rounded-3xl">
+          <ProductImageGallery key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} showThumbnails={false} />
           {!selected && representative ? <p className="bg-white px-3 py-2 text-xs leading-5 text-[#102033]/75 lg:px-4 lg:py-3">
             Imagen representativa: {representative.label}
           </p> : null}

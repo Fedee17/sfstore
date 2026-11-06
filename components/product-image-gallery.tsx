@@ -13,7 +13,6 @@ type ProductImageGalleryProps = {
   images?: ProductGalleryImage[];
   placeholder: string;
   productName: string;
-  naturalSizeOnMobile?: boolean;
   showThumbnails?: boolean;
 };
 
@@ -35,7 +34,6 @@ export function ProductImageGallery({
   images = [],
   placeholder,
   productName,
-  naturalSizeOnMobile = false,
   showThumbnails = true,
 }: ProductImageGalleryProps) {
   const sortedImages = sortImages(images).filter((image) => image.url);
@@ -55,11 +53,13 @@ export function ProductImageGallery({
     );
   }
 
+  const failed = failedImages[selectedImage.url];
+
   return (
-    <div className="min-w-0 bg-[#102033]">
-      <div className={naturalSizeOnMobile ? "overflow-hidden lg:aspect-square" : "aspect-square overflow-hidden"}>
-        {failedImages[selectedImage.url] ? (
-          <div className="flex h-full flex-col items-center justify-center px-4 text-center text-[#F7F9FC]" role="img" aria-label={`Imagen no disponible de ${productName}`}>
+    <div className="min-w-0">
+      <div>
+        {failed ? (
+          <div className="flex min-h-40 flex-col items-center justify-center bg-[#102033] px-4 py-8 text-center text-[#F7F9FC] lg:aspect-square" role="img" aria-label={`Imagen no disponible de ${productName}`}>
             <span className="text-5xl font-semibold">{placeholder}</span>
             <span className="mt-3 text-sm">{showThumbnails ? "Imagen no disponible. Probá otra foto." : "Imagen no disponible."}</span>
           </div>
@@ -72,7 +72,7 @@ export function ProductImageGallery({
               }
             }}
             alt={selectedImage.alt ?? productName}
-            className={naturalSizeOnMobile ? "h-auto w-full object-contain lg:h-full" : "h-full w-full object-contain"}
+            className="block h-auto w-full"
             onError={() => setFailedImages((current) => ({ ...current, [selectedImage.url]: true }))}
           />
         )}
