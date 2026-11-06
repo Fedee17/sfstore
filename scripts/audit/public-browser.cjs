@@ -47,6 +47,40 @@ async function screenshot(page,name){
   await page.screenshot({path:file,fullPage:false,animations:'disabled'});
   result.screenshots.push(file);
 }
+
+async function auditPublicPages(page,width) {
+  const pages=['/perfumes','/mates','/accesorios','/carrito','/checkout?payment=transfer','/robots.txt','/sitemap.xml'];
+  for(const route of pages){
+    try{
+      const response=await page.goto(BASE+route,{waitUntil:'domcontentloaded',timeout:35000});
+      const status=response?.status()??0;
+      note('ruta '+route+' '+width+'px',status>=200&&status<400?'PASS':'FAIL','HTTP '+status,status>=400?'high':'low');
+      if(!route.startsWith('/robots')&&!route.startsWith('/sitemap')&&status<400){
+        const result=await page.evaluate(()=>{
+          const root=document.documentElement;
+          return {width:root.scrollWidth,viewport:window.innerWidth,title:document.title,description:document.querySelector('meta[name="description"]')?.content??'',h1:document.querySelectorAll('h1').length};
+        });
+        note('responsive '+route+' '+width+'px',result.width<=width+2?'PASS':'FAIL',JSON.stringify(result),'high');
+        note('SEO '+route+' '+width+'px',result.title&&result.description&&result.h1===1?'PASS':'WARN',JSON.stringify({title:result.title,description:!!result.description,h1:result.h1}),'medium');
+        if(route==='/perfumes'||route==='/mates'){
+          const images=await page.locator('main img').count();
+          let broken=0,loaded=0;const samples=[];
+          for(let i=0;i<Math.min(images,12);i++){
+            const img=page.locator('main img').nth(i);
+            await img.scrollIntoViewIfNeeded({timeout:4000}).catch(()=>{});
+            await img.evaluate(el=>{if(el.loading==='lazy') el.loading='eager';}).catch(()=>{});
+            await img.evaluate(el=>el.decode().catch(()=>{})).catch(()=>{});
+            const state=await img.evaluate(el=>({src:el.currentSrc||el.src,broken:el.complete&&el.naturalWidth===0,loaded:el.naturalWidth>0})).catch(()=>null);
+            if(state?.broken){broken++;samples.push(state.src?.slice(0,150));}
+            if(state?.loaded)loaded++;
+          }
+          note('imágenes '+route+' '+width+'px',broken?'FAIL':loaded?'PASS':'WARN',JSON.stringify({inspected:Math.min(images,12),loaded,broken,samples}),'high');
+        }
+      }
+    }catch(e){note('ruta '+route+' '+width+'px','FAIL',safeError(e),'high');}
+  }
+}
+
 (async ()=>{
   let browser;
   try{
@@ -109,6 +143,7 @@ async function screenshot(page,name){
           }
           if(!audited) note('flujo comercial','NO VERIFICADO',JSON.stringify({reason:'No se encontró producto destacado con compra disponible; no se fabricó una operación.',candidates:cards.map(x=>({slug:x.slug,name:x.name})),rejected}));
         }
+        if(size.width===390 || size.width===1366) await auditPublicPages(page,size.width);
       }catch(e){note('navegación '+size.width+'px','FAIL',safeError(e),'high');}
       finally{await context.close();}
     }
