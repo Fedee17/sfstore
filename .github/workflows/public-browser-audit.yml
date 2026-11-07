@@ -5,7 +5,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/public-browser-audit.yml'
-      - 'scripts/audit/public-browser.cjs'
+      - 'scripts/audit/public-browser.mjs'
+      - 'scripts/audit/report-browser.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,7 +28,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/sfstore-browser" --no-save --package-lock=false --ignore-scripts playwright@1.56.1 lighthouse@13.6.0
           "$RUNNER_TEMP/sfstore-browser/node_modules/.bin/playwright" install --with-deps chromium
       - name: Audit production storefront without mutations
-        run: NODE_PATH="$RUNNER_TEMP/sfstore-browser/node_modules" node scripts/audit/public-browser.cjs
+        run: NODE_PATH="$RUNNER_TEMP/sfstore-browser/node_modules" node scripts/audit/public-browser.mjs
       - name: Measure Lighthouse on mobile (laboratory data)
         if: always()
         run: |
@@ -36,7 +37,7 @@ jobs:
           "$RUNNER_TEMP/sfstore-browser/node_modules/.bin/lighthouse" https://sfstore-ten.vercel.app/ --output=json --output-path=./audit-output/browser/lighthouse-mobile.json --chrome-path="$BROWSER_BIN" --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" --only-categories=performance,accessibility,seo,best-practices --quiet || echo "LIGHTHOUSE_UNAVAILABLE: inspect artifact and runner logs"
       - name: Print audit evidence and findings
         if: always()
-        run: node scripts/audit/report-browser.cjs
+        run: node scripts/audit/report-browser.mjs
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -1,6 +1,5 @@
-'use strict';
-const fs=require('node:fs');
-const path=require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
 const root=process.env.AUDIT_OUTPUT||'audit-output/browser';
 const load=file=>{try{return JSON.parse(fs.readFileSync(path.join(root,file),'utf8'));}catch{return null;}};
 const browser=load('results.json'), lh=load('lighthouse-mobile.json');

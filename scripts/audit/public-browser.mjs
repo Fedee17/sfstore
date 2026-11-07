@@ -1,8 +1,9 @@
 /* SFSTORE public, non-destructive browser audit. No customer data or purchases. */
-'use strict';
-const fs = require('node:fs');
-const path = require('node:path');
-const { chromium } = require('playwright');
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+// The isolated CI runner supplies Playwright through NODE_PATH.
+const { chromium } = createRequire(import.meta.url)('playwright');
 const BASE = 'https://sfstore-ten.vercel.app';
 const OUT = process.env.AUDIT_OUTPUT || 'audit-output/browser';
 fs.mkdirSync(OUT, {recursive:true});
