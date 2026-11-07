@@ -3,7 +3,7 @@ import { publicCategoryLabels as categoryLabels } from "@/lib/catalog/public-pro
 
 import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getWebTransferSubtotal, getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { formatWebPrice, getWebTransferSubtotal, getWebTransferPrice } from "@/lib/web-transfer-pricing";
 import { CartItemIdentity } from "@/components/cart-item-identity";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
@@ -498,7 +498,7 @@ function CheckoutContent() {
                         </p>
                       </div>
                       <p className="self-end break-words font-semibold text-[#003B73]">
-                        {currencyFormatter.format(
+                        {formatWebPrice(
                           getWebTransferPrice(item.price) *
                             item.quantity,
                         )}
@@ -516,12 +516,12 @@ function CheckoutContent() {
                 <div className="flex justify-between">
                   <span className="text-[#102033]/65">Subtotal de lista</span>
                   <span className="font-semibold">
-                    {currencyFormatter.format(subtotal)}
+                    {formatWebPrice(subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Productos por transferencia (25% OFF)</span><span>{currencyFormatter.format(getWebTransferSubtotal(items))}</span></div>
+                <div className="flex justify-between"><span>Productos por transferencia (25% OFF)</span><span>{formatWebPrice(getWebTransferSubtotal(items))}</span></div>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
-                  <span className="font-semibold">{shippingRequired ? "Total con envío" : "Total por transferencia · retiro"}</span>
+                  <span className="font-semibold">{shippingRequired ? "Total exacto con envío" : "Total exacto por transferencia · retiro"}</span>
                   <span className="font-semibold text-[#003B73]">
                     {shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : currencyFormatter.format(Math.round((getWebTransferSubtotal(items) + (shippingQuote?.rates.find(rate => rate.quoteKey === selectedQuoteKey)?.fee ?? 0))*100)/100)}
                   </span>

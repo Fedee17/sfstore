@@ -1,71 +1,125 @@
 "use client";
-import { publicationAvailable } from "@/lib/products/public-families";
 
-import { useState } from "react";
-import { formatSavingsLabel } from "@/lib/pricing";
-import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { useState, type CSSProperties } from "react";
+import { publicationAvailable } from "@/lib/products/public-families";
+import { getSavingsPercent } from "@/lib/pricing";
+import { formatWebPrice, getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
 import type { PublicProduct } from "@/services/products";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { AnalyticsView } from "@/components/analytics-view";
 import { analyticsItem } from "@/lib/analytics/client";
+import styles from "./product-card.module.css";
 
-type ProductGridProps = {
-  products: PublicProduct[];
-  label: string;
-  priceMode?: "full" | "compact";
+type CardPricing = { list: number; special: number; savings: number | null; reduced: boolean };
+type ProductImageProps = {
+  product: Pick<PublicProduct, "primaryImageUrl" | "primaryImageAlt" | "name" | "imagePlaceholder">;
+  compact?: boolean;
 };
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
-
-function getAttribute(product: PublicProduct, name: string) {
-  return (
-    product.attributes?.find((attribute) => attribute.name === name)?.value ??
-    ""
-  );
-}
-
-export function ProductImage({ product, compact = false }: { product: Pick<PublicProduct, "primaryImageUrl" | "primaryImageAlt" | "name" | "imagePlaceholder">; compact?: boolean }) {
+export function ProductImage({ product, compact = false }: ProductImageProps) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  if (product.primaryImageUrl && failedUrl !== product.primaryImageUrl) {
+  const url = product.primaryImageUrl;
+  const imageClass = compact ? styles.cartPhoto : styles.photo;
+
+  if (url && failedUrl !== url) {
     return (
-      <div className={compact ? "aspect-square overflow-hidden bg-[#FFFDFA]" : "aspect-[3/4] max-h-[420px] overflow-hidden bg-[#FFFDFA]"}>
-        <img
-          src={product.primaryImageUrl}
-          ref={(image) => {
-            if (image?.complete && image.naturalWidth === 0) setFailedUrl(product.primaryImageUrl ?? null);
-          }}
-          alt={product.primaryImageAlt ?? product.name}
-          loading="lazy"
-          decoding="async"
-          onError={() => setFailedUrl(product.primaryImageUrl ?? null)}
-          className={compact ? "h-full w-full object-contain" : "h-full w-full object-contain"}
-        />
+      <div className={imageClass}>
+        <img src={url} alt={product.primaryImageAlt ?? product.name} loading="lazy" decoding="async"
+          ref={(image) => { if (image?.complete && image.naturalWidth === 0) setFailedUrl(url); }}
+          onError={() => setFailedUrl(url)} />
       </div>
     );
   }
 
+  return <div className={imageClass} role="img" aria-label={`Imagen no disponible de ${product.name}`}>
+    <span className={styles.placeholder}>Imagen no disponible</span>
+  </div>;
+}
+
+export function ProductCard({ product, label, featured = false, directPurchase = !featured, preview = false, recommendation, featuredPricing, compact = false, from = false, presentation }: {
+  product: PublicProduct;
+  label: string;
+  featured?: boolean;
+  directPurchase?: boolean;
+  preview?: boolean;
+  recommendation?: string | null;
+  featuredPricing?: CardPricing | null;
+  compact?: boolean;
+  from?: boolean;
+  presentation?: "catalog";
+}) {
+  const available = publicationAvailable(product);
+  const validPrice = hasValidWebPrice(product.price);
+  const transfer = validPrice ? getWebTransferPrice(product.price) : null;
+  const pricing = featured ? featuredPricing : transfer === null ? null : {
+    list: product.price,
+    special: transfer,
+    savings: getSavingsPercent(product.price, transfer),
+    reduced: transfer < product.price,
+  };
+  const description = featured ? recommendation : product.shortDescription;
+  const brand = featured ? undefined : product.attributes?.find(({ name }) => name === "Marca")?.value;
+  const href = `/producto/${encodeURIComponent(product.slug)}`;
+  const fromLabel = featured ? from : compact && product.kind === "family";
+  const Heading = featured ? "h3" : "h2";
+  const catalogCard = presentation === "catalog";
+  const chooseVariant = directPurchase && available && product.kind === "family";
+
   return (
-    <div className={compact ? "flex aspect-square items-center justify-center bg-[#FFFDFA] px-1 text-center text-[10px] leading-tight text-[#526479]" : "flex aspect-[3/4] max-h-[420px] flex-col items-center justify-center bg-[#102033] text-[#F7F9FC]"} role="img" aria-label={`Imagen no disponible de ${product.name}`}>
-      {!compact ? <span className="break-all px-4 text-center text-5xl font-semibold tracking-wide text-[#DCE3EA]">
-        {product.imagePlaceholder}
-      </span> : null}
-      <span className={compact ? "" : "mt-2 text-sm"}>Imagen no disponible</span>
-    </div>
+    <article className={styles.card} data-featured={featured || undefined} data-presentation={presentation} data-product-slug={product.slug}
+      style={featured && product.primaryImageUrl ? { "--featured-photo": `url(${JSON.stringify(product.primaryImageUrl)})` } as CSSProperties : undefined}>
+      {!preview && (!featured || directPurchase) ? <AnalyticsView event="view_item_list" identity={`${label}:${product.id}`} params={{ items: [analyticsItem(product)].filter(Boolean) }} /> : null}
+      <a href={href} aria-label={`Ver producto ${product.name}`} className={styles.imageLink}>
+        <ProductImage product={product} />
+      </a>
+      <div className={styles.body}>
+        <div className={styles.meta}>
+          {!catalogCard ? <span className={styles.category}>{label}</span> : null}
+          {brand ? <span className={styles.brand}>{brand}</span> : null}
+          {!featured || !available ? <span className={styles.availability} data-available={available}>{available ? "En stock" : "Agotado"}</span> : null}
+        </div>
+        <Heading className={styles.name}>{catalogCard ? <a href={href} className={styles.nameLink}>{product.name}</a> : product.name}</Heading>
+        {description ? <p className={styles.description}>{description}</p> : null}
+        <div className={styles.bottom}>
+          {pricing ? (
+            <>
+              {pricing.reduced || !featured ? <p className={styles.list}>
+                {featured ? <span className="sr-only">Precio de lista: </span> : "Lista: "}
+                <s>{fromLabel ? "Desde " : ""}{formatWebPrice(pricing.list)}</s>
+              </p> : null}
+              <div className={styles.priceRow}>
+                <p className={styles.special}><span className="sr-only">Precio especial: </span>{fromLabel ? <small>Desde </small> : null}{formatWebPrice(pricing.special)}</p>
+                <div className={styles.badges}>
+                  {pricing.savings !== null ? <span className={styles.discount}>
+                    <span aria-hidden="true">{pricing.savings}% OFF</span>
+                    <span className="sr-only">{pricing.savings}% de ahorro</span>
+                  </span> : null}
+                  <span className={styles.payment}>{featured ? "Efectivo o transferencia" : "Transferencia bancaria"}</span>
+                </div>
+              </div>
+            </>
+          ) : <p className={styles.list}>Precio a confirmar</p>}
+          <div className={styles.actions}>
+            {(!catalogCard && !(featured && directPurchase)) || chooseVariant ? <a href={href} className={styles.button}>{chooseVariant ? "Elegir variante" : "Ver producto"}</a> : null}
+            {directPurchase && available && product.kind !== "family" ? <AddToCartButton product={product} compact primary={catalogCard || featured} /> : null}
+            {directPurchase && !available ? <a href={getProductWhatsAppLink(product)} target="_blank" rel="noopener noreferrer" className={styles.secondary}>
+              {validPrice ? "Sin stock: consultar" : "Consultar precio"}
+            </a> : null}
+            {directPurchase && available && !validPrice && product.kind === "family" ? <a href={getProductWhatsAppLink(product)} target="_blank" rel="noopener noreferrer" className={styles.secondary}>Consultar precio</a> : null}
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }
 
-export function ProductGrid({ products, label, priceMode = "full" }: ProductGridProps) {
-  if (products.length === 0) {
+export function ProductGrid({ products, label, priceMode = "full", presentation }: { products: PublicProduct[]; label: string; priceMode?: "full" | "compact"; presentation?: "catalog" }) {
+  if (!products.length) {
     return (
-      <div className="mt-10 rounded-[2rem] border border-[#003B73]/15 bg-white/65 p-8 text-center shadow-sm">
-        <h2 className="text-2xl font-semibold">La vidriera se está preparando</h2>
-        <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-[#102033]/65">
+      <div className="mt-6 rounded-2xl border border-[#003B73]/15 bg-white p-6 text-center">
+        <h2 className="catalog-subtitle">La vidriera se está preparando</h2>
+        <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-[#102033]/65">
           Todavía no hay productos disponibles en esta categoría. Consultanos y te ayudamos a encontrar una opción para regalar o disfrutar.
         </p>
       </div>
@@ -73,136 +127,9 @@ export function ProductGrid({ products, label, priceMode = "full" }: ProductGrid
   }
 
   return (
-    <div className="mt-10 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {products.map((product) => {
-        const isAvailable = publicationAvailable(product);
-        const showTransferPrice = hasValidWebPrice(product.price);
-        const transferPrice = showTransferPrice ? getWebTransferPrice(product.price) : null;
-        const savingsLabel = formatSavingsLabel(product.price, transferPrice);
-        const primaryPrice = transferPrice ?? product.price;
-        const brand = getAttribute(product, "Marca");
-
-        return (
-          <article
-            key={product.id}
-            className={`group relative flex min-h-[520px] min-w-0 flex-col overflow-hidden rounded-[1.75rem] border bg-white/75 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#102033]/10 ${
-              isAvailable
-                ? "border-[#003B73]/15"
-                : "border-[#102033]/10 opacity-75"
-            }`}
-          >
-            <AnalyticsView event="view_item_list" identity={`${label}:${product.id}`} params={{ items: [analyticsItem(product)].filter(Boolean) }} />
-            <a
-              href={`/producto/${product.slug}`}
-              className="flex min-w-0 flex-1 flex-col text-inherit outline-none transition focus-visible:ring-2 focus-visible:ring-[#0072CE] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F9FC]"
-              aria-label={`Ver producto ${product.name}`}
-            >
-              <ProductImage product={product} />
-              <div className="flex min-w-0 flex-1 flex-col justify-between p-5 pb-0 sm:p-6 sm:pb-0">
-                <div className="min-w-0">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <span className="max-w-full break-words rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold text-[#0072CE]">
-                      {label}
-                    </span>
-                    {brand ? (
-                      <span
-                        title={brand}
-                        className="max-w-full break-words rounded-full bg-[#EEF2F6] px-3 py-1 text-xs font-semibold text-[#003B73]"
-                      >
-                        {brand}
-                      </span>
-                    ) : null}
-                    <span
-                      className={`max-w-full break-words rounded-full px-3 py-1 text-xs font-semibold ${
-                        isAvailable
-                          ? "bg-[#0072CE] text-[#F7F9FC]"
-                          : "bg-[#E52620]/10 text-[#E52620]"
-                      }`}
-                    >
-                      {isAvailable ? "En stock" : "Agotado"}
-                    </span>
-                  </div>
-
-                  <h2 className="mt-5 break-words text-2xl font-semibold leading-tight text-[#102033] transition group-hover:text-[#0072CE]">
-                    {product.name}
-                  </h2>
-                  <p className="mt-3 break-words text-sm leading-6 text-[#102033]/65">
-                    {product.shortDescription}
-                  </p>
-                </div>
-
-                <div className="mt-7 min-w-0 border-t border-[#003B73]/15 pt-5">
-                  {priceMode === "compact" ? (
-                    <div>
-                      <p className="text-xs font-semibold text-[#003B73]">
-                        {showTransferPrice ? "Transferencia bancaria" : "Precio a confirmar"}
-                      </p>
-                      <p className="mt-1 break-words text-3xl font-semibold leading-tight text-[#102033]">
-                        {showTransferPrice ? `${product.kind==="family"?"Desde ":""}${currencyFormatter.format(primaryPrice)}` : "Consultar precio"}
-                      </p>
-                      {showTransferPrice ? (
-                        <p className="mt-2 text-sm text-[#526479]">Lista: {currencyFormatter.format(product.price)}</p>
-                      ) : null}
-                    </div>
-                  ) : transferPrice !== null ? (
-                    <div className="min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#EEF2F6] p-4">
-                      <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
-                        Transferencia bancaria
-                      </p>
-                      <p className="mt-1 break-words text-3xl font-semibold text-[#102033]">
-                        {currencyFormatter.format(transferPrice)}
-                      </p>
-                      {savingsLabel ? (
-                        <span className="mt-2 inline-flex max-w-full rounded-full bg-[#0072CE] px-3 py-1 text-xs font-semibold text-white">
-                          {savingsLabel}
-                        </span>
-                      ) : null}
-                      <p className="mt-2 break-words text-sm text-[#102033]/55">
-                        Lista: {currencyFormatter.format(product.price)}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="min-w-0 rounded-2xl border border-[#003B73]/10 bg-[#F7F9FC] p-4">
-                      <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#102033]/45">
-                        Precio a confirmar
-                      </p>
-                      <p className="mt-1 break-words text-3xl font-semibold text-[#102033]">
-                        Consultar precio
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </a>
-
-            <div className="min-w-0 p-5 pt-5 sm:p-6 sm:pt-5">
-                {isAvailable || !showTransferPrice ? (
-                  <div className="mt-5 grid min-w-0 gap-3">
-                    {product.kind==="family"?<a href={`/producto/${product.slug}`} className="flex min-h-12 items-center justify-center rounded-full bg-[#0072CE] px-5 py-3 font-semibold text-white">Elegir variante</a>:<AddToCartButton product={product} />}
-                    <a
-                      href={`/producto/${product.slug}`}
-                      className="flex min-h-12 w-full min-w-0 items-center justify-center rounded-full border border-[#0072CE]/35 px-5 py-3 text-center text-sm font-semibold text-[#0072CE] transition hover:border-[#0072CE] hover:bg-[#EEF2F6]"
-                    >
-                      Ver producto
-                    </a>
-                  </div>
-                ) : (
-                  <a
-                    href={getProductWhatsAppLink(product)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-5 flex min-h-12 w-full min-w-0 items-center justify-center rounded-full border border-[#0072CE]/35 px-5 py-3 text-center text-sm font-semibold text-[#0072CE] transition hover:border-[#0072CE] hover:bg-[#EEF2F6]"
-                  >
-                    Sin stock: consultar
-                  </a>
-                )}
-            </div>
-          </article>
-        );
-      })}
+    <div className={styles.grid}>
+      {products.map((product) => <ProductCard key={product.id} product={product} label={label} compact={priceMode === "compact"} presentation={presentation} />)}
     </div>
   );
 }
-
-
 

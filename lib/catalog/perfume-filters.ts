@@ -11,7 +11,7 @@ import {
 } from "@/lib/catalog/attribute-config";
 import { normalizeTaxonomyValue } from "@/lib/product-taxonomy";
 
-const retiredPerfumeCategories = new Set(["disenador", "de-disenador", "nicho"]);
+const retiredPerfumeCategories = new Set(["disenador", "de-disenador", "nicho", "otro"]);
 
 export function isRetiredPerfumeCategory(value: string) {
   return retiredPerfumeCategories.has(normalizeTaxonomyValue(value));

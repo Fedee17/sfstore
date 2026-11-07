@@ -78,6 +78,7 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
   const selectedCategoryItem = PERFUME_CATALOG_CATEGORIES.find(
     (category) => category.matchValue === selectedCategory,
   );
+  const isArabicCatalog = selectedCategoryItem?.hrefValue === "arabe";
   const products = await getProductsByCategorySlug("perfumes");
   const candidateAttributeFilters: [CatalogAttributeKey, string | undefined][] = [
     [CATALOG_ATTRIBUTE_KEYS.commercialCategory, selectedCategory],
@@ -100,55 +101,43 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
       <SiteHeader />
-      <section className="mx-auto max-w-6xl px-5 py-5 sm:px-8 lg:py-16">
-        <div className="flex min-w-0 flex-col justify-between gap-2 lg:mt-10 lg:gap-6 lg:overflow-hidden lg:rounded-[2rem] lg:border lg:border-[#003B73]/15 lg:bg-white/55 lg:p-8 lg:shadow-sm lg:flex-row lg:items-end">
-          <div className="min-w-0">
-            <p className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73] lg:block">
-              Catálogo
-            </p>
-            <h1 className="break-words text-2xl font-semibold leading-tight lg:mt-3 lg:text-5xl">
-              Perfumes importados
-            </h1>
-            <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-[#0072CE] lg:mt-4">
-              No elijas por marca: elegí según cómo querés oler.
-            </p>
-          </div>
-          <p className="hidden max-w-xl break-words text-base leading-7 text-[#102033]/70 lg:block">
-            Te ayudamos a elegir según tu estilo, ocasión y presupuesto. Aromas para todos los días, regalos, salidas y momentos con presencia.
+      <section className="storefront-catalog mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-8">
+        <header className="min-w-0 border-b border-[#DCE3EA] pb-4 lg:pb-5">
+          <h1 className="catalog-title break-words">{isArabicCatalog ? "Perfumes Árabes" : "Perfumes importados"}</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-[#41566B] sm:text-base">
+            Encontrá tu próxima fragancia por estilo, intensidad u ocasión.
           </p>
-        </div>
+        </header>
+
+        {selectedCategoryItem ? (
+          <Link href="/perfumes" className="mt-4 inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-[#DCE3EA] bg-white px-4 text-sm font-semibold text-[#003B73] hover:bg-[#E8F3FF] focus-visible:outline-2 focus-visible:outline-[#0072CE]">
+            <span aria-hidden="true">←</span> Volver a categorías
+          </Link>
+        ) : null}
 
         <MobileCatalogFilters basePath="/perfumes" categories={PERFUME_CATALOG_CATEGORIES} filtersByCategory={PERFUME_FILTERS_BY_CATEGORY} selectedCategory={selectedCategory} />
 
-        <div className="mt-3 grid min-w-0 gap-6 lg:mt-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
-          <aside className="hidden min-w-0 rounded-2xl border border-[#DCE3EA] bg-white p-5 shadow-sm lg:block">
+        <div className="mt-4 grid min-w-0 gap-5 lg:mt-5 lg:grid-cols-[210px_minmax(0,1fr)] lg:items-start">
+          <aside className="hidden min-w-0 rounded-2xl border border-[#DCE3EA] bg-white p-3 lg:block">
             <CatalogSidebar
               ariaLabel="Categorías comerciales de perfumes"
               basePath="/perfumes"
               categories={PERFUME_CATALOG_CATEGORIES}
               filtersByCategory={PERFUME_FILTERS_BY_CATEGORY}
               selectedCategory={selectedCategory}
-              viewAllLabel="Ver todos de esta categoría"
+              compactFilters
             />
           </aside>
 
           <div className="min-w-0">
-            <div className="flex min-w-0 flex-col gap-2 border-b border-[#DCE3EA] pb-2 lg:pb-5 sm:flex-row sm:items-end sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-[#0072CE]">
-                  {selectedCategoryItem ? selectedCategoryItem.label : "Todos los perfumes"}
-                </p>
-                <h2 className="hidden mt-1 break-words text-2xl font-semibold text-[#102033] lg:block">
-                  Encontrá el aroma que mejor acompaña tu estilo.
-                </h2>
-              </div>
-              <p className="shrink-0 text-sm text-[#102033]/55">
-                {filteredProducts.length} {filteredProducts.length === 1 ? "producto" : "productos"}
-              </p>
-            </div>
+            {!isArabicCatalog ? <div className="min-w-0 border-b border-[#DCE3EA] pb-2">
+              <h2 className="break-words text-2xl font-bold leading-tight text-[#003B73] lg:text-[1.75rem]">
+                {selectedCategoryItem ? selectedCategoryItem.label : "Todos los perfumes"}
+              </h2>
+            </div> : null}
 
             {filteredProducts.length > 0 ? (
-              <ProductGrid products={availableFirst(filteredProducts)} label="Perfume" />
+              <ProductGrid products={availableFirst(filteredProducts)} label="Perfume" presentation="catalog" />
             ) : (
               <div className="mt-8 rounded-2xl border border-[#DCE3EA] bg-white p-8 text-center shadow-sm">
                 <h3 className="text-xl font-semibold text-[#102033]">
@@ -167,7 +156,6 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
             )}
           </div>
         </div>
-        <p className="mt-8 text-sm leading-6 text-[#526479] lg:hidden">Te ayudamos a elegir según tu estilo, ocasión y presupuesto. Aromas para todos los días, regalos, salidas y momentos con presencia.</p>
       </section>
     </main>
   );

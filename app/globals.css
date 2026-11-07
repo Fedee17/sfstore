@@ -24,3 +24,46 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer components {
+  /* Shared heading scale for catalog and search pages. */
+  .catalog-title {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    line-height: 1.15;
+    font-weight: 600;
+  }
+
+  .catalog-subtitle {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    line-height: 1.25;
+    font-weight: 600;
+  }
+
+  /* Let narrow product detail prices use the full panel width. */
+  .product-price-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .product-price-value {
+    overflow-wrap: anywhere;
+  }
+
+  @media (width >= 360px) {
+    .product-price-grid {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .product-price-list {
+      text-align: end;
+    }
+  }
+}
+
+@media (1024px <= width < 1440px) {
+  .storefront-catalog {
+    /* Reserve room for the fixed WhatsApp button where the grid reaches the edge. */
+    padding-inline-end: clamp(2rem, calc(72px + (72rem - 100vw) / 2), 72px);
+  }
+}

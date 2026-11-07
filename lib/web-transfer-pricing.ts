@@ -17,3 +17,14 @@ export function getWebTransferPrice(price: number): number {
 export function getWebTransferSubtotal(items: { price: number; quantity: number }[]): number {
   return items.reduce((cents, item) => cents + Math.round(getWebTransferPrice(item.price) * 100) * item.quantity, 0) / 100;
 }
+
+const wholePesoFormatter = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+  maximumFractionDigits: 0,
+});
+
+// Round the displayed cent amount up without changing the amount used for payment.
+export function formatWebPrice(price: number): string {
+  return wholePesoFormatter.format(Math.ceil(Math.round(price * 100) / 100));
+}

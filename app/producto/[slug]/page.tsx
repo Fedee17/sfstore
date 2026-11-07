@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { SiteHeader } from "@/components/site-header";
 import { formatSavingsLabel } from "@/lib/pricing";
-import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { formatWebPrice, getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
@@ -72,16 +72,6 @@ export async function generateMetadata({
     },
   };
 }
-
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  maximumFractionDigits: 0,
-});
-
-
-
-
 
 type ProductGalleryImageData = {
   url: string;
@@ -154,22 +144,22 @@ function PricePanel({
   return (
     <div className="mt-4 overflow-hidden rounded-2xl border border-[#003B73]/15 bg-[#F7F9FC] p-4">
       {transferPrice !== null ? (
-        <div className="grid min-w-0 grid-cols-[1fr_auto] gap-3">
+        <div className="product-price-grid min-w-0">
           <div className="min-w-0">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
               Precio por transferencia
             </p>
-            <p className="mt-2 whitespace-nowrap text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
-              {currencyFormatter.format(transferPrice)}
+            <p className="product-price-value mt-2 text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
+              {formatWebPrice(transferPrice)}
             </p>
             <p className="mt-1 text-xs text-[#102033]/65">25% OFF · pago completo</p>
           </div>
-          <div className="min-w-0 self-start text-right">
+          <div className="product-price-list min-w-0 self-start">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
               Precio lista
             </p>
-            <p className="mt-2 break-words text-xl font-semibold text-[#102033]/70">
-              {currencyFormatter.format(product.price)}
+            <p className="product-price-value mt-2 text-xl font-semibold text-[#102033]/70">
+              {formatWebPrice(product.price)}
             </p>
           </div>
         </div>
@@ -178,7 +168,7 @@ function PricePanel({
           <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
             Precio a confirmar
           </p>
-          <p className="mt-2 whitespace-nowrap text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
+          <p className="product-price-value mt-2 text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
             Consultar precio
           </p>
         </div>
@@ -367,7 +357,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         Transferencia bancaria
                       </p>
                       <p className="break-words text-lg font-semibold text-[#102033]">
-                        {currencyFormatter.format(relatedTransferPrice)}
+                        {formatWebPrice(relatedTransferPrice)}
                       </p>
                       {relatedSavingsLabel ? (
                         <span className="mt-1 inline-flex max-w-full rounded-full bg-[#0072CE]/10 px-2.5 py-1 text-xs font-semibold text-[#0072CE]">
@@ -375,7 +365,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         </span>
                       ) : null}
                       <p className="mt-1 break-words text-xs text-[#102033]/55">
-                        Lista: {currencyFormatter.format(relatedProduct.price)}
+                        Lista: {formatWebPrice(relatedProduct.price)}
                       </p>
                     </div>
                   ) : (

@@ -1,0 +1,30 @@
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 14px 16px;
+}
+
+.tabs button {
+  min-block-size: 44px;
+  padding: 7px 14px;
+  border: 1px solid #b9cee2;
+  border-radius: 999px;
+  background: #fff;
+  color: #003b73;
+  font-size: .875rem;
+  font-weight: 700;
+}
+
+.tabs button:hover { background: #e8f3ff; }
+.tabs button[aria-selected="true"] { border-color: #102747; background: #102747; color: #fff; }
+.tabs button:focus-visible { outline: 2px solid #0072ce; outline-offset: 2px; }
+
+@media (width >= 768px) and (height <= 700px) {
+  .tabs { margin-block: 8px 10px; }
+}
+@media (width >= 1200px) and (height <= 550px) {
+  .tabs { margin-block: 4px 6px; }
+}
+
+.empty { padding-block: 12px; color: #526479; font-size: .875rem; }

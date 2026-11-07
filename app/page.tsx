@@ -1,15 +1,16 @@
 import { connection } from "next/server";
 import Link from "next/link";
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
+import { cache, Suspense } from "react";
+import { HomeProductCarousel } from "./home-product-card";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
-import { getHomeCardPricing, getHomeCardRecommendation } from "@/lib/catalog/home-card-presentation";
+import { getHomeCardPricing } from "@/lib/catalog/home-card-presentation";
 import { getHomeFeaturedProducts } from "@/lib/catalog/home-selection";
-import { publicationAvailable } from "@/lib/products/public-families";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import { getCatalogPublications, type PublicProduct } from "@/services/products";
-import { HomeFeaturedCarousel } from "./home-featured-carousel";
+import { getCatalogPublications } from "@/services/products";
+import { RitualMatero } from "./ritual-matero";
+import { availableFirst } from "@/lib/catalog/availability-order";
 import categoryStyles from "./home-category.module.css";
 import featuredStyles from "./home-featured.module.css";
 
@@ -30,19 +31,6 @@ export const metadata: Metadata = {
   },
 };
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
-
-const categoryLabels: Record<PublicProduct["category"], string> = {
-  perfumes: "Perfumes",
-  mates: "Mates y termos",
-  accesorios: "Accesorios",
-};
-
 const benefits = [
   {
     title: "Enviamos tu compra",
@@ -60,65 +48,6 @@ const benefits = [
     icon: "security",
   },
 ] as const;
-
-function formatCurrency(value: number) {
-  return Number.isInteger(value) ? currencyFormatter.format(value) : new Intl.NumberFormat("es-AR", {
-    style: "currency", currency: "ARS", minimumFractionDigits: 2, maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function getCategoryLabel(product: PublicProduct) {
-  return product.categoryName ?? categoryLabels[product.category];
-}
-
-
-function ProductVisual({
-  product,
-  label,
-  className = "",
-  loading = "lazy",
-}: {
-  product?: PublicProduct | null;
-  label: string;
-  className?: string;
-  loading?: "eager" | "lazy";
-}) {
-  if (product?.primaryImageUrl) {
-    return (
-      <div className={`relative min-w-0 overflow-hidden rounded-[1.5rem] bg-[#FFFDFA] ${className}`}>
-        <img
-          src={product.primaryImageUrl}
-          alt={product.primaryImageAlt ?? product.name}
-          loading={loading}
-          className="absolute inset-0 h-full w-full object-contain"
-        />
-
-      </div>
-    );
-  }
-
-  return (
-    <div role="img" aria-label={`Imagen no disponible de ${product?.name ?? label}`} className={`flex min-w-0 items-center justify-center overflow-hidden rounded-[1.5rem] border border-[#003B73]/15 bg-[#F7F9FC] text-2xl font-semibold text-[#003B73] ${className}`}>
-      <span aria-hidden="true">{product?.imagePlaceholder ?? "SF"}</span>
-    </div>
-  );
-}
-
-function SimplePrice({ product, from = false }: { product: PublicProduct; from?: boolean }) {
-  const pricing = getHomeCardPricing(product);
-  if (!pricing) return <p className={featuredStyles.stock}>Precio a confirmar</p>;
-  return (
-    <div>
-      <p className={featuredStyles.list}>
-        {pricing.reduced ? <><span className="sr-only">Precio de lista: </span><s>{from ? "Desde " : ""}{formatCurrency(pricing.list)}</s></> : null}
-      </p>
-      <div className={featuredStyles.priceRow}>
-        <p className={featuredStyles.special} data-compact={formatCurrency(pricing.special).replace(/s/g, "").length > 9 || from || undefined}><span className="sr-only">Precio especial: </span>{from ? <span className={featuredStyles.from}>Desde </span> : null}{formatCurrency(pricing.special)}</p>
-        {pricing.savings !== null ? <span className={featuredStyles.discount}>{pricing.savings}% OFF</span> : null}
-      </div>
-    </div>
-  );
-}
 
 function BenefitIcon({ type }: { type: (typeof benefits)[number]["icon"] }) {
   if (type === "shipping") {
@@ -166,41 +95,58 @@ function BenefitCard({ benefit }: { benefit: (typeof benefits)[number] }) {
   );
 }
 
-function CategoryCard({ href, title, description, product, imageSrc, imageClassName, tallMobile = false }: {
-  href: string; title: string; description: string; product?: PublicProduct | null; imageSrc?: string; imageClassName?: string; tallMobile?: boolean;
+function CategoryCard({ href, title, description, imageSrc }: {
+  href: string; title: string; description: string; imageSrc: string;
 }) {
-  if (imageSrc) {
-    return (
-      <Link href={href} className={`${categoryStyles.photoCard}${tallMobile ? ` ${categoryStyles.tallMobileCard}` : ""} group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]`}>
-        <img src={imageSrc} alt="" width={1670} height={942} loading="lazy" className={`${categoryStyles.photo}${imageClassName ? ` ${imageClassName}` : ""}`} />
-        <span aria-hidden="true" className={categoryStyles.shade} />
-        <div className={categoryStyles.copy}>
-          <h3>{title}</h3>
-          <p>{description}</p>
-        </div>
+  return (
+    <Link href={href} className={categoryStyles.photoCard}>
+      <img src={imageSrc} alt="" width={1080} height={608} loading="lazy" decoding="async" className={categoryStyles.photo} />
+      <div className={categoryStyles.copy}>
+        <h3>{title}</h3>
+        <p>{description}</p>
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={categoryStyles.arrow}>
           <path d="M4 12h16m-6-6 6 6-6 6" />
         </svg>
-      </Link>
-    );
-  }
-  return (
-    <Link href={href} className="group grid min-w-0 grid-cols-[96px_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-3xl border border-[#003B73]/15 bg-white/75 p-3 transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE] sm:grid-cols-1 sm:p-4">
-      <ProductVisual product={product} label={title} className="aspect-square sm:aspect-[4/3]" />
-      <div className="min-w-0 sm:px-1 sm:pb-1">
-        <h3 className="text-lg font-semibold text-[#102033] sm:text-xl">{title}</h3>
-        <p className="mt-1 text-sm leading-6 text-[#526479]">{description}</p>
       </div>
     </Link>
   );
 }
 
-export default async function Home() {
-  await connection(); // Current catalog/stock at request time, never frozen during build.
-  const allProducts = await getCatalogPublications();
-  const featuredProducts = getHomeFeaturedProducts(allProducts).sort((a, b) =>
+const readHomeCatalog = cache(async () => {
+  await connection();
+  return getCatalogPublications();
+});
+
+async function FeaturedProducts() {
+  const featuredProducts = getHomeFeaturedProducts(await readHomeCatalog()).sort((a, b) =>
     (getHomeCardPricing(b)?.special ?? 0) - (getHomeCardPricing(a)?.special ?? 0)
   );
+  if (!featuredProducts.length) return null;
+
+  return (
+    <>
+      <h2 id="home-featured-title" className={featuredStyles.title}><strong>LOS MÁS ELEGIDOS</strong> DE SF STORE</h2>
+      <HomeProductCarousel products={featuredProducts} />
+    </>
+  );
+}
+
+async function HomeRitualMatero() {
+  const products = (await readHomeCatalog()).filter((product) => product.category === "mates");
+  const groups = [
+    { label: "Mates", slugs: ["mates"] },
+    { label: "Termos", slugs: ["termos"] },
+    { label: "Bombillas y Bombillones", slugs: ["bombillas", "bombillones"] },
+    { label: "Yerbas", slugs: ["yerbas"] },
+  ].map(({ label, slugs }) => ({
+    label,
+    products: availableFirst(products.filter((product) => slugs.includes(product.categorySlug ?? product.category))).slice(0, 8),
+  }));
+  return <RitualMatero groups={groups} />;
+}
+
+export default function Home() {
+
   const giftWhatsAppLink = buildWhatsAppUrl(
     "Hola SFSTORE, quiero armar un regalo y necesito ayuda para elegir.",
   );
@@ -211,7 +157,7 @@ export default async function Home() {
     {
       composition: "continuous",
       imageSrc: "/home/femenino-desktop-1600.webp",
-      imageSrcSet: "/home/femenino-desktop-960.webp 960w, /home/femenino-desktop-1600.webp 1600w",
+      imageSrcSet: "/home/femenino-desktop-960.webp 960w, /home/femenino-desktop-1200.webp 1200w, /home/femenino-desktop-1600.webp 1600w",
       mobileImageSrc: "/home/femenino-mobile-768.webp",
       mobileImageSrcSet: "/home/femenino-mobile-480.webp 480w, /home/femenino-mobile-768.webp 768w",
       imageAlt: "Perfumes árabes para mujer",
@@ -224,7 +170,7 @@ export default async function Home() {
       composition: "continuous",
       desktopImagePosition: "85% center",
       imageSrc: "/home/masculino-desktop-1600.webp",
-      imageSrcSet: "/home/masculino-desktop-960.webp 960w, /home/masculino-desktop-1600.webp 1600w",
+      imageSrcSet: "/home/masculino-desktop-960.webp 960w, /home/masculino-desktop-1200.webp 1200w, /home/masculino-desktop-1600.webp 1600w",
       mobileImageSrc: "/home/masculino-mobile-768.webp",
       mobileImageSrcSet: "/home/masculino-mobile-480.webp 480w, /home/masculino-mobile-768.webp 768w",
       imageAlt: "Perfumes árabes para hombre",
@@ -253,50 +199,24 @@ export default async function Home() {
       </section>
 
       <section id="explorar" className="mx-auto max-w-6xl px-5 py-5 sm:px-8 lg:py-8" aria-labelledby="explore-title">
-        <h2 id="explore-title" className="text-2xl font-semibold sm:text-3xl">¿Qué estás buscando?</h2>
+        <h2 id="explore-title" className={featuredStyles.sectionTitle}>¿Qué estás buscando?</h2>
         <div className={categoryStyles.grid}>
-          <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/a_wide_cinematic_high_resolution_tropical_sunset.png" />
-          <CategoryCard href="/mates" title="Mates" description="Tradición en cada cebada" imageSrc="/home/a_wide_cinematic_photorealistic_still_life_scene.png" imageClassName={categoryStyles.threeMatesPhoto} tallMobile />
-          <CategoryCard href="/mates?categoria=termos" title="Termos" description="Compañeros en cada aventura" imageSrc="/home/outdoor_sunset_landscape_product_photo_a_warm_gol.png" imageClassName={categoryStyles.thermosPhoto} tallMobile />
-          <CategoryCard href="/mates" title="Accesorios materos" description="Todo para acompañar tu ritual" imageSrc="/home/wide_cozy_warm_toned_photorealistic_product_sti.png" imageClassName={categoryStyles.mateAccessoriesPhoto} tallMobile />
+          <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/category-perfumes.webp" />
+          <CategoryCard href="/mates" title="Mates" description="Tradición en cada cebada" imageSrc="/home/category-mates.webp" />
+          <CategoryCard href="/mates?categoria=termos" title="Termos" description="Compañeros en cada aventura" imageSrc="/home/category-termos.webp" />
+          <CategoryCard href="/mates" title="Accesorios materos" description="Todo para acompañar tu ritual" imageSrc="/home/category-accesorios.webp" />
         </div>
       </section>
 
-      {featuredProducts.length > 0 ? <section id="productos" aria-labelledby="home-featured-title" className={`${featuredStyles.section} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`}>
-        <h2 id="home-featured-title" className={featuredStyles.title}><strong>LOS MÁS ELEGIDOS</strong> DE SF STORE</h2>
-        <HomeFeaturedCarousel cards={featuredProducts.map((product) => {
-          const available = publicationAvailable(product);
-          const recommendation = getHomeCardRecommendation(product);
-          return (
-            <article
-              key={product.id}
-              className={featuredStyles.card}
-              data-product-slug={product.slug}
-              style={product.primaryImageUrl ? {
-                "--featured-photo": `url(${JSON.stringify(product.primaryImageUrl)})`,
-              } as CSSProperties : undefined}
-            >
-              <a href={`/producto/${product.slug}`} className="block min-w-0">
-                <ProductVisual product={product} label={getCategoryLabel(product)} className={featuredStyles.photo} />
-              </a>
-              <div className={featuredStyles.body}>
-                <span className={featuredStyles.category}>{getCategoryLabel(product)}</span>
-                <h3 className={featuredStyles.name} title={product.name}>{product.name}</h3>
-                <p className={featuredStyles.recommendation}>{recommendation}</p>
-                <div className={featuredStyles.bottom}>
-                  {!available ? <p className={featuredStyles.stock}>Agotado · consultar</p> : null}
-                  <SimplePrice product={product} from={product.homePriceFrom} />
-                  <p className={featuredStyles.payment}>
-                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M5 8h2M17 16h2" /></svg>
-                    <span>Efectivo o transferencia</span>
-                  </p>
-                  <a href={`/producto/${product.slug}`} className={featuredStyles.button}>Ver producto</a>
-                </div>
-              </div>
-            </article>
-          );
-        })} />
-      </section> : null}
+      <section id="productos" aria-labelledby="home-featured-title" className={`${featuredStyles.section} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`}>
+        <Suspense fallback={<div className={featuredStyles.loading} aria-hidden="true" />}>
+          <FeaturedProducts />
+        </Suspense>
+      </section>
+
+      <Suspense fallback={null}>
+        <HomeRitualMatero />
+      </Suspense>
 
       <section id="regalos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="gifts-title">
         <div className="rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-5 sm:p-7">

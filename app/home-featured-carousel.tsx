@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import styles from "./home-featured.module.css";
 
 const desktopQuery = "(min-width: 1024px)";
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
-const rotationInterval = 8000;
+const rotationInterval = 4000;
 
 function subscribeToLayout(update: () => void) {
-  const queries = [window.matchMedia(desktopQuery), window.matchMedia(reducedMotionQuery)];
+  const queries = [desktopQuery, reducedMotionQuery].map(query => window.matchMedia(query));
   queries.forEach(query => query.addEventListener("change", update));
   return () => queries.forEach(query => query.removeEventListener("change", update));
 }
@@ -18,14 +18,19 @@ function getColumns() {
   return window.matchMedia(desktopQuery).matches ? 3 : 2;
 }
 
-function nextSlide(index: number, direction: number, last: number) {
+function nextSlide(index: number, direction: number, last: number, loop: boolean) {
+  if (loop) {
+    if (index < 0 || index > last) return { index, animate: true };
+    return { index: index + direction, animate: true };
+  }
   const next = Math.min(index, last) + direction;
   if (next > last) return { index: 0, animate: false };
   if (next < 0) return { index: last, animate: false };
   return { index: next, animate: true };
 }
 
-export function HomeFeaturedCarousel({ cards }: { cards: ReactNode[] }) {
+export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; previews?: ReactNode[] }) {
+  const trackId = useId();
   const columns = useSyncExternalStore(subscribeToLayout, getColumns, () => 0);
   const carousel = useRef<HTMLDivElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
@@ -37,11 +42,28 @@ export function HomeFeaturedCarousel({ cards }: { cards: ReactNode[] }) {
   const enabled = columns > 0 && cards.length > columns;
   const swipe = enabled && columns === 2;
   const arrows = enabled && !swipe;
-  const last = enabled ? cards.length - columns : 0;
-  const index = Math.min(slide.index, last);
+  const loop = arrows && previews?.length === cards.length;
+  const last = loop ? cards.length - 1 : enabled ? cards.length - columns : 0;
+  const index = loop ? Math.max(-1, Math.min(slide.index, cards.length)) : Math.max(0, Math.min(slide.index, last));
+  const offset = loop ? columns + 1 : 0;
+  const entries = cards.map((card, position) => ({ card, position, key: `product-${position}` }));
+  if (loop) {
+    const before = Array.from({ length: offset }, (_, position) => ({
+      card: previews[(cards.length - offset + position) % cards.length],
+      position: position - offset,
+      key: `before-${position}`,
+    }));
+    const after = Array.from({ length: offset }, (_, position) => ({
+      card: previews[position % cards.length],
+      position: cards.length + position,
+      key: `after-${position}`,
+    }));
+    entries.unshift(...before);
+    entries.push(...after);
+  }
 
   function move(direction: number) {
-    setSlide(previous => nextSlide(previous.index, direction, last));
+    setSlide(previous => nextSlide(previous.index, direction, last, loop));
   }
 
   useEffect(() => {
@@ -58,7 +80,7 @@ export function HomeFeaturedCarousel({ cards }: { cards: ReactNode[] }) {
       window.clearTimeout(timer);
       if (document.hidden) return;
       timer = window.setTimeout(() => {
-        setSlide(previous => nextSlide(previous.index, 1, last));
+        setSlide(previous => nextSlide(previous.index, 1, last, loop));
         schedule();
       }, rotationInterval);
     }
@@ -70,7 +92,7 @@ export function HomeFeaturedCarousel({ cards }: { cards: ReactNode[] }) {
       window.clearTimeout(timer);
       document.removeEventListener("visibilitychange", schedule);
     };
-  }, [enabled, visible, hovering, stopped, last]);
+  }, [enabled, visible, hovering, stopped, last, loop]);
 
   useEffect(() => {
     if (!swipe || !viewport.current || !track.current) return;
@@ -85,31 +107,44 @@ export function HomeFeaturedCarousel({ cards }: { cards: ReactNode[] }) {
       className={styles.carousel}
       data-rotating-layout={enabled || undefined}
       data-swipe={swipe || undefined}
+      data-side-previews={loop || undefined}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       onFocusCapture={() => setStopped(true)}
       onPointerDown={() => setStopped(true)}
     >
       {arrows && (
-        <button type="button" className={styles.previous} aria-label="Producto anterior" aria-controls="home-featured-track" onClick={() => move(-1)}>
+        <button type="button" className={styles.previous} aria-label="Producto anterior" aria-controls={trackId} onClick={() => move(-1)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
         </button>
       )}
-      <div ref={viewport} className={styles.viewport}>
+      <div className={styles.window}>
+       <div ref={viewport} className={styles.viewport}>
         <div
           ref={track}
-          id="home-featured-track"
+          id={trackId}
           className={styles.track}
           data-animate={arrows && slide.animate && index === slide.index || undefined}
-          style={{ "--featured-index": index } as CSSProperties}
+          style={{ "--featured-index": index + offset } as CSSProperties}
+          onTransitionEnd={event => {
+            if (!loop || event.target !== track.current || event.propertyName !== "transform") return;
+            setSlide(previous => {
+              if (previous.index >= cards.length) return { index: 0, animate: false };
+              if (previous.index < 0) return { index: cards.length - 1, animate: false };
+              return previous;
+            });
+          }}
         >
-          {cards.map((card, position) => (
-            <div key={position} inert={arrows && (position < index || position >= index + columns)}>{card}</div>
-          ))}
+          {entries.map(({ card, position, key }) => {
+            const peripheral = arrows && (position < index || position >= index + columns);
+            return <div key={key} inert={peripheral} aria-hidden={peripheral || undefined}
+              data-peripheral={peripheral || undefined}>{card}</div>;
+          })}
         </div>
+       </div>
       </div>
       {arrows && (
-        <button type="button" className={styles.next} aria-label="Producto siguiente" aria-controls="home-featured-track" onClick={() => move(1)}>
+        <button type="button" className={styles.next} aria-label="Producto siguiente" aria-controls={trackId} onClick={() => move(1)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
         </button>
       )}

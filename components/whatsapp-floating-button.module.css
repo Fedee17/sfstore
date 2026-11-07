@@ -1,5 +1,12 @@
-@media (1024px <= width < 1440px) {
-  :global(body:has(#productos)) .floating {
+.cart {
+  inset-inline-end: 12px;
+  inset-block-end: 76px;
+  inline-size: 52px;
+  block-size: 52px;
+}
+
+@media (width < 1024px) {
+  .floating {
     inset-inline-end: 12px;
     bottom: 16px;
     inline-size: 52px;
@@ -8,7 +15,36 @@
     padding-inline: 0;
   }
 
-  :global(body:has(#productos)) .label {
+  .label { display: none; }
+}
+
+@media (width >= 1024px) {
+  .cart {
+    inset-inline-end: 24px;
+    inset-block-end: 84px;
+    inline-size: 56px;
+    block-size: 56px;
+  }
+}
+
+@media (1024px <= width < 1440px) {
+  :global(body:has(#productos, .storefront-catalog)) .cart {
+    inset-inline-end: 12px;
+    inset-block-end: 76px;
+    inline-size: 52px;
+    block-size: 52px;
+  }
+
+  :global(body:has(#productos, .storefront-catalog)) .floating {
+    inset-inline-end: 12px;
+    bottom: 16px;
+    inline-size: 52px;
+    min-inline-size: 52px;
+    block-size: 52px;
+    padding-inline: 0;
+  }
+
+  :global(body:has(#productos, .storefront-catalog)) .label {
     display: none;
   }
 }

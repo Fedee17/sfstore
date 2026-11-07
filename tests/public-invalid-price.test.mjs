@@ -30,7 +30,7 @@ const storeModule={useCartStore,cartItemKey};
 const ui={'@/store/cart-store':storeModule,'@/lib/whatsapp':whatsapp};
 const {AddToCartButton}=load('components/add-to-cart-button.tsx',ui);
 const {ProductActions}=load('app/producto/[slug]/product-actions.tsx',ui);
-const {ProductGrid}=load('components/product-grid.tsx',{...ui,'@/lib/pricing':require('../lib/pricing.ts'),'@/lib/products/public-families':require('../lib/products/public-families.ts'),'@/components/add-to-cart-button':{AddToCartButton}});
+const {ProductGrid,ProductCard}=load('components/product-grid.tsx',{...ui,'@/lib/pricing':require('../lib/pricing.ts'),'@/lib/products/public-families':require('../lib/products/public-families.ts'),'@/components/add-to-cart-button':{AddToCartButton}});
 const render=(Component,props)=>renderToStaticMarkup(React.createElement(Component,props));
 
 test('a purchasable price is a positive finite amount within the existing web monetary contract',()=>{
@@ -85,7 +85,7 @@ test('current and legacy storage remove invalid prices, rebuild forged totals an
 
 test('cart defensively withholds checkout and totals for mixed invalid runtime lines; hydration removal is explained',()=>{
   const rows=[{...product(100),productId:'valid',quantity:1},{...product(null),productId:'bad',quantity:1}];
-  const Cart=load('app/carrito/page.tsx',{'@/lib/whatsapp':whatsapp,'@/components/site-header':{SiteHeader:()=>null},'@/components/cart-item-identity':{CartItemIdentity:()=>null},'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{perfumes:'Perfumes'},publicCategoryPaths:{perfumes:'/perfumes'}},'@/store/cart-store':{cartItemKey,useCartStore:()=>({items:rows,totalItems:2,subtotal:NaN,invalidPriceNotice:true})}}).default;
+  const Cart=load('components/cart-content.tsx',{'@/lib/whatsapp':whatsapp,'@/components/site-header':{SiteHeader:()=>null},'@/components/cart-item-identity':{CartItemIdentity:()=>null},'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{perfumes:'Perfumes'},publicCategoryPaths:{perfumes:'/perfumes'}},'@/store/cart-store':{cartItemKey,useCartStore:()=>({items:rows,totalItems:2,subtotal:NaN,invalidPriceNotice:true})}}).default;
   const html=render(Cart);assert.match(html,/Consultar precio/);assert.match(html,/Quitamos del carrito/);assert.match(html,/eliminá los productos sin precio válido/);assert.doesNotMatch(html,/href="\/checkout|NaN|Transferencia por unidad:.*0,00/);
 });
 
@@ -94,6 +94,17 @@ test('valid products keep add controls, out of stock remains unavailable, and pr
   const p=product(30666.67),html=render(ProductActions,{product:p});assert.match(html,/Agregar al carrito/);assert.doesNotMatch(html,/Consultar precio/);
   const unavailable=render(ProductGrid,{products:[product(100,{stock:0})],label:'Prueba'});assert.match(unavailable,/Sin stock: consultar/);assert.doesNotMatch(unavailable,/Agregar al carrito/);
   assert.equal(product(100,{transferPrice:999}).price,100);
+});
+
+test('home cards with direct purchase preserve price, variant and availability guards',()=>{
+  const props={label:'Mates',featured:true,directPurchase:true};
+  assert.match(render(ProductCard,{...props,product:product(100)}),/Agregar al carrito/);
+  const family=render(ProductCard,{...props,product:product(100,{kind:'family',variants:[product(100,{kind:'variant'})]})});
+  assert.match(family,/Elegir variante/);assert.doesNotMatch(family,/Agregar al carrito/);
+  const unavailable=render(ProductCard,{...props,product:product(100,{stock:0})});
+  assert.match(unavailable,/Sin stock: consultar/);assert.doesNotMatch(unavailable,/Agregar al carrito/);
+  const unpriced=render(ProductCard,{...props,product:product(null)});
+  assert.match(unpriced,/Consultar precio/);assert.doesNotMatch(unpriced,/Agregar al carrito/);
 });
 
 test('an explicitly selected unpriced variant consults its own price and never becomes purchasable',()=>{

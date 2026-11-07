@@ -6,9 +6,14 @@ import ts from 'typescript';
 import React from 'react';
 import * as jsx from 'react/jsx-runtime';
 import { renderToStaticMarkup } from 'react-dom/server';
+import * as ordering from '../lib/catalog/availability-order.ts';
 
 const require = createRequire(import.meta.url);
 const modules = {
+  react: React,
+  './home-product-card': { HomeProductCarousel: () => null },
+  './ritual-matero': { RitualMatero: () => null },
+  '@/lib/catalog/availability-order': ordering,
   'react/jsx-runtime': jsx,
   'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
   'next/server': { connection: async () => {} },

@@ -2,42 +2,59 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
-  margin-top: 16px;
+  margin-block-start: 16px;
 }
 .photoCard {
   position: relative;
   isolation: isolate;
-  display: block;
+  display: flex;
+  align-items: flex-end;
   min-width: 0;
-  min-height: 156px;
   width: 100%;
-  aspect-ratio: 350 / 180;
+  min-height: 172px;
+  aspect-ratio: 2 / 1;
   overflow: hidden;
-  border-radius: 1.5rem;
-  color: white;
+  border-radius: 20px;
   background: #102033;
+  color: #fff;
 }
-.photoCard.tallMobileCard { min-width: 0; }
-.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.photo.threeMatesPhoto, .photo.thermosPhoto, .photo.mateAccessoriesPhoto { object-position: center; }
-.shade { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,.85), rgba(0,0,0,.70) 43%, transparent 53%); }
-.copy { position: relative; width: 32%; min-width: 118px; max-width: 190px; padding: 12px 0 0 16px; }
-.copy h3 { font-size: 18px; line-height: 22px; font-weight: 600; }
-.copy p { margin-top: 4px; font-size: 14px; line-height: 20px; }
-.arrow { position: absolute; left: 16px; bottom: 10px; width: 20px; height: 20px; }
-@media (min-width: 640px) {
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .photoCard { aspect-ratio: 346 / 196; }
-  .copy { min-width: 110px; padding: 14px 0 0 14px; }
-  .copy h3 { font-size: 16px; line-height: 20px; }
-  .copy p { font-size: 14px; line-height: 20px; }
-  .arrow { left: 14px; bottom: 14px; }
+.photoCard:focus-visible { outline: 3px solid #0072ce; outline-offset: 3px; }
+.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.photoCard::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(90deg, #071424f5 0%, #071424d9 28%, #07142463 58%, transparent 84%);
 }
-@media (min-width: 1024px) {
-  .grid { gap: 16px; }
-  .photoCard { aspect-ratio: 536 / 302; }
-  .copy { padding: 20px 0 0 20px; }
-  .copy h3 { font-size: 20px; line-height: 24px; }
-  .copy p { font-size: 14px; line-height: 20px; }
-  .arrow { left: 20px; bottom: 20px; }
+.copy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  max-width: 68%;
+  padding: 14px;
+}
+.copy h3 {
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -.025em;
+}
+.copy p { color: #edf6ff; font-size: .875rem; line-height: 1.4; }
+.arrow {
+  width: 26px;
+  height: 26px;
+  margin-block-start: 3px;
+  border-radius: 50%;
+  padding: 4px;
+  background: #e8f3ff;
+  color: #003b73;
+}
+@media (width >= 640px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+}
+@media (width >= 1024px) {
+  .copy { padding: 20px; }
 }

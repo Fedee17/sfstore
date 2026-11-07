@@ -33,7 +33,7 @@ test('cart retains each SKU photo, color, quantities and exact prices without fa
  assert.equal(useCartStore.getState().items[0].quantity,3);
 });
 
-const imageModules={'react':React,'react/jsx-runtime':jsx,'@/lib/products/public-families':{},'@/lib/pricing':{},'@/lib/web-transfer-pricing':prices,'@/lib/whatsapp':{},'@/components/add-to-cart-button':{}};
+const imageModules={'react':React,'react/jsx-runtime':jsx,'@/lib/products/public-families':{},'@/lib/pricing':{},'@/lib/web-transfer-pricing':prices,'@/lib/whatsapp':{},'@/components/add-to-cart-button':{},'./product-card.module.css':{default:{photo:'product-photo',cartPhoto:'cart-photo'}}};
 const {ProductImage}=load('components/product-grid.tsx',imageModules);
 const {CartItemIdentity}=load('components/cart-item-identity.tsx',{'react/jsx-runtime':jsx,'@/components/product-grid':{ProductImage}});
 const identity=item=>renderToStaticMarkup(React.createElement(CartItemIdentity,{item}));
@@ -54,18 +54,20 @@ test('simple products and the two virtual connectors keep only their own photogr
  assert.equal(useCartStore.getState().items[0].primaryImageUrl,undefined);
 });
 
-test('cart and checkout render the same exact SKU identity and retain original monetary summaries',()=>{
- useCartStore.getState().clearCart();useCartStore.getState().addItem(sku('Gris'));
+test('cart and checkout retain the SKU, round displayed prices up and show the exact payable total',()=>{
+ useCartStore.getState().clearCart();useCartStore.getState().addItem({...sku('Gris'),price:100.01});
  const state=useCartStore.getState(),modules={'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity},'@/components/site-header':{SiteHeader:()=>null},'@/store/cart-store':{useCartStore:()=>state,cartItemKey},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{mates:'Mates'},publicCategoryPaths:{mates:'/mates'}},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/components/transfer-alias':{TransferAlias:()=>null},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':argentina,'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}};
- const Cart=load('app/carrito/page.tsx',modules).default;
+ const Cart=load('components/cart-content.tsx',modules).default;
  const Checkout=load('app/checkout/page.tsx',modules,{},'\nexport { CheckoutContent };').CheckoutContent;
  for(const Component of [Cart,Checkout]){
-  const html=renderToStaticMarkup(React.createElement(Component));assert.match(html,/src="\/sku-Gris.svg"/);assert.match(html,/Color: Gris/);assert.match(html,/SKU-Gris/);assert.match(html,/Termo de prueba/);assert.doesNotMatch(html,/detail-Gris.svg/);assert.match(html,/75,00/);assert.match(html,/100,00/);
+  const html=renderToStaticMarkup(React.createElement(Component));assert.match(html,/src="\/sku-Gris.svg"/);assert.match(html,/Color: Gris/);assert.match(html,/SKU-Gris/);assert.match(html,/Termo de prueba/);assert.doesNotMatch(html,/detail-Gris.svg/);assert.match(html,/>\$\s*76</);assert.match(html,/\$\s*101</);
  }
+ assert.match(renderToStaticMarkup(React.createElement(Cart)),/redondeados hacia arriba/);
+ assert.match(renderToStaticMarkup(React.createElement(Checkout)),/\$\s*75,01/);
 });
 
-test('compact use preserves square thumbnails while catalog uses complete portrait photographs',()=>{
+test('cart thumbnails use the compact frame while catalog photos use the product frame',()=>{
  const product={name:'Prueba',imagePlaceholder:'PR',primaryImageUrl:'/same.svg'};
  const standard=renderToStaticMarkup(React.createElement(ProductImage,{product})),compact=renderToStaticMarkup(React.createElement(ProductImage,{product,compact:true}));
- assert.match(standard,/aspect-\[3\/4\]/);assert.match(standard,/object-contain/);assert.doesNotMatch(standard,/object-cover/);assert.doesNotMatch(standard,/group-hover:scale/);assert.match(compact,/aspect-square/);assert.doesNotMatch(compact,/group-hover:scale/);
+ assert.match(standard,/class="product-photo"/);assert.match(compact,/class="cart-photo"/);
 });

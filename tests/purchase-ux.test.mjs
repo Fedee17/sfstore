@@ -18,19 +18,19 @@ const hooks={...React,useState:v=>[v,()=>{}],useRef:()=>({current:null}),useEffe
 const modules={...analyticsRenderStubs,'react':hooks,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:({item})=>React.createElement('span',null,item.name)},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':store,'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'}};
 
 test('cart labels list, discount and transfer subtotal without applying the discount twice',()=>{
- const Cart=load('app/carrito/page.tsx',modules).default;
+ const Cart=load('components/cart-content.tsx',modules).default;
  const html=renderToStaticMarkup(React.createElement(Cart));
- assert.match(html,/Subtotal de lista/);assert.match(html,/61\.333,34/);
- assert.match(html,/Descuento por transferencia/);assert.match(html,/15\.333,34/);
- assert.match(html,/Productos por transferencia/);assert.match(html,/46\.000,00/);
- assert.match(html,/Accesorios/);assert.doesNotMatch(html,/Se confirma al crear el pedido|Alias:/);
+ assert.match(html,/Subtotal de lista/);assert.match(html,/61\.334/);
+ assert.match(html,/Descuento por transferencia/);assert.match(html,/15\.334/);
+ assert.match(html,/Productos por transferencia/);assert.match(html,/46\.000/);
+ assert.match(html,/Cargador cc/);assert.match(html,/Cargador lightning/);assert.doesNotMatch(html,/Se confirma al crear el pedido|Alias:/);
  assert.match(html,/Quitar una unidad/);assert.match(html,/Agregar una unidad/);
 });
 test('checkout line totals and pickup summary use the same unit-rounded transfer contract',()=>{
  const Page=load('app/checkout/page.tsx',{...modules,'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:[]},'@/components/transfer-alias':{TransferAlias:()=>null},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;
  const html=renderToStaticMarkup(React.createElement(Page));
- assert.match(html,/Total por transferencia/);assert.match(html,/46\.000,00/);
- assert.equal((html.match(/23\.000,00/g)||[]).length,2);
+ assert.match(html,/Total exacto por transferencia/);assert.match(html,/46\.000,00/);
+ assert.equal((html.match(/23\.000<\/p>/g)||[]).length,2);
  assert.doesNotMatch(html,/Se confirma al crear el pedido/);
  assert.equal(prices.getWebTransferSubtotal([{price:30666.67,quantity:3}]),69000);
  assert.equal(prices.getWebTransferSubtotal([{price:100,quantity:2}]),150);

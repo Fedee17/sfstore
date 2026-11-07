@@ -1,0 +1,98 @@
+.desktopLink,
+.dropdown {
+  display: inline-flex;
+  align-items: center;
+}
+
+.desktopLink {
+  min-block-size: 44px;
+  padding-inline: 12px;
+}
+
+.dropdown { border-radius: 999px; }
+
+.desktopLink[aria-current="page"],
+.dropdown[data-current="true"],
+.dropdown:hover,
+.dropdown:focus-within {
+  border-radius: 999px;
+  background: #fff2;
+  color: white;
+}
+
+.dropdown > .desktopLink {
+  padding-inline-end: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.dropdownToggle {
+  display: grid;
+  place-items: center start;
+  inline-size: 44px;
+  block-size: 44px;
+  padding-inline-start: 6px;
+}
+
+.dropdownToggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.searchInput { font-size: clamp(.875rem, 2vw, 1.125rem); }
+.suggestions {
+  position: absolute;
+  inset: calc(100% + 8px) 0 auto;
+  max-block-size: min(360px, 65dvh);
+  overflow: auto;
+  border: 1px solid #d5e0ed;
+  border-radius: 16px;
+  background: white;
+  color: #102033;
+  box-shadow: 0 12px 28px #10203330;
+}
+.suggestions a, .searchAll {
+  display: flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding: 8px 14px;
+  font-size: .875rem;
+  overflow-wrap: anywhere;
+}
+.suggestions a:hover,
+.suggestions [aria-selected="true"] a {
+  background: #e8f3ff;
+  color: #003b73;
+}
+.searchAll {
+  width: 100%;
+  border-top: 1px solid #d5e0ed;
+  color: #00569d;
+  font-weight: 700;
+  text-align: start;
+}
+.searchAll:focus-visible { outline: 2px solid #0072ce; outline-offset: -3px; }
+.searchEmpty { padding: 10px 14px; font-size: .875rem; color: #526479; }
+
+@media (width < 360px) {
+  /* Keep the search, cart and four catalog links visible on one row each. */
+  .headerRow {
+    column-gap: 6px;
+    padding-inline: 12px;
+  }
+
+  .mobileNav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .mobileNav > a {
+    justify-content: center;
+    min-inline-size: 0;
+    padding-inline: 2px;
+    font-size: 0.8125rem;
+  }
+
+  .searchInput { font-size: .75rem; }
+  .suggestions { inset-inline: -34px -28px; }
+}

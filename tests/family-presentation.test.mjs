@@ -119,6 +119,6 @@ test('the detail rounds displayed prices while keeping the selected SKU price ex
  const variant={...black,price:129333.67};
  const html=render({Color:'Negro'},{...family,variants:[variant,grey,green]});
  assert.match(html,/data-testid="variant-list-price"[^>]*>Precio de lista: [^<]*129\.334<\/p>/);
- assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.000<\/p>/);
+ assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.001<\/p>/);
  assert.match(html,/data-cart-price="129333\.67"/);
 });

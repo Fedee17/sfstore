@@ -19,13 +19,13 @@ const item={productId:'synthetic',name:'Producto de prueba',slug:'test',category
 const modules={'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:()=>null},'@/components/site-header':{SiteHeader:()=>null},'@/store/cart-store':{useCartStore:()=>({items:[item],totalItems:2,subtotal:200}),cartItemKey:()=>item.productId},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{mates:'Mates'},publicCategoryPaths:{mates:'/mates'}},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:[]},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}};
 
 test('before order creation cart and checkout never render transfer destination; retain total and essential conditions',()=>{
- const Cart=load('app/carrito/page.tsx',modules).default;
+ const Cart=load('components/cart-content.tsx',modules).default;
  assert.match(render(Cart),/>Consultar carrito por WhatsApp<\/a>/);
  const Checkout=load('app/checkout/page.tsx',modules,'\nexport {CheckoutContent};').CheckoutContent;
  for(const Component of [Cart,Checkout]){
-  const html=render(Component);assert.doesNotMatch(html,/Alias:|Copiar alias|Datos para transferir|Mercado Pago/);assert.match(html,/150,00/);assert.match(html,/No transfieras/);
+  const html=render(Component);assert.doesNotMatch(html,/Alias:|Copiar alias|Datos para transferir|Mercado Pago/);assert.match(html,/\$\s*150</);assert.match(html,/No transfieras/);
  }
- const checkout=render(Checkout);assert.match(checkout,/24 horas/);assert.match(checkout,/100%/);assert.match(checkout,/No se admiten señas ni pagos parciales/);assert.match(checkout,/Esperá la confirmación del local/);
+ const checkout=render(Checkout);assert.match(checkout,/150,00/);assert.match(checkout,/24 horas/);assert.match(checkout,/100%/);assert.match(checkout,/No se admiten señas ni pagos parciales/);assert.match(checkout,/Esperá la confirmación del local/);
 });
 
 const receipt={id:'synthetic-order',payment_method:'transfer',payment_status:'pending',state:'pending',expired:false,order_number:'SYNTHETIC-1',total:150,expiresAt:'2030-01-01T12:00:00Z',lines:[]};

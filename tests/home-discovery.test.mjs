@@ -6,7 +6,11 @@ import { createRequire } from 'node:module';
 import ts from 'typescript';
 import React from 'react';
 import * as jsx from 'react/jsx-runtime';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { renderToStaticMarkup, renderToPipeableStream } from 'react-dom/server';
+import { PassThrough } from 'node:stream';
+import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import * as visibility from '../lib/catalog/public-product-visibility.ts';
+import * as ordering from '../lib/catalog/availability-order.ts';
 import * as prices from '../lib/web-transfer-pricing.ts';
 import * as savings from '../lib/pricing.ts';
 import * as availability from '../lib/products/public-families.ts';
@@ -71,7 +75,7 @@ test('home uses derived combo availability and approved prices without changing 
   assert.deepEqual(selection.getHomeFeaturedProducts([{...combo,stock:0}]),[]);
 });
 
-async function renderHome(products = [], featuredSelection = selection) {
+async function renderHome(products = [], featuredSelection = selection, hero) {
   const modules = {
     react: React, 'react/jsx-runtime': jsx,
     'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
@@ -84,7 +88,27 @@ async function renderHome(products = [], featuredSelection = selection) {
     '@/lib/whatsapp': { buildWhatsAppUrl: message => 'https://wa.me/000?text=' + encodeURIComponent(message) },
     '@/services/products': { getCatalogPublications: async () => products },
   };
-  return renderToStaticMarkup(await load('app/page.tsx', modules).default());
+  const grid = load('components/product-grid.tsx', {
+    ...analyticsRenderStubs, ...modules, '@/lib/pricing': savings,
+    '@/components/add-to-cart-button': { AddToCartButton: () => React.createElement('button', null, 'Agregar al carrito') },
+    '@/lib/whatsapp': { getProductWhatsAppLink: () => 'https://wa.me/000' },
+  });
+  const cards = load('app/home-product-card.tsx', { ...modules,
+    '@/components/product-grid': grid, '@/lib/catalog/public-product-visibility': visibility });
+  modules['./home-product-card'] = cards;
+  modules['./ritual-matero'] = load('app/ritual-matero.tsx', modules);
+  modules['@/lib/catalog/availability-order'] = ordering;
+  if (hero) modules['@/components/home-hero-slider'] = { HomeHeroSlider: hero };
+  return new Promise((resolve, reject) => {
+    const output = new PassThrough();
+    let html = '';
+    output.on('data', chunk => { html += chunk; });
+    output.on('end', () => resolve(html.replace(/<!--[\s\S]*?-->/g, '')));
+    output.on('error', reject);
+    const stream = renderToPipeableStream(React.createElement(load('app/page.tsx', modules).default), {
+      onAllReady() { stream.pipe(output); }, onError: reject,
+    });
+  });
 }
 
 test('discovery precedes featured and gifts/advice remain after featured without the paused decant promotion', async () => {
@@ -97,8 +121,9 @@ test('discovery precedes featured and gifts/advice remain after featured without
   const sections = [...html.matchAll(/<section\b[^>]*>/g)].map(match => match[0]);
   const featured = sections.findIndex(section => section.includes('id="productos"'));
   assert.ok(featured >= 0);
-  assert.match(sections[featured + 1], /id="regalos"/);
-  assert.match(sections[featured + 2], /aria-labelledby="advice-title"/);
+  assert.match(sections[featured + 1], /id="ritual-matero"/);
+  assert.match(sections[featured + 2], /id="regalos"/);
+  assert.match(sections[featured + 3], /aria-labelledby="advice-title"/);
   assert.match(html, /25% de descuento\. Pago del 100%/);
   assert.match(html, /Entregas a todo el país/);
   assert.doesNotMatch(html, /diseñador|perfumes importados|cuotas|envío gratis/i);
@@ -115,7 +140,7 @@ test('Arabic category reuses its link with the supplied image, HTML copy and dec
   const html = await renderHome();
   const category = html.match(/<a href="\/perfumes" class="photoCard[\s\S]*?<\/a>/)?.[0];
   assert.ok(category);
-  assert.match(category, /src="\/home\/a_wide_cinematic_high_resolution_tropical_sunset.png"/);
+  assert.match(category, /src="\/home\/category-perfumes.webp"/);
   assert.match(category, /<h3>Perfumes árabes<\/h3>/);
   assert.match(category, /<p>Encontrá tu próxima fragancia\.<\/p>/);
   assert.match(category, /<svg aria-hidden="true"/);
@@ -136,7 +161,8 @@ test('Termos uses the existing filtered catalog and preserves the approved origi
   assert.ok(card);
   assert.match(card, /<h3>Termos<\/h3>/);
   assert.match(card, /<p>Compañeros en cada aventura<\/p>/);
-  assert.match(card, /class="photo thermosPhoto"/);
+  assert.match(card, /class="photo"/);
+  assert.match(card, /src="\/home\/category-termos.webp"/);
   assert.match(card, /<svg aria-hidden="true"/);
   const original = readFileSync(new URL('../public/home/outdoor_sunset_landscape_product_photo_a_warm_gol.png', import.meta.url));
   assert.equal(original.readUInt32BE(16), 1672);
@@ -150,8 +176,9 @@ test('Mates reuses the same photo card with its approved copy, original image an
   assert.ok(card);
   assert.match(card, /<h3>Mates<\/h3>/);
   assert.match(card, /<p>Tradición en cada cebada<\/p>/);
-  assert.match(card, /class="photoCard tallMobileCard group/);
-  assert.match(card, /class="photo threeMatesPhoto"/);
+  assert.match(card, /class="photoCard"/);
+  assert.match(card, /class="photo"/);
+  assert.match(card, /src="\/home\/category-mates.webp"/);
   assert.match(card, /<svg aria-hidden="true"/);
   const original = readFileSync(new URL('../public/home/a_wide_cinematic_photorealistic_still_life_scene.png', import.meta.url));
   assert.equal(original.readUInt32BE(16), 1669);
@@ -185,19 +212,7 @@ test('approved banners keep HTML copy, gender destinations and a single responsi
   const hooks = index => ({ ...React, useState: () => [index, () => {}] });
   const pageSource = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8');
   const slides = [];
-  const Page = load('app/page.tsx', {
-    'react/jsx-runtime': jsx,
-    'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
-    'next/server': { connection: async () => {} },
-    '@/components/site-header': { SiteHeader: () => null },
-    '@/components/home-hero-slider': { HomeHeroSlider: props => { slides.push(...props.slides); return null; } },
-    '@/lib/web-transfer-pricing': prices, '@/lib/products/public-families': availability,
-    '@/lib/catalog/home-selection': selection,
-    '@/lib/catalog/home-card-presentation': cardPresentation,
-    '@/lib/whatsapp': { buildWhatsAppUrl: () => 'https://wa.me/000' },
-    '@/services/products': { getCatalogPublications: async () => [] },
-  }).default;
-  renderToStaticMarkup(await Page());
+  await renderHome([], selection, props => { slides.push(...props.slides); return null; });
   assert.equal(slides.length, 2);
   assert.equal(slides[0].composition, 'continuous');
   assert.equal(slides[1].composition, 'continuous');
@@ -267,20 +282,25 @@ test('Accesorios materos reuses the existing matero catalog without inventing a 
   const card = categories.match(/<a href="\/mates" class="photoCard[\s\S]*?<\/a>/g).find(card => card.includes('<h3>Accesorios materos</h3>'));
   assert.ok(card);
   assert.match(card, /<p>Todo para acompañar tu ritual<\/p>/);
-  assert.match(card, /class="photo mateAccessoriesPhoto"/);
+  assert.match(card, /class="photo"/);
+  assert.match(card, /src="\/home\/category-accesorios.webp"/);
   assert.match(card, /<svg aria-hidden="true"/);
   const original = readFileSync(new URL('../public/home/wide_cozy_warm_toned_photorealistic_product_sti.png', import.meta.url));
   assert.equal(createHash('sha256').update(original).digest('hex'), '9e39f3d942cad4fdd6784262518bb3397659869c5942a7da9cfd71b297cc622a');
 });
 
 
-test('home omits the entire featured section when none are eligible, leaving gifts after categories', async () => {
+test('home keeps an empty hidden featured anchor when none are eligible, with Ritual Matero before gifts', async () => {
   for (const products of [[],[product('no',{featured:false})],[product('sold',{stock:0})]]) {
     const html=await renderHome(products);
-    assert.doesNotMatch(html,/id="productos"|LOS MÁS ELEGIDOS|La vidriera está lista/);
+    assert.doesNotMatch(html,/LOS MÁS ELEGIDOS|La vidriera está lista/);
+    assert.match(html, /<section id="productos"[^>]*>(?:<!--[^>]*-->)*<\/section>/);
+    assert.match(readFileSync(new URL('../app/home-featured.module.css', import.meta.url), 'utf8'), /\.section:empty[\s\S]*?display:\s*none/);
     const sections=[...html.matchAll(/<section\b[^>]*>/g)].map(m=>m[0]);
     const categories=sections.findIndex(s=>s.includes('id="explorar"'));
-    assert.match(sections[categories+1],/id="regalos"/);
+    assert.match(sections[categories+1],/id="productos"/);
+    assert.match(sections[categories+2],/id="ritual-matero"/);
+    assert.match(sections[categories+3],/id="regalos"/);
   }
 });
 
@@ -315,8 +335,9 @@ test('featured render preserves exhausted state and links and only strikes a gen
   const input=product('sold',{stock:0,price:100,transferPrice:90});
   const html=await renderHome([input],{getHomeFeaturedProducts:()=>[input]});
   const section=html.match(/<section id="productos"[\s\S]*?<\/section>/)[0];
-  assert.match(section,/Agotado · consultar/); assert.match(section,/10% OFF/);
+  assert.match(section,/data-available="false">Agotado/); assert.match(section,/10% OFF/);
   assert.match(section,/<s>[^<]*100/); assert.match(section,/Efectivo o transferencia/);
+  assert.doesNotMatch(section,/Agregar al carrito/);
   assert.equal((section.match(/href="\/producto\/sold"/g)||[]).length,2);
   const equal=await renderHome([product('equal',{transferPrice:100})]);
   assert.doesNotMatch(equal.match(/<section id="productos"[\s\S]*?<\/section>/)[0],/<s>|% OFF/);

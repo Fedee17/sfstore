@@ -61,19 +61,10 @@ export function MobileCatalogFilters({ basePath, categories, filtersByCategory, 
   }
 
   return <div className="mt-4 min-w-0 lg:hidden" aria-busy={pending}>
-    <div className="flex min-w-0 flex-wrap items-end gap-2">
-      <label className="grid min-w-[7rem] flex-1 gap-1 text-xs font-semibold text-[#003B73]">
-        <span className="sr-only">{categoryLabel}</span>
-        <select value={category?.hrefValue ?? ""} disabled={pending} className="min-h-11 w-full min-w-0 rounded-xl border border-[#DCE3EA] bg-white px-3 text-base font-semibold text-[#102033] focus-visible:outline-2 focus-visible:outline-[#0072CE]" onChange={(event) => navigate(mobileFilterHref(basePath, categories.find((item) => item.hrefValue === event.target.value), [], {}))}>
-          <option value="">Todos</option>
-          {categories.map((item) => <option key={item.hrefValue} value={item.hrefValue}>{item.label}</option>)}
-        </select>
-      </label>
-      <button ref={opener} type="button" aria-haspopup="dialog" aria-controls={id} disabled={pending} onClick={open} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#DCE3EA] bg-white px-3 text-sm font-semibold text-[#003B73] focus-visible:outline-2 focus-visible:outline-[#0072CE]">
-        <Image unoptimized src="/icons/adjustments-horizontal.svg" alt="" aria-hidden="true" width={16} height={16} className="h-4 w-4 opacity-70" />
-        Elegí a tu gusto{activeCount ? ` (${activeCount})` : ""}
-      </button>
-    </div>
+    <button ref={opener} type="button" aria-haspopup="dialog" aria-controls={id} disabled={pending} onClick={open} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#DCE3EA] bg-white px-3 text-sm font-semibold text-[#003B73] focus-visible:outline-2 focus-visible:outline-[#0072CE]">
+      <Image unoptimized src="/icons/adjustments-horizontal.svg" alt="" aria-hidden="true" width={16} height={16} className="h-4 w-4 opacity-70" />
+      Elegí a tu gusto{activeCount ? ` (${activeCount})` : ""}
+    </button>
     <p role="status" className="mt-1 text-xs text-[#003B73]">{pending ? "Actualizando productos…" : activeCount ? `${activeCount} ${activeCount === 1 ? "preferencia elegida" : "preferencias elegidas"}` : ""}</p>
     <dialog ref={dialog} id={id} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} onKeyDown={(event) => {
       if (event.key !== "Tab") return;

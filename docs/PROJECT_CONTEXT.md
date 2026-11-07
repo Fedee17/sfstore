@@ -1,12 +1,12 @@
 # SFSTORE — Continuidad actual
 
-Actualizado: 05/11/2026 (Argentina). Única continuidad mutable; la única cola es la sección 9 del Plan. Este archivo no concede autorizaciones.
+Actualizado: 07/11/2026 (Argentina). Única continuidad mutable; la única cola es la sección 9 del Plan. Este archivo no concede autorizaciones.
 
 ## Entorno y Production conocidos
 
 - Repositorio Fedee17/sfstore; dominio https://sfstore-ten.vercel.app.
-- Main local y origin/main en d08df6c153c2e4bec64c7c12f8fec650f96aa698.
-- Último deployment público verificado: dpl_3JBvPQpEC5EUfXoTS1upLAXShaCj, READY/Production, commit d08df6c. Recuperación: dpl_84Y2LBeNop7WFVnjrRFSkhF3GZZb / 40bac0a.
+- `origin/main` verificado en 73f08f8f888f3e49bf145442a800451b6f318964. El checkout local de main sigue en e810225.
+- Último deployment público verificado: dpl_HK2o2NY8zffSrCj51WrrPc5aiEBQ, READY/Production, commit 73f08f8. Recuperación: dpl_NqEbaif4XKLKBCYue9sMtvyPcX7Z / f1e625d.
 - Vercel sfstore: prj_XSoey2X2Oyqr8O5rBT8FBidxMrKV, equipo team_tab21Li6WWDl2lVutglfhidX. Rama de Production main, despliegues Git habilitados y sin comando para ignorar builds. Sin despliegues pendientes en la comprobación previa.
 - Supabase xspvoicelbxlmtqoiolc: lotes de contenido 01/02/03 y migración de privacidad aplicados y verificados; cierres/hashes en sección 9. No repetir operaciones.
 - Lote de 25 precios de perfumes aplicado y verificado: especial techo a $1.000 de costo ×1,40 y lista compatible con transferencia 25%; otros 54 registros preservados.
@@ -15,6 +15,10 @@ Actualizado: 05/11/2026 (Argentina). Única continuidad mutable; la única cola 
 - Presentaciones incorporadas sólo a las descripciones aprobadas: Iconic 105 ml; Intense Man EDT 105 ml; Stallion 53 100 ml + atomizador 20 ml. Otros datos comerciales/atributos intactos.
 
 ## Trabajo actual y siguiente paso
+
+- P05 / P07 / P12: el propietario aprobó visualmente todos los ajustes de tienda y autorizó su publicación el 07/11/2026. Candidato en codex/storefront-layout-audit, basado en el código productivo 73f08f8. Incluye tarjetas compartidas, carruseles de tres productos, Ritual Matero, búsqueda, categorías, menú, WhatsApp y carrito lateral. Los precios visibles se redondean hacia arriba al peso; el total del checkout y los importes enviados al carrito conservan su exactitud.
+- Preparación final comprobada. Build estándar Turbopack y TypeScript aprobados. Suite completa con 1.002 pruebas aprobadas, cero fallos y 19 omitidas por servicios de prueba opcionales. ESLint de archivos afectados sin errores; ESLint global conserva cinco errores preexistentes en scripts de auditoría. Las pruebas de presentación se actualizaron al render asíncrono, imágenes WebP y formato aprobado.
+- Publicación en preparación. Cuenta y proyecto de Vercel reconfirmados. Procedimiento previsto: commit, checkout aislado, deployment de producción sin asignar dominio, comprobaciones con catálogo real, promoción y sincronización de main remoto. Recuperación de este corte: dpl_HK2o2NY8zffSrCj51WrrPc5aiEBQ / 73f08f8. Sin operaciones sobre Supabase ni compras/pagos de prueba.
 
 - P05 / EXT-O1 publicado y verificado en d08df6c. Las fichas muestran lista y transferencia redondeadas al peso, también al elegir variantes. El carrito recibe los importes exactos.
 - Verificación: build Turbopack, TypeScript y 38 pruebas pertinentes. Se comprobó la presentación en las fichas públicas de Dubai Night y Dispenser de yerba en madera mediante lecturas HTTP.

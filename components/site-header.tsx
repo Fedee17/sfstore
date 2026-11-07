@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PERFUME_CATALOG_CATEGORIES } from "@/lib/catalog/perfume-filters";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/cart-store";
+import styles from "./site-header.module.css";
+import floatingStyles from "./whatsapp-floating-button.module.css";
+import { CatalogSearchBox } from "./catalog-search-box";
+import { CartDrawer } from "./cart-drawer";
+
+const desktopLink = `${styles.desktopLink} shrink-0 whitespace-nowrap rounded-full text-white/88 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white`;
 
 const perfumeMenuItems = [
   { href: "/perfumes", label: "Todos los perfumes" },
@@ -41,6 +47,7 @@ type DropdownMenuProps = {
   items: { href: string; label: string }[];
   openMenu: MenuKey;
   setOpenMenu: (menu: MenuKey) => void;
+  current: boolean;
 };
 
 function SearchIcon() {
@@ -69,12 +76,13 @@ function CartIcon() {
   );
 }
 
-function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }: DropdownMenuProps) {
+function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu, current }: DropdownMenuProps) {
   const isOpen = openMenu === id;
 
   return (
     <div
-      className="shrink-0 lg:relative"
+      className={`${styles.dropdown} relative shrink-0`}
+      data-current={current || undefined}
       onPointerEnter={(event) => {
         if (event.pointerType === "mouse") setOpenMenu(id);
       }}
@@ -93,7 +101,8 @@ function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }:
     >
       <a
         href={href}
-        className="inline-block whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold text-white/88 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:px-3"
+        className={desktopLink}
+        aria-current={current ? "page" : undefined}
       >
         {label}
       </a>
@@ -103,9 +112,11 @@ function DropdownMenu({ id, label, href, helper, items, openMenu, setOpenMenu }:
         aria-expanded={isOpen}
         aria-controls={`${id}-categories`}
         onClick={() => setOpenMenu(isOpen ? null : id)}
-        className="min-h-11 min-w-11 rounded-full focus-visible:outline-2 focus-visible:outline-white"
+        className={`${styles.dropdownToggle} rounded-full focus-visible:outline-2 focus-visible:outline-white`}
       >
-        <span aria-hidden="true">⌄</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none">
+          <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
 
       {isOpen ? (
@@ -136,14 +147,25 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
   const pathname = usePathname();
   const totalItems = useCartStore((state) => state.totalItems);
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const cartLabel = `Ir al carrito con ${totalItems} ${totalItems === 1 ? "producto" : "productos"}`;
   const contactHref = buildWhatsAppUrl(
     "Hola SFSTORE, quiero hacer una consulta desde la web.",
   );
 
-  return (
-    <header className="relative z-30 shadow-[0_10px_30px_rgba(16,32,51,0.10)] lg:[@media(min-height:701px)]:sticky lg:top-0">
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const observer = new IntersectionObserver(([entry]) => setHeaderVisible(entry.isIntersecting));
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
+  return <>
+    <header ref={headerRef} className="relative z-30">
       <div className="bg-[#0072CE] text-white">
-        <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2 sm:px-8 lg:grid-cols-[100px_minmax(0,1fr)_auto] lg:gap-5 lg:px-10 lg:py-3">
+        <div className={`${styles.headerRow} grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 py-2 sm:px-8 lg:grid-cols-[100px_minmax(0,1fr)_auto] lg:gap-5 lg:px-10 lg:py-3`}>
           <Link
             href="/"
             className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-transparent ring-2 ring-white/20 transition hover:opacity-90 sm:h-12 sm:w-12 lg:h-14 lg:w-14 lg:justify-self-start"
@@ -157,25 +179,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
             />
           </Link>
 
-          <form action="/buscar" method="get" className="min-w-0 lg:mx-auto lg:w-full lg:max-w-[820px]" role="search">
-            <label className="sr-only" htmlFor="site-search">
-              Buscar productos
-            </label>
-            <div className="flex min-w-0 items-center rounded-full bg-white px-2 py-0 text-[#102033] ring-1 ring-white/40 transition focus-within:ring-2 focus-within:ring-[#E52620]">
-              <input
-                key={searchQuery}
-                id="site-search"
-                name="buscar"
-                type="search"
-                defaultValue={searchQuery}
-                placeholder="Buscar productos"
-                className="min-w-0 flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#526479] sm:text-lg"
-              />
-              <button type="submit" aria-label="Buscar" className="ml-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#0072CE] transition hover:bg-[#EEF2F6] focus-visible:outline-2">
-                <SearchIcon />
-              </button>
-            </div>
-          </form>
+          <CatalogSearchBox key={searchQuery} initialQuery={searchQuery} icon={<SearchIcon />} />
 
           <div className="flex min-w-0 items-center justify-end gap-2 justify-self-end sm:gap-3 lg:ml-auto">
             <a
@@ -189,7 +193,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
             <a
               href="/carrito"
               className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#003B73] transition hover:bg-[#EEF2F6] sm:px-4"
-              aria-label={`Ir al carrito con ${totalItems} productos`}
+              aria-label={cartLabel}
             >
               <CartIcon />
               <span className="hidden sm:inline">Mi carrito</span>
@@ -203,8 +207,16 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
         </div>
       </div>
 
-      <nav className="relative border-t border-white/10 bg-[#003B73] text-white" aria-label="Navegación principal">
-        <div className="flex min-h-11 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden" aria-label="Secciones del catálogo">
+      {pathname !== "/carrito" && (
+        <CartDrawer label={cartLabel} hidden={headerVisible || totalItems === 0}
+          className={`${floatingStyles.cart} fixed grid min-h-11 min-w-11 place-items-center rounded-full bg-[#102747] text-white shadow-xl hover:bg-[#003B73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0072CE]`}>
+          <CartIcon />
+          <span aria-hidden="true" className="absolute -right-1 -top-1 min-w-5 rounded-full bg-[#E52620] px-1.5 py-0.5 text-center text-xs font-semibold text-white">{totalItems}</span>
+        </CartDrawer>
+      )}
+    </header>
+    <nav className="relative z-20 border-t border-white/10 bg-[#003B73] text-white shadow-[0_10px_30px_rgba(16,32,51,0.10)]" aria-label="Navegación principal">
+        <div className={`${styles.mobileNav} flex min-h-11 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden`} aria-label="Secciones del catálogo">
           <Link href="/perfumes" prefetch={false} aria-current={pathname.startsWith("/perfumes") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Perfumes</Link>
           <Link href="/mates" prefetch={false} aria-current={pathname.startsWith("/mates") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Mates</Link>
           <Link href="/accesorios" prefetch={false} aria-current={pathname.startsWith("/accesorios") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Accesorios</Link>
@@ -213,8 +225,9 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
         <div className="mx-auto hidden max-w-6xl flex-wrap justify-center gap-1 overflow-visible px-3 py-2 text-sm font-semibold sm:px-8 lg:flex">
           <Link
             href="/"
-            className="hidden shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:block"
+            className={desktopLink}
             prefetch={false}
+            aria-current={pathname === "/" ? "page" : undefined}
           >
             Inicio
           </Link>
@@ -226,6 +239,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
             items={perfumeMenuItems}
             openMenu={openMenu}
             setOpenMenu={setOpenMenu}
+            current={pathname.startsWith("/perfumes")}
           />
           <DropdownMenu
             id="mates"
@@ -235,28 +249,28 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
             items={mateMenuItems}
             openMenu={openMenu}
             setOpenMenu={setOpenMenu}
+            current={pathname.startsWith("/mates")}
           />
-          <Link href="/accesorios" prefetch={false} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 py-2 text-white hover:bg-white/10">Accesorios</Link>
+          <Link href="/accesorios" prefetch={false} className={desktopLink} aria-current={pathname.startsWith("/accesorios") ? "page" : undefined}>Accesorios</Link>
           <a
             href={contactHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:block"
+            className={desktopLink}
           >
             Contacto
           </a>
           <a
             href="/ayuda"
             aria-label="Preguntas frecuentes"
-            className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-2 py-2 text-white/88 transition hover:bg-white/10 hover:text-white sm:px-4"
+            className={desktopLink}
+            aria-current={pathname === "/ayuda" ? "page" : undefined}
           >
-            <span className="sm:hidden">Ayuda</span>
-            <span className="hidden sm:inline">Preguntas frecuentes</span>
+            Preguntas frecuentes
           </a>
         </div>
-      </nav>
-    </header>
-  );
+    </nav>
+  </>;
 }
 
 

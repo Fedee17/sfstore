@@ -1,5 +1,5 @@
 import { brand } from "@/lib/brand";
-import { hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { formatWebPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getTransferUnitPrice, type PaymentMethod } from "@/lib/pricing";
 import type { Product } from "@/types/product";
 
@@ -14,18 +14,12 @@ type CartWhatsAppTotals = {
   total: number;
 };
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  maximumFractionDigits: 0,
-});
-
 function formatCurrency(value: number | null | undefined) {
   if (value === null || value === undefined || !Number.isFinite(value)) {
     return null;
   }
 
-  return currencyFormatter.format(value);
+  return formatWebPrice(value);
 }
 
 export function buildWhatsAppUrl(message: string) {
@@ -93,7 +87,7 @@ export function buildCartWhatsAppMessage(
       paymentMethod === "transfer" ? getTransferUnitPrice(item) : item.price;
     const itemSubtotal = unitPrice * item.quantity;
 
-    return `- ${item.name} x ${item.quantity} - ${currencyFormatter.format(
+    return `- ${item.name} x ${item.quantity} - ${formatWebPrice(
       itemSubtotal,
     )}`;
   });
@@ -102,7 +96,7 @@ export function buildCartWhatsAppMessage(
     "Hola SFSTORE, quiero consultar por mi carrito:",
     ...lines,
     `Método elegido: ${paymentLabel}`,
-    `Total: ${currencyFormatter.format(totals.total)}`,
+    `Total: ${formatWebPrice(totals.total)}`,
     paymentMethod === "transfer"
       ? "Vi que por efectivo/transferencia accedo al precio especial."
       : null,
