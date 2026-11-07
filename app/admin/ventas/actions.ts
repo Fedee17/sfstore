@@ -44,6 +44,8 @@ function readItems(formData: FormData) {
   const unitPrices = formData
     .getAll("unitPrice")
     .map((value) => parseStoreSaleUnitPrice(String(value)));
+  const saleUnitPrices = formData.getAll("saleUnitPrice").map(value => parseStoreSaleUnitPrice(String(value)));
+  if (saleUnitPrices.length && saleUnitPrices.length !== productIds.length) throw new Error("Los precios de venta están incompletos.");
 
   if (
     productIds.length !== quantities.length ||
@@ -56,6 +58,7 @@ function readItems(formData: FormData) {
     productId: productId.trim(),
     quantity: quantities[index],
     unitPrice: unitPrices[index],
+    ...(saleUnitPrices.length && saleUnitPrices[index] !== unitPrices[index] ? { saleUnitPrice: saleUnitPrices[index] } : {}),
     ...(connectors[index] ? { comboConnector: connectors[index] as "cc" | "lightning" } : {}),
   }));
 }
@@ -84,6 +87,7 @@ function readPayments(formData: FormData) {
 
 function revalidateStoreSale(orderId: string) {
   revalidatePath("/admin/ventas");
+  revalidatePath("/admin/ventas/nueva");
   revalidatePath(`/admin/ventas/${orderId}`);
   revalidatePath("/admin/productos");
   revalidatePath("/admin/inventario");

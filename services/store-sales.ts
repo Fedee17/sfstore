@@ -136,7 +136,7 @@ export async function createStoreSale(input: {
   createdBy: string;
   customerName: string;
   notes: string;
-  items: { productId: string; quantity: number; unitPrice: number; comboConnector?: "cc" | "lightning" }[];
+  items: { productId: string; quantity: number; unitPrice: number; saleUnitPrice?: number; comboConnector?: "cc" | "lightning" }[];
   payments: {
     method: StoreSalePaymentMethod;
     amount: number;
@@ -153,6 +153,7 @@ export async function createStoreSale(input: {
         product_id: item.productId,
         quantity: item.quantity,
         unit_price: item.unitPrice,
+        ...(item.saleUnitPrice !== undefined ? { sale_unit_price: item.saleUnitPrice } : {}),
         ...(item.comboConnector ? { combo_connector: item.comboConnector } : {}),
       })),
       p_payments: input.payments,
@@ -173,6 +174,7 @@ export async function createStoreSale(input: {
       STORE_SALE_PRODUCT_INACTIVE: "Uno o mas productos ya no estan activos.",
       STORE_SALE_PRODUCT_HISTORICAL: "Un producto historico no se puede vender.",
       STORE_SALE_PRICE_INVALID: "Uno o mas productos no tienen un precio valido.",
+      STORE_SALE_CUSTOM_PRICE_INVALID: "El precio de venta debe ser válido y no menor al sugerido para el medio de pago.",
       STORE_SALE_STOCK_INSUFFICIENT: "No hay stock suficiente para registrar la venta.",
       STORE_SALE_PAYMENT_INVALID: "Uno o mas pagos no son validos.",
       STORE_SALE_IDEMPOTENCY_CONFLICT: "La operacion ya fue usada con otros datos.",

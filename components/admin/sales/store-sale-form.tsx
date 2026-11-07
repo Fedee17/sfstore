@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState, useMemo, useRef, useState } from "react";
 
 import {
@@ -11,6 +12,7 @@ import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import {
   calculateEnteredPayments,
   calculateStoreSalePricing,
+  parseStoreSaleUnitPrice,
   type StoreSalePaymentMethod,
   matchesStoreSaleProduct,
 } from "@/lib/store-sales";
@@ -30,6 +32,7 @@ type SaleLine = {
   components?: { productId: string; stock: number }[];
   product: StoreSaleProduct;
   quantity: number;
+  saleUnitPrice?: string;
 };
 
 const saleLineKey = (line: SaleLine) => commercialLineKey(line.product.id, line.comboConnector);
@@ -49,6 +52,15 @@ function newPayment(): PaymentLine {
 }
 
 export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleProduct[]; recipes?: ComponentRecipe[] }) {
+  const [version, setVersion] = useState(0);
+  const router = useRouter();
+  return <StoreSaleEntryForm key={version} products={products} recipes={recipes} onNextSale={() => {
+    router.refresh();
+    setVersion(current => current + 1);
+  }} />;
+}
+
+function StoreSaleEntryForm({ products, recipes, onNextSale }: { products: StoreSaleProduct[]; recipes: ComponentRecipe[]; onNextSale: () => void }) {
   const [state, action] = useActionState(createStoreSaleAction, initialState);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -70,10 +82,19 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
       .slice(0, 10);
   }, [choices, query]);
 
-  const pricing = calculateStoreSalePricing(
+  const suggestedPricing = calculateStoreSalePricing(
     lines.map((line) => ({ price: Number(line.product.price), quantity: line.quantity })),
     payments.map((payment) => payment.method),
   );
+  let pricing = suggestedPricing;
+  let priceError = "";
+  try {
+    if (lines.some(line => line.saleUnitPrice !== undefined)) pricing = calculateStoreSalePricing(
+      lines.map(line => ({ price: Number(line.product.price), quantity: line.quantity,
+        ...(line.saleUnitPrice !== undefined ? { saleUnitPrice: parseStoreSaleUnitPrice(line.saleUnitPrice) } : {}) })),
+      payments.map(payment => payment.method),
+    );
+  } catch (error) { priceError = error instanceof Error ? error.message : "Revisá el precio de venta."; }
   const total = pricing.total;
   const paid = calculateEnteredPayments(
     payments.map((payment) => ({
@@ -112,7 +133,7 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
       const components = (selection as StoreSaleProduct[]).map(p => ({ productId: p.id, stock: p.stock }));
       const key = commercialLineKey(recipe.presentation_product, connector);
       const existing = lines.find(l => saleLineKey(l) === key);
-      const line: SaleLine = { product: { ...selection[0]!, id: recipe.presentation_product, name: componentPublicationName(connector), price: recipe.combo_list_price, stock: Math.min(...components.map(p => p.stock)), sku: null }, quantity: (existing?.quantity ?? 0) + 1, comboConnector: connector, components };
+      const line: SaleLine = { ...existing, product: { ...selection[0]!, id: recipe.presentation_product, name: componentPublicationName(connector), price: recipe.combo_list_price, stock: Math.min(...components.map(p => p.stock)), sku: null }, quantity: (existing?.quantity ?? 0) + 1, comboConnector: connector, components };
       applyLines(existing ? lines.map(l => saleLineKey(l) === key ? line : l) : [...lines, line]);
     } catch (error) { setComponentError(error instanceof Error ? error.message : "No se pudo agregar el conjunto."); }
   }
@@ -132,7 +153,7 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
       <section className="rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
         <h2 className="text-xl font-semibold">Productos</h2>
         <p className="mt-1 text-sm text-[#1F1F1F]/60">
-          25% de descuento si todos los pagos son en efectivo o transferencia. Con débito, crédito, QR u otro medio, toda la venta usa precio de lista. El servidor verifica los precios al confirmar.
+          El precio sugerido incluye 25% de descuento en efectivo o transferencia. Con otros medios se sugiere el precio de lista. Podés ajustar el precio para esta venta.
         </p>
 
         {componentError ? <p role="alert" className="mt-3 text-sm">{componentError}</p> : null}
@@ -220,8 +241,13 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
                   </label>
                   <label className="grid gap-2 text-sm font-semibold">
                     Precio unitario
-                    <input type="hidden" name="unitPrice" value={unitPrice.toFixed(2)} />
-                    <span className="flex h-12 items-center">{currencyFormatter.format(unitPrice)}</span>
+                    <input type="hidden" name="unitPrice" value={suggestedPricing.items[index].unitPrice.toFixed(2)} />
+                    <input name="saleUnitPrice" inputMode="decimal" required disabled={completed}
+                      aria-label={`Precio de venta de ${line.product.name}`}
+                      value={line.saleUnitPrice ?? unitPrice.toFixed(2)}
+                      onChange={event => setLines(current => current.map(item => saleLineKey(item) === saleLineKey(line) ? { ...item, saleUnitPrice: event.target.value } : item))}
+                      className="h-12 min-w-0 w-full rounded-xl border border-[#8B5E3C]/20 bg-white px-3 outline-none focus:border-[#556B2F] disabled:opacity-60" />
+                    <span className="text-xs font-normal text-[#1F1F1F]/60">Sugerido: {currencyFormatter.format(suggestedPricing.items[index].unitPrice)}</span>
                   </label>
                   <div className="text-sm">
                     <span className="block text-xs text-[#1F1F1F]/55">Subtotal</span>
@@ -246,22 +272,11 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
         </div>
       </section>
 
-      <section className="grid gap-4 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-semibold">
-          Cliente opcional
-          <input name="customerName" disabled={completed} className="h-12 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 outline-none focus:border-[#556B2F] disabled:opacity-60" />
-        </label>
-        <label className="grid gap-2 text-sm font-semibold">
-          Notas
-          <input name="notes" disabled={completed} className="h-12 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 outline-none focus:border-[#556B2F] disabled:opacity-60" />
-        </label>
-      </section>
-
       <section className="rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">Pagos</h2>
-            <p className="mt-1 text-sm text-[#1F1F1F]/60">Podés combinar medios. Debés cobrar exactamente el total para confirmar la venta.</p>
+            <p className="mt-1 text-sm text-[#1F1F1F]/60">Si vendiste a un precio mayor, ajustá el precio unitario arriba. Los pagos deben completar el total de la venta.</p>
           </div>
           <button
             type="button"
@@ -320,13 +335,14 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
       </section>
 
       <section className="grid gap-4 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 sm:grid-cols-3">
-        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Subtotal de lista</span><strong className="mt-1 block text-xl">{currencyFormatter.format(pricing.subtotal)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Subtotal</span><strong className="mt-1 block text-xl">{currencyFormatter.format(pricing.subtotal)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Descuento</span><strong className="mt-1 block text-xl">{currencyFormatter.format(pricing.discount)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total</span><strong className="mt-1 block text-xl">{currencyFormatter.format(total)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Pagado</span><strong className="mt-1 block text-xl">{currencyFormatter.format(paid)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Saldo</span><strong className="mt-1 block text-xl">{currencyFormatter.format(remaining)}</strong></div>
         {paid > 0 && remaining > 0 ? <p className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Falta completar el pago. No se registrará la venta ni se descontará stock.</p> : null}
-        {overpayment ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Los pagos no pueden superar el total.</p> : null}
+        {priceError ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">{priceError}</p> : null}
+        {overpayment ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">El importe cobrado supera el total. Ajustá el precio unitario del producto si lo vendiste a un precio mayor.</p> : null}
       </section>
 
       {state.status !== "idle" ? (
@@ -337,9 +353,10 @@ export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleP
       ) : null}
 
       <div className="flex justify-end">
+        {completed ? <button type="button" onClick={onNextSale} className="rounded-full bg-[#556B2F] px-7 py-3 font-semibold text-[#F7F4ED]">Registrar otra venta</button> : null}
         <PendingSubmitButton
           pendingLabel="Registrando..."
-          disabled={completed || lines.length === 0 || total <= 0 || overpayment || remaining > 0 || payments.some((payment) => parseAmount(payment.amount) <= 0)}
+          disabled={completed || Boolean(priceError) || lines.length === 0 || total <= 0 || overpayment || remaining > 0 || payments.some((payment) => parseAmount(payment.amount) <= 0)}
           className="rounded-full bg-[#556B2F] px-7 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:bg-[#1F1F1F]/20 disabled:text-[#1F1F1F]/60"
         >
           Registrar venta

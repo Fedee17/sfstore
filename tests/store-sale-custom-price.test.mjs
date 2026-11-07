@@ -21,10 +21,11 @@ test("initial physical unit price applies 25 percent from list, ignoring stored 
   assert.match(form, /calculateStoreSalePricing/i);
 });
 
-test("unit preview is submitted per line and cannot be manually edited", () => {
+test("catalog preview remains submitted separately from the editable agreed price", () => {
   assert.match(form, /name="unitPrice"/i);
-  assert.match(form, /value=\{unitPrice\.toFixed\(2\)\}/i);
-  assert.doesNotMatch(form, /updateUnitPrice/i);
+  assert.match(form, /value=\{suggestedPricing.items\[index\].unitPrice.toFixed\(2\)\}/i);
+  assert.match(form, /name="saleUnitPrice"/);
+  assert.match(service, /sale_unit_price: item.saleUnitPrice/);
 });
 
 test("custom price and quantity calculate the visible subtotal", () => {

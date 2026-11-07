@@ -33,3 +33,13 @@ test('invalid prices, fractional quantities and overflow fail',()=>{
     assert.throws(()=>calculateStoreSalePricing([line],['cash']));
   }
 });
+
+test('agreed final price is not discounted twice and never changes the catalog input',()=>{
+  const line={price:100,quantity:2,saleUnitPrice:90};
+  const p=calculateStoreSalePricing([line],['cash']);
+  assert.equal(p.total,180);assert.equal(p.subtotal,200);assert.equal(p.discount,20);
+  assert.equal(line.price,100);
+  assert.equal(calculateStoreSalePricing([{...line,saleUnitPrice:125}],['cash']).discount,0);
+  assert.throws(()=>calculateStoreSalePricing([{...line,saleUnitPrice:74}],['cash']),/menor/);
+  assert.throws(()=>calculateStoreSalePricing([{...line,saleUnitPrice:90}],['credit']),/menor/);
+});
