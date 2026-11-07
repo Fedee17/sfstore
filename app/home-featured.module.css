@@ -82,30 +82,7 @@
   .track { --columns:3; --gap:20px; }
 }
 @media (width >= 1200px) and (height <= 700px) {
-  /* Keep the approved card width while showing three products. */
-  .carousel { max-inline-size: calc(75% - 5px); margin-inline: auto; }
   .section { padding-block: 12px; }
-  .carousel[data-side-previews] { max-inline-size: none; }
-  .carousel[data-side-previews] .window {
-    overflow: hidden;
-    mask-image: linear-gradient(to right, transparent, #000 12.5%, #000 87.5%, transparent);
-  }
-  .carousel[data-side-previews] .viewport {
-    position: relative;
-    z-index: 1;
-    inline-size: calc(75% - 5px);
-    margin-inline: auto;
-    overflow: visible;
-  }
-  .carousel[data-side-previews] .previous { left: calc(12.5% - 45.5px); }
-  .carousel[data-side-previews] .next { right: calc(12.5% - 45.5px); }
-  .carousel[data-side-previews] .track[data-animate] > div {
-    transition: filter 680ms cubic-bezier(.22,.72,.27,1), opacity 680ms cubic-bezier(.22,.72,.27,1);
-  }
-  .carousel[data-side-previews] .track > [data-peripheral] {
-    filter: blur(1.5px);
-    opacity: .55;
-  }
 }
 @media (width >= 1200px) and (height <= 550px) {
   .section { padding-block: 8px; }

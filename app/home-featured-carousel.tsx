@@ -107,7 +107,6 @@ export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; 
       className={styles.carousel}
       data-rotating-layout={enabled || undefined}
       data-swipe={swipe || undefined}
-      data-side-previews={loop || undefined}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       onFocusCapture={() => setStopped(true)}

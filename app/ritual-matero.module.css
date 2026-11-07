@@ -1,24 +1,28 @@
 .tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-block: 14px 16px;
+  gap: 6px;
+  margin-block: 10px 12px;
 }
 
 .tabs button {
-  min-block-size: 44px;
-  padding: 7px 14px;
+  min-block-size: 34px;
+  padding: 5px 10px;
   border: 1px solid #b9cee2;
   border-radius: 999px;
   background: #fff;
   color: #003b73;
-  font-size: .875rem;
+  font-size: .8125rem;
   font-weight: 700;
 }
 
 .tabs button:hover { background: #e8f3ff; }
 .tabs button[aria-selected="true"] { border-color: #102747; background: #102747; color: #fff; }
 .tabs button:focus-visible { outline: 2px solid #0072ce; outline-offset: 2px; }
+
+@media (pointer: coarse) {
+  .tabs button { min-block-size: 44px; }
+}
 
 @media (width >= 768px) and (height <= 700px) {
   .tabs { margin-block: 8px 10px; }
