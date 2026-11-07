@@ -21,6 +21,8 @@ function browserBundle() {
   for (const [name, path] of [
     ["form", "../components/admin/products/product-form.tsx"],
     ["@/lib/products/admin-price-calculation", "../lib/products/admin-price-calculation.ts"],
+    ["@/lib/products/perfume-price-policy", "../lib/products/perfume-price-policy.ts"],
+    ["../catalog/perfume-recommendation.ts", "../lib/catalog/perfume-recommendation.ts"],
     ["../web-transfer-pricing.ts", "../lib/web-transfer-pricing.ts"],
     ["@/lib/web-transfer-pricing", "../lib/web-transfer-pricing.ts"],
     ["@/lib/catalog/attribute-config", "../lib/catalog/attribute-config.ts"],
@@ -49,6 +51,8 @@ function browserBundle() {
     };
     for (const mock of Object.values(mocks)) mock.__esModule = true;
     function require(name) {
+      const aliases = { './admin-price-calculation.ts': '@/lib/products/admin-price-calculation', './attribute-config.ts': '@/lib/catalog/attribute-config' };
+      name = aliases[name] ?? name;
       if (mocks[name]) return mocks[name];
       if (!cache[name]) { const m = {exports: {}}; cache[name] = m; if (!factories[name]) throw Error('Missing module ' + name); factories[name](m, m.exports, require); }
       return cache[name].exports;

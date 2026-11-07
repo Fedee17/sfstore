@@ -32,6 +32,7 @@ import {
   MAX_PRODUCT_IMAGE_SOURCE_BYTES,
   PRODUCT_IMAGE_ACCEPT,
   isSupportedProductImageSourceMimeType,
+  normalizeProductImageFileType,
 } from "@/lib/products/product-image-files";
 import type { AdminCategory, AdminProduct } from "@/services/admin";
 import { calculateListFromSpecial, suggestSpecialFromCost, parseAdminMoneyCents } from "@/lib/products/admin-price-calculation";
@@ -125,11 +126,12 @@ async function optimizeProductImage(file: File) {
   }
 }
 
-async function prepareProductImage(file: File) {
-  if (file.size > MAX_PRODUCT_IMAGE_SOURCE_BYTES) {
-    throw new Error(`${file.name} supera el limite de 25 MB.`);
+async function prepareProductImage(source: File) {
+  if (source.size > MAX_PRODUCT_IMAGE_SOURCE_BYTES) {
+    throw new Error(`${source.name} supera el limite de 25 MB.`);
   }
 
+  const file = await normalizeProductImageFileType(source);
   const isHeic = await isHeicFile(file);
 
   if (!isHeic && !isSupportedProductImageSourceMimeType(file.type)) {
@@ -951,7 +953,7 @@ export function ProductForm({
               className="min-w-0 w-full max-w-full rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 text-sm outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[#556B2F] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#F7F4ED] focus:border-[#556B2F]"
             />
             {imageStatus ? (
-              <span className="text-xs font-semibold text-[#556B2F]">
+              <span role="status" aria-live="polite" aria-atomic="true" className="text-xs font-semibold text-[#556B2F]">
                 {imageStatus}
               </span>
             ) : null}

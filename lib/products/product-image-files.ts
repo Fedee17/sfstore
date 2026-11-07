@@ -66,6 +66,19 @@ export function detectProductImageOutputMimeType(
   return null;
 }
 
+export async function normalizeProductImageFileType(file: File): Promise<File> {
+  const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const type = detectProductImageOutputMimeType(bytes);
+  if (!type || file.type === type) return file;
+
+  const extension = type === "image/jpeg" ? "jpg" : type.slice("image/".length);
+  const stem = file.name.replace(/\.[^/.]+$/, "") || "producto";
+  return new File([file], `${stem}.${extension}`, {
+    type,
+    lastModified: file.lastModified,
+  });
+}
+
 export function normalizeProductImageEtag(value: unknown) {
   return String(value ?? "")
     .trim()

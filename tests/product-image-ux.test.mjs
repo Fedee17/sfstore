@@ -7,6 +7,7 @@ import {
   detectProductImageOutputMimeType,
   findMatchingStoredProductImage,
   isSupportedProductImageSourceMimeType,
+  normalizeProductImageFileType,
 } from "../lib/products/product-image-files.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -75,6 +76,39 @@ test("binary signature validation recognizes only JPEG, PNG and WebP output", ()
   assert.equal(detectProductImageOutputMimeType(new Uint8Array([1, 2, 3])), null);
   assert.equal(isSupportedProductImageSourceMimeType("image/heic"), true);
   assert.equal(isSupportedProductImageSourceMimeType("application/pdf"), false);
+});
+
+test("JPEG bytes with a HEIC filename and missing or incorrect MIME preserve the photo and normalize its type", async () => {
+  const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 1]);
+  for (const type of ["", "image/heic", "application/octet-stream"]) {
+    const source = new File([bytes], "IMG_8318.HEIC", { type, lastModified: 1234 });
+    const file = await normalizeProductImageFileType(source);
+    assert.equal(file.type, "image/jpeg");
+    assert.equal(file.name, "IMG_8318.jpg");
+    assert.equal(file.lastModified, source.lastModified);
+    assert.deepEqual(new Uint8Array(await file.arrayBuffer()), bytes);
+    assert.equal(source.name, "IMG_8318.HEIC");
+    assert.equal(source.type, type);
+  }
+});
+
+test("PNG and WebP are identified by content without assuming every renamed file is JPEG", async () => {
+  for (const [bytes, type, name] of [
+    [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], "image/png", "photo.png"],
+    [[0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50], "image/webp", "photo.webp"],
+  ]) {
+    const file = await normalizeProductImageFileType(new File([new Uint8Array(bytes)], "photo.HEIC"));
+    assert.equal(file.type, type);
+    assert.equal(file.name, name);
+  }
+});
+
+test("real HEIC, invalid content and correctly typed JPEG retain the original file for existing conversion and validation", async () => {
+  for (const file of [
+    new File([new Uint8Array([0, 0, 0, 24]), "ftypheic"], "photo.HEIC", {type:"image/heic"}),
+    new File(["invalid"], "photo.HEIC"),
+    new File([new Uint8Array([0xff, 0xd8, 0xff])], "photo.jpg", {type:"image/jpeg"}),
+  ]) assert.equal(await normalizeProductImageFileType(file), file);
 });
 
 test("stored and pending images are rendered in separate sections", () => {
