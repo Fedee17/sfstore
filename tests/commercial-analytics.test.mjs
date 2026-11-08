@@ -64,5 +64,5 @@ test("missing product identities with the same name are not automatically reconc
  const f=fixture();f.sale("a");f.sale("b");f.input.saleLines.forEach(x=>x.product_id=null);assert.equal(f.run().products.length,2);
 });
 test("analytics server guard precedes privileged client and snapshot read occurs once",()=>{
- const s=readFileSync(new URL("../services/commercial-history.ts",import.meta.url),"utf8").split("export async function getCommercialAnalytics")[1];assert.ok(s.indexOf("requireAdminSession()")<s.indexOf("getSupabaseAdminClient()"));assert.equal((s.match(/await readCompleteSnapshot/g)??[]).length,1);assert.ok(s.indexOf("analyticsMonths(month)")<s.indexOf("getSupabaseAdminClient()"));
+ const s=readFileSync(new URL("../services/commercial-history.ts",import.meta.url),"utf8").split("export async function getCommercialAnalytics")[1].split("export async function getSalesWorkspace")[0];assert.ok(s.indexOf("requireAdminSession()")<s.indexOf("getSupabaseAdminClient()"));assert.equal((s.match(/await readCompleteSnapshot/g)??[]).length,1);assert.ok(s.indexOf("analyticsMonths(month)")<s.indexOf("getSupabaseAdminClient()"));
 });

@@ -1,40 +1,44 @@
 import Link from "next/link";
 import { requireAdminSession } from "@/lib/admin-session";
-import { listManualCheckoutOrders, listShippingQuotationRequests, getCheckoutExpirationHealth } from "@/services/checkout-manual-admin";
+import { listManualCheckoutOrders, listShippingQuotationRequests, getCheckoutExpirationHealth, type AdminCheckoutRow } from "@/services/checkout-manual-admin";
 import { AdminNav } from "@/components/admin/admin-nav";
-import { ManualCheckoutPaymentForm, ReleaseCheckoutReservationsForm, RejectCheckoutPaymentForm, CheckoutBuyerExceptionForm, ShippingQuotationForm } from "@/components/admin/checkout-manual-forms";
-export default async function CheckoutAdministrationPage({searchParams}:{searchParams:Promise<{page?:string}>}) {
-  const rawPage=Number((await searchParams).page??0);const page=Number.isInteger(rawPage)&&rawPage>=0&&rawPage<=10000?rawPage:0;
+import { CheckoutOrderCard } from "@/components/admin/checkout/order-card";
+import { CheckoutQuotationCard } from "@/components/admin/checkout/quotation-card";
+import { ReservationMonitor } from "@/components/admin/checkout/reservation-monitor";
+import { CheckoutRefreshButton } from "@/components/admin/checkout/refresh-button";
+import styles from "@/components/admin/checkout/checkout-admin.module.css";
+
+const inboxes = {
+  payments: { label: "Pagos para revisar", description: "Verificá las transferencias informadas por los compradores.", empty: "No hay avisos de pago en esta página", help: "Los avisos aparecen cuando el comprador informa su transferencia. Para acreditar un ingreso sin aviso, buscá el pedido en la bandeja Pedidos." },
+  quotes: { label: "Cotizaciones de envío", description: "Cargá el costo verificado para que el comprador pueda aceptar el total.", empty: "No hay cotizaciones en la consulta actual", help: "Las solicitudes de envío aparecerán acá. Una cotización todavía no es un pedido ni reserva stock." },
+  orders: { label: "Pedidos", description: "Consultá productos, importes y estado de los pedidos de la tienda online.", empty: "No hay pedidos en esta página", help: "Los pedidos creados en el checkout aparecerán acá con su estado de pago y reserva." },
+  monitor: { label: "Reservas", description: "Revisá vencimientos y ejecuciones del control de reservas.", empty: "", help: "" },
+};
+type Inbox = keyof typeof inboxes;
+export default async function CheckoutAdministrationPage({ searchParams }: { searchParams?: Promise<{ page?: string; view?: string }> }) {
   await requireAdminSession();
-  const [orders,quotations,health] = await Promise.all([listManualCheckoutOrders(page),listShippingQuotationRequests(),getCheckoutExpirationHealth().catch(()=>null)]);
-  return <main><AdminNav /><section className="mx-auto max-w-4xl p-6">
-    <h1 className="text-3xl font-semibold">Pedidos web y pagos manuales</h1>
-    <section className="my-6 rounded border p-4" aria-label="Supervisión de reservas">
-      <h2 className="text-xl font-semibold">Supervisión de reservas</h2>
-      {!health ? <p role="alert">No se pudo consultar la supervisión. Revisá el estado del ejecutor; la liberación manual sigue disponible.</p> : <>
-        <p>{health.monitoringEnabled ? "Ejecución automática esperada cada 5 minutos." : "Ejecución automática preparada, no activada."}</p>
-        <p>Vencidas sin aviso pendientes de liberar: {health.due}. Protegidas por aviso en revisión: {health.protectedReports}.</p>
-        <p>Último lote procesado: {health.lastProgressAt ?? "Sin ejecuciones registradas"}. Estado más reciente: {health.lastRunStatus ?? "Sin ejecuciones"}.</p>
-        {["partial","failed"].includes(health.lastRunStatus ?? "") ? <p role="alert">La última ejecución registró errores. Revisá el historial y los bloqueos; el siguiente lote puede reintentar las reservas pendientes.</p> : null}
-        {health.heartbeatOverdue ? <p role="alert">Ejecutor atrasado: no registró un lote procesado dentro del plazo de supervisión.</p> : null}
-        {health.backlogOverdue ? <p role="alert">Hay reservas vencidas demoradas. Revisá bloqueos, errores y la próxima ejecución o liberá manualmente.</p> : null}
-        <details><summary>Últimas 10 ejecuciones</summary><ul>{health.recentRuns.map((run,index)=><li key={index}>{run.finished_at} · {run.status} · liberadas: {run.released} · pendientes: {run.due_after} · errores: {run.failed_orders}</li>)}</ul></details>
-      </>}
-    </section>
-    <ReleaseCheckoutReservationsForm />
-    <p>Página {page+1}, hasta 100 pedidos. Pendientes primero, del más antiguo al más reciente. Sólo la acreditación bancaria completa confirma el pago. El aviso del comprador conserva la reserva hasta una decisión explícita.</p>
-    <h2 className="mt-6 text-xl font-semibold">Solicitudes de cotización (sin pedido ni reserva)</h2>
-    {quotations.map(quote=><article key={quote.id} className="my-3 rounded border p-4"><p>{quote.request.customer.fullName} · {quote.request.customer.phone}</p><p>{quote.request.shipping.province}, {quote.request.shipping.city}, {quote.request.shipping.postalCode} · {quote.request.shipping.address}</p><ul>{quote.items.map(item=><li key={item.productId}>{item.quantity} × {item.name}</li>)}</ul><p>Transporte preferido: {quote.request.shipping.carrier??"Sin preferencia registrada"}</p><p>Referencia: {quote.id}</p>{quote.status==="requested"?<ShippingQuotationForm quoteId={quote.id}/>:<p>Cotización comunicada: envío ${quote.shipping_fee}, total ${quote.quoted_total}. Válida hasta {quote.valid_until}. {quote.accepted_order_id?"Aceptada; pedido creado.":"Sin pedido ni reserva; pendiente de aceptación."}</p>}</article>)}
-    {orders.map(order => <article className="my-5 rounded border p-4" key={order.order_id}>
-      <h2>{order.result.orderNumber}</h2><p>{order.report?.status === "pending" ? "Pago informado, pendiente de verificación" : order.payment_status === "paid" ? "Pago confirmado" : order.state === "pending" ? "Esperando transferencia" : order.state} · Transferencia · Total: {order.result.total}</p>
-      <p>Reserva hasta: {order.expires_at}</p>
-      {order.report?.overdue?<p role="alert">Revisión atrasada: superó el plazo objetivo de revisión. La reserva sigue protegida hasta una decisión administrativa.</p>:null}
-      {order.report?.status&&order.report.status!=="uploading"?<Link href={`/api/checkout/payment-proof/${order.order_id}`} prefetch={false} download>Consultar comprobante privado</Link>:null}
-      {order.state === "pending" && order.result.paymentMethod === "transfer" ? <ManualCheckoutPaymentForm order={order} /> : null}
-      {order.report?.status === "pending"?<RejectCheckoutPaymentForm orderId={order.order_id}/>:null}
-      {order.report?.rejection_reason?<p>Motivo: {order.report.rejection_reason}</p>:null}
-      <details><summary>Historial de acciones</summary><ul>{order.history.map((entry,index)=><li key={index}>{entry.created_at} · {entry.event} · {JSON.stringify(entry.details)}</li>)}</ul></details>
-      <CheckoutBuyerExceptionForm buyerId={order.buyer_id}/>
-    </article>)}
-  <nav>{page>0?<Link href={`/admin/checkout?page=${page-1}`} prefetch={false}>Página anterior</Link>:null} {orders.length===100?<Link href={`/admin/checkout?page=${page+1}`} prefetch={false}>Página siguiente</Link>:null}</nav></section></main>;
+  const params = searchParams ? await searchParams : {};
+  const view: Inbox = Object.hasOwn(inboxes, params.view ?? "") ? params.view as Inbox : "payments";
+  const rawPage = Number(params.page ?? 0);
+  const page = Number.isSafeInteger(rawPage) && rawPage >= 0 && rawPage <= 10000 ? rawPage : 0;
+  let orders: AdminCheckoutRow[] = [];
+  let quotations: Awaited<ReturnType<typeof listShippingQuotationRequests>> = [];
+  let readError = false;
+  const health = await getCheckoutExpirationHealth().catch(() => null);
+  try {
+    if (view === "orders" || view === "payments") orders = await listManualCheckoutOrders(page, view === "payments");
+    if (view === "quotes") quotations = await listShippingQuotationRequests();
+  } catch { readError = true; }
+  const visibleOrders = view === "payments" ? orders.filter(order => order.report?.status === "pending") : orders;
+  const count = view === "quotes" ? quotations.length : visibleOrders.length;
+  const attention = !health || health.heartbeatOverdue || health.backlogOverdue || ["partial", "failed"].includes(health.lastRunStatus ?? "");
+  const inbox = inboxes[view];
+  return <main className={styles.page}><AdminNav/><section className={styles.shell}>
+    <header className={styles.heading}><div><p className={styles.eyebrow}>Tienda online</p><h1 className={styles.title}>Pedidos web</h1><p className={styles.muted}>Revisá pagos, resolvé envíos y seguí cada pedido.</p></div><CheckoutRefreshButton/></header>
+    <nav aria-label="Bandejas de pedidos web" className={styles.tabs}>{(Object.entries(inboxes) as [Inbox,typeof inbox][]).map(([key,value])=><Link key={key} href={`/admin/checkout?view=${key}`} aria-current={view===key?"page":undefined} className={styles.tab}>{value.label}</Link>)}</nav>
+    {view!=="monitor"&&attention?<p role="alert" className={styles.notice} data-tone="warning">{health?"El control de reservas requiere revisión.":"No se pudo consultar el control de reservas."} <Link href="/admin/checkout?view=monitor" className="font-semibold underline">Revisar reservas</Link></p>:null}
+    <div className={styles.sectionHead}><div><h2>{inbox.label}</h2><p className={styles.muted}>{inbox.description}</p></div>{view!=="monitor"&&!readError?<p className={styles.muted}>{count} en esta {view==="quotes"?"consulta":"página"}</p>:null}</div>
+    {view==="monitor"?<ReservationMonitor health={health}/>:readError?<div role="alert" className={styles.panel}><h2 className="text-xl font-semibold">No pudimos cargar esta bandeja</h2><p className={styles.muted}>Actualizá para reintentar. No se muestran resultados parciales.</p></div>:count===0?<div className={styles.empty}><div className={styles.emptyMark} aria-hidden="true">✓</div><h2>{inbox.empty}</h2><p className={styles.muted}>{inbox.help}</p>{view!=="orders"?<Link href="/admin/checkout?view=orders" className={styles.secondary}>Ver pedidos</Link>:<CheckoutRefreshButton/>}</div>:<div className={styles.list}>{view==="quotes"?quotations.map(quote=><CheckoutQuotationCard key={quote.id} quote={quote}/>):visibleOrders.map(order=><CheckoutOrderCard key={order.order_id} order={order}/>)}</div>}
+    {(view==="orders"||view==="payments")&&!readError?<nav aria-label="Paginación de pedidos web" className={styles.pagination}><p className={styles.muted}>Página {page+1} · hasta 100 registros</p><div className={styles.actions}>{page>0?<Link className={styles.secondary} href={`/admin/checkout?view=${view}&page=${page-1}`} prefetch={false}>Anterior</Link>:null}{orders.length===100?<Link className={styles.secondary} href={`/admin/checkout?view=${view}&page=${page+1}`} prefetch={false}>Siguiente</Link>:null}</div></nav>:null}
+  </section></main>;
 }

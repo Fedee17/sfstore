@@ -118,7 +118,7 @@ test("real sitemap filters B and keeps A", async () => {
 });
 test("consultation catalog excludes B even before archival", async () => {
   globalThis.__yaraReadOnlyClient = fakeClient([publicRow(a), publicRow(b)]);
-  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
+  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/store-sales", new URL("../lib/store-sales.ts", import.meta.url).href).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
   assert.deepEqual((await catalog.getQuickCatalogProducts()).data.map((product) => product.id), [a.id]);
 });
 
@@ -126,7 +126,7 @@ const paymentServiceUrl = moduleUrl(source("services/order-payments.ts")
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/order-payments", moduleUrl(source("lib/order-payments.ts"))));
 const mutationGuardUrl = moduleUrl('export async function assertCurrentCommercialOperation(){throw new Error("UNEXPECTED_MUTATION_IN_READ_ONLY_TEST");}');
-const saleService = await import(moduleUrl(source("services/store-sales.ts")
+const saleService = await import(moduleUrl(source("services/store-sales.ts").replace("@/lib/store-sale-date",new URL("../lib/store-sale-date.ts",import.meta.url).href)
   .replace("@/services/commercial-history-guards", mutationGuardUrl)
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/store-sales", moduleUrl(source("lib/store-sales.ts")))
@@ -162,7 +162,7 @@ test("post-apply recommendation eligibility keeps only active A with stock 1", a
   const finalA = { ...a, ...buildYaraRosaConsolidationPlan([a, b]).productUpdates[0].patch, stock: 1 };
   const finalB = { ...b, status: "archived", featured: false, stock: 0 };
   globalThis.__yaraReadOnlyClient = fakeClient([publicRow(finalA), publicRow(finalB)]);
-  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
+  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/store-sales", new URL("../lib/store-sales.ts", import.meta.url).href).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
   const query = await import(moduleUrl(source("lib/admin/perfume-recommendation-query.ts")
     .replace("@/lib/catalog/attribute-config", moduleUrl(source("lib/catalog/attribute-config.ts")))));
   const eligible = query.getEligiblePerfumeRecommendationProducts((await catalog.getQuickCatalogProducts()).data);

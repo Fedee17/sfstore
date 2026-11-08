@@ -31,6 +31,7 @@ describe('agreed store-sale prices / isolated PostgreSQL WASM', {skip:!runtimePa
     assert.equal((await q("select to_regprocedure('public.apply_store_sale_agreed_prices(jsonb,jsonb)') helper"))[0].helper,null);
     await db.exec('alter function public.create_store_sale_atomic(uuid,uuid,text,text,jsonb,jsonb) security invoker');
     await db.exec(migration);
+    await db.exec(readFileSync(join(root,'supabase/migrations/202611080001_store_sale_commercial_date.sql'),'utf8'));
     category=randomUUID();
     await q('insert into categories(id,name,slug) values($1::uuid,\'SYNTHETIC\',$1::text)',[category]);
   });
@@ -42,6 +43,35 @@ describe('agreed store-sale prices / isolated PostgreSQL WASM', {skip:!runtimePa
     try{return (await q('select create_store_sale_atomic($1,$2,null,null,$3::jsonb,$4::jsonb) result',[key,actor,JSON.stringify(items),JSON.stringify([{method,amount}])]))[0].result;}
     finally{await db.exec('reset role');}
   }
+  async function datedSale(id,date,key=randomUUID()) {
+    await db.exec('set role service_role');
+    try{return (await q('select create_store_sale_dated_atomic($1,$2,null,null,$3::jsonb,$4::jsonb,$5::date) result',[key,actor,JSON.stringify([{product_id:id,quantity:1,unit_price:75}]),JSON.stringify([{method:'cash',amount:75}]),date]))[0].result;}
+    finally{await db.exec('reset role');}
+  }
+  test('past business date leaves creation, receipt and inventory timestamps unchanged and does not claim a historical cost',async()=>{
+    const date=(await q("select ((statement_timestamp() at time zone 'America/Argentina/Buenos_Aires')::date - interval '1 month')::date::text date"))[0].date;
+    const id=await product(),result=await datedSale(id,date);
+    const saved=(await q("select store_sale_date::text date, metadata->>'cost_snapshot_policy' policy,metadata->>'store_sale_backdated' backdated,created_at from orders where id=$1",[result.order_id]))[0];
+    assert.equal(saved.date,date);assert.equal(result.sale_date,date);assert.equal(saved.backdated,'true');assert.equal(saved.policy,'current_product_cost_at_late_entry_v1');
+    const timestamps=(await q("select (p.paid_at at time zone 'America/Argentina/Buenos_Aires')::date::text paid_day,(m.created_at at time zone 'America/Argentina/Buenos_Aires')::date::text stock_day,(o.created_at at time zone 'America/Argentina/Buenos_Aires')::date::text entered_day from orders o join order_payments p on p.order_id=o.id join inventory_movements m on m.order_id=o.id where o.id=$1",[result.order_id]))[0];
+    assert.notEqual(timestamps.entered_day,date);assert.equal(timestamps.paid_day,timestamps.entered_day);assert.equal(timestamps.stock_day,timestamps.entered_day);
+    assert.equal((await q('select stock from products where id=$1',[id]))[0].stock,4);
+  });
+  test('dated replay keeps the date, payment and stock; another date with the same key is rejected',async()=>{
+    const id=await product(),key=randomUUID(),date='2025-09-12';
+    const first=await datedSale(id,date,key),again=await datedSale(id,date,key);
+    assert.equal(again.order_id,first.order_id);assert.equal(again.operation,'already_created');
+    await assert.rejects(datedSale(id,'2025-09-13',key),/STORE_SALE_IDEMPOTENCY_CONFLICT/);
+    assert.equal((await q('select stock from products where id=$1',[id]))[0].stock,4);
+    assert.equal(Number((await q('select count(*) n from order_payments where order_id=$1',[first.order_id]))[0].n),1);
+  });
+  test('invalid dates and future dates leave no sale or inventory change',async()=>{
+    const id=await product(),before=Number((await q('select count(*) n from orders'))[0].n);
+    for(const date of [null,'1899-12-31','9999-01-01'])await assert.rejects(datedSale(id,date),/STORE_SALE_DATE_INVALID/);
+    for(const date of ['2026-02-30','not-a-date'])await assert.rejects(datedSale(id,date));
+    assert.equal(Number((await q('select count(*) n from orders'))[0].n),before);assert.equal((await q('select stock from products where id=$1',[id]))[0].stock,5);
+    const grants=(await q("select has_function_privilege('anon','public.create_store_sale_dated_atomic(uuid,uuid,text,text,jsonb,jsonb,date)','execute') anon,has_function_privilege('authenticated','public.create_store_sale_dated_atomic(uuid,uuid,text,text,jsonb,jsonb,date)','execute') authenticated,has_function_privilege('service_role','public.create_store_sale_dated_atomic(uuid,uuid,text,text,jsonb,jsonb,date)','execute') service"))[0];assert.deepEqual(grants,{anon:false,authenticated:false,service:true});
+  });
   test('legacy exact-price request still uses the existing discount and snapshots',async()=>{
     const id=await product(),r=await sale(id);
     assert.equal(r.total,75);assert.equal(r.discount,25);assert.equal(r.payment_status,'paid');

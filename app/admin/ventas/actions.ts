@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
+import { validateStoreSaleDate } from "@/lib/store-sale-date";
 import {
   parseStoreSalePaymentAmount,
   parseStoreSaleUnitPrice,
@@ -110,6 +111,7 @@ export async function createStoreSaleAction(
 
     const items = readItems(formData);
     const payments = readPayments(formData);
+    const rawSaleDate = String(formData.get("saleDate") ?? "").trim();
 
     const sale = await createStoreSale({
       idempotencyKey,
@@ -118,6 +120,7 @@ export async function createStoreSaleAction(
       notes: String(formData.get("notes") ?? ""),
       items,
       payments,
+      ...(rawSaleDate ? { saleDate: validateStoreSaleDate(rawSaleDate) } : {}),
     });
     orderId = sale.order_id;
     const paymentStatus = sale.payment_status;

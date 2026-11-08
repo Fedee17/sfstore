@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ProductQuickActions } from "./product-quick-actions";
 
 import {
   CATALOG_ATTRIBUTE_KEYS,
@@ -201,6 +202,7 @@ export function ConsultationProductCard({
           </span>
         </div>
 
+        <ProductQuickActions id={product.id} name={product.name} price={product.price} special={product.transfer_price} available={product.status==="active"&&product.stock>0} />
         <div className="mt-4 grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
           <details className="group min-w-0 border border-[#8B5E3C]/15 bg-[#F7F4ED] px-3 py-2">
             <summary className="cursor-pointer select-none font-semibold text-[#8B5E3C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]">

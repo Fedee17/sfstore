@@ -6,6 +6,7 @@ import styles from "./whatsapp-floating-button.module.css";
 
 export function WhatsAppFloatingButton() {
   const pathname = usePathname();
+  if (pathname === "/admin" || pathname?.startsWith("/admin/")) return null;
   const purchaseFlow = pathname === "/carrito" || pathname === "/checkout" || pathname?.startsWith("/checkout/");
   if (purchaseFlow) return null;
   const href = buildWhatsAppUrl(

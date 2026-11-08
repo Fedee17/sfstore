@@ -22,6 +22,9 @@ Preparado localmente el 07/11/2026 en `codex/store-sale-repeat-and-price-2026110
 
 ## Orden necesario para publicar
 
+**Actualización 08/11:** el candidato incluye ahora fecha comercial de venta. Después de la migración de precio acordado es necesario aplicar también 202611080001_store_sale_commercial_date.sql antes del frontend. Ambas acciones requieren autorización específica; procedimiento y límites actualizados en [Fecha comercial de ventas](STORE-SALE-COMMERCIAL-DATE.md). Los lectores nuevos requieren la columna, no sólo la RPC.
+
+
 1. Con autorización expresa para base y despliegue, reconfirmar proyecto, main, deployment activo y ausencia de builds pendientes. Capturar definición, propietario y grants de `create_store_sale_atomic(uuid,uuid,text,text,jsonb,jsonb)` para recuperación; comprobar que el helper aún no exista y que el contrato actual coincida con los fragmentos exigidos por la migración. Detenerse si difiere.
 2. Aplicar exclusivamente `202611070001_store_sale_agreed_unit_prices.sql`. No aplicar el historial de staging ni semillas. Es DDL transaccional, sin backfills o modificación de ventas, catálogo o stock existentes. El formulario anterior sigue siendo compatible porque el precio acordado es opcional.
 3. Verificar definición, SECURITY INVOKER y EXECUTE exclusivo de service_role tanto en la transacción como en el helper. No crear una venta real como prueba.

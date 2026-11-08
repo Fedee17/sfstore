@@ -1,4 +1,5 @@
 "use client";
+import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
 
 import { MAX_UPLOAD_FILE_BYTES, assertUploadFormData, UploadLimitError } from "@/lib/uploads/limits";
 import imageCompression from "browser-image-compression";
@@ -693,6 +694,7 @@ export function ProductForm({
         }}
         className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm"
       >
+        <UnsavedChangesGuard enabled={actionState.status!=="success"}/>
         {product ? <input type="hidden" name="productId" value={product.id} /> : null}
         {connector ? <input type="hidden" name="connector" value={connector} /> : null}
 

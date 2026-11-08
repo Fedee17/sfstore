@@ -110,11 +110,11 @@ test('real local Supabase guest checkout and authorized manual payment', {
       const signed=await auth.auth.verifyOtp({type:'magiclink',token_hash:link.data.properties.hashed_token});assert.equal(signed.error,null);
       assert.equal((await auth.auth.getUser()).data.user.is_anonymous,false);
       const ctx=await browser.newContext();await ctx.addCookies(cookieJar.map(c=>({name:c.name,value:c.value,url:base,httpOnly:true,sameSite:'Lax'})));
-      const adminPage=await ctx.newPage();await adminPage.goto(base+'/admin/checkout');
+      const adminPage=await ctx.newPage();await adminPage.goto(base+'/admin/checkout?view=orders');
       const article=adminPage.locator('article').filter({has:adminPage.getByRole('heading',{name:order.orderNumber,exact:true})});
-      await article.getByLabel('Importe recibido completo').fill('150');await article.getByLabel('Referencia del cobro').fill('synthetic-local-credit-'+randomUUID());
+      await article.getByText('Revisar y acreditar pago',{exact:true}).click();await article.getByLabel('Importe recibido completo').fill('150');await article.getByLabel('Referencia del cobro').fill('synthetic-local-credit-'+randomUUID());
       await article.getByRole('checkbox').check();
-      const action=adminPage.waitForRequest(r=>r.method()==='POST'&&r.url()===base+'/admin/checkout'&&!!r.headers()['next-action']);
+      const action=adminPage.waitForRequest(r=>r.method()==='POST'&&new URL(r.url()).pathname==='/admin/checkout'&&!!r.headers()['next-action']);
       await article.getByRole('button',{name:'Acreditar pago manual',exact:true}).click();
       const request=await action;const actionRequest={headers:await request.allHeaders(),body:request.postDataBuffer()};
       // revalidatePath removes the paid order's form (including its success message).

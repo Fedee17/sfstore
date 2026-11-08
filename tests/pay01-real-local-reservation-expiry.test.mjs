@@ -44,7 +44,7 @@ test('real local reservation expiry: authorization, exactly-once, locks, concurr
     const actor=await auth.auth.getUser();assert.equal(actor.error,null);assert.equal(actor.data.user.id,adminId);assert.equal(actor.data.user.is_anonymous,false);
     const {chromium}=createRequire(import.meta.url)(process.env.SFSTORE_TEST_PLAYWRIGHT_MODULE);browser=await chromium.launch({headless:true,channel:'msedge'});
     adminContext=await browser.newContext();await adminContext.addCookies(jar.map(c=>({name:c.name,value:c.value,url:base,httpOnly:true,sameSite:'Lax'})));
-    adminPage=await adminContext.newPage();await adminPage.goto(base+'/admin/checkout');await adminPage.getByRole('heading',{name:'Pedidos web y pagos manuales'}).waitFor();await adminPage.getByRole('heading',{name:'Supervisión de reservas',exact:true}).waitFor();await adminPage.getByText('Ejecución automática preparada, no activada.',{exact:true}).waitFor();
+    adminPage=await adminContext.newPage();await adminPage.goto(base+'/admin/checkout?view=monitor');await adminPage.getByRole('heading',{name:'Pedidos web',exact:true}).waitFor();await adminPage.getByRole('heading',{name:'Control de reservas',exact:true}).waitFor();await adminPage.getByText('La ejecución automática no está activada.',{exact:true}).waitFor();
     publicContext=await browser.newContext();
     guest=createClient(url,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
     const signed=await guest.auth.signInAnonymously({options:{captchaToken:'XXXX.DUMMY.TOKEN.XXXX'}});assert.equal(signed.error,null);
@@ -60,8 +60,8 @@ test('real local reservation expiry: authorization, exactly-once, locks, concurr
         // Capture one real UI invocation after scripts settle. Replays use the
         // same authorized Server Action, with a stable APIResponse body.
         await adminPage.reload();await adminPage.waitForLoadState('networkidle');
-        const reply=adminPage.waitForResponse(r=>r.url()===base+'/admin/checkout'&&r.request().method()==='POST');
-        await adminPage.getByRole('button',{name:'Liberar reservas vencidas (hasta 100)',exact:true}).click();
+        const reply=adminPage.waitForResponse(r=>new URL(r.url()).pathname==='/admin/checkout'&&r.request().method()==='POST');
+        await adminPage.getByText('Liberar reservas vencidas manualmente',{exact:true}).click();await adminPage.getByRole('button',{name:'Liberar reservas vencidas (hasta 100)',exact:true}).click();
         const r=await reply;assert.equal(r.status(),200);capturedAction={request:r.request(),headers:await r.request().allHeaders(),body:r.request().postDataBuffer()};
       }
       const r=await adminContext.request.post(base+'/admin/checkout',{headers:capturedAction.headers,data:capturedAction.body});assert.equal(r.status(),200);
@@ -84,9 +84,9 @@ test('real local reservation expiry: authorization, exactly-once, locks, concurr
     await check('paid order remains protected after its pending-only timestamp reaches expiry',async()=>{
       // Timestamp is shortened before payment; no direct paid-order writes.
       assert.equal((await db.query("update checkout_operations set expires_at=clock_timestamp()+interval '8 seconds' where order_id=$1 and state='pending' returning order_id",[paid.id])).rowCount,1);
-      await adminPage.reload();const article=adminPage.locator('article').filter({has:adminPage.getByRole('heading',{name:paid.orderNumber,exact:true})});
-      await article.getByLabel('Importe recibido completo').fill('150');await article.getByLabel('Referencia del cobro').fill('synthetic-expiry-paid-'+randomUUID());await article.getByRole('checkbox').check();
-      const reply=adminPage.waitForResponse(r=>r.url()===base+'/admin/checkout'&&r.request().method()==='POST');await article.getByRole('button',{name:'Acreditar pago manual',exact:true}).click();assert.equal((await reply).status(),200);
+      await adminPage.reload();await adminPage.goto(base+'/admin/checkout?view=orders');const article=adminPage.locator('article').filter({has:adminPage.getByRole('heading',{name:paid.orderNumber,exact:true})});
+      await article.getByText('Revisar y acreditar pago',{exact:true}).click();await article.getByLabel('Importe recibido completo').fill('150');await article.getByLabel('Referencia del cobro').fill('synthetic-expiry-paid-'+randomUUID());await article.getByRole('checkbox').check();
+      const reply=adminPage.waitForResponse(r=>new URL(r.url()).pathname==='/admin/checkout'&&r.request().method()==='POST');await article.getByRole('button',{name:'Acreditar pago manual',exact:true}).click();assert.equal((await reply).status(),200);
       assert.equal((await snapshot(paid.id)).payment_status,'paid');
       const deadline=Date.now()+12000;while(Date.now()<deadline){if(Date.now()>new Date((await snapshot(paid.id)).expires_at).getTime())break;await new Promise(r=>setTimeout(r,250));}
       assert.ok(Date.now()>new Date((await snapshot(paid.id)).expires_at).getTime());const before=await stock();const r=await action();assert.equal(r.released,0);assert.equal(r.failures,0);assert.equal(await stock(),before);

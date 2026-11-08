@@ -1,4 +1,5 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { commercialDayBounds } from "@/lib/commercial-reporting/periods";
 
 export const INVENTORY_MOVEMENT_TYPES = [
   "purchase",
@@ -102,27 +103,32 @@ export async function adjustInventoryStock({
 }
 
 export async function listInventoryMovements(filters: {
+  page?: number;
   search?: string;
   productId?: string;
   type?: InventoryMovementType;
   from?: string;
   to?: string;
-}): Promise<{ data: InventoryMovement[] | null; error: string | null }> {
+}): Promise<{ data: InventoryMovement[] | null; error: string | null; total?: number }> {
   try {
+    const page = filters.page ?? 1;
+    if (!Number.isSafeInteger(page) || page < 1 || page > 1000000) throw new Error("Página inválida.");
+    if (filters.from && filters.to && filters.from > filters.to) throw new Error("La fecha Desde debe ser anterior a Hasta.");
     const supabase = getSupabaseAdminClient();
     let productIds: string[] | undefined;
 
     if (filters.search?.trim()) {
       const escaped = filters.search.trim().replaceAll("%", "\\%").replaceAll("_", "\\_");
-      const { data: products, error: productsError } = await supabase
+      const { data: products, error: productsError, count: productCount } = await supabase
         .from("products")
-        .select("id")
+        .select("id", {count:"exact"})
         .eq("historical_identity", false)
         .or(`name.ilike.%${escaped}%,slug.ilike.%${escaped}%,sku.ilike.%${escaped}%`);
 
       if (productsError) {
         throw new Error(productsError.message);
       }
+      if(productCount!==products?.length)throw new Error("La búsqueda tiene demasiados productos. Acotá el nombre o SKU.");
 
       productIds = (products ?? []).map((product) => String(product.id));
 
@@ -149,9 +155,10 @@ export async function listInventoryMovements(filters: {
         products (id, name, slug, sku),
         purchases (id, supplier_name_snapshot),
         orders (id, order_number)
-      `)
+      `, {count:"exact"})
       .order("created_at", { ascending: false })
-      .limit(200);
+      .order("id", { ascending: false })
+      .range((page-1)*50,page*50-1);
 
     if (filters.productId) {
       query = query.eq("product_id", filters.productId);
@@ -164,18 +171,19 @@ export async function listInventoryMovements(filters: {
     }
 
     if (filters.from) {
-      query = query.gte("created_at", `${filters.from}T00:00:00.000Z`);
+      query = query.gte("created_at", commercialDayBounds(filters.from).startInclusive);
     }
 
     if (filters.to) {
-      query = query.lt("created_at", `${filters.to}T23:59:59.999Z`);
+      query = query.lt("created_at", commercialDayBounds(filters.to).endExclusive);
     }
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) {
       throw new Error(error.message);
     }
+    if(count==null || data?.length!==Math.min(50,Math.max(0,count-(page-1)*50)))throw new Error("No se pudo recuperar la página completa de movimientos. Reintentá la consulta.");
 
     return {
       data: ((data ?? []) as unknown as InventoryMovementRow[]).map((row) => ({
@@ -185,6 +193,7 @@ export async function listInventoryMovements(filters: {
         orders: firstRelation(row.orders),
       })),
       error: null,
+      total: count,
     };
   } catch (error) {
     return {

@@ -243,6 +243,18 @@
       "stagingFile": "staging/supabase/migrations/202610300001_public_attribute_boundary.sql",
       "sourceSha256": "101058fbedb909581e21d858db0cf4ba57f6e9ec0c3cca7f9e767f825b294675",
       "stagingSha256": "101058fbedb909581e21d858db0cf4ba57f6e9ec0c3cca7f9e767f825b294675"
+    },
+    {
+      "source": "supabase/migrations/202611070001_store_sale_agreed_unit_prices.sql",
+      "stagingFile": "staging/supabase/migrations/202611070001_store_sale_agreed_unit_prices.sql",
+      "sourceSha256": "21e2fedadc3ddbff4e46f1ca60da81609fbc7fcaf5c1d9d5f8eb495781c6ee9d",
+      "stagingSha256": "21e2fedadc3ddbff4e46f1ca60da81609fbc7fcaf5c1d9d5f8eb495781c6ee9d"
+    },
+    {
+      "source": "supabase/migrations/202611080001_store_sale_commercial_date.sql",
+      "stagingFile": "staging/supabase/migrations/202611080001_store_sale_commercial_date.sql",
+      "sourceSha256": "260353f0f8e0e07e147a139c618040f39d25c36c7ba3a55b3b8dc44d5acc93b7",
+      "stagingSha256": "260353f0f8e0e07e147a139c618040f39d25c36c7ba3a55b3b8dc44d5acc93b7"
     }
   ]
 }

@@ -10,6 +10,7 @@ const root=new URL('../../',import.meta.url);
 let activeHarness=null;
 const hooks={...React,useEffect:()=>{},useRef:v=>({current:v}),useState:v=>{if(!activeHarness)return [typeof v==='function'?v():v,()=>{}];const h=activeHarness;const i=h.cursor++;if(!(i in h.values))h.values[i]=typeof v==='function'?v():v;return [h.values[i],next=>{h.values[i]=typeof next==='function'?next(h.values[i]):next}];},useActionState:()=>[{status:'idle',message:''},()=>{},false]};
 const mocks={
+ '@/components/admin/unsaved-changes-guard':{UnsavedChangesGuard:()=>null},
  'react':hooks,'react/jsx-runtime':jsx,
  'next/navigation':{useRouter:()=>({refresh(){}})},
  'next/link':{default:({children,...props})=>React.createElement('a',props,children)},

@@ -21,17 +21,35 @@ export async function releaseExpiredCheckoutReservations() {
   if (error || !data) throw new Error("No se pudieron liberar las reservas vencidas.");
   return data as { released: number; failures: { orderId: string; code: string }[] };
 }
-export type AdminCheckoutRow = { order_id: string; operation_key: string; state: string; expires_at: string; buyer_id:string; payment_status:string; report?:{status:string;reported_at:string;rejection_reason?:string;overdue:boolean}; history:{event:string;created_at:string;details:Record<string,unknown>}[]; result: { orderNumber: string; total: number; paymentMethod?: string } };
-export async function listManualCheckoutOrders(page=0) {
+export type AdminCheckoutRow = { order_id: string; operation_key: string; state: string; expires_at: string; buyer_id:string; payment_status:string; customer?:{name:string|null;phone:string|null}; items?:{product_name:string;quantity:number}[]; report?:{status:string;reported_at:string;rejection_reason?:string;overdue:boolean}; history:{event:string;created_at:string;details:Record<string,unknown>}[]; result: { orderNumber: string; total: number; paymentMethod?: string } };
+export async function listManualCheckoutOrders(page=0,pendingOnly=false) {
   await requireAdminActionSession();
-  const { data, error } = await getSupabaseAdminClient().from("checkout_operations")
-    .select("order_id,buyer_id,state,expires_at,result").order("state",{ascending:false}).order("created_at",{ ascending: true }).range(page*100,page*100+99);
+  if(!Number.isSafeInteger(page)||page<0||page>10000)throw new Error("Página inválida.");
+  const client=getSupabaseAdminClient();
+  let pendingIds:string[]|null=null;
+  if(pendingOnly){
+    const result=await client.from("checkout_payment_reports").select("order_id",{count:"exact"}).eq("status","pending").order("reported_at").order("order_id").range(page*100,page*100+99);
+    if(result.error||result.count===null||result.data?.length!==Math.min(100,Math.max(0,result.count-page*100)))throw new Error("No se pudo completar la consulta de avisos pendientes.");
+    pendingIds=result.data.map(row=>row.order_id);
+    if(!pendingIds.length)return [];
+  }
+  let query=client.from("checkout_operations").select("order_id,buyer_id,state,expires_at,result").order("state",{ascending:false}).order("created_at",{ascending:true}).order("order_id");
+  if(pendingIds)query=query.in("order_id",pendingIds);
+  const offset=pendingIds?0:page*100;
+  const { data, error } = await query.range(offset,offset+99);
   if (error) throw new Error("No se pudieron leer los pedidos web.");
-  const client=getSupabaseAdminClient();const ids=(data??[]).map(row=>row.order_id);
+  if(pendingIds&&data?.length!==pendingIds.length)throw new Error("Los avisos cambiaron durante la consulta. Recargá la bandeja.");
+  const ids=(data??[]).map(row=>row.order_id);
   if(!ids.length)return [];
-  const [reports,audit,policy,payments]=await Promise.all([client.from("checkout_payment_reports").select("order_id,status,reported_at,rejection_reason").in("order_id",ids),client.from("checkout_audit").select("order_id,event,created_at,details").in("order_id",ids).order("created_at",{ascending:false}).limit(1000),client.from("checkout_reservation_policy").select("review_hours").eq("id",true).single(),client.from("orders").select("id,payment_status").in("id",ids)]);
+  const [reports,audit,policy,payments]=await Promise.all([client.from("checkout_payment_reports").select("order_id,status,reported_at,rejection_reason").in("order_id",ids),client.from("checkout_audit").select("order_id,event,created_at,details").in("order_id",ids).order("created_at",{ascending:false}).limit(1000),client.from("checkout_reservation_policy").select("review_hours").eq("id",true).single(),client.from("orders").select("id,payment_status,customers(full_name,phone),order_items(product_name,quantity)").in("id",ids)]);
   if(reports.error||audit.error||policy.error||payments.error)throw new Error("No se pudo leer la auditoría del checkout.");
-  return (data??[]).map(row=>{const report=reports.data?.find(r=>r.order_id===row.order_id);return {...row,payment_status:payments.data?.find(p=>p.id===row.order_id)?.payment_status??"pending",operation_key:crypto.randomUUID(),report:report?{...report,overdue:report.status==="pending"&&Date.parse(report.reported_at)<Date.now()-policy.data.review_hours*3600000}:undefined,history:(audit.data??[]).filter(a=>a.order_id===row.order_id)};}) as AdminCheckoutRow[];
+  return (data??[]).map(row=>{
+    const report=reports.data?.find(r=>r.order_id===row.order_id);
+    const detail=payments.data?.find(p=>p.id===row.order_id);
+    if(!detail)throw new Error("No se pudo completar el detalle del pedido.");
+    const customer=Array.isArray(detail.customers)?detail.customers[0]:detail.customers;
+    return {...row,payment_status:detail.payment_status,customer:{name:customer?.full_name??null,phone:customer?.phone??null},items:detail.order_items??[],operation_key:crypto.randomUUID(),report:report?{...report,overdue:report.status==="pending"&&Date.parse(report.reported_at)<Date.now()-policy.data.review_hours*3600000}:undefined,history:(audit.data??[]).filter(a=>a.order_id===row.order_id)};
+  }) as AdminCheckoutRow[];
 }
 
 export async function listShippingQuotationRequests() {

@@ -1,4 +1,6 @@
 "use client";
+import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { commercialDate } from "@/lib/commercial-reporting/periods";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -51,24 +53,29 @@ function newPayment(): PaymentLine {
   return { key: crypto.randomUUID(), method: "cash", amount: "" };
 }
 
-export function StoreSaleForm({ products, recipes = [] }: { products: StoreSaleProduct[]; recipes?: ComponentRecipe[] }) {
+export function StoreSaleForm({ products, recipes = [], initialProductId, initialSaleDate }: { products: StoreSaleProduct[]; recipes?: ComponentRecipe[]; initialProductId?:string; initialSaleDate?:string }) {
   const [version, setVersion] = useState(0);
   const router = useRouter();
-  return <StoreSaleEntryForm key={version} products={products} recipes={recipes} onNextSale={() => {
+  return <StoreSaleEntryForm key={version} products={products} recipes={recipes} initialSaleDate={initialSaleDate} initialProductId={version===0?initialProductId:undefined} onNextSale={() => {
     router.refresh();
     setVersion(current => current + 1);
   }} />;
 }
 
-function StoreSaleEntryForm({ products, recipes, onNextSale }: { products: StoreSaleProduct[]; recipes: ComponentRecipe[]; onNextSale: () => void }) {
+function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, initialSaleDate }: { products: StoreSaleProduct[]; recipes: ComponentRecipe[]; onNextSale: () => void; initialProductId?:string; initialSaleDate?:string }) {
   const [state, action] = useActionState(createStoreSaleAction, initialState);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [lines, setLines] = useState<SaleLine[]>([]);
+  const [lines, setLines] = useState<SaleLine[]>(()=>{
+    const product=products.find(product=>product.id===initialProductId&&product.stock>0&&Number(product.price)>0);
+    return product?[{product,quantity:1}]:[];
+  });
   const [componentError, setComponentError] = useState("");
   const [payments, setPayments] = useState<PaymentLine[]>([newPayment()]);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const quantityRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const today = initialSaleDate ?? commercialDate(new Date().toISOString());
+  const [saleDate, setSaleDate] = useState(today);
 
   const choices = useMemo(() => [...products, ...recipes.flatMap(recipe => (["cc", "lightning"] as const).map(connector => {
     const parts = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
@@ -148,7 +155,14 @@ function StoreSaleEntryForm({ products, recipes, onNextSale }: { products: Store
 
   return (
     <form action={action} className="mt-8 grid gap-6">
+      <UnsavedChangesGuard enabled={!completed} dirty={lines.length>0 || payments.some(payment=>Boolean(payment.amount))}/>
       <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
+
+      <section className="rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
+        <label className="grid max-w-xs gap-2 text-sm font-semibold">Fecha de venta<input type="date" name="saleDate" value={saleDate} onChange={event=>setSaleDate(event.target.value)} min="1900-01-01" max={today} required disabled={completed} className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-white px-4"/></label>
+        <p className="mt-3 text-sm text-[#1F1F1F]/65">Elegí el día en que vendiste. El historial y los gráficos usarán esa fecha; la fecha de carga quedará registrada por separado.</p>
+        {saleDate<today?<p role="note" className="mt-3 text-sm font-semibold text-[#8B5E3C]">Carga atrasada: comprobá que no la hayas registrado antes. Se descontará el stock actual al confirmar; no se reconstruyen costos históricos ni fechas de cobro.</p>:null}
+      </section>
 
       <section className="rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
         <h2 className="text-xl font-semibold">Productos</h2>

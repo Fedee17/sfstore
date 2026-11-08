@@ -128,5 +128,5 @@ test("supplier forms expose pending and visible success or error feedback", () =
 
 test("admin navigation includes suppliers next to purchases", () => {
   const navigation = source("components", "admin", "admin-nav.tsx");
-  assert.match(navigation, /\/admin\/compras[\s\S]+\/admin\/proveedores[\s\S]+\/admin\/productos/);
+  assert.match(navigation, /label:"Compras",links:\[\["\/admin\/compras","Compras"\],\["\/admin\/proveedores","Proveedores"\]/);
 });

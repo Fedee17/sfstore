@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AdminNav } from "@/components/admin/admin-nav";
+import { InventoryAvailability } from "@/components/admin/inventory-availability";
 import {
   GetNavigationForm,
   GetNavigationSubmitButton,
@@ -25,6 +26,7 @@ const movementLabels: Record<InventoryMovementType, string> = {
 };
 
 const dateFormatter = new Intl.DateTimeFormat("es-AR", {
+  timeZone: "America/Argentina/Buenos_Aires",
   dateStyle: "short",
   timeStyle: "short",
 });
@@ -74,7 +76,13 @@ export default async function AdminInventoryPage({
   const from = getParam(params, "from").trim();
   const to = getParam(params, "to").trim();
   const type = isMovementType(typeParam) ? typeParam : undefined;
+  const view = getParam(params, "view") === "movements" || Boolean(product || type || from || to) ? "movements" : "availability";
+  const tabs = <nav aria-label="Inventario" className="mt-6 flex flex-wrap gap-3">{[["availability","Disponibilidad y reposición"],["movements","Movimientos"]].map(([key,label])=><Link key={key} href={key==="movements"?"/admin/inventario?view=movements":"/admin/inventario"} aria-current={view===key?"page":undefined} className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold ${view===key?"bg-[#556B2F] text-white":"bg-white"}`}>{label}</Link>)}</nav>;
+  if (view === "availability") return <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]"><AdminNav/><section className="mx-auto max-w-7xl px-5 py-10 sm:px-8"><h1 className="text-3xl font-semibold sm:text-4xl">Inventario</h1>{tabs}<InventoryAvailability search={search} stock={getParam(params,"stock")}/></section></main>;
+  const rawPage=Number(getParam(params,"page")||1);
+  const page=Number.isSafeInteger(rawPage)&&rawPage>0&&rawPage<=1000000?rawPage:1;
   const result = await listInventoryMovements({
+    page,
     search: search || undefined,
     productId: product || undefined,
     type,
@@ -83,6 +91,7 @@ export default async function AdminInventoryPage({
   });
   const movements = result.data ?? [];
   const hasFilters = Boolean(search || product || type || from || to);
+  function pageHref(next:number){const query=new URLSearchParams({view:"movements",page:String(next)});for(const [key,value] of Object.entries({search,product,type,from,to}))if(value)query.set(key,value);return `/admin/inventario?${query}`;}
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -92,12 +101,14 @@ export default async function AdminInventoryPage({
           Admin
         </p>
         <h1 className="mt-3 text-4xl font-semibold">Inventario</h1>
+        {tabs}
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#1F1F1F]/60">
           El stock del producto es el saldo operativo actual. Este historial refleja
           los movimientos realmente registrados; no reconstruye cambios anteriores.
         </p>
 
         <GetNavigationForm className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
+          <input type="hidden" name="view" value="movements" />
           {product ? <input type="hidden" name="product" value={product} /> : null}
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5 xl:items-end">
             <label className="grid gap-2 xl:col-span-2">
@@ -160,7 +171,7 @@ export default async function AdminInventoryPage({
             </GetNavigationSubmitButton>
             {hasFilters ? (
               <Link
-                href="/admin/inventario"
+                href="/admin/inventario?view=movements"
                 className="flex h-12 items-center rounded-2xl border border-[#8B5E3C]/30 px-6 text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C]"
               >
                 Limpiar
@@ -175,23 +186,23 @@ export default async function AdminInventoryPage({
           </p>
         ) : null}
 
-        <div className="mt-6 flex flex-wrap gap-3 text-sm text-[#1F1F1F]/60">
+        {!result.error ? <div className="mt-6 flex flex-wrap gap-3 text-sm text-[#1F1F1F]/60">
           <span className="rounded-full border border-[#8B5E3C]/15 bg-white/60 px-4 py-2">
             {movements.length} movimiento{movements.length === 1 ? "" : "s"}
           </span>
           <span className="rounded-full border border-[#8B5E3C]/15 bg-white/60 px-4 py-2">
-            Se muestran hasta 200 movimientos recientes
+            Página {page} · hasta 50 movimientos por página
           </span>
-        </div>
+        </div> : null}
 
-        {movements.length === 0 ? (
+        {!result.error && movements.length === 0 ? (
           <div className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-8 text-center shadow-sm">
             <h2 className="text-2xl font-semibold">Sin movimientos</h2>
             <p className="mt-3 text-sm text-[#1F1F1F]/60">
               No hay movimientos registrados con estos filtros.
             </p>
           </div>
-        ) : (
+        ) : result.error ? null : (
           <div className="mt-8 grid gap-3">
             {movements.map((movement) => (
               <article
@@ -235,6 +246,7 @@ export default async function AdminInventoryPage({
             ))}
           </div>
         )}
+        {!result.error ? <nav aria-label="Paginación de movimientos" className="mt-6 flex flex-wrap gap-4 text-sm font-semibold">{page>1?<Link className="inline-flex min-h-11 items-center underline" href={pageHref(page-1)}>Anterior</Link>:null}{page*50<(result.total??0)?<Link className="inline-flex min-h-11 items-center underline" href={pageHref(page+1)}>Siguiente</Link>:null}</nav>:null}
       </section>
     </main>
   );

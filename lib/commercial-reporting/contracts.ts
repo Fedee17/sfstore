@@ -3,6 +3,7 @@ export type Money = string | number;
 export type Origin = "physical_historical" | "physical_current" | "online" | "other";
 export type DateQuality = "recorded" | "source_date" | "imputed" | "unknown";
 export type OrderRow = {
+  store_sale_date?: string | null;
   id: string; order_number?: string; channel: string; status: string; payment_status: string;
   historical_import: boolean; historical_occurred_on: string | null;
   affects_inventory: boolean; created_at: string;

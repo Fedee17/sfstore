@@ -1,5 +1,6 @@
 ﻿import { AdminNav } from "@/components/admin/admin-nav";
 import Link from "next/link";
+import { catalogIssues, LOW_STOCK_LIMIT } from "@/lib/admin/catalog-review";
 
 import {
   GetNavigationForm,
@@ -20,7 +21,6 @@ import {
 } from "./actions";
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
-const LOW_STOCK_LIMIT = 3;
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -45,6 +45,9 @@ function buildProductsUrl(params: {
   status: string;
   stock: string;
   featured: string;
+  view?: string;
+  review?: string;
+  page?: string;
 }) {
   const query = new URLSearchParams();
 
@@ -200,9 +203,12 @@ export default async function AdminProductsPage({
     status: getParam(params, "status").trim(),
     stock: getParam(params, "stock").trim(),
     featured: getParam(params, "featured").trim(),
+    view: getParam(params,"view")==="details"?"details":"",
+    review: getParam(params,"review")==="incomplete"?"incomplete":"",
   };
   const productsPath = buildProductsUrl(selectedFilters);
   const productsFilters: AdminProductFilters = {
+    requireComplete: true,
     search: selectedFilters.search || undefined,
     category: selectedFilters.category || undefined,
     status: PRODUCT_STATUSES.includes(
@@ -221,9 +227,12 @@ export default async function AdminProductsPage({
     getAdminProductPublications(productsFilters),
     getAdminCategories(),
   ]);
-  const products = productsResult.data ?? [];
+  const products = (productsResult.data ?? []).filter(product=>!selectedFilters.review || catalogIssues(product).length>0);
+  const rawPage=Number(getParam(params,"page")||1);
+  const page=Number.isSafeInteger(rawPage)&&rawPage>0&&rawPage<=1000000?rawPage:1;
+  const pageProducts=products.slice((page-1)*40,page*40);
   const categories = categoriesResult.data ?? [];
-  const isFiltered = hasActiveFilters(productsFilters);
+  const isFiltered = hasActiveFilters(productsFilters) || Boolean(selectedFilters.review);
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -267,6 +276,7 @@ export default async function AdminProductsPage({
         ) : null}
 
         <GetNavigationForm className="mt-8 overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
+          {selectedFilters.view?<input type="hidden" name="view" value="details"/>:null}
           <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <label className="grid min-w-0 gap-2">
               <span className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
@@ -364,9 +374,12 @@ export default async function AdminProductsPage({
               </select>
             </label>
           </div>
+          <label className="mt-4 flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" name="review" value="incomplete" defaultChecked={Boolean(selectedFilters.review)}/> Sólo productos con foto, precio o costo pendientes</label>
         </GetNavigationForm>
 
-        <div className="mt-5 flex min-w-0 flex-wrap gap-3 text-sm text-[#1F1F1F]/60">
+        <nav aria-label="Presentación del catálogo" className="mt-5 flex flex-wrap gap-4 text-sm font-semibold">{[["","Lista compacta"],["details","Detalle y ajustes"]].map(([view,label])=><Link key={view} aria-current={selectedFilters.view===view?"page":undefined} className="inline-flex min-h-11 items-center rounded-full border border-[#8B5E3C]/25 px-4" href={buildProductsUrl({...selectedFilters,view})}>{label}</Link>)}</nav>
+
+        {!productsResult.error ? <div className="mt-5 flex min-w-0 flex-wrap gap-3 text-sm text-[#1F1F1F]/60">
           <span className="break-words rounded-full border border-[#8B5E3C]/15 bg-white/60 px-4 py-2">
             {products.length} producto{products.length === 1 ? "" : "s"}
           </span>
@@ -382,22 +395,26 @@ export default async function AdminProductsPage({
           <span className="break-words rounded-full border border-[#8B5E3C]/15 bg-white/60 px-4 py-2">
             Sin stock: {products.filter((product) => product.stock <= 0).length}
           </span>
-        </div>
+        </div> : null}
 
-        {products.length === 0 ? (
+        {productsResult.error ? null : products.length === 0 ? (
           <div className="mt-8 overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-8 text-center shadow-sm">
             <h2 className="break-words text-2xl font-semibold">
-              {isFiltered ? "Sin resultados" : "Sin productos en Supabase"}
+              {isFiltered ? "Sin resultados" : "Sin productos"}
             </h2>
             <p className="mx-auto mt-3 max-w-xl break-words text-sm leading-6 text-[#1F1F1F]/60">
               {isFiltered
                 ? "No encontramos productos con esos filtros. Proba ajustar la busqueda."
-                : "Todavia no hay productos cargados en Supabase. El catalogo publico sigue usando data/products.ts temporalmente."}
+                : "Todavía no hay productos disponibles en este listado."}
             </p>
           </div>
-        ) : (
+        ) : selectedFilters.view!=="details" ? <div className="mt-6 grid gap-2">{pageProducts.map(product=><article key={product.id} className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+          <div className="flex min-w-0 items-center gap-3"><ProductThumbnail product={product}/><div className="min-w-0"><h2 className="break-words font-semibold">{product.name}</h2><p className="break-words text-xs text-black/60">{product.sku||"Sin SKU"} · {product.status}{product.component_offer?" · Combo":""}</p>{catalogIssues(product).length?<p className="mt-1 text-xs font-semibold text-[#8B5E3C]">{catalogIssues(product).join(" · ")}</p>:null}</div></div>
+          <div className="text-sm"><p>Lista: <strong>{formatMoney(product.price)}</strong></p><p>{product.component_offer?"Disponible":"Stock"}: <strong>{product.stock}</strong></p></div>
+          <Link href={`/admin/productos/${product.id}/editar`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#556B2F]/30 px-4 text-sm font-semibold text-[#465826]">Editar</Link>
+        </article>)}</div> : (
           <div className="mt-8 grid min-w-0 gap-4">
-            {products.map((product) => {
+            {pageProducts.map((product) => {
               const stockState = getStockState(product.stock);
               const marginBasePrice = product.transfer_price ?? product.price;
 
@@ -556,6 +573,7 @@ export default async function AdminProductsPage({
             })}
           </div>
         )}
+        {!productsResult.error ? <nav aria-label="Paginación de productos" className="mt-6 flex flex-wrap gap-4 text-sm font-semibold">{page>1?<Link className="inline-flex min-h-11 items-center underline" href={buildProductsUrl({...selectedFilters,page:String(page-1)})}>Anterior</Link>:null}{page*40<products.length?<Link className="inline-flex min-h-11 items-center underline" href={buildProductsUrl({...selectedFilters,page:String(page+1)})}>Siguiente</Link>:null}</nav>:null}
       </section>
     </main>
   );

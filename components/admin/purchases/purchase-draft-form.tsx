@@ -1,4 +1,5 @@
 "use client";
+import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
 
 import { useMemo, useRef, useState, useTransition } from "react";
 
@@ -175,6 +176,7 @@ export function PurchaseDraftForm({
 
   return (
     <form action={savePurchaseDraftAction} className="mt-8 grid gap-6">
+      <UnsavedChangesGuard revision={JSON.stringify([lines,shippingCost])}/>
       {purchase ? <input type="hidden" name="purchaseId" value={purchase.id} /> : null}
 
       <section className="grid gap-4 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm md:grid-cols-2">

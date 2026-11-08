@@ -6,6 +6,13 @@ import { COMMERCIAL_EVIDENCE } from "@/lib/commercial-reporting/evidence";
 import { readCommercialMonth } from "@/lib/commercial-reporting/reader";
 import { createCommercialPageReader } from "@/lib/commercial-reporting/postgrest";
 import type { MonthReport } from "@/lib/commercial-reporting/contracts";
+import { buildCommercialDay } from "@/lib/commercial-reporting/daily";
+import { commercialDate, sourceDate } from "@/lib/commercial-reporting/periods";
+
+export async function getCommercialDay(day = commercialDate(new Date().toISOString())) {
+  sourceDate(day);
+  return buildCommercialDay(await getCommercialMonth(day.slice(0, 7)), day);
+}
 
 /** No route or Server Action: authorized server consumers only.
  * Guard BEFORE constructing the privileged client. No cross-user caching. */
@@ -34,4 +41,16 @@ export async function getCommercialAnalytics(month: string) {
   const { readCompleteSnapshot } = await import("@/lib/commercial-reporting/reader");
   const snapshot = await readCompleteSnapshot(createCommercialPageReader(getSupabaseAdminClient()));
   return buildCommercialAnalytics(snapshot, month, COMMERCIAL_EVIDENCE);
+}
+
+/** One complete read for the sales dashboard and its filtered/paginated history. */
+export async function getSalesWorkspace(options: import("@/lib/commercial-reporting/list-reader").CommercialListOptions, month: string) {
+  await requireAdminSession();
+  const { validateMonth } = await import("@/lib/commercial-reporting/periods");
+  const { normalizeListOptions } = await import("@/lib/commercial-reporting/list-reader");
+  validateMonth(month); normalizeListOptions(options);
+  const { readCompleteSnapshot } = await import("@/lib/commercial-reporting/reader");
+  const { buildSalesWorkspace } = await import("@/lib/admin/sales-workspace");
+  const snapshot = await readCompleteSnapshot(createCommercialPageReader(getSupabaseAdminClient()));
+  return buildSalesWorkspace(snapshot, options, month, COMMERCIAL_EVIDENCE);
 }

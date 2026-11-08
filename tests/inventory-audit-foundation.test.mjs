@@ -96,7 +96,7 @@ test("history exposes existing purchase and sale references without inventing mo
 });
 
 test("admin navigation and product history links expose Inventory", () => {
-  assert.match(navigation, /href: "\/admin\/inventario", label: "Inventario"/);
+  assert.match(navigation, /\/admin\/inventario.*Disponibilidad y reposición/);
   assert.match(adjustmentForm, /\/admin\/inventario\?product=/);
   assert.match(productForm, /\/admin\/inventario\?product=/);
 });

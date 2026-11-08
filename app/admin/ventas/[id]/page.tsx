@@ -1,6 +1,8 @@
 import { HistoricalDetail } from "@/components/admin/commercial-history-ui";
 import { getHistoricalCommercialRecord } from "@/services/commercial-history";
 import Link from "next/link";
+import {safeHistoryReturnPath} from "@/lib/admin/history-navigation";
+import {displayDate} from "@/components/admin/commercial-history-ui";
 import { notFound } from "next/navigation";
 
 import { AdminNav } from "@/components/admin/admin-nav";
@@ -10,15 +12,16 @@ import { getStoreSaleDisplayName } from "@/lib/store-sales";
 import { getStoreSaleById } from "@/services/store-sales";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 });
-const dateFormatter = new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short" });
+const dateFormatter = new Intl.DateTimeFormat("es-AR", { timeZone:"America/Argentina/Buenos_Aires", dateStyle: "short", timeStyle: "short" });
 const methodLabels: Record<string, string> = {
   debit: "Débito", credit: "Crédito", qr: "QR", cash: "Efectivo", transfer: "Transferencia", card: "Tarjeta", other: "Otro", mercadopago: "Mercado Pago" };
 
-export default async function StoreSaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StoreSaleDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams?:Promise<{returnTo?:string}> }) {
   await requireAdminSession();
   const { id } = await params;
+  const returnTo=safeHistoryReturnPath((await searchParams)?.returnTo,"sales");
   const historical = await getHistoricalCommercialRecord("sales",id);
-  if(historical.sale) return <HistoricalDetail sale={historical.sale}/>;
+  if(historical.sale) return <HistoricalDetail sale={historical.sale} returnTo={returnTo}/>;
   const sale = await getStoreSaleById(id);
   if (!sale) notFound();
 
@@ -35,26 +38,27 @@ export default async function StoreSaleDetailPage({ params }: { params: Promise<
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
       <AdminNav />
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-        <Link href="/admin/ventas" className="text-sm font-semibold text-[#8B5E3C]">Volver a ventas</Link>
+        <Link href={returnTo} className="text-sm font-semibold text-[#8B5E3C]">Volver a ventas</Link>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-4xl font-semibold">{displayName}</h1>
             <p className="mt-2 text-sm text-[#1F1F1F]/60">Venta {sale.order_number}</p>
-            <p className="mt-1 text-sm text-[#1F1F1F]/60">{customerName} · {dateFormatter.format(new Date(sale.created_at))}</p>
+            <p className="mt-1 text-sm text-[#1F1F1F]/60">{customerName} · {sale.store_sale_date?`Venta del ${displayDate(sale.store_sale_date)}`:dateFormatter.format(new Date(sale.created_at))}</p>
+            {sale.store_sale_date?<p className="mt-2 text-xs text-[#1F1F1F]/60">Cargada el {dateFormatter.format(new Date(sale.created_at))}. {sale.metadata?.store_sale_backdated===true?"El costo histórico no se reconstruyó; el cobro y el movimiento conservan su fecha de registro.":""}</p>:null}
           </div>
           <span className="rounded-full bg-[#556B2F]/10 px-4 py-2 text-sm font-semibold text-[#556B2F]">{sale.payment_status}</span>
         </div>
 
         <section className="mt-8 overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 shadow-sm">
-          <div className="grid grid-cols-[minmax(0,1fr)_5rem_8rem_9rem] gap-3 border-b border-[#8B5E3C]/15 px-5 py-3 text-xs font-semibold uppercase text-[#1F1F1F]/55">
+          <div className="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_5rem_8rem_9rem] gap-3 border-b border-[#8B5E3C]/15 px-5 py-3 text-xs font-semibold uppercase text-[#1F1F1F]/55">
             <span>Producto</span><span>Cant.</span><span>Precio</span><span>Subtotal</span>
           </div>
           {sale.order_items.map((item) => (
-            <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_5rem_8rem_9rem] gap-3 border-b border-[#8B5E3C]/10 px-5 py-4 text-sm last:border-0">
+            <div key={item.id} className="grid min-w-0 grid-cols-1 sm:grid-cols-[minmax(0,1fr)_5rem_8rem_9rem] gap-3 border-b border-[#8B5E3C]/10 px-5 py-4 text-sm last:border-0">
               <span className="min-w-0 break-words font-semibold">{item.product_name}<span className="mt-1 block text-xs font-normal">Costo unitario al vender: {item.unit_cost_snapshot == null ? "Sin costo registrado" : currencyFormatter.format(Number(item.unit_cost_snapshot))}</span></span>
-              <span>{item.quantity}</span>
-              <span>{currencyFormatter.format(Number(item.unit_price))}</span>
-              <strong>{currencyFormatter.format(Number(item.subtotal))}</strong>
+              <span><span className="sm:sr-only">Cantidad: </span>{item.quantity}</span>
+              <span><span className="sm:sr-only">Precio: </span>{currencyFormatter.format(Number(item.unit_price))}</span>
+              <strong><span className="sm:sr-only">Subtotal: </span>{currencyFormatter.format(Number(item.subtotal))}</strong>
             </div>
           ))}
         </section>

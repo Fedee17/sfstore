@@ -1,6 +1,7 @@
 import { HistoricalDetail } from "@/components/admin/commercial-history-ui";
 import { getHistoricalCommercialRecord } from "@/services/commercial-history";
 import Link from "next/link";
+import {safeHistoryReturnPath} from "@/lib/admin/history-navigation";
 import { notFound } from "next/navigation";
 
 import { cancelPurchaseDraftAction } from "@/app/admin/compras/actions";
@@ -27,13 +28,14 @@ const statusLabels = {
   cancelled: "Cancelada",
 };
 
-type PurchaseDetailPageProps = { params: Promise<{ id: string }> };
+type PurchaseDetailPageProps = { params: Promise<{ id: string }>; searchParams?:Promise<{returnTo?:string}> };
 
-export default async function PurchaseDetailPage({ params }: PurchaseDetailPageProps) {
+export default async function PurchaseDetailPage({ params, searchParams }: PurchaseDetailPageProps) {
   await requireAdminSession();
   const { id } = await params;
+  const returnTo=safeHistoryReturnPath((await searchParams)?.returnTo,"purchases");
   const historical = await getHistoricalCommercialRecord("purchases",id);
-  if(historical.purchase) return <HistoricalDetail purchase={historical.purchase}/>;
+  if(historical.purchase) return <HistoricalDetail purchase={historical.purchase} returnTo={returnTo}/>;
   const purchase = await getPurchaseById(id);
 
   if (!purchase) {
@@ -48,7 +50,7 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
       <AdminNav />
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-        <Link href="/admin/compras" className="text-sm font-semibold text-[#8B5E3C]">Volver a compras</Link>
+        <Link href={returnTo} className="text-sm font-semibold text-[#8B5E3C]">Volver a compras</Link>
         <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">{statusLabels[purchase.status]}</p>

@@ -94,6 +94,7 @@ export type AdminCategory = {
 };
 
 export type AdminProductFilters = {
+  requireComplete?: boolean;
   search?: string;
   category?: string;
   status?: string;
@@ -292,7 +293,7 @@ export async function getAdminProducts(
           sort_order,
           is_primary
         )
-      `,
+      `, filters.requireComplete ? { count: "exact" } : undefined,
       )
       .eq("historical_identity", false)
       .neq("id", YARA_ROSA.archivedId)
@@ -327,10 +328,14 @@ export async function getAdminProducts(
       query = query.eq("featured", true);
     }
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    if (filters.requireComplete && (count === null || count !== data?.length)) {
+      throw new Error("El catálogo supera el límite de lectura. Acotá la búsqueda o categoría para no mostrar un listado incompleto.");
     }
 
     return ((data ?? []) as unknown as AdminProductRow[]).map(
@@ -345,10 +350,10 @@ export async function getAdminProductPublications(filters:AdminProductFilters={}
     const products=await getAdminProducts(filters);
     if(products.error)throw Error(products.error);
     const db=getSupabaseAdminClient();
-    const {data:offers,error}=await db.from("public_component_offers")
-      .select("presentation_product,connector,head_product,available,combo_list_price,combo_transfer_price,image_id,image_url,image_alt")
+    const {data:offers,error,count}=await db.from("public_component_offers")
+      .select("presentation_product,connector,head_product,available,combo_list_price,combo_transfer_price,image_id,image_url,image_alt",filters.requireComplete?{count:"exact"}:undefined)
       .order("id").order("connector").limit(101);
-    if(error||(offers?.length??0)>100)throw Error("No se pudo recuperar el listado completo de cargadores.");
+    if(error||(offers?.length??0)>100||(filters.requireComplete&&count!==offers?.length))throw Error("No se pudo recuperar el listado completo de cargadores.");
     if(!offers?.length)return products.data??[];
     const {data:heads,error:headError}=await db.from("products").select("id,category_id,categories(name,slug)").in("id",[...new Set(offers.map(o=>o.head_product))]);
     if(headError)throw Error("No se pudo verificar la categoría de los cargadores.");
@@ -442,26 +447,8 @@ export async function getAdminProductById(
 }
 
 export async function getAdminDashboardData() {
-  const [ordersResult, productsResult] = await Promise.all([
-    getAdminOrders(),
-    getAdminProducts(),
-  ]);
-
-  const orders = ordersResult.data ?? [];
-  const products = productsResult.data ?? [];
-
-  return {
-    data: {
-      totalOrders: orders.length,
-      pendingOrders: orders.filter((order) => order.status === "pending")
-        .length,
-      registeredSales: orders.reduce((total, order) => total + order.total, 0),
-      activeProducts: products.filter((product) => product.status === "active")
-        .length,
-      latestOrders: orders.slice(0, 5),
-    },
-    error: ordersResult.error ?? productsResult.error,
-  };
+  const { getCommercialDay } = await import("@/services/commercial-history");
+  return getCommercialDay();
 }
 
 function isRealSale(order: AdminOrder) {

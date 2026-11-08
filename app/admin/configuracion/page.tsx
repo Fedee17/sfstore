@@ -12,7 +12,7 @@ export default async function AdminConfigPage() {
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8B5E3C]">
           Admin
         </p>
-        <h1 className="mt-3 text-4xl font-semibold">Configuracion</h1>
+        <h1 className="mt-3 text-4xl font-semibold">Datos de la tienda</h1>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <ConfigCard label="WhatsApp" value={brand.whatsapp} />
@@ -22,7 +22,7 @@ export default async function AdminConfigPage() {
         </div>
 
         <div className="mt-8 rounded-3xl border border-[#556B2F]/20 bg-[#556B2F]/10 p-5 text-sm leading-6 text-[#1F1F1F]/70">
-          Mas adelante estos datos se podran editar desde la tabla settings.
+          Datos de contacto que utiliza la tienda. Esta pantalla es de consulta.
         </div>
       </section>
     </main>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/admin-nav";
+import {historyListHref,safeHistoryReturnPath} from "@/lib/admin/history-navigation";
 import type { DateQuality, Money, PurchaseFact, SaleFact } from "@/lib/commercial-reporting/contracts";
 import type { CommercialListOptions } from "@/lib/commercial-reporting/list-reader";
 
@@ -20,32 +21,34 @@ export function scalar(value:string|string[]|undefined){return typeof value==="s
 export function listOptions(kind:"sales"|"purchases",params:Record<string,string|string[]|undefined>):CommercialListOptions{
  const origin=scalar(params.origin),channel=scalar(params.channel),page=Number(scalar(params.page)||1);
  return{kind,origin:origin==="current"||origin==="historical"?origin:"all",page,
-  channel:channel==="store"||channel==="web"||channel==="order"?channel:"all",paymentStatus:scalar(params.paymentStatus),date:scalar(params.date)};
+  channel:channel==="store"||channel==="web"||channel==="order"?channel:"all",paymentStatus:"",date:scalar(params.date),search:scalar(params.search),from:scalar(params.from),to:scalar(params.to),month:scalar(params.month)};
 }
 export function HistoryFilters({options}:{options:CommercialListOptions}){
  const field="grid gap-2 text-sm font-semibold",input="h-11 min-w-0 rounded-xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-3";
  return <form className="mt-8 grid gap-3 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-5 sm:items-end">
+  {options.month?<input type="hidden" name="month" value={options.month}/>:null}
+  <label className={field+" sm:col-span-2"}>{options.kind==="sales"?"Producto o número de venta":"Producto o proveedor"}<input name="search" defaultValue={options.search??""} maxLength={100} className={input} placeholder="Escribí para buscar" /></label>
   <label className={field}>Origen<select className={input} name="origin" defaultValue={options.origin??"all"}><option value="all">Todos</option><option value="current">Actuales</option><option value="historical">Históricos</option></select></label>
   {options.kind==="sales"?<>
    <label className={field}>Canal<select className={input} name="channel" defaultValue={options.channel??"all"}><option value="all">Todos</option><option value="store">Local (actual e histórico)</option><option value="web">Web</option><option value="order">Pedido</option></select></label>
-   <label className={field}>Pago<select className={input} name="paymentStatus" defaultValue={options.paymentStatus??""}><option value="">Todos</option><option value="pending">Pendiente</option><option value="partial">Parcial</option><option value="paid">Pagada</option><option value="refunded">Reintegrada</option></select></label>
-   <label className={field}>Fecha comercial<input type="date" name="date" defaultValue={options.date??""} className={input}/></label>
   </>:null}
+  <label className={field}>Desde<input type="date" name="from" defaultValue={options.from||options.date||""} className={input}/></label>
+  <label className={field}>Hasta<input type="date" name="to" defaultValue={options.to||options.date||""} className={input}/></label>
   <button className="h-11 rounded-xl border border-[#556B2F]/30 px-5 text-sm font-semibold text-[#556B2F]">Filtrar</button>
  </form>;
 }
 export function HistoryPagination({page,pages,total,options}:{page:number;pages:number;total:number;options:CommercialListOptions}){
- function href(next:number){const params=new URLSearchParams({origin:options.origin??"all",page:String(next)});for(const key of ["channel","paymentStatus","date"] as const)if(options[key])params.set(key,options[key]!);return`/admin/${options.kind==="sales"?"ventas":"compras"}?${params}`;}
+ function href(next:number){return historyListHref(options,next);}
  return <nav aria-label="Paginación del historial" className="mt-6 flex flex-wrap items-center justify-between gap-4 text-sm">
   <p>{total} registros · Página {page} de {pages}</p><div className="flex gap-3">{page>1?<Link className="rounded-full border border-[#8B5E3C]/30 px-4 py-3" href={href(page-1)}>Anterior</Link>:null}{page<pages?<Link className="rounded-full border border-[#8B5E3C]/30 px-4 py-3" href={href(page+1)}>Siguiente</Link>:null}</div>
  </nav>;
 }
-export function HistoricalDetail({sale,purchase}:{sale?:SaleFact;purchase?:PurchaseFact}){
+export function HistoricalDetail({sale,purchase,returnTo}:{sale?:SaleFact;purchase?:PurchaseFact;returnTo?:string}){
  const fact=sale??purchase!;const kind=sale?"ventas":"compras";
  const title=sale?`Venta histórica ${sale.original.order_number??""}`:purchase!.original.supplier_name_snapshot??"Compra histórica";
  const provenance=fact.provenance;
  return <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]"><AdminNav/><section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-  <Link href={`/admin/${kind}?origin=historical`} className="text-sm font-semibold text-[#8B5E3C]">Volver a {kind}</Link>
+  <Link href={returnTo?safeHistoryReturnPath(returnTo,sale?"sales":"purchases"):`/admin/${kind}?origin=historical`} className="text-sm font-semibold text-[#8B5E3C]">Volver a {kind}</Link>
   <div className="mt-4"><OriginLabel historical excluded={fact.excluded}/><h1 className="mt-3 break-words text-3xl font-semibold sm:text-4xl">{title}</h1><p className="mt-3">Fecha: {displayDate(fact.occurredOn)} <DateQualityLabel quality={fact.dateQuality}/></p>
   {provenance?<p className="mt-2 text-sm text-[#1F1F1F]/60">Procedencia: {provenance.source_sheet} · fila {provenance.source_row}</p>:null}</div>
   <p role="note" className="mt-6 rounded-2xl border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 text-sm font-semibold">Registro histórico de solo lectura. No permite modificar pagos ni generar movimientos de inventario. Los importes originales no se recalculan.</p>

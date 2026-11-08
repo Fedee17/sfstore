@@ -26,7 +26,7 @@ function origin(historical: boolean, channel: string): Origin {
   if (historical) return "physical_historical";
   return channel === "store" ? "physical_current" : channel === "web" ? "online" : "other";
 }
-function byMethod(rows: readonly ReceiptFact[]) {
+export function groupCommercialReceipts(rows: readonly ReceiptFact[]) {
   const groups = grouped(rows, row => row.method);
   return [...groups].map(([method, payments]) => ({
     method, amountCents: sumCents(payments.map(p => p.amountCents)),
@@ -84,7 +84,7 @@ export function buildCommercialFacts(input: CommercialSnapshot, policy: Evidence
     const lines = linesByOrder.get(order.id) ?? [], payments = paymentsByOrder.get(order.id) ?? [];
     const p = provenance.get(`sale:${order.id}`) ?? null;
     const dateQuality = quality(order.historical_import, p, false);
-    const occurredOn = order.historical_import ? sourceDate(order.historical_occurred_on) : commercialDate(order.created_at);
+    const occurredOn = order.historical_import ? sourceDate(order.historical_occurred_on) : order.channel === "store" && order.store_sale_date ? sourceDate(order.store_sale_date) : commercialDate(order.created_at);
     const exclusionReasons = reasons(order.id, lines.map(l => l.product_id), "sale");
     const totalCents = moneyCents(order.total), shipping = moneyCents(order.shipping_cost);
     const approvedCents = sumCents(payments.filter(p => p.status === "approved").map(p => moneyCents(p.amount)));
@@ -180,7 +180,7 @@ export function buildCommercialMonthFromFacts(facts: ReturnType<typeof buildComm
       imputedPurchasesCents: sumCents(ps.filter(p => p.dateQuality === "imputed").map(p => p.totalCents)),
       unknownDatePurchasesCents: sumCents(ps.filter(p => p.dateQuality === "unknown").map(p => p.totalCents)),
     },
-    paymentMethodsForSales: byMethod(paymentsForSales), paymentMethodsForDatedReceipts: byMethod(datedReceipts),
+    paymentMethodsForSales: groupCommercialReceipts(paymentsForSales), paymentMethodsForDatedReceipts: groupCommercialReceipts(datedReceipts),
     exclusions: { sales: selectedSales.filter(s => s.excluded).length, purchases: selectedPurchases.filter(p => p.excluded).length },
     warnings: [
       "APPROVED_LEDGER_AMOUNTS_NOT_CERTIFIED_NET_OF_REFUNDS",

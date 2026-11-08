@@ -19,6 +19,7 @@ function browserBundle() {
     modules[name] = readFileSync(join(dirname(require.resolve(pkg)), "cjs", file), "utf8");
   }
   for (const [name, path] of [
+    ["@/components/admin/unsaved-changes-guard", "../components/admin/unsaved-changes-guard.tsx"],
     ["form", "../components/admin/products/product-form.tsx"],
     ["@/lib/products/admin-price-calculation", "../lib/products/admin-price-calculation.ts"],
     ["@/lib/products/perfume-price-policy", "../lib/products/perfume-price-policy.ts"],

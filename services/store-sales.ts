@@ -1,5 +1,6 @@
 import { assertCurrentCommercialOperation } from "@/services/commercial-history-guards";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { commercialDayBounds, validateStoreSaleDate } from "@/lib/store-sale-date";
 import { type StoreSalePaymentMethod, getStoreSaleDisplayName } from "@/lib/store-sales";
 import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
 import type {
@@ -35,6 +36,7 @@ export type StoreSaleLine = {
 };
 
 export type StoreSale = {
+  store_sale_date?: string | null;
   id: string;
   order_number: string;
   channel: "store";
@@ -132,6 +134,7 @@ export async function listStoreSaleProducts() {
 }
 
 export async function createStoreSale(input: {
+  saleDate?: string;
   idempotencyKey: string;
   createdBy: string;
   customerName: string;
@@ -142,8 +145,9 @@ export async function createStoreSale(input: {
     amount: number;
   }[];
 }) {
+  const saleDate = input.saleDate === undefined ? undefined : validateStoreSaleDate(input.saleDate);
   const { data, error } = await getSupabaseAdminClient().rpc(
-    "create_store_sale_atomic",
+    saleDate ? "create_store_sale_dated_atomic" : "create_store_sale_atomic",
     {
       p_idempotency_key: input.idempotencyKey,
       p_created_by: input.createdBy,
@@ -157,11 +161,13 @@ export async function createStoreSale(input: {
         ...(item.comboConnector ? { combo_connector: item.comboConnector } : {}),
       })),
       p_payments: input.payments,
+      ...(saleDate ? { p_sale_date: saleDate } : {}),
     },
   );
 
   if (error) {
     const messages: Record<string, string> = {
+      STORE_SALE_DATE_INVALID: "La fecha de venta debe ser válida y no posterior a hoy.",
       COMBO_NOT_AVAILABLE: "El conjunto cambió o no tiene un precio aprobado. Recargá los productos.",
       COMBO_SELECTION_REQUIRED: "Elegí el tipo de cable del conjunto.",
       CHECKOUT_PRODUCT_UNAVAILABLE: "Un componente ya no está disponible.",
@@ -241,7 +247,7 @@ export async function listStoreSales(filters: StoreSaleListFilters = {}) {
   let query = getSupabaseAdminClient()
     .from("orders")
     .select(
-      "id, order_number, channel, status, payment_status, total, metadata, created_at, order_items(id,product_name,created_at), order_payments(amount,status)",
+      "id, order_number, channel, status, payment_status, total, metadata, created_at, store_sale_date, order_items(id,product_name,created_at), order_payments(amount,status)",
     )
     .eq("historical_import", false)
     .order("created_at", { ascending: false })
@@ -256,9 +262,8 @@ export async function listStoreSales(filters: StoreSaleListFilters = {}) {
   }
 
   if (filters.date && /^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
-    query = query
-      .gte("created_at", `${filters.date}T00:00:00.000Z`)
-      .lt("created_at", `${filters.date}T23:59:59.999Z`);
+    const bounds = commercialDayBounds(filters.date);
+    query = query.or(`store_sale_date.eq.${filters.date},and(store_sale_date.is.null,created_at.gte.${bounds.startInclusive},created_at.lt.${bounds.endExclusive})`);
   }
 
   const { data, error } = await query;
@@ -296,7 +301,7 @@ export async function getStoreSaleById(orderId: string) {
     .select(
       `
       id, order_number, channel, status, payment_status, subtotal, discount, total,
-      notes, metadata, created_at,
+      notes, metadata, created_at, store_sale_date,
       order_items (
         id, product_id, product_name, product_slug, category_name,
         unit_price, list_unit_price_snapshot, unit_cost_snapshot, quantity, subtotal, created_at, combo_price_snapshot

@@ -38,10 +38,10 @@ const purchaseFixtures = [
   { id: "historical-purchase", historical_import: true, total_cost: 600 },
 ];
 
-test("dashboard and analytics load only operational orders", () => {
+test("legacy operational readers exclude historical rows and the daily dashboard reuses the commercial contract", () => {
   const getAdminOrders = functionBlock(adminService, "getAdminOrders", "getAdminDashboardData");
   assert.match(getAdminOrders, /\.from\("orders"\)[\s\S]+\.eq\("historical_import", false\)/);
-  assert.match(adminService, /getAdminDashboardData[\s\S]+getAdminOrders\(\)/);
+  assert.match(functionBlock(adminService,"getAdminDashboardData","isRealSale"), /getCommercialDay/);
   assert.match(adminService, /getAdminAnalyticsData[\s\S]+getAdminOrders\(\)/);
 
   const orders = operational(orderFixtures);
