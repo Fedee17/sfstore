@@ -255,6 +255,12 @@
       "stagingFile": "staging/supabase/migrations/202611080001_store_sale_commercial_date.sql",
       "sourceSha256": "260353f0f8e0e07e147a139c618040f39d25c36c7ba3a55b3b8dc44d5acc93b7",
       "stagingSha256": "260353f0f8e0e07e147a139c618040f39d25c36c7ba3a55b3b8dc44d5acc93b7"
+    },
+    {
+      "source": "supabase/migrations/202611080003_stock_health_snapshot.sql",
+      "stagingFile": "staging/supabase/migrations/202611080003_stock_health_snapshot.sql",
+      "sourceSha256": "5efb41c2b583e6683a61bd91b18f1acf0c3fd7d7130c4cf5a7afdd9a33c89305",
+      "stagingSha256": "5efb41c2b583e6683a61bd91b18f1acf0c3fd7d7130c4cf5a7afdd9a33c89305"
     }
   ]
 }

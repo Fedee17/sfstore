@@ -2,9 +2,10 @@ import type { CommercialSnapshot, EvidencePolicy, SaleFact } from "../commercial
 import { buildCommercialAnalytics } from "../commercial-reporting/analytics.ts";
 import { buildCommercialFacts } from "../commercial-reporting/model.ts";
 import { normalizeListOptions, type CommercialListOptions } from "../commercial-reporting/list-reader.ts";
+import {buildStockHealth,type StockSnapshot} from './stock-health.ts';
 
 const normalizedText = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-AR");
-export function buildSalesWorkspace(snapshot: CommercialSnapshot, input: CommercialListOptions, month: string, policy: EvidencePolicy) {
+export function buildSalesWorkspace(snapshot: CommercialSnapshot, input: CommercialListOptions, month: string, policy: EvidencePolicy, stockSnapshot?: StockSnapshot) {
   const options = normalizeListOptions({ ...input, kind: "sales", paymentStatus: "" });
   const analytics = buildCommercialAnalytics(snapshot, month, policy);
   const facts = buildCommercialFacts(snapshot, policy);
@@ -19,7 +20,12 @@ export function buildSalesWorkspace(snapshot: CommercialSnapshot, input: Commerc
     return !search || normalizedText([sale.original.order_number ?? "", ...sale.lines.map(line => line.product_name)].join(" ")).includes(search);
   }).sort(compareSales);
   const pageSize=20, total=sales.length;
-  return {analytics, options, sales:sales.slice((options.page-1)*pageSize,options.page*pageSize), total, page:options.page, pageSize, pages:Math.max(1,Math.ceil(total/pageSize))};
+  let stockHealth=null;
+  if(stockSnapshot) {
+    try { stockHealth=buildStockHealth(facts.sales,stockSnapshot,policy); }
+    catch { /* Stock failure must not hide the sales history or expose partial stock totals. */ }
+  }
+  return {analytics,stockHealth, options, sales:sales.slice((options.page-1)*pageSize,options.page*pageSize), total, page:options.page, pageSize, pages:Math.max(1,Math.ceil(total/pageSize))};
 }
 
 function compareSales(a: SaleFact, b: SaleFact) {

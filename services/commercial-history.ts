@@ -51,6 +51,9 @@ export async function getSalesWorkspace(options: import("@/lib/commercial-report
   validateMonth(month); normalizeListOptions(options);
   const { readCompleteSnapshot } = await import("@/lib/commercial-reporting/reader");
   const { buildSalesWorkspace } = await import("@/lib/admin/sales-workspace");
-  const snapshot = await readCompleteSnapshot(createCommercialPageReader(getSupabaseAdminClient()));
-  return buildSalesWorkspace(snapshot, options, month, COMMERCIAL_EVIDENCE);
+  const client=getSupabaseAdminClient();
+  const snapshot = await readCompleteSnapshot(createCommercialPageReader(client));
+  const {readStockSnapshot}=await import('@/lib/admin/stock-health-reader');
+  const stockSnapshot=await readStockSnapshot(client).catch(()=>undefined);
+  return buildSalesWorkspace(snapshot, options, month, COMMERCIAL_EVIDENCE,stockSnapshot);
 }

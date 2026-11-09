@@ -5,6 +5,7 @@ import { requireAdminSession } from "@/lib/admin-session";
 import { getSalesWorkspace } from "@/services/commercial-history";
 import { commercialDate } from "@/lib/commercial-reporting/periods";
 import { SalesDashboard } from "@/components/admin/sales/sales-dashboard";
+import { StockHealthDashboard } from '@/components/admin/sales/stock-health';
 import dashboardStyles from "@/components/admin/sales/sales-dashboard.module.css";
 import { getStoreSaleDisplayName } from "@/lib/store-sales";
 import { HistoryFilters,HistoryPagination,OriginLabel,DateQualityLabel,displayDate,displayCents,paymentLabels,listOptions,type HistoryParams } from "@/components/admin/commercial-history-ui";
@@ -17,6 +18,7 @@ export default async function AdminSalesPage({searchParams}:HistoryParams){
   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8B5E3C]">Admin</p><h1 className="mt-3 text-4xl font-semibold">Ventas</h1><p className="mt-2 text-sm text-[#1F1F1F]/60">Ventas actuales e históricas con sus pagos registrados.</p></div><Link href="/admin/ventas/nueva" className="rounded-full bg-[#556B2F] px-6 py-3 text-center text-sm font-semibold text-[#F7F4ED]">Nueva venta</Link></div>
   <form className={dashboardStyles.selector}><label>Mes del panel<input type="month" name="month" min="1900-01" defaultValue={month} required/></label>{Object.entries({origin:options.origin,channel:options.channel,search:options.search,from:options.from,to:options.to,date:options.date}).filter(([,value])=>value).map(([name,value])=><input key={name} type="hidden" name={name} value={String(value)}/>)}<button>Ver mes</button></form>
   <SalesDashboard analytics={result.analytics}/>
+  <StockHealthDashboard health={result.stockHealth}/>
   <h2 className="mt-9 text-2xl font-semibold">Historial de ventas</h2>
   <HistoryFilters options={result.options}/><p className="mt-3 text-xs text-[#1F1F1F]/60">Actuales primero; históricos por fecha original. Las pruebas identificadas no aparecen en este listado.</p>
   {!result.sales.length?<p className="mt-8 rounded-[2rem] bg-white/70 p-8 text-center">No hay ventas para este filtro.</p>:<div className="mt-8 grid gap-4">{result.sales.map(fact=>{
