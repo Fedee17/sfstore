@@ -7,9 +7,11 @@ import React from 'react';
 import * as jsx from 'react/jsx-runtime';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as ordering from '../lib/catalog/availability-order.ts';
+import * as brandConfig from '../lib/brand.ts';
 
 const require = createRequire(import.meta.url);
 const modules = {
+  '@/lib/brand': brandConfig,
   react: React,
   './home-product-card': { HomeProductCarousel: () => null },
   './ritual-matero': { RitualMatero: () => null },

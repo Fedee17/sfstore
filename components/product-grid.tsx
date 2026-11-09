@@ -22,12 +22,22 @@ export function ProductImage({ product, compact = false, onImageError }: Product
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const url = product.primaryImageUrl;
   const imageClass = compact ? styles.cartPhoto : styles.photo;
+  const inspectImage = (image: HTMLImageElement | null) => {
+    if (!image?.complete) return;
+    if (image.naturalWidth === 0) {
+      setFailedUrl(url ?? null);
+      onImageError?.();
+      return;
+    }
+    image.dataset.orientation = image.naturalHeight > image.naturalWidth ? "portrait" : "landscape";
+  };
 
   if (url && failedUrl !== url) {
     return (
       <div className={imageClass}>
         <img src={url} alt={product.primaryImageAlt ?? product.name} loading="lazy" decoding="async"
-          ref={(image) => { if (image?.complete && image.naturalWidth === 0) {setFailedUrl(url);onImageError?.();} }}
+          ref={inspectImage}
+          onLoad={({ currentTarget }) => inspectImage(currentTarget)}
           onError={() => {setFailedUrl(url);onImageError?.();}} />
       </div>
     );

@@ -10,6 +10,15 @@ import * as pricing from '../lib/pricing.ts';
 test('display copy corrects reviewed uppercase words without changing SKU, brand acronyms or unrelated names',()=>{
  for(const [raw,display] of [['CDN MALEKA','CDN Maleka'],['9AM POUR FEMME','9AM Pour Femme'],['Grabado BOCA JUNIORS','Grabado Boca Juniors'],['RIVER PLATE','River Plate'],['USB-C · EDP · ST-MSYS-1L-NEG','USB-C · EDP · ST-MSYS-1L-NEG']]) assert.equal(publicProductName(raw),display);
 });
+test('catalog copy preserves model codes and capacities while removing excessive uppercase',()=>{
+ for(const [raw,display] of [
+  ['HOMME BLACK 100ML','Homme Black 100 ml'],
+  ['RASSASI HAWAS FOR HIM','Rassasi Hawas For Him'],
+  ['CABLE USB-C CARGA RAPIDA','Cable USB-C Carga Rápida'],
+  ['SKU-DE-GOLD-100ML · 9AM · GOAT · EDP','SKU-DE-GOLD-100ML · 9AM · GOAT · EDP'],
+ ]) assert.equal(publicProductName(raw),display);
+});
+
 test('checkout messages explain recovery and never echo an unknown server diagnostic',()=>{
  assert.match(checkoutErrorMessage('CHECKOUT_STOCK_INSUFFICIENT'),/carrito.*cantidades/);
  assert.match(checkoutErrorMessage('CHECKOUT_SHIPPING_QUOTE_CHANGED'),/cotización.*No transfieras/);

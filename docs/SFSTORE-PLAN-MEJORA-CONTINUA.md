@@ -1001,7 +1001,7 @@ P02/P05/P07/P08/P09: implementación local aprobada en cinco pasos, reutilizando
 
 Validación final: build estándar next build/Turbopack y TypeScript aprobados. Suite general 1.069 pruebas: 1.047 pases/0 fallos/22 omisiones opcionales; ESLint 0 errores/12 advertencias previas. Tres pruebas de navegador ejecutadas aparte y aprobadas: 14 casos de validación/red/sesión/stock/reintento, cotización/tarifa y recorrido completo a 320x844, 390x844, 768x1024, 1366x517 y 1366x768. Fotos ausentes/fallidas excluidas, CTA, miniaturas por SKU, WhatsApp contextual, agotado bloqueado, carrito y errores de checkout correctos; sin overflow ni errores JS. Rotación automática comprobada a 390 y 1366 con movimiento normal; cinco recorridos adicionales con movimiento reducido. Capturas journey-* revisadas y logs storefront-* en artefactos de sesión; precios/stock de pruebas sintéticos, sin datos comerciales reales.
 
-Causa y resolución del entorno: junction externa node_modules reemplazada por carpeta física propia usando la instalación local compatible existente, sin descargar paquetes ni cambiar versiones/next.config. El sandbox bloqueaba además la junction interna de xlsx: mismo build estándar aprobado fuera de él. Browser Use/Computer Use interactivos siguen fallando al iniciar; alternativa mediante Playwright real 1.62.1 del runtime instalado y Edge con perfil limpio. Las carpetas antiguas lint-esm-* eran stubs sintéticos y se descartaron como runtime, sin confundirlos con validación. La prueba real detectó foco incorrecto de email nativo: onInvalid reutiliza validateForm y ahora asocia/focaliza el campo correcto. Galería sin defecto: la prueba necesitaba esperar hidratación y distinguir WhatsApp contextual del global. Preview cerrado, sin compras/pagos/escrituras productivas. Sin commit/push/publicación del storefront.
+Causa y resolución del entorno: junction externa node_modules reemplazada por carpeta física propia usando la instalación local compatible existente, sin descargar paquetes ni cambiar versiones/next.config. El sandbox bloqueaba además la junction interna de xlsx: mismo build estándar aprobado fuera de él. Browser Use/Computer Use interactivos siguen fallando al iniciar; alternativa mediante Playwright real 1.62.1 del runtime instalado y Edge con perfil limpio. Las carpetas antiguas lint-esm-* eran stubs sintéticos y se descartaron como runtime, sin confundirlos con validación. La prueba real detectó foco incorrecto de email nativo: onInvalid reutiliza validateForm y ahora asocia/focaliza el campo correcto. Galería sin defecto: la prueba necesitaba esperar hidratación y distinguir WhatsApp contextual del global. Preview cerrado, sin compras/pagos/escrituras productivas. Publicado posteriormente por autorización explícita: cierre a continuación.
 
 Aceptación Sección 10:
 
@@ -1014,6 +1014,123 @@ Aceptación Sección 10:
 | 6: contenido verificable | Sólo términos comerciales revisados y atributos/SKU existentes; sin completar datos faltantes. |
 | 7: medición | Eventos existentes de lista/carrito conservados; impacto en conversión aún no medido. Sin instrumentación nueva. |
 | 8: seguridad y regresión | Suite, tipado y build estándar pasan; tres browser tests aprobados aparte; otras integraciones SQL opcionales no se reejecutaron. |
-| 9: publicación/recuperación | Storefront local, requiere revisión y autorización; preservar Stock activo y usar deployment anterior sólo tras informar/autorizar. |
+| 9: publicación/recuperación | Publicado por autorización explícita en 0125153; recuperación a Stock 8ded68e sólo tras informar/autorizar, sin revertir datos. |
 
 Publicación expresamente autorizada por el propietario el 09/11. Preflight: main/origin 8ded68e, dominio dpl_DAGaMRmQXoXNdrkMNct1LMjZwuEh READY y sin builds pendientes; rama Git main y build estándar reconfirmados. Procedimiento: commit acotado, fast-forward main y push único para build Git de Production, sin configuración/SQL; verificar alias/commit y tienda móvil/escritorio sin transacciones. Recuperación de frontend al deployment Stock indicado, informando antes de revertir. No publicar monitor/navegación admin ajenos al alcance.
+
+
+Publicación final completada: 01251539f02a19b319655f807844d47d30c17f9d, 32 archivos, fast-forward y push único a main. Deployment dpl_9SD3HUar2oevkw3rsbKtkkV9L2u5 READY, URL sfstore-b1n1z1k1x-federicoarmandofafa-5751s-projects.vercel.app y alias sfstore-ten.vercel.app comprobados. Main/origin sincronizados y worktree main limpio. No cambios de Supabase, precios, stock o configuración. Salud de Stock conservado.
+
+Verificación pública: Home 390/768/1366 HTTP200 sin overflow; catálogos/ficha/carrito/checkout/robots/sitemap HTTP200 y 24 imágenes de catálogo cargadas sin roturas. Flujo comercial público a 390/1366: lista y transferencia coherentes con redondeo al peso, carrito persistido y total de checkout coincidente, sin enviar formulario. Familia real Stanley Gris/Morado cambia fotografía y enlace contextual con SKU en ambos tamaños. Home/Ritual: fotografías visibles decodificadas, sin placeholders, CTA por tipo de publicación. Ocho controles de Home/variantes, diez de comercio y cuatro de fotos pasan. Runtime del deployment sin errores/fatales registrados en 30m revisados; no es garantía de ausencia futura. Todos los navegadores con perfil limpio y escrituras HTTP bloqueadas; cero pedidos/pagos/contactos reales.
+
+Incidencia de verificación: el auditor histórico esperaba un h2 Resumen de compra; la UI vigente usa aside con ese nombre accesible y detalle de precios desplegable. Se adaptó el control en memoria y la espera de hidratación/carga de fotos, sin modificar código publicado ni generar otro build. El hallazgo inicial de navegación queda descartado como selector desactualizado; se conservaron ambas evidencias. El aviso SEO de checkout vacío fue una captura durante hidratación y no un error comercial confirmado. Evidencia storefront-production-0125153 (commerce, home-and-variants, loaded-photos) en artefactos de sesión.
+
+Recuperación preparada al deployment anterior dpl_DAGaMRmQXoXNdrkMNct1LMjZwuEh / 8ded68e, informando antes de cualquier rollback. No SQL inverso ni restauración de inventario/ventas posteriores. Sin nuevos builds pendientes en el corte final; cierre documental posterior queda local para evitar un despliegue redundante.
+
+### P08/P09 — Cierre comercial: correcciones locales y datos pendientes (09/11/2026)
+
+Encargo: resolver lo técnico de la auditoría comercial y separar los datos que debe confirmar el propietario. No autoriza publicación, cambios del catálogo real ni activación de tareas automáticas.
+
+Implementado localmente: titular Federico Ezequiel Armando en el componente compartido del alias; alias fedearmando.21/Naranja X y horario lunes a sábado 17:30–20:30 confirmados por el propietario. Horario administrativo corregido. Nombres públicos normalizados sólo mediante diccionario explícito, preservando SKU/códigos/siglas y datos guardados. 404 en español con navegación de recuperación y cabecera existente.
+
+Validación: build estándar Turbopack y TypeScript sin errores; ESLint 0 errores/12 advertencias previas. Primera tanda de 31 pruebas aprobadas; después de ampliar el diccionario, 11 pruebas de presentación/información comercial aprobadas. Edge/Playwright a 320/390/1366: 404 real y enlaces visibles; componente real de transferencia renderizado aisladamente con titular visible, sin overflow ni errores JS. Sin pedidos, pagos, escrituras remotas o publicaciones. Servidor local cerrado.
+
+**Lo que debe confirmar o aportar el propietario:**
+
+1. Dirección Juan de Garay 2090, Córdoba, confirmada posteriormente por el propietario y añadida localmente en Ayuda, retiro del checkout y confirmación usando brand. Sin publicar aún.
+2. Para los siguientes 30 productos, aportar/asociar foto real identificada o indicar cuáles deben dejar de publicarse. Prioridad: los 18 con saldo registrado. Saldo del sistema no equivale a recuento físico. No se cambiaron estados, fotos ni stock.
+
+| Producto sin fotografía | Catálogo | Prioridad según auditoría |
+| --- | --- | --- |
+| Afnan 9 AM DIVE | Perfumes | Agotado según sistema |
+| Al Haramain Amber Oud Gold Edition | Perfumes | Agotado según sistema |
+| BHARARA King | Perfumes | Agotado según sistema |
+| BHARARA King Parfum | Perfumes | Agotado según sistema |
+| LA VIVACITE INTESA - 100ML | Perfumes | Agotado según sistema |
+| LATTAFA KHAMRAH - 100ML | Perfumes | Agotado según sistema |
+| Lattafa Yara Tous | Perfumes | Agotado según sistema |
+| ODYSSEY MANDARIN SKY | Perfumes | Agotado según sistema |
+| Odyssey Mega | Perfumes | Agotado según sistema |
+| PHILOS PURA - 100ML | Perfumes | Agotado según sistema |
+| RASSASI HAWAS FOR HIM | Perfumes | Agotado según sistema |
+| YARA ELIXIR - 100ML | Perfumes | Agotado según sistema |
+| Mate Imperial Premium | Matero | Con saldo registrado |
+| Quencher GOAT Celeste | Matero | Con saldo registrado |
+| Quencher GOAT Negro | Matero | Con saldo registrado |
+| Autocebante 2 en 1 | Matero | Con saldo registrado |
+| Botella Térmica BOTELLAS STANLEY 650ML | Matero | Con saldo registrado |
+| Lata Matera | Matero | Con saldo registrado |
+| Mate Camionero virola de acero inox | Matero | Con saldo registrado |
+| Mate Imperial virola alpaca cincelada premium | Matero | Con saldo registrado |
+| Mate Pampa Original boca abierta | Matero | Con saldo registrado |
+| Mate Torpedo virola alpaca cincelada | Matero | Con saldo registrado |
+| Cabezal Iphone - Pata argentina | Accesorios | Con saldo registrado |
+| CABLE USB - C CARGA RAPIDA | Accesorios | Con saldo registrado |
+| Cable USB-C a Lightning | Accesorios | Con saldo registrado |
+| Cable USB-C a USB-C | Accesorios | Con saldo registrado |
+| CARGADOR 3.8A  + CABLE TIPO C | Accesorios | Con saldo registrado |
+| Cargador completo USB-C a Lightning | Accesorios | Con saldo registrado |
+| Cargador completo USB-C a USB-C | Accesorios | Con saldo registrado |
+| Vaper Elfbar 15k | Accesorios | Con saldo registrado |
+
+3. Completar información comercial de Lata Matera, Mate Pampa Original boca abierta, Cable USB-C a Lightning y Cable USB-C a USB-C: qué incluye y características reales útiles (medidas/capacidad/longitud/compatibilidad cuando corresponda). Tienen resumen, pero la descripción larga está vacía. No inventar especificaciones ni repetir el título.
+4. Confirmar quién revisa comprobantes y reservas pendientes. La liberación manual ya existe; automatizar vencimientos es un cambio operativo separado.
+
+**Reservas: alcance pendiente de verificación/autorizar.** El código existente incluye liberación protegida de pedidos con comprobante pendiente y preparación de cron inactivo. Esto no acredita que el scheduler esté activo en Supabase. No se creó ni activó ningún job en este encargo. Antes de cualquier cambio: (1) inspeccionar configuración/grants/jobs en sólo lectura; (2) presentar el cambio exacto o conservar gestión manual; (3) ejecutar sólo tras aprobación y observar sin pedidos reales. No es un fallo productivo confirmado.
+
+Cambios conservados en codex/storefront-journey-20261108, sin commit/push/merge/despliegue. Se preservó el cierre documental local anterior y el resto de worktrees.
+
+Actualización del material del propietario (09/11): lectura pública vigente confirma Khamrah 9a56021e-9a8c-4bc6-a937-996d46faec61 con foto/stock 1 y Hawas 880dfa55-41c2-4275-91e7-ca7def54ec14 con tres fotos/stock 1. La unidad de Hawas confirmada por el propietario ya está registrada: no duplicarla. Las fichas aa3a931a-ef24-40b9-b65b-d2e2acd87a2b y 7d334fd0-24b8-422a-a5bd-daa7de0e2947 están agotadas y sin foto; conciliar visibilidad sin borrar referencias históricas. Amber Oud Gold 469e3f38-36cc-45fd-bc6e-5bd558d3acf1 agotado confirmado. Afnan 9 AM Dive 6de8ca53-7561-4353-b3f6-99b6da9a9c3c tiene saldo 0; propietario confirma existencia, pero no cantidad. IMG_1870/1871 no identifican Dive en envase; no asociarlas a ese SKU sin aclaración.
+
+El ZIP Fotos en iCloud contiene seis JPEG (IMG_2009/2010/2011/2012/2014/2015): Quencher GOAT celeste/negro. Se inspeccionó el índice y se extrajeron únicamente esos seis originales a artefactos de revisión; no hubo descargas, compresión adicional ni cargas Storage. Fotografías de Khamrah/Hawas aportadas ya están representadas en las fichas vigentes; no duplicar subidas.
+
+Plan propuesto de conciliación Supabase, pendiente de aprobación: 1) conservar las fichas vigentes Khamrah/Hawas y retirar de publicación sólo los dos registros vacíos equivalentes, sin borrar historial ni trasladar/sumar stock; Amber Oud Gold permanece agotado. 2) Asociar las fotos verificadas del ZIP a los Quencher GOAT celeste/negro existentes, conservando precios/stock y fotografías previas. 3) Completar Afnan 9 AM Dive sólo al identificar su foto y cantidad física, mediante el flujo de ajuste auditable existente, respetando reservas; verificar el resultado público sin pedidos reales. No autorizado ni ejecutado aún.
+
+Cierre de dirección: build estándar Turbopack/TypeScript aprobados; 41 pruebas afectadas pasan; ESLint 0 errores/12 advertencias previas. Edge a 320/390/1366: Ayuda y checkout con carrito sintético muestran dirección, sin overflow ni errores JS y sin alias previo a la orden. Sin pedidos ni pagos, escrituras HTTP bloqueadas, servidor local cerrado. Sin cambios de datos remotos ni publicación.
+
+Lote de catálogo aplicado tras aprobación explícita del propietario (09/11/2026). Aclaración previa: el producto es Afnan 9 AM Eau de Parfum 100 ml, stock físico 1, especial $75.000/lista $100.000; fotos IMG_1870/1871. Se corrigieron nombre, precios y descripciones genéricas que citaban Dive, conservando el ID 6de8ca53... y su slug para no romper enlaces. Stock ajustado 0→1 con la RPC existente adjust_inventory_stock y administrador allowlisted; movimiento 1d64f03b-97da-425f-9256-49b28734dff8. No reemplazar esta acción con un UPDATE directo ni repetirla.
+
+Se asociaron 8 fotos originales (2 Afnan, 3 Quencher celeste y 3 negro), rutas SHA256, JPEG menores a 3 MiB, subida sin upsert ni sobrescrituras y descarga pública con hash idéntico. Se modificó exclusivamente status= draft de aa3a931a.../7d334fd0... con guardas de active/stock0/no identidad histórica. Khamrah/Hawas completos y Amber Oud Gold permanecen idénticos en los campos revisados; Quencher conserva precios/stock. Preflight y cierre confirman reservas 0 en las cinco fichas. Sin borrados, migraciones, RLS, jobs, pedidos, pagos o despliegues.
+
+Verificación real posterior con Edge a 390/1366: tres fichas HTTP200, títulos correctos, fotografías cargadas, sin overflow ni errores JS; Afnan muestra $75.000; duplicados no aparecen en catálogo y las dos fichas completas sí. Capturas y results.json en catalog-photo-review-20261109/public-check; recibo de operación autorizado en authorized-catalog-batch-receipt.json dentro de los mismos artefactos, sin secretos. No volver a subir ni recrear imágenes.
+
+Limitaciones nuevas observadas, sin ampliar la escritura aprobada: los textos/atributo de marca anteriores de Quencher dicen STANLEY aunque el producto fotografiado dice GOAT; corregir con aprobación de contenido. Afnan conserva atributos olfativos de la identificación anterior, no certificados para el 9 AM correcto; no inventar ni ratificar el perfil. Miniaturas apaisadas de búsqueda recortan parte del Quencher; las fotos originales completas permanecen en galería. No se modificó CSS ni publicó código para resolverlo dentro de este lote de datos.
+
+### P02/P08 — Encuadre vertical local y propuesta de contenido (09/11/2026)
+
+Alcance aprobado al responder «Perfecto hacelo» al plan de preparación: corregir encuadre en código local, contrastar contenido y presentar cambios exactos de datos para revisión. No autoriza aplicar esta propuesta en Supabase, commit, push ni despliegue. Se preservan todos los cambios locales previos.
+
+**Código:** ProductImage reutiliza la inspección de carga para identificar fotografías verticales por dimensiones naturales, tanto recién cargadas como presentes en caché. Sólo la presentación de catálogo aplica contain/centrado a esas imágenes; mantiene marco 16:10 y máximo de 176 px, encuadre de fotos apaisadas, tarjetas destacadas, carrito y galería. No hay excepciones por SKU ni dependencias nuevas.
+
+**Propuesta exacta de datos, NO aplicada:**
+
+| Producto / ID existente | Campo | Valor propuesto |
+| --- | --- | --- |
+| Quencher GOAT Celeste / 80bad915-edc4-4c5a-ae70-8fb55ea529d6 | short_description | Quencher GOAT en color celeste. Mirá las fotografías del producto. |
+| Mismo producto | description | Vaso Quencher GOAT en color celeste. Consultanos si necesitás confirmar su capacidad, materiales o qué incluye antes de comprar. |
+| Mismo producto | Atributo Marca | GOAT, reemplazando únicamente STANLEY. |
+| Quencher GOAT Negro / 83cc3b1d-75b7-41b4-a9b4-730d81f084b2 | short_description | Quencher GOAT en color negro. Mirá las fotografías del producto. |
+| Mismo producto | description | Vaso Quencher GOAT en color negro. Consultanos si necesitás confirmar su capacidad, materiales o qué incluye antes de comprar. |
+| Mismo producto | Atributo Marca | GOAT, reemplazando únicamente STANLEY. |
+| Afnan 9 AM / 6de8ca53-7561-4353-b3f6-99b6da9a9c3c | olfactory_family | fresco y amaderado, reemplazando el conjunto heredado completo. |
+| Mismo producto | intensity y occasion | Retirar únicamente estos atributos heredados; no afirmar intensidad ni ocasiones sin respaldo. |
+| Mismo producto | gender | unisex, conforme a la ficha oficial; conservar si ya coincide. |
+| Mismo producto | description | 9 AM de Afnan, Eau de Parfum de 100 ml. La marca lo presenta como fresco y amaderado. Notas de salida: mandarina, cidra, cardamomo y pimienta rosa. Corazón: lavanda, flor de azahar, rosa y manzana verde. Fondo: cedro, musgo, pachulí y almizcle. |
+
+Fuente consultada el 09/11: [Afnan oficial, 9 AM](https://india.afnan.com/products/9-am), identificación 100 ML/Eau De Parfum/Unisex y clasificación Woody Fresh. Traducción de notas; no se trasladan promesas de duración, proyección ni material publicitario genérico. GOAT/color sustentados por las fotografías originales del propietario y la identificación ya confirmada. Las notas por sí solas no se convierten en taxonomías adicionales.
+
+Precondiciones para una eventual aplicación autorizada: releer las tres fichas y sus atributos originales; detenerse si cambió el contenido revisado; reemplazar sólo los campos anteriores mediante el flujo existente, sin borrar/recrear todos los atributos. Conservar IDs, slug antiguo de Afnan, fotografías, precios, inventario, reservas y estados. Eliminar una afirmación no verificada no significa afirmar que sea falsa. Verificación posterior pública, sin pedidos/pagos. No se necesita migración ni otra carga de imágenes.
+
+Los otros productos sin foto/descripción y la certificación del scheduler de reservas siguen en la cola previa; no se incluyen en este lote.
+
+Validación local del encuadre: build estándar Turbopack y TypeScript aprobados; 44 pruebas de catálogo, carrito, Home y feedback aprobadas sin omisiones. ESLint 0 errores/12 advertencias previas. El primer build encontró la restricción conocida de junction de xlsx del sandbox; el mismo comando pasó fuera del sandbox sin cambiar configuración. Edge necesitó perfil temporal fuera del sandbox. Reutilizado el fixture público GET-only existente, extendido sólo en memoria con IDs/importes/stock sintéticos y las fotos públicas originales. Búsqueda y mates a 320/390/1366: 12 comprobaciones verticales, recarga/caché, recorte horizontal y fallback de foto fallida correctos; sin desborde, errores JS ni escrituras HTTP. Capturas de móvil/escritorio inspeccionadas. Evidencia catalog-portrait-results.json y seis capturas catalog-portrait-* en visualizations/2026/11/09/01a1c2aa-366f-7e23-9e89-c383d2cf30fa. Sin teléfono físico, medición de conversión ni nueva validación de Production. Sin cambios transaccionales, RLS, permisos, precios, stock, reservas, commits o publicación.
+
+### P02/P08/P09 — Corte productivo autorizado (09/11/2026)
+
+El propietario autorizó «Listo subi todo a producción»: aplicar el contenido propuesto y publicar el candidato local completo, incluyendo titular, dirección/horarios, títulos y 404 previos. No incluye pendientes de otros worktrees, fotos faltantes, scheduler, precios ni nuevos ajustes de stock.
+
+Preflight: HEAD/main local/main remoto 0125153, dominio asignado a dpl_9SD3HUar2oevkw3rsbKtkkV9L2u5 READY; main worktree limpio; Vercel Git main, Ignored Build Step vacío (Automatic), build estándar y autoAssignCustomDomains=true. Últimos deployments sin builds pendientes. Suite general revalidada: 1.070 pruebas, 1.048 pases, 22 omisiones opcionales, cero fallos. Se reutilizan build/tipado/lint y comprobación responsive del mismo código ya aprobados.
+
+Datos aplicados y verificados: trece escrituras guardadas por ID y valor anterior, usando el cliente server-side y el patrón existente de reparación puntual. GOAT: descripciones exactas propuestas y Marca STANLEY→GOAT. Afnan: descripción de notas oficial, frutal→amaderado reutilizando el registro, fresco/unisex conservados y siete atributos heredados retirados (cítrico, aromático, acuático, intensidad y tres ocasiones). Otros atributos intactos. Fotos, precios, stock, estado, nombre y slug de los tres productos idénticos antes/después. No escrituras de stock/reservas/pedidos/pagos, Storage, migraciones o permisos. Recibo approved-content-receipt.json, estado verified_complete, y snapshot content-release-before.json en artefactos del 09/11; no repetir el script.
+
+Procedimiento de frontend: commit exclusivo del diff revisado de este worktree, fast-forward del main limpio y un único push a main para el build Git productivo; sin cambiar configuración Vercel. Confirmar READY, alias y commit, luego revisar catálogo/fichas, ayuda, 404 y checkout público sin enviar formularios. Recuperación preparada al frontend 0125153/dpl_9SD3HUar2oevkw3rsbKtkkV9L2u5, informando antes; no restaurar DB ni deshacer contenido/inventario posterior por un fallo de frontend.

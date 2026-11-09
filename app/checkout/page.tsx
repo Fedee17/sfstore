@@ -1,5 +1,6 @@
 "use client";
 import { publicCategoryLabels as categoryLabels } from "@/lib/catalog/public-product-visibility";
+import { brand } from "@/lib/brand";
 
 import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -363,6 +364,7 @@ function CheckoutContent() {
                     </span>
                     <p className="mt-2 text-sm leading-6 text-[#102033]/65">
                       Retiro sin cargo. Esperá la confirmación del local antes de retirar.
+                      <span className="mt-1 block">{brand.address}. {brand.hours}.</span>
                     </p>
                   </button>
 

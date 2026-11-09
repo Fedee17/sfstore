@@ -4,7 +4,7 @@
   whatsapp: "3564646475",
   instagram: "sfstore.importados",
   address: "Juan de Garay 2090, Cordoba, Argentina",
-  hours: "17:00 a 21:00 hs",
+  hours: "Lunes a sábado, de 17:30 a 20:30 hs",
   colors: {
     primary: "#0072CE",
     deepBlue: "#003B73",

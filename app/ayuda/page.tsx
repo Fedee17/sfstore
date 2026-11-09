@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import { brand, brandLinks } from "@/lib/brand";
 
 export const metadata = { title: "Preguntas frecuentes" };
 
@@ -11,6 +12,7 @@ export default function HelpPage() {
       <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
         <h1 className="text-3xl font-semibold sm:text-4xl">Preguntas frecuentes</h1>
         <p className="mt-3 text-sm leading-6 text-[#526479]">Lo que necesitás saber para pagar, recibir tu compra o elegir un regalo.</p>
+        <p className="mt-4 text-sm leading-6">Retirá en <a href={brandLinks.maps} target="_blank" rel="noopener noreferrer" className="underline">{brand.address}<span className="sr-only"> · Ver mapa, abre una pestaña nueva</span></a>. {brand.hours}. Esperá el aviso de que tu compra está lista.</p>
         <div className="mt-8 grid gap-4">
           {[
             ["¿Cómo pago mi compra?", "Pagás por transferencia bancaria completa, con el 25% de descuento sobre el precio de lista de los productos. Primero prepará el pedido y revisá su total definitivo, incluido el envío si corresponde. No transfieras antes de tener ese importe confirmado."],

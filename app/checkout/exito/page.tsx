@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TransferAlias } from "@/components/transfer-alias";
 import { getBuyerCheckoutReceipt } from "@/services/checkout-buyer-receipt";
 import { CheckoutPaymentReportForm } from "@/components/checkout-payment-report-form";
+import { brand } from "@/lib/brand";
 const currency=new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",minimumFractionDigits:2,maximumFractionDigits:2});
 export default async function CheckoutSuccessPage({searchParams}:{searchParams:Promise<{order?:string;number?:string;total?:string}>}) {
  const order=await getBuyerCheckoutReceipt((await searchParams).order??"");
@@ -18,5 +19,5 @@ export default async function CheckoutSuccessPage({searchParams}:{searchParams:P
  <dl className="my-6 grid gap-2"><dt>Total a transferir</dt><dd>{currency.format(order.total)}</dd></dl><TransferAlias />
  <CheckoutPaymentReportForm orderId={order.id} operationKey={order.report?.operation_key}/></>}
  {order.report&&order.report.status!=="uploading"?<a className="block mt-6 underline" href={`/api/checkout/payment-proof/${order.id}`}>Consultar comprobante privado</a>:null}
- <p>Si elegiste retiro, es sin costo. Esperá la confirmación del local antes de retirar.</p><p className="mt-6">Guardá esta ventana y el número de orden para el seguimiento. Un mensaje por WhatsApp no reemplaza el aviso de pago en esta pantalla.</p><Link href="/carrito">Volver al carrito</Link></main>;
+ <p>Si elegiste retiro, es sin costo. Esperá la confirmación del local antes de retirar.</p><p>{brand.address}. {brand.hours}.</p><p className="mt-6">Guardá esta ventana y el número de orden para el seguimiento. Un mensaje por WhatsApp no reemplaza el aviso de pago en esta pantalla.</p><Link href="/carrito">Volver al carrito</Link></main>;
 }
