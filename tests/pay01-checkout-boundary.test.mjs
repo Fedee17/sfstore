@@ -8,6 +8,7 @@ import * as jsxRuntime from 'react/jsx-runtime';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import { renderToStaticMarkup } from 'react-dom/server';
 function load(file,modules={},globals={}){
+ if(file==='services/orders.ts')modules={...modules,'@/lib/checkout/feedback':load('lib/checkout/feedback.ts')};
  const exports={};const source=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
  new Function('require','exports',...Object.keys(globals),source)(name=>{assert.ok(Object.hasOwn(modules,name),`Unexpected dependency ${name}`);return modules[name];},exports,...Object.values(globals));return exports;
 }
@@ -50,7 +51,7 @@ test('browser request strips untrusted prices and persists the same operation ac
  const calls=[],values=new Map();let fail=true;const storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)};
  const globals={sessionStorage:storage,crypto:{randomUUID,subtle:globalThis.crypto.subtle},fetch:async(url,options)=>{calls.push([url,JSON.parse(options.body)]);if(fail)throw Error('synthetic lost response');return{ok:true,json:async()=>result};}};
  const data={...payload,items:[{productId:product,quantity:1,price:0,transferPrice:0,stock:999,name:'Fake'}],total:0,subtotal:0};
- await assert.rejects(load('services/orders.ts',{},globals).createOrderFromCheckout(data),/lost response/);fail=false;
+ await assert.rejects(load('services/orders.ts',{},globals).createOrderFromCheckout(data),/No pudimos conectar/);fail=false;
  assert.deepEqual(await load('services/orders.ts',{},globals).createOrderFromCheckout(data),result);assert.deepEqual(calls[0],calls[1]);
  assert.deepEqual(calls[0][1].items,[{productId:product,quantity:1}]);assert.equal(calls[0][0],'/api/checkout');assert.equal(Object.hasOwn(calls[0][1],'total'),false);assert.doesNotMatch(values.get('sfstore-checkout-operation'),/fullName|email|Synthetic/);
 });

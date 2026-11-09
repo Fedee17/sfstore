@@ -22,7 +22,7 @@ const modules = {
   '@/lib/whatsapp': { buildWhatsAppUrl: message => `https://wa.me/5490000000000?text=${encodeURIComponent(message)}` },
   '@/lib/web-transfer-pricing': { getWebTransferPrice: () => { throw Error('No prices needed for this content test'); } },
   '@/services/products': { getCatalogPublications: async () => [] },
-  '@/lib/catalog/home-selection': { getHomeFeaturedProducts: () => [] },
+  '@/lib/catalog/home-selection': { getHomeFeaturedProducts: () => [], getHomeEligibleProducts: () => [] },
   '@/lib/catalog/home-card-presentation': { getHomeCardPricing: () => null, getHomeCardRecommendation: () => null },
   '@/lib/products/public-families': { publicationAvailable: () => false },
 };
@@ -85,7 +85,7 @@ test('home gifts keeps browsing and WhatsApp actions in the single consolidated 
   assert.match(gift, /href="https:\/\/wa\.me\//);
   assert.match(gift, /abre WhatsApp en una pestaña nueva/);
   assert.doesNotMatch(gift, /<a\b[^>]*>(?:(?!<\/a>)[\s\S])*<a\b/);
-  for (const path of ['/perfumes', '/mates', '/accesorios']) assert.ok(html.includes(`href="${path}"`));
+  for (const path of ['/perfumes', '/mates', '/mates?categoria=bombillas']) assert.ok(html.includes(`href="${path}"`));
   assert.match(html, /Ver perfumes para regalar/);
   assert.match(html, /Ver mates para regalar/);
 });

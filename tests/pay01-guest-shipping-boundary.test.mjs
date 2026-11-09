@@ -3,9 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import ts from 'typescript';
+import * as feedback from '../lib/checkout/feedback.ts';
 function load(file,modules={},globals={}){
  const exports={};const source=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- new Function('require','exports',...Object.keys(globals),source)(name=>{assert.ok(Object.hasOwn(modules,name),`Unexpected dependency ${name}`);return modules[name];},exports,...Object.values(globals));return exports;
+ new Function('require','exports',...Object.keys(globals),source)(name=>{if(name==='./feedback')return feedback;assert.ok(Object.hasOwn(modules,name),`Unexpected dependency ${name}`);return modules[name];},exports,...Object.values(globals));return exports;
 }
 const contract=load('lib/checkout/contract.ts'),http=load('lib/checkout/http.ts',{'./contract':contract}),argentina=load('lib/checkout/argentina.ts',{'./contract':contract});
 const buyer=randomUUID(),other=randomUUID(),id=randomUUID();
@@ -57,6 +58,18 @@ test('browser session creation serializes concurrent calls, sends no PII and pre
  let calls=0;const loaded=load('lib/checkout/guest-client.ts',{}, {navigator:{locks:{request:async(name,fn)=>{assert.equal(name,'sfstore-checkout-session');await fn();}}},sessionStorage:{getItem:key=>key==='sfstore-checkout-operation'?'synthetic-operation':null},fetch:async(url,options)=>{calls++;assert.equal(url,'/api/checkout/session');assert.deepEqual(JSON.parse(options.body),{hasPendingOperation:true});await new Promise(r=>setTimeout(r,5));return{ok:true,json:async()=>({ready:true})};}});
  await Promise.all([loaded.ensureGuestCheckoutSession(),loaded.ensureGuestCheckoutSession()]);assert.equal(calls,1);
 });
+test('guest session failures are actionable, redact diagnostics and allow retry without losing pending evidence',async()=>{
+ let mode='network',calls=0;
+ const loaded=load('lib/checkout/guest-client.ts',{}, {
+  navigator:{locks:{request:async(_name,fn)=>fn()}},sessionStorage:{getItem:()=>null},
+  fetch:async()=>{calls++;if(mode==='network')throw Error('secret network diagnostic');return{ok:mode==='ready',json:async()=>{if(mode==='invalid')throw Error('secret invalid body');return{code:'CHECKOUT_SESSION_LOST',error:'secret server diagnostic'};}};},
+ });
+ await assert.rejects(loaded.ensureGuestCheckoutSession(),e=>e.message===feedback.checkoutConnectionError);
+ mode='lost';await assert.rejects(loaded.ensureGuestCheckoutSession(),e=>e.message===feedback.checkoutErrorMessage('CHECKOUT_SESSION_LOST'));
+ mode='invalid';await assert.rejects(loaded.ensureGuestCheckoutSession(),e=>e.message===feedback.checkoutErrorMessage('CHECKOUT_UNAUTHORIZED'));
+ mode='ready';await loaded.ensureGuestCheckoutSession();assert.equal(calls,4);
+});
+
 test('shipping HTTP boundary authenticates before service, rejects outside Argentina and client prices',async()=>{
  const shipping=load('lib/checkout/shipping-http.ts',{'./contract':contract,'./argentina':argentina,'./http':http});let calls=0;
  const deps={authorize:async()=>buyer,perform:async(who,dest)=>{calls++;assert.equal(who,buyer);assert.equal(dest.province,'Córdoba');return{status:'quotation_required',rates:[],country:'AR'};}};

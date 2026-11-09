@@ -98,9 +98,9 @@ test('valid products keep add controls, out of stock remains unavailable, and pr
 
 test('home cards with direct purchase preserve price, variant and availability guards',()=>{
   const props={label:'Mates',featured:true,directPurchase:true};
-  assert.match(render(ProductCard,{...props,product:product(100)}),/Agregar al carrito/);
+  assert.match(render(ProductCard,{...props,product:product(100,{primaryImageUrl:'/test.webp'})}),/Agregar al carrito/);
   const family=render(ProductCard,{...props,product:product(100,{kind:'family',variants:[product(100,{kind:'variant'})]})});
-  assert.match(family,/Elegir variante/);assert.doesNotMatch(family,/Agregar al carrito/);
+  assert.match(family,/Elegir opción/);assert.doesNotMatch(family,/Agregar al carrito/);
   const unavailable=render(ProductCard,{...props,product:product(100,{stock:0})});
   assert.match(unavailable,/Sin stock: consultar/);assert.doesNotMatch(unavailable,/Agregar al carrito/);
   const unpriced=render(ProductCard,{...props,product:product(null)});

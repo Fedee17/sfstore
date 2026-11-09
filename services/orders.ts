@@ -1,5 +1,6 @@
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutResult } from "@/lib/checkout/contract";
+import {checkoutErrorMessage,checkoutConnectionError} from '@/lib/checkout/feedback';
 
 export type PaymentMethod = "transfer";
 export type ShippingMethod = "pickup" | "shipping";
@@ -41,9 +42,9 @@ export async function createOrderFromCheckout(payload: CreateOrderFromCheckoutPa
   const response = await fetch("/api/checkout", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...request, operationKey }),
-  });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.error ?? "No se pudo preparar el pedido.");
+  }).catch(()=>{throw new Error(checkoutConnectionError);});
+  const result = await response.json().catch(()=>{throw new Error(checkoutErrorMessage(null));});
+  if (!response.ok) throw new Error(checkoutErrorMessage(result.code));
   if (result.state !== "pending") throw new Error("Este pedido ya no está pendiente. Revisá su estado antes de volver a comprar.");
   return result as CreatedOrder;
 }

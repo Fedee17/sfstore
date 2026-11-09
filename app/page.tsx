@@ -6,7 +6,7 @@ import { HomeProductCarousel } from "./home-product-card";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
 import { getHomeCardPricing } from "@/lib/catalog/home-card-presentation";
-import { getHomeFeaturedProducts } from "@/lib/catalog/home-selection";
+import { getHomeFeaturedProducts, getHomeEligibleProducts } from "@/lib/catalog/home-selection";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getCatalogPublications } from "@/services/products";
 import { RitualMatero } from "./ritual-matero";
@@ -132,7 +132,7 @@ async function FeaturedProducts() {
 }
 
 async function HomeRitualMatero() {
-  const products = (await readHomeCatalog()).filter((product) => product.category === "mates");
+  const products = getHomeEligibleProducts((await readHomeCatalog()).filter((product) => product.category === "mates"));
   const groups = [
     { label: "Mates", slugs: ["mates"] },
     { label: "Termos", slugs: ["termos"] },
@@ -225,7 +225,7 @@ export default function Home() {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/perfumes" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver perfumes para regalar</Link>
             <Link href="/mates" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver mates para regalar</Link>
-            <Link href="/accesorios" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver accesorios y cargadores</Link>
+            <Link href="/mates?categoria=bombillas" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver complementos materos</Link>
             <a href={giftWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></a>
           </div>
           <p className="mt-3 text-xs leading-5 text-[#526479]">«Consultar regalos» abre WhatsApp en una pestaña nueva.</p>

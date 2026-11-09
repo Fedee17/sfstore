@@ -81,8 +81,8 @@ export default function CartContent({ compact = false, titleId, onContinueShoppi
                 <div><dt>Subtotal de lista</dt><dd>{hasInvalidPrice ? "Pendiente" : formatWebPrice(subtotal)}</dd></div>
                 <div><dt>Descuento por transferencia</dt><dd>{transferSubtotal === null ? "Pendiente" : `−${formatWebPrice(Math.round((subtotal - transferSubtotal) * 100) / 100)}`}</dd></div>
               </dl>
-              {hasRoundedPrice ? <p>Precios redondeados hacia arriba. Importe exacto al continuar.</p> : null}
             </details>
+            {hasRoundedPrice ? <p className={styles.delivery}>Precios redondeados hacia arriba. Al continuar verás el importe exacto, con centavos, antes de confirmar.</p> : null}
             <p className={styles.delivery}>Envío a calcular · retiro sin cargo.</p>
             {hasInvalidPrice ? <p role="alert" className={styles.notice}>Consultá el precio o eliminá los productos sin precio válido para continuar.</p> : <a href="/checkout?payment=transfer" className={styles.primary}>Continuar con transferencia</a>}
             <p className={styles.warning}>No transfieras hasta confirmar el pedido.</p>

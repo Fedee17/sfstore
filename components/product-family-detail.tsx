@@ -12,6 +12,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ProductInformation } from "@/components/product-information";
+import {getProductWhatsAppLink} from '@/lib/whatsapp';
 
 export function ProductFamilyDetail({ product }: { product: Product }) {
   const variants = product.variants ?? [];
@@ -33,7 +34,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
       <h1 className="my-3 break-words text-2xl font-semibold leading-tight sm:text-4xl lg:my-5">{product.name}</h1>
       <div className="grid min-w-0 gap-3 lg:grid-cols-2 lg:items-start lg:gap-5">
         <div className="order-1 -mx-3 min-w-0 overflow-hidden rounded-2xl lg:mx-0 lg:rounded-3xl">
-          <ProductImageGallery key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} showThumbnails={false} />
+          <ProductImageGallery key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} />
           {!selected && representative ? <p className="bg-white px-3 py-2 text-xs leading-5 text-[#102033]/75 lg:px-4 lg:py-3">
             Imagen representativa: {representative.label}
           </p> : null}
@@ -78,6 +79,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
             : <button type="button" disabled className="min-h-12 w-full rounded-full bg-[#DCE3EA] px-5 py-3 text-sm font-semibold text-[#45576A]">Agregar al carrito</button>}
           </div>
           <p className="order-5 text-xs leading-5 text-[#102033]/70">Agregar al carrito no reserva stock; se verifica al preparar el pedido.</p>
+          <a className="order-5 inline-flex min-h-11 items-center justify-center rounded-full border border-[#0072CE]/35 px-4 py-2 text-sm font-semibold text-[#003B73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0072CE]" href={getProductWhatsAppLink(selected??product)} target="_blank" rel="noopener noreferrer">{selected?.stock===0?'Consultar disponibilidad por WhatsApp':'Consultar por WhatsApp'}</a>
           {selected ? <div className="order-6"><ProductInformation key={selected.id} product={selected} showSummary /></div> : null}
         </div>
       </div>

@@ -14,10 +14,10 @@ function hasPhoto(product: PublicProduct) {
 }
 
 /** Home-only projection: never mutate a publication, its SKU, price or catalog order. */
-export function getHomeFeaturedProducts(products: PublicProduct[]): HomeFeaturedProduct[] {
+export function getHomeEligibleProducts(products: PublicProduct[]): HomeFeaturedProduct[] {
   const eligible: HomeFeaturedProduct[] = [];
   for (const product of products) {
-    if (!product.featured || isDecant(product)) continue;
+    if (isDecant(product)) continue;
     if (product.kind === "family") {
       const variants = (product.variants ?? []).filter(variant =>
         publicationAvailable(variant) && hasValidWebPrice(variant.price) && !isDecant(variant)
@@ -33,5 +33,10 @@ export function getHomeFeaturedProducts(products: PublicProduct[]): HomeFeatured
       eligible.push(product);
     }
   }
-  return eligible.sort((a, b) => a.name.localeCompare(b.name, "es") || a.id.localeCompare(b.id)).slice(0, 6);
+  return eligible;
+}
+
+export function getHomeFeaturedProducts(products: PublicProduct[]): HomeFeaturedProduct[] {
+  return getHomeEligibleProducts(products.filter(product=>product.featured))
+    .sort((a,b)=>a.name.localeCompare(b.name,"es")||a.id.localeCompare(b.id)).slice(0,6);
 }

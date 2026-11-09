@@ -27,6 +27,11 @@ export function buildWhatsAppUrl(message: string) {
 }
 
 export function buildProductWhatsAppMessage(product: Product) {
+  const details=[product.variantOptions?Object.entries(product.variantOptions).map(([key,value])=>`${key}: ${value}`).join(' · '):'',product.sku?`SKU: ${product.sku}`:''].filter(Boolean).join(' · ');
+  return [productWhatsAppMessage(product),details?`Variante: ${details}`:null].filter(Boolean).join('\n');
+}
+
+function productWhatsAppMessage(product: Product) {
   if (!hasValidWebPrice(product.price)) {
     return `Hola SFSTORE, quiero consultar el precio de ${product.name}. ¿Me lo confirmás?`;
   }
@@ -40,7 +45,7 @@ export function buildProductWhatsAppMessage(product: Product) {
     if (transferPrice) {
       return [
         `Hola SFSTORE, quiero consultar por ${product.name}.`,
-        `Lo vi en la web y me interesa el precio efectivo/transferencia de ${transferPrice}.`,
+        `Lo vi en la web y me interesa el precio por transferencia de ${transferPrice}.`,
         listPrice ? `Precio lista: ${listPrice}.` : null,
         "¿Me ayudás a saber si va con mis gustos o si me conviene probar un decant?",
       ]

@@ -37,6 +37,23 @@ test('home requires featured, availability, valid price and a configured photogr
   assert.deepEqual(input, before);
 });
 
+test('Ritual uses photo/stock/price eligibility without requiring the featured flag',async()=>{
+ const input=[product('mate-visible',{category:'mates',categorySlug:'mates',featured:false}),product('mate-no-photo',{category:'mates',categorySlug:'mates',primaryImageUrl:null}),product('mate-empty',{category:'mates',categorySlug:'mates',stock:0})];
+ const html=await renderHome(input);
+ const ritual=html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
+ assert.match(ritual,/mate-visible/);assert.doesNotMatch(ritual,/mate-no-photo|mate-empty|Imagen no disponible/);
+ assert.match(ritual,/Agregar al carrito/);assert.match(ritual,/25% OFF · Transferencia/);
+});
+
+test('featured family requires choosing an option; photographed single SKU has one add action',async()=>{
+ const family=product('family',{kind:'family',variants:[product('sku')],stock:0});
+ const html=await renderHome([family,product('single')]);
+ const section=html.match(/<section id="productos"[\s\S]*?<\/section>/)[0];
+ assert.match(section,/Elegir opción/);
+ assert.equal((section.match(/>Agregar al carrito<\/button>/g)||[]).length,1);
+ assert.doesNotMatch(section,/class="discount"|25% de ahorro|Efectivo o transferencia/);
+});
+
 test('home excludes decants using the existing type and legacy-name identification', () => {
   const input = [product('typed', {attributes:[{name:'Tipo',value:'Decant'}]}), product('named', {name:'Decant Hawas'}), product('legacy', {name:'Decant Elixir',attributes:[{name:'Tipo',value:'Accesorios'}]}), product('bottle')];
   assert.deepEqual(selection.getHomeFeaturedProducts(input).map(p=>p.id), ['bottle']);
@@ -83,7 +100,7 @@ async function renderHome(products = [], featuredSelection = selection, hero) {
     '@/components/site-header': { SiteHeader: () => React.createElement('header', null, 'Existing header') },
     '@/components/home-hero-slider': { HomeHeroSlider: ({ slides }) => React.createElement('div', { id: 'hero' }, ...slides.map(slide => slide.title + slide.subtitle)) },
     '@/lib/web-transfer-pricing': prices, '@/lib/products/public-families': availability,
-    '@/lib/catalog/home-selection': featuredSelection,
+    '@/lib/catalog/home-selection': {...selection,...featuredSelection},
     '@/lib/catalog/home-card-presentation': cardPresentation,
     '@/lib/whatsapp': { buildWhatsAppUrl: message => 'https://wa.me/000?text=' + encodeURIComponent(message) },
     '@/services/products': { getCatalogPublications: async () => products },
@@ -116,7 +133,7 @@ test('discovery precedes featured and gifts/advice remain after featured without
   assert.ok(html.indexOf('id="explorar"') < html.indexOf('id="productos"'));
   assert.match(html, /Perfumes para hacer sentir presencia/);
   assert.doesNotMatch(html, /id="decants-title"|Decants de perfumes árabes|Probá, conocé, elegí con confianza|Ver decants|href="\/buscar\?buscar=decant"/);
-  for (const href of ['/perfumes', '/mates', '/accesorios']) assert.ok(html.includes(`href="${href}"`));
+  for (const href of ['/perfumes', '/mates', '/mates?categoria=bombillas']) assert.ok(html.includes(`href="${href}"`));
   for (const id of ['gifts-title', 'advice-title']) assert.equal((html.match(new RegExp(`id="${id}"`, 'g')) ?? []).length, 1);
   const sections = [...html.matchAll(/<section\b[^>]*>/g)].map(match => match[0]);
   const featured = sections.findIndex(section => section.includes('id="productos"'));
@@ -132,7 +149,7 @@ test('discovery precedes featured and gifts/advice remain after featured without
 test('missing photographs and prices never create fictional images or free offers', async () => {
   const html = await renderHome([product('zero', { price: 0 }), product('null', { price: null }), product('valid')]);
   assert.doesNotMatch(html, /Precio a confirmar/);
-  assert.doesNotMatch(html, /Agregar al carrito|\$\s*0|<img[^>]+src=""/);
+  assert.doesNotMatch(html, /\$\s*0|<img[^>]+src=""/);
   assert.match(html, /75/);
 });
 
@@ -336,9 +353,9 @@ test('featured render preserves exhausted state and links and only strikes a gen
   const html=await renderHome([input],{getHomeFeaturedProducts:()=>[input]});
   const section=html.match(/<section id="productos"[\s\S]*?<\/section>/)[0];
   assert.match(section,/data-available="false">Agotado/); assert.match(section,/10% OFF/);
-  assert.match(section,/<s>[^<]*100/); assert.match(section,/Efectivo o transferencia/);
+  assert.match(section,/<s>[^<]*100/); assert.match(section,/Transferencia/);
   assert.doesNotMatch(section,/Agregar al carrito/);
-  assert.equal((section.match(/href="\/producto\/sold"/g)||[]).length,2);
+  assert.equal((section.match(/href="\/producto\/sold"/g)||[]).length,1);
   const equal=await renderHome([product('equal',{transferPrice:100})]);
   assert.doesNotMatch(equal.match(/<section id="productos"[\s\S]*?<\/section>/)[0],/<s>|% OFF/);
 });

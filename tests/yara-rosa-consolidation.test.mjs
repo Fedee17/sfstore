@@ -87,7 +87,7 @@ function fakeClient(rows, error = null) {
   } };
 }
 const mockUrl = moduleUrl("export const getSupabaseClient = () => globalThis.__yaraReadOnlyClient; export const getSupabaseAdminClient = getSupabaseClient;");
-const publicService = await import(moduleUrl(source("services/products.ts")
+const publicService = await import(moduleUrl(source("services/products.ts").replace("@/lib/catalog/product-presentation", new URL("../lib/catalog/product-presentation.ts", import.meta.url).href)
   .replace("@/lib/products/component-publications", new URL("../lib/products/component-publications.ts", import.meta.url).href)
   .replace("@/lib/products/component-combos", new URL("../lib/products/component-combos.ts", import.meta.url).href)
   .replace("@/lib/products/public-families", moduleUrl(source("lib/products/public-families.ts")))

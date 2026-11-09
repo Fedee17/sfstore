@@ -15,9 +15,10 @@ type CardPricing = { list: number; special: number; savings: number | null; redu
 type ProductImageProps = {
   product: Pick<PublicProduct, "primaryImageUrl" | "primaryImageAlt" | "name" | "imagePlaceholder">;
   compact?: boolean;
+  onImageError?: () => void;
 };
 
-export function ProductImage({ product, compact = false }: ProductImageProps) {
+export function ProductImage({ product, compact = false, onImageError }: ProductImageProps) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const url = product.primaryImageUrl;
   const imageClass = compact ? styles.cartPhoto : styles.photo;
@@ -26,8 +27,8 @@ export function ProductImage({ product, compact = false }: ProductImageProps) {
     return (
       <div className={imageClass}>
         <img src={url} alt={product.primaryImageAlt ?? product.name} loading="lazy" decoding="async"
-          ref={(image) => { if (image?.complete && image.naturalWidth === 0) setFailedUrl(url); }}
-          onError={() => setFailedUrl(url)} />
+          ref={(image) => { if (image?.complete && image.naturalWidth === 0) {setFailedUrl(url);onImageError?.();} }}
+          onError={() => {setFailedUrl(url);onImageError?.();}} />
       </div>
     );
   }
@@ -37,7 +38,7 @@ export function ProductImage({ product, compact = false }: ProductImageProps) {
   </div>;
 }
 
-export function ProductCard({ product, label, featured = false, directPurchase = !featured, preview = false, recommendation, featuredPricing, compact = false, from = false, presentation }: {
+export function ProductCard({ product, label, featured = false, directPurchase = !featured, preview = false, recommendation, featuredPricing, compact = false, from = false, presentation, onImageError }: {
   product: PublicProduct;
   label: string;
   featured?: boolean;
@@ -48,6 +49,7 @@ export function ProductCard({ product, label, featured = false, directPurchase =
   compact?: boolean;
   from?: boolean;
   presentation?: "catalog";
+  onImageError?: () => void;
 }) {
   const available = publicationAvailable(product);
   const validPrice = hasValidWebPrice(product.price);
@@ -64,14 +66,15 @@ export function ProductCard({ product, label, featured = false, directPurchase =
   const fromLabel = featured ? from : compact && product.kind === "family";
   const Heading = featured ? "h3" : "h2";
   const catalogCard = presentation === "catalog";
-  const chooseVariant = directPurchase && available && product.kind === "family";
+  const chooseVariant = product.kind === "family";
+  const canPurchase = directPurchase && available && validPrice && Boolean(product.primaryImageUrl?.trim()) && !chooseVariant;
 
   return (
     <article className={styles.card} data-featured={featured || undefined} data-presentation={presentation} data-product-slug={product.slug}
       style={featured && product.primaryImageUrl ? { "--featured-photo": `url(${JSON.stringify(product.primaryImageUrl)})` } as CSSProperties : undefined}>
       {!preview && (!featured || directPurchase) ? <AnalyticsView event="view_item_list" identity={`${label}:${product.id}`} params={{ items: [analyticsItem(product)].filter(Boolean) }} /> : null}
       <a href={href} aria-label={`Ver producto ${product.name}`} className={styles.imageLink}>
-        <ProductImage product={product} />
+        <ProductImage product={product} onImageError={onImageError} />
       </a>
       <div className={styles.body}>
         <div className={styles.meta}>
@@ -91,22 +94,17 @@ export function ProductCard({ product, label, featured = false, directPurchase =
               <div className={styles.priceRow}>
                 <p className={styles.special}><span className="sr-only">Precio especial: </span>{fromLabel ? <small>Desde </small> : null}{formatWebPrice(pricing.special)}</p>
                 <div className={styles.badges}>
-                  {pricing.savings !== null ? <span className={styles.discount}>
-                    <span aria-hidden="true">{pricing.savings}% OFF</span>
-                    <span className="sr-only">{pricing.savings}% de ahorro</span>
-                  </span> : null}
-                  <span className={styles.payment}>{featured ? "Efectivo o transferencia" : "Transferencia bancaria"}</span>
+                  <span className={styles.payment}>{pricing.savings !== null ? `${pricing.savings}% OFF · ` : ''}Transferencia</span>
                 </div>
               </div>
             </>
           ) : <p className={styles.list}>Precio a confirmar</p>}
           <div className={styles.actions}>
-            {(!catalogCard && !(featured && directPurchase)) || chooseVariant ? <a href={href} className={styles.button}>{chooseVariant ? "Elegir variante" : "Ver producto"}</a> : null}
-            {directPurchase && available && product.kind !== "family" ? <AddToCartButton product={product} compact primary={catalogCard || featured} /> : null}
-            {directPurchase && !available ? <a href={getProductWhatsAppLink(product)} target="_blank" rel="noopener noreferrer" className={styles.secondary}>
+            {validPrice && (chooseVariant || !canPurchase && (!directPurchase || available)) ? <a href={href} className={styles.button}>{chooseVariant ? "Elegir opción" : "Ver producto"}</a> : null}
+            {canPurchase ? <AddToCartButton product={product} compact primary={catalogCard || featured} /> : null}
+            {directPurchase && (!available || !validPrice) ? <a href={getProductWhatsAppLink(product)} target="_blank" rel="noopener noreferrer" className={styles.secondary}>
               {validPrice ? "Sin stock: consultar" : "Consultar precio"}
             </a> : null}
-            {directPurchase && available && !validPrice && product.kind === "family" ? <a href={getProductWhatsAppLink(product)} target="_blank" rel="noopener noreferrer" className={styles.secondary}>Consultar precio</a> : null}
           </div>
         </div>
       </div>

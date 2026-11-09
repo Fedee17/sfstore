@@ -9,7 +9,7 @@ const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "u
 function url(code) {
   return `data:text/javascript;base64,${Buffer.from(ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString("base64")}`;
 }
-const service = await import(url(source("services/products.ts")
+const service = await import(url(source("services/products.ts").replace("@/lib/catalog/product-presentation", new URL("../lib/catalog/product-presentation.ts", import.meta.url).href)
   .replace("@/lib/products/component-publications", new URL("../lib/products/component-publications.ts", import.meta.url).href)
   .replace("@/lib/products/component-combos", new URL("../lib/products/component-combos.ts", import.meta.url).href)
   .replace("@/lib/products/public-families", url(source("lib/products/public-families.ts")))
@@ -95,7 +95,7 @@ test("actual catalog cards never use a legacy 80% transfer field", async () => {
   for (const transferPrice of [80, null]) {
     const html = renderToStaticMarkup(React.createElement(ProductGrid, { products: [{ id: "synthetic", name: "Synthetic", slug: "synthetic", category: "perfumes", price: 100, transferPrice, stock: 2, imagePlaceholder: "SY" }], label: "Synthetic" }));
     assert.match(html, /75/);
-    assert.match(html, /25% de ahorro/);
+    assert.match(html, /25% OFF · Transferencia/);
     assert.doesNotMatch(html, /Efectivo|20% de ahorro/);
   }
 });

@@ -68,9 +68,13 @@ function CheckoutContent() {
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const feedbackRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
-    if (submitError) feedbackRef.current?.focus();
-  }, [submitError]);
+    if (submitError) {
+      const invalid=formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+      (invalid??feedbackRef.current)?.focus();
+    }
+  }, [submitError,errors]);
 
   const checkoutLabel = "Preparar pedido por transferencia";
   const paymentLabel = "Transferencia bancaria";
@@ -267,11 +271,11 @@ function CheckoutContent() {
             </div>
           </div>
         ) : (
-          <form
+          <form ref={formRef}
             onSubmit={handleSubmit}
             onInvalid={(event) => {
               event.preventDefault();
-              setSubmitError("Revisá los datos indicados antes de preparar el pedido.");
+              validateForm();
             }}
             className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]"
           >
@@ -285,7 +289,7 @@ function CheckoutContent() {
                       Nombre completo
                     </span>
                     <input
-                      value={form.fullName}
+                      id="checkout-fullName" aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName?"error-fullName":undefined} value={form.fullName}
                       onChange={(event) =>
                         updateField("fullName", event.target.value)
                       }
@@ -293,7 +297,7 @@ function CheckoutContent() {
                       placeholder="Tu nombre y apellido"
                     />
                     {errors.fullName ? (
-                      <span className="text-xs font-semibold text-[#003B73]">
+                      <span id="error-fullName" className="text-xs font-semibold text-[#003B73]">
                         {errors.fullName}
                       </span>
                     ) : null}
@@ -305,7 +309,7 @@ function CheckoutContent() {
                         Teléfono
                       </span>
                       <input
-                        value={form.phone}
+                        id="checkout-phone" aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone?"error-phone":undefined} value={form.phone}
                         onChange={(event) =>
                           updateField("phone", event.target.value)
                         }
@@ -313,7 +317,7 @@ function CheckoutContent() {
                         placeholder="3564..."
                       />
                       {errors.phone ? (
-                        <span className="text-xs font-semibold text-[#003B73]">
+                        <span id="error-phone" className="text-xs font-semibold text-[#003B73]">
                           {errors.phone}
                         </span>
                       ) : null}
@@ -325,7 +329,7 @@ function CheckoutContent() {
                       </span>
                       <input
                         type="email"
-                        value={form.email}
+                        id="checkout-email" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email?"error-email":undefined} value={form.email}
                         onChange={(event) =>
                           updateField("email", event.target.value)
                         }
@@ -333,7 +337,7 @@ function CheckoutContent() {
                         placeholder="tu@email.com"
                       />
                       {errors.email ? (
-                        <span className="text-xs font-semibold text-[#003B73]">
+                        <span id="error-email" className="text-xs font-semibold text-[#003B73]">
                           {errors.email}
                         </span>
                       ) : null}
@@ -388,12 +392,12 @@ function CheckoutContent() {
                         <span className="text-sm font-semibold text-[#102033]/75">
                           Provincia
                         </span>
-                        <select aria-label="Provincia" value={form.province} onChange={event=>updateField("province",event.target.value)} className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3">
+                        <select aria-label="Provincia" id="checkout-province" aria-invalid={Boolean(errors.province)} aria-describedby={errors.province?"error-province":undefined} value={form.province} onChange={event=>updateField("province",event.target.value)} className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3">
                           <option value="">Seleccioná una provincia</option>
                           {ARGENTINA_PROVINCES.map(province=><option key={province} value={province}>{province}</option>)}
                         </select>
                         {errors.province ? (
-                          <span className="text-xs font-semibold text-[#003B73]">
+                          <span id="error-province" className="text-xs font-semibold text-[#003B73]">
                             {errors.province}
                           </span>
                         ) : null}
@@ -404,14 +408,14 @@ function CheckoutContent() {
                           Localidad
                         </span>
                         <input
-                          value={form.city}
+                          id="checkout-city" aria-invalid={Boolean(errors.city)} aria-describedby={errors.city?"error-city":undefined} value={form.city}
                           onChange={(event) =>
                             updateField("city", event.target.value)
                           }
                           className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
                         />
                         {errors.city ? (
-                          <span className="text-xs font-semibold text-[#003B73]">
+                          <span id="error-city" className="text-xs font-semibold text-[#003B73]">
                             {errors.city}
                           </span>
                         ) : null}
@@ -424,14 +428,14 @@ function CheckoutContent() {
                           Dirección
                         </span>
                         <input
-                          value={form.address}
+                          id="checkout-address" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address?"error-address":undefined} value={form.address}
                           onChange={(event) =>
                             updateField("address", event.target.value)
                           }
                           className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
                         />
                         {errors.address ? (
-                          <span className="text-xs font-semibold text-[#003B73]">
+                          <span id="error-address" className="text-xs font-semibold text-[#003B73]">
                             {errors.address}
                           </span>
                         ) : null}
@@ -442,21 +446,21 @@ function CheckoutContent() {
                           Código postal
                         </span>
                         <input
-                          value={form.postalCode}
+                          id="checkout-postalCode" aria-invalid={Boolean(errors.postalCode)} aria-describedby={errors.postalCode?"error-postalCode":undefined} value={form.postalCode}
                           onChange={(event) =>
                             updateField("postalCode", event.target.value)
                           }
                           className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
                         />
                         {errors.postalCode ? (
-                          <span className="text-xs font-semibold text-[#003B73]">
+                          <span id="error-postalCode" className="text-xs font-semibold text-[#003B73]">
                             {errors.postalCode}
                           </span>
                         ) : null}
                       </label>
                     </div>
 
-                    <label className="grid gap-2">Transporte preferido<select aria-label="Transporte preferido" value={form.carrier} onChange={event=>updateField("carrier",event.target.value as Carrier)} className="rounded-xl border p-3"><option value="">Elegí un transporte</option>{["Correo Argentino","Andreani","Via Cargo"].map(carrier=><option key={carrier}>{carrier}</option>)}</select>{errors.carrier?<span>{errors.carrier}</span>:null}</label><p>El costo depende del destino y de una tarifa aprobada por el local. Este formulario no contrata transporte.</p>
+                    <label className="grid gap-2">Transporte preferido<select aria-label="Transporte preferido" id="checkout-carrier" aria-invalid={Boolean(errors.carrier)} aria-describedby={errors.carrier?"error-carrier":undefined} value={form.carrier} onChange={event=>updateField("carrier",event.target.value as Carrier)} className="rounded-xl border p-3"><option value="">Elegí un transporte</option>{["Correo Argentino","Andreani","Via Cargo"].map(carrier=><option key={carrier}>{carrier}</option>)}</select>{errors.carrier?<span id="error-carrier">{errors.carrier}</span>:null}</label><p>El costo depende del destino y de una tarifa aprobada por el local. Este formulario no contrata transporte.</p>
                     <button type="button" disabled={isSubmitting} onClick={calculateShipping} className="rounded-xl border p-3">Calcular envío</button>
                     {shippingQuote?.status === "available" ? <label className="grid gap-2">Tarifa disponible
                       <select aria-label="Tarifa disponible" value={selectedQuoteKey} onChange={event=>setSelectedQuoteKey(event.target.value)} className="rounded-xl border p-3">
@@ -484,6 +488,7 @@ function CheckoutContent() {
 
             <aside className="h-fit rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Resumen</h2>
+              <p className="mt-2 text-sm leading-6 text-[#102033]/75">Transferencia bancaria completa: 25% de descuento sobre los productos. Los precios de referencia se redondean hacia arriba; el total exacto puede incluir centavos.</p>
               <div className="mt-6 space-y-4">
                 {items.map((item) => (
                   <div

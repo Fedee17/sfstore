@@ -10,6 +10,7 @@ import {
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { isSupersededYaraRosa } from "@/lib/products/yara-rosa-consolidation";
 import type { Product } from "@/types/product";
+import {publicProductName} from '@/lib/catalog/product-presentation';
 
 type SupportedPublicCategory = PublicCatalogSection;
 
@@ -111,11 +112,11 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
 
   return {
     kind: row.family_id ? "variant" : "simple",
-    familyId: row.family_id ?? undefined, familyName: row.family_name ?? undefined, familySlug: row.family_slug ?? undefined,
+    familyId: row.family_id ?? undefined, familyName: row.family_name ? publicProductName(row.family_name) : undefined, familySlug: row.family_slug ?? undefined,
     variantLabel: row.family_id ? Object.entries(row.variant_options??{}).map(([k,v])=>`${k}: ${v}`).join(" / ") : undefined,
     variantOptions: row.variant_options,sku: row.sku,
     id: row.id,
-    name: row.commercial_label ?? row.name,
+    name: publicProductName(row.commercial_label ?? row.name),
     slug: row.slug,
     category: publicCategory,
     price: Number(row.price),

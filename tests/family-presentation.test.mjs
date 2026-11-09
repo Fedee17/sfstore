@@ -46,6 +46,7 @@ function render(choices={},product=family){
   '@/lib/catalog/public-product-visibility':{publicCategoryPaths:{mates:'/mates'}},
   '@/lib/products/family-presentation':{getFamilyRepresentativeImage:p=>getFamilyRepresentativeImage(p,approvals)},
   '@/lib/web-transfer-pricing':prices,'@/components/site-header':{SiteHeader:()=>null},
+  '@/lib/whatsapp':{getProductWhatsAppLink:p=>'/synthetic?sku='+encodeURIComponent(p.sku??'')},
   '@/components/product-information':{ProductInformation:()=>null},
   '@/components/product-image-gallery':{ProductImageGallery:({images=[],showThumbnails=true})=>React.createElement('div',{'data-gallery':JSON.stringify(images.map(i=>i.url)),'data-thumbnails':showThumbnails})},
   '@/components/add-to-cart-button':{AddToCartButton:({product:p})=>React.createElement('button',{disabled:p.stock<=0,'data-cart-product':p.id,'data-cart-price':p.price},'Agregar al carrito')},
@@ -70,7 +71,7 @@ test('selected SKU controls its own price, availability and images, not the cove
  const greyHtml=render({Color:'Gris'});
  assert.match(greyHtml,/data-cart-product="grey"/);assert.match(greyHtml,/data-cart-price="120"/);
  assert.match(greyHtml,/90/);assert.match(greyHtml,/synthetic-grey-detail.svg/);
- assert.match(greyHtml,/data-thumbnails="false"/);
+ assert.match(greyHtml,/data-thumbnails="true"/);
 });
 test('sold-out and invalid selections cannot create a purchasable cart line',()=>{
  assert.match(render({Color:'Verde'}),/Sin stock de esta variante/);

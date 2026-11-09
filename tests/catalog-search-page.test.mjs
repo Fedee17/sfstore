@@ -1,3 +1,4 @@
+import * as productPresentation from '../lib/catalog/product-presentation.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -23,7 +24,7 @@ function load(file, modules) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   const exports = {};
-  new Function('require', 'exports', code)(name => Object.hasOwn(modules, name) ? modules[name] : require(name), exports);
+  new Function('require', 'exports', code)(name => name==='@/lib/catalog/product-presentation'?productPresentation:Object.hasOwn(modules, name) ? modules[name] : require(name), exports);
   return exports;
 }
 
