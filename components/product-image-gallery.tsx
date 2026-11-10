@@ -14,6 +14,7 @@ type ProductImageGalleryProps = {
   placeholder: string;
   productName: string;
   showThumbnails?: boolean;
+  fitViewport?: boolean;
 };
 
 function sortImages(images: ProductGalleryImage[]) {
@@ -35,6 +36,7 @@ export function ProductImageGallery({
   placeholder,
   productName,
   showThumbnails = true,
+  fitViewport = false,
 }: ProductImageGalleryProps) {
   const sortedImages = sortImages(images).filter((image) => image.url);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -72,7 +74,7 @@ export function ProductImageGallery({
               }
             }}
             alt={selectedImage.alt ?? productName}
-            className="block h-auto w-full"
+            className={fitViewport ? "block h-[clamp(16rem,52svh,30rem)] w-full bg-[#F7F9FC] object-contain" : "block h-auto w-full"}
             onError={() => setFailedImages((current) => ({ ...current, [selectedImage.url]: true }))}
           />
         )}

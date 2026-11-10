@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { SiteHeader } from "@/components/site-header";
-import { formatSavingsLabel } from "@/lib/pricing";
+import { HomeProductCarousel } from "@/app/home-product-card";
 import { formatWebPrice, getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
@@ -90,44 +90,6 @@ function getProductGalleryImages(product: unknown) {
   }
 
   return (product as ProductWithGalleryImages).images;
-}
-
-function ProductImage({
-  product,
-  size = "large",
-}: {
-  product: Awaited<ReturnType<typeof getProductBySlug>>;
-  size?: "large" | "small";
-}) {
-  if (!product) {
-    return null;
-  }
-
-  if (product.primaryImageUrl) {
-    return (
-      <div className="aspect-square overflow-hidden bg-[#102033]">
-        <img
-          src={product.primaryImageUrl}
-          alt={product.primaryImageAlt ?? product.name}
-          className="h-full w-full object-cover"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex aspect-square items-center justify-center bg-[#102033] text-white">
-      <span
-        className={
-          size === "large"
-            ? "break-all px-4 text-center text-7xl font-semibold tracking-wide text-[#DCE3EA] sm:text-8xl"
-            : "break-all px-4 text-center text-4xl font-semibold tracking-wide text-[#DCE3EA]"
-        }
-      >
-        {product.imagePlaceholder}
-      </span>
-    </div>
-  );
 }
 
 function PricePanel({
@@ -248,6 +210,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="mt-4 grid min-w-0 gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
           <div className="order-2 min-w-0 overflow-hidden rounded-[2rem] shadow-2xl shadow-[#102033]/10 lg:order-1">
             <ProductImageGallery
+              fitViewport
               images={getProductGalleryImages(product)}
               placeholder={product.imagePlaceholder}
               productName={product.name}
@@ -297,12 +260,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
               Más en {categoryLabels[product.category]}
             </h2>
           </div>
-          <a
-            href={categoryPaths[product.category]}
-            className="text-sm font-semibold text-[#0072CE] transition hover:text-[#003B73]"
-          >
-            Ver {categoryLabels[product.category].toLowerCase()}
-          </a>
         </div>
 
         {relatedProducts.length === 0 ? (
@@ -310,73 +267,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             Podés seguir explorando el catálogo.
           </div>
         ) : (
-          <div className="mt-8 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {relatedProducts.map((relatedProduct) => {
-            const relatedHasTransferPrice = hasValidWebPrice(relatedProduct.price);
-            const relatedTransferPrice = relatedHasTransferPrice ? getWebTransferPrice(relatedProduct.price) : null;
-            const relatedSavingsLabel = formatSavingsLabel(
-              relatedProduct.price,
-              relatedTransferPrice,
-            );
-
-            return (
-              <a
-                key={relatedProduct.id}
-                href={`/producto/${relatedProduct.slug}`}
-                className="group min-w-0 overflow-hidden rounded-3xl border border-[#003B73]/15 bg-white/70 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#102033]/10"
-              >
-                {relatedProduct.primaryImageUrl ? (
-                  <div className="aspect-[4/3] overflow-hidden bg-[#102033]">
-                    <img
-                      src={relatedProduct.primaryImageUrl}
-                      alt={relatedProduct.primaryImageAlt ?? relatedProduct.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                    />
-                  </div>
-                ) : (
-                  <div className="overflow-hidden bg-[#102033]">
-                    <ProductImage product={relatedProduct} size="small" />
-                  </div>
-                )}
-
-                <div className="min-w-0 p-5">
-                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-                    <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-                      {categoryLabels[relatedProduct.category]}
-                    </p>
-                    <span className="break-words text-xs font-semibold text-[#0072CE]">
-                      {relatedProduct.stock > 0 ? "En stock" : "Agotado"}
-                    </span>
-                  </div>
-                  <h3 className="mt-3 break-words text-lg font-semibold text-[#102033] group-hover:text-[#0072CE]">
-                    {relatedProduct.name}
-                  </h3>
-                  {relatedTransferPrice !== null ? (
-                    <div className="mt-3 min-w-0">
-                      <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
-                        Transferencia bancaria
-                      </p>
-                      <p className="break-words text-lg font-semibold text-[#102033]">
-                        {formatWebPrice(relatedTransferPrice)}
-                      </p>
-                      {relatedSavingsLabel ? (
-                        <span className="mt-1 inline-flex max-w-full rounded-full bg-[#0072CE]/10 px-2.5 py-1 text-xs font-semibold text-[#0072CE]">
-                          {relatedSavingsLabel}
-                        </span>
-                      ) : null}
-                      <p className="mt-1 break-words text-xs text-[#102033]/55">
-                        Lista: {formatWebPrice(relatedProduct.price)}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="mt-3 break-words text-lg font-semibold text-[#003B73]">
-                      Precio a confirmar
-                    </p>
-                  )}
-                </div>
-              </a>
-            );
-            })}
+          <div className="mt-8">
+            <HomeProductCarousel products={relatedProducts} label={`Más en ${categoryLabels[product.category]}`} />
           </div>
         )}
       </section>

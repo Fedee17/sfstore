@@ -61,7 +61,13 @@ export function AnalyticsConsent() {
           <button type="button" onClick={() => choose("rejected")} className="min-h-11 rounded-full border border-[#003B73] bg-white px-5 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">Rechazar medición</button>
           {preferences && analytics.consent() !== "unknown" ? <button type="button" className="min-h-11 px-3 text-sm underline" onClick={() => setPreferences(false)}>Cerrar</button> : null}
         </div>
-      </> : <button type="button" className="min-h-11 text-sm underline underline-offset-4 focus-visible:outline-2" onClick={() => setPreferences(true)}>Preferencias de medición · {analytics.consent() === "accepted" ? "Aceptada" : "Rechazada"}</button>}
+      </> : <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">Medición {analytics.consent() === "accepted" ? "activada" : "desactivada"}</p>
+          <p className="mt-1 text-sm">Podés cambiar tu elección cuando quieras. Comprar no requiere aceptar la medición.</p>
+        </div>
+        <button type="button" className="min-h-11 rounded-full border border-[#003B73] bg-white px-5 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2" onClick={() => setPreferences(true)}>Preferencias de medición</button>
+      </div>}
     </div>
   </section>;
 }
