@@ -71,6 +71,11 @@
 .discount, .payment { display: inline-block; max-width: 100%; border-radius: 6px; padding: 3px 6px; font-size: .6875rem; line-height: 1.25; font-weight: 700; overflow-wrap: anywhere; }
 .discount { background: #006ab5; color: #fff; white-space: nowrap; }
 .payment { background: #e8f3ff; color: #004a88; }
+/* Owner decision 11/11/2026: one-line badge on narrow cards; full word from 640px. */
+.payment { white-space: nowrap; }
+@media (width < 380px) { .payment { white-space: normal; } }
+.paymentLong { display: none; }
+@media (width >= 640px) { .paymentLong { display: inline; } .paymentShort { display: none; } }
 .actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
 .actions > * { flex: 1 1 112px; min-width: 0; }
 .button, .secondary {
@@ -122,7 +127,7 @@
 
 .card[data-product-slug="al-haramain-dubai-night"] { --photo-scale-mobile:1.3; --photo-origin-mobile:70%; --photo-scale-desktop:1.04; --photo-position-desktop:center 65%; }
 .card[data-product-slug="dispenser-de-yerba-en-madera"] { --photo-scale-mobile:1.16; --photo-origin-mobile:75%; --photo-scale-desktop:1.02; --photo-position-desktop:center 64%; }
-.card[data-product-slug="french-avenue-liquid-broun"] { --photo-scale-mobile:1.32; --photo-origin-mobile:80%; --photo-scale-desktop:1.12; --photo-position-desktop:center 70%; }
+.card[data-product-slug="french-avenue-liquid-brun"] { --photo-scale-mobile:1.32; --photo-origin-mobile:80%; --photo-scale-desktop:1.12; --photo-position-desktop:center 70%; }
 .card[data-product-slug="homme-black-100ml"] { --photo-scale-mobile:1.48; --photo-origin-mobile:83%; --photo-scale-desktop:1.26; --photo-position-desktop:center 80%; }
 .card[data-product-slug="la-voie"] { --photo-scale-mobile:1.1; --photo-origin-mobile:65%; --photo-scale-desktop:1; --photo-position-desktop:center 50%; }
 .card[data-product-slug="lattafa-khamrah"] { --photo-scale-mobile:1.12; --photo-origin-mobile:75%; --photo-scale-desktop:1; --photo-position-desktop:center 61%; }
@@ -151,7 +156,7 @@
   }
   .card[data-product-slug="al-haramain-dubai-night"] { --short-photo-width-ratio: 1.46; --short-photo-focus: 69%; }
   .card[data-product-slug="dispenser-de-yerba-en-madera"] { --short-photo-width-ratio: 1.21; --short-photo-focus: 69%; }
-  .card[data-product-slug="french-avenue-liquid-broun"] { --short-photo-width-ratio: 1.47; --short-photo-focus: 66%; }
+  .card[data-product-slug="french-avenue-liquid-brun"] { --short-photo-width-ratio: 1.47; --short-photo-focus: 66%; }
   .card[data-product-slug="homme-black-100ml"] { --short-photo-width-ratio: 1.67; --short-photo-focus: 79%; }
   .card[data-product-slug="la-voie"] { --short-photo-width-ratio: 1.45; --short-photo-focus: 49%; }
   .card[data-product-slug="lattafa-khamrah"] { --short-photo-width-ratio: 1.35; --short-photo-focus: 63%; }

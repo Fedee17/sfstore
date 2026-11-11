@@ -42,7 +42,7 @@ test('Ritual uses photo/stock/price eligibility without requiring the featured f
  const html=await renderHome(input);
  const ritual=html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
  assert.match(ritual,/mate-visible/);assert.doesNotMatch(ritual,/mate-no-photo|mate-empty|Imagen no disponible/);
- assert.match(ritual,/Agregar al carrito/);assert.match(ritual,/25% OFF · Transferencia/);
+ assert.match(ritual,/Agregar al carrito/);assert.match(ritual,/25% OFF · (?:<[^>]+>)*Transferencia/);
 });
 
 test('featured family requires choosing an option; photographed single SKU has one add action',async()=>{

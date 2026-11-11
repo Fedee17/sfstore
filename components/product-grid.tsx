@@ -104,7 +104,7 @@ export function ProductCard({ product, label, featured = false, directPurchase =
               <div className={styles.priceRow}>
                 <p className={styles.special}><span className="sr-only">Precio especial: </span>{fromLabel ? <small>Desde </small> : null}{formatWebPrice(pricing.special)}</p>
                 <div className={styles.badges}>
-                  <span className={styles.payment}>{pricing.savings !== null ? `${pricing.savings}% OFF · ` : ''}Transferencia · Efectivo</span>
+                  <span className={styles.payment}>{pricing.savings !== null ? `${pricing.savings}% OFF · ` : ''}<span className={styles.paymentLong}>Transferencia</span><span className={styles.paymentShort}>Transf.</span> · Efectivo</span>
                 </div>
               </div>
             </>

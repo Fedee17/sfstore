@@ -74,4 +74,4 @@ Veredicto visual: lista para salir con el deploy de la rama; la estética actual
 1. ~~Push, integración a `main` y despliegue; renombrar los 5 slugs en Supabase en el mismo corte.~~ Hecho el 11/11: main b4abf45 en Production, slugs renombrados (recibo `slugs-2026-11-11T15-18-51-331Z.json`), 301 verificadas.
 2. ~~Probar SEC-02 con Docker y aplicar sólo con autorización.~~ Hecho el 11/11 (recibo `sec02-applied-2026-11-11T15-27-16-816Z.json`).
 3. Completar la planilla de fotos y descripciones y aplicarla.
-4. Decidir si el badge de tarjeta vuelve a una línea en 390 px.
+4. ~~Decidir si el badge de tarjeta vuelve a una línea en 390 px.~~ Decidido el 11/11: «Transf.» en tarjetas bajo 640 px (una línea a 390, dos bajo 380); pendiente de publicar.
