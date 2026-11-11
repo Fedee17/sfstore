@@ -74,7 +74,7 @@ export function ProductImageGallery({
               }
             }}
             alt={selectedImage.alt ?? productName}
-            className={fitViewport ? "block aspect-[4/3] h-auto w-full bg-[#F7F9FC] object-contain object-center" : "block h-auto w-full"}
+            className={fitViewport ? "block h-auto w-full bg-[#F7F9FC]" : "block h-auto w-full"}
             onError={() => setFailedImages((current) => ({ ...current, [selectedImage.url]: true }))}
           />
         )}

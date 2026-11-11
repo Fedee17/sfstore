@@ -96,7 +96,9 @@ test("actual catalog cards never use a legacy 80% transfer field", async () => {
     const html = renderToStaticMarkup(React.createElement(ProductGrid, { products: [{ id: "synthetic", name: "Synthetic", slug: "synthetic", category: "perfumes", price: 100, transferPrice, stock: 2, imagePlaceholder: "SY" }], label: "Synthetic" }));
     assert.match(html, /75/);
     assert.match(html, /25% OFF · Transferencia/);
-    assert.doesNotMatch(html, /Efectivo|20% de ahorro/);
+    // Owner decision 11/11/2026: the badge names Transferencia · Efectivo; only the legacy 80% wording stays forbidden.
+    assert.match(html, /Transferencia · Efectivo/);
+    assert.doesNotMatch(html, /20% de ahorro|80%/);
   }
 });
 

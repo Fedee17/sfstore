@@ -7,8 +7,7 @@ export function ProductPricePanel({ price, from = false }: { price: number; from
   return <div className="min-w-0 space-y-2" aria-label="Precio del producto">
     <p className="text-sm text-[#45576A]">Lista: <span data-testid="variant-list-price" className="line-through">{from ? "Desde " : ""}{formatWebPrice(price)}</span></p>
     <p data-testid="variant-transfer-price" className="product-price-value text-4xl font-bold leading-tight tracking-tight text-[#0072CE]">{from ? "Desde " : ""}{formatWebPrice(getWebTransferPrice(price))}</p>
-    <span className="inline-flex rounded-md bg-[#0072CE]/10 px-2 py-1 text-xs font-semibold text-[#003B73]">25% OFF · Transferencia</span>
-    <p className="text-xs leading-5 text-[#45576A]">Con el pago completo por transferencia.</p>
+    <span className="inline-flex rounded-md bg-[#0072CE]/10 px-2 py-1 text-xs font-semibold text-[#003B73]">25% OFF · Transferencia · Efectivo</span>
   </div>;
 }
 

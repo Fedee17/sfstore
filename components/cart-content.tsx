@@ -74,7 +74,7 @@ export default function CartContent({ compact = false, titleId, onContinueShoppi
               <span>Total de productos<span className="sr-only"> · Productos por transferencia</span></span>
               <strong>{transferSubtotal === null ? "Precio a confirmar" : formatWebPrice(transferSubtotal)}</strong>
             </div>
-            <p className={styles.payment}>25% OFF por transferencia · pago completo.</p>
+            <p className={styles.payment}>25% OFF por transferencia.</p>
             <details className={styles.breakdown}>
               <summary>Ver detalle de precios</summary>
               <dl>

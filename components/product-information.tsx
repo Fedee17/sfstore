@@ -11,7 +11,7 @@ export function ProductInformation({ product, showSummary = false }: { product: 
     {information.fields.length ? <dl aria-label="Características del producto" className="grid gap-x-6 gap-y-4 text-sm leading-6 sm:grid-cols-2">
         {information.fields.map(field => <div key={field.label} className="min-w-0">
           <dt className="mb-1 text-xs font-semibold text-[#45576A]">{field.label}</dt>
-          <dd className="flex flex-wrap gap-2 break-words text-[#102033]">{field.values.map(value => <span key={value} className={field.label === "Perfil olfativo" || field.label === "Ocasiones sugeridas" ? "rounded-full border border-[#DCE3EA] bg-white px-3 py-1 text-xs" : ""}>{value}</span>)}</dd>
+          <dd className="break-words text-[#102033]">{field.values.join(" · ")}</dd>
         </div>)}
       </dl> : null}
     {information.description ? <details className="border-t border-[#DCE3EA] pt-4">
