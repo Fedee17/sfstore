@@ -71,7 +71,7 @@ Veredicto visual: lista para salir con el deploy de la rama; la estética actual
 
 ## 7. Pendientes
 
-1. Push, integración a `main` y despliegue autorizados; renombrar los 5 slugs en Supabase en el mismo corte.
+1. ~~Push, integración a `main` y despliegue; renombrar los 5 slugs en Supabase en el mismo corte.~~ Hecho el 11/11: main b4abf45 en Production, slugs renombrados (recibo `slugs-2026-11-11T15-18-51-331Z.json`), 301 verificadas.
 2. Probar SEC-02 con Docker (`SFSTORE_TEST_DOCKER`) y aplicar sólo con autorización.
 3. Completar la planilla de fotos y descripciones y aplicarla.
 4. Decidir si el badge de tarjeta vuelve a una línea en 390 px.
