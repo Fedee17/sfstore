@@ -31,7 +31,7 @@ Base auditada: `main` = `origin/main` = b8e66e1, confirmado como el commit servi
 | 5 slugs con error y 11 títulos mal escritos | P1 | Títulos corregidos (11/11); redirecciones 301 en código (d2b6957); renombre de slugs al desplegar |
 | Tarjeta repetida en portada; mensaje de WhatsApp de termos incoherente; h2 anidados en Stock | P2 | Corregido (f09d381) |
 | `/admin` sin guarda a nivel proxy | P2 | `proxy.ts` falla cerrado sin sesión allowlisted (f09d381) |
-| `transfer_price` legible por `anon` | P2 | Migración SEC-02 redactada, sin aplicar; prueba PostgreSQL pendiente de Docker |
+| `transfer_price` legible por `anon` | P2 | SEC-02 probada con Docker (5/5) y aplicada en Production el 11/11; anon 401 verificado |
 | Docs del liberador de reservas desactualizadas | Deuda | `CHECKOUT_RESERVATION_EXECUTOR.md` actualizado en la rama |
 
 ## 4. Checklist de 9 puntos (Sección 10)
@@ -72,6 +72,6 @@ Veredicto visual: lista para salir con el deploy de la rama; la estética actual
 ## 7. Pendientes
 
 1. ~~Push, integración a `main` y despliegue; renombrar los 5 slugs en Supabase en el mismo corte.~~ Hecho el 11/11: main b4abf45 en Production, slugs renombrados (recibo `slugs-2026-11-11T15-18-51-331Z.json`), 301 verificadas.
-2. Probar SEC-02 con Docker (`SFSTORE_TEST_DOCKER`) y aplicar sólo con autorización.
+2. ~~Probar SEC-02 con Docker y aplicar sólo con autorización.~~ Hecho el 11/11 (recibo `sec02-applied-2026-11-11T15-27-16-816Z.json`).
 3. Completar la planilla de fotos y descripciones y aplicarla.
 4. Decidir si el badge de tarjeta vuelve a una línea en 390 px.

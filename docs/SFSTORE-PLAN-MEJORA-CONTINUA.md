@@ -1201,4 +1201,4 @@ Paso 5 iniciado el 11/11: informe reports/launch-audit-20261111 subido con la ra
 
 Corte publicado el 11/11 («Sí, hacé el corte»): main fast-forward b8e66e1→b4abf45, Production 7713903624 verificada, cinco slugs renombrados en Supabase tras confirmar el código nuevo en el dominio (recibo slugs-2026-11-11T15-18-51-331Z.json); 301 y fichas nuevas comprobadas, capturas 390/1366 sin overflow. Quedan SEC-02 y contenido.
 
-SEC-02 probada en PostgreSQL aislado el 11/11 (5/5 con Docker) y preflight de Production hecho (anon aún lee transfer_price; sólo service role consulta products en el código). Aplicación pendiente de autorización; canal: editor SQL del panel de Supabase.
+SEC-02 probada en PostgreSQL aislado el 11/11 (5/5 con Docker) y preflight de Production hecho (anon aún lee transfer_price; sólo service role consulta products en el código). Aplicada en Production el 11/11 («Sí, aplicala») desde el editor SQL del panel con sesión del propietario; verificación PostgREST anon 401 en transfer_price y 200 en columnas públicas/vistas, service_role 200. Recibo sec02-applied-2026-11-11T15-27-16-816Z.json. Cierra SEC-02.
