@@ -48,7 +48,7 @@ export function ProductImage({ product, compact = false, onImageError }: Product
   </div>;
 }
 
-export function ProductCard({ product, label, featured = false, directPurchase = !featured, preview = false, recommendation, featuredPricing, compact = false, from = false, presentation, onImageError }: {
+export function ProductCard({ product, label, featured = false, directPurchase = !featured, preview = false, recommendation, featuredPricing, compact = false, from = false, presentation, hideLabel = false, onImageError }: {
   product: PublicProduct;
   label: string;
   featured?: boolean;
@@ -59,6 +59,7 @@ export function ProductCard({ product, label, featured = false, directPurchase =
   compact?: boolean;
   from?: boolean;
   presentation?: "catalog";
+  hideLabel?: boolean;
   onImageError?: () => void;
 }) {
   const available = publicationAvailable(product);
@@ -88,7 +89,7 @@ export function ProductCard({ product, label, featured = false, directPurchase =
       </a>
       <div className={styles.body}>
         <div className={styles.meta}>
-          {!catalogCard ? <span className={styles.category}>{label}</span> : null}
+          {!catalogCard && !hideLabel ? <span className={styles.category}>{label}</span> : null}
           {brand ? <span className={styles.brand}>{brand}</span> : null}
           {!featured || !available ? <span className={styles.availability} data-available={available}>{available ? "En stock" : "Agotado"}</span> : null}
         </div>

@@ -6,17 +6,18 @@ import type { HomeFeaturedProduct } from "@/lib/catalog/home-selection";
 import { publicCategoryLabels, publicCategoryPaths } from "@/lib/catalog/public-product-visibility";
 import { HomeFeaturedCarousel } from "./home-featured-carousel";
 
-export function HomeProductCarousel({ products, label, directPurchase = true }: {
+export function HomeProductCarousel({ products, label, directPurchase = true, hideLabel = false }: {
   products: HomeFeaturedProduct[];
   label?: string;
   directPurchase?: boolean;
+  hideLabel?: boolean;
 }) {
   const [failedPhotos,setFailedPhotos]=useState<Record<string,string>>({});
   const visible=products.filter(product=>product.primaryImageUrl?.trim()&&failedPhotos[product.id]!==product.primaryImageUrl);
   function renderCard(product: HomeFeaturedProduct, preview = false) {
     return <HomeProductCard key={product.id} product={product}
       label={label ?? product.categoryName ?? publicCategoryLabels[product.category]}
-      directPurchase={directPurchase} preview={preview} onImageError={()=>setFailedPhotos(current=>current[product.id]===product.primaryImageUrl?current:{...current,[product.id]:product.primaryImageUrl!})} />;
+      directPurchase={directPurchase} hideLabel={hideLabel} preview={preview} onImageError={()=>setFailedPhotos(current=>current[product.id]===product.primaryImageUrl?current:{...current,[product.id]:product.primaryImageUrl!})} />;
   }
 
   if(!visible.length) return <p role="status">Estamos preparando las fotos de esta selección. <a href={publicCategoryPaths[products[0]?.category??'perfumes']}>Explorá el catálogo</a>.</p>;
@@ -24,10 +25,11 @@ export function HomeProductCarousel({ products, label, directPurchase = true }: 
     previews={visible.map(product => renderCard(product, true))} />;
 }
 
-function HomeProductCard({ product, label, directPurchase, preview, onImageError }: {
+function HomeProductCard({ product, label, directPurchase, hideLabel, preview, onImageError }: {
   product: HomeFeaturedProduct;
   label: string;
   directPurchase: boolean;
+  hideLabel: boolean;
   preview: boolean;
   onImageError: () => void;
 }) {
@@ -37,6 +39,7 @@ function HomeProductCard({ product, label, directPurchase, preview, onImageError
       label={label}
       featured
       directPurchase={directPurchase}
+      hideLabel={hideLabel}
       preview={preview}
       featuredPricing={getHomeCardPricing(product)}
       recommendation={getHomeCardRecommendation(product)}

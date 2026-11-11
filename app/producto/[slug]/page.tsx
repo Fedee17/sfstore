@@ -212,7 +212,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         ) : (
           <div className="mt-8">
-            <HomeProductCarousel products={relatedProducts} label={`Más en ${categoryLabels[product.category]}`} />
+            <HomeProductCarousel products={relatedProducts} label={`Más en ${categoryLabels[product.category]}`} hideLabel />
           </div>
         )}
       </section>
