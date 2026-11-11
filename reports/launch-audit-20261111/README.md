@@ -73,7 +73,7 @@ Veredicto visual: lista para salir con el deploy de la rama; la estética actual
 
 1. ~~Push, integración a `main` y despliegue; renombrar los 5 slugs en Supabase en el mismo corte.~~ Hecho el 11/11: main b4abf45 en Production, slugs renombrados (recibo `slugs-2026-11-11T15-18-51-331Z.json`), 301 verificadas.
 2. ~~Probar SEC-02 con Docker y aplicar sólo con autorización.~~ Hecho el 11/11 (recibo `sec02-applied-2026-11-11T15-27-16-816Z.json`).
-3. Descripciones: 54 aplicadas el 11/11 (lotes 1 y 2, `descripciones-propuestas*.csv`); quedan 6 con datos pendientes del propietario (3 box, autocebante, termo GOAT, botella Stanley 650). Fotos: 8 mates siguen sin foto.
+3. Descripciones: 54 aplicadas el 11/11 (lotes 1 y 2, `descripciones-propuestas*.csv`); 6 sin datos (3 box, autocebante, termo GOAT, botella Stanley 650) quedan con su texto actual por decisión del propietario. Fotos: 8 mates siguen sin foto.
 4. ~~Decidir si el badge de tarjeta vuelve a una línea en 390 px.~~ Decidido el 11/11: «Transf.» en tarjetas bajo 640 px (una línea a 390, dos bajo 380); publicado en 53b64ac.
 
 ## 8. Cambios posteriores al informe (11/11, todos publicados en main 53b64ac)
