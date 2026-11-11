@@ -2,7 +2,7 @@
 // Run from this worktree with: node tests/fixtures/mobile-navigation-preview.mjs [--build]
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { publicRows, fixtureId, startPublicFixtureServer } from './search-public-catalog.mjs';
 
@@ -15,6 +15,14 @@ const attrs = (family, intensity) => [{name:'commercial_category',value:'arabe'}
 const rows = publicRows.map(row => row === perfume ? {...row, product_attributes:attrs('ambarado','intensa')} : row);
 rows.push({...perfume,id:fixtureId(31),name:'Perfume fresco PRUEBA',slug:'perfume-fresco-prueba',product_attributes:attrs('fresco','suave')});
 rows.push({...perfume,id:fixtureId(32),name:'Perfume disenador PRUEBA',slug:'perfume-disenador-prueba',product_attributes:[{name:'commercial_category',value:'disenador'}]});
+// Optional reviewed public snapshot: local IDs and GET-only transport, never live credentials.
+const snapshotIndex = process.argv.indexOf('--detail-snapshot');
+if (snapshotIndex !== -1) {
+  const snapshot = JSON.parse(readFileSync(process.argv[snapshotIndex + 1], 'utf8'));
+  assert.ok(Array.isArray(snapshot.rows) && snapshot.rows.length > 0);
+  for (let index = rows.length - 1; index >= 0; index--) if (rows[index].category_slug === 'perfumes') rows.splice(index, 1);
+  rows.push(...snapshot.rows.map((row, index) => ({...row, id:fixtureId(300 + index), category_id:fixtureId(600), categories:{...perfume.categories,id:fixtureId(600)}})));
+}
 const fixture = await startPublicFixtureServer({rows});
 const env = Object.fromEntries(['PATH', 'Path', 'SystemRoot', 'SYSTEMROOT', 'COMSPEC', 'PATHEXT', 'TEMP', 'TMP', 'USERPROFILE', 'LOCALAPPDATA', 'APPDATA']
   .filter(key => process.env[key]).map(key => [key, process.env[key]]));

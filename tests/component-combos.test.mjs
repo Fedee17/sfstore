@@ -40,4 +40,4 @@ let offersJS=compile('../components/component-offers.tsx');
 offersJS=offersJS.replace('"@/components/component-buy-together"',JSON.stringify(url(uiJS))).replace('"@/services/public-component-offers"',JSON.stringify(url('export async function getComponentOffers(){throw Error("SYNTHETIC UNAVAILABLE")}')));
 offersJS=offersJS.replace('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href));
 const {ComponentOffers}=await import(url(offersJS));
-test('combo service failure keeps the standalone product available with an honest status',async()=>{const html=renderToStaticMarkup(await ComponentOffers({headId:'synthetic-head'}));assert.match(html,/No pudimos consultar los conjuntos/);assert.match(html,/por separado/);assert.doesNotMatch(html,/<button|stock|precio/i);});
+test('optional combo service failure leaves no unrelated block on the standalone product',async()=>{const html=renderToStaticMarkup(await ComponentOffers({headId:'synthetic-head'}));assert.equal(html,'');});

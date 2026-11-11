@@ -27,7 +27,8 @@ const {useCartStore,cartItemKey}=load('store/cart-store.ts',{}, {localStorage:{g
 const product=(price,extra={})=>({id:'test',name:'Producto sintético',slug:'synthetic',kind:'simple',category:'perfumes',price,stock:3,featured:false,imagePlaceholder:'SY',shortDescription:'Prueba',...extra});
 const invalid=[null,undefined,0,-1,NaN,Infinity,-Infinity,'100',Number.MAX_VALUE,0.001];
 const storeModule={useCartStore,cartItemKey};
-const ui={'@/store/cart-store':storeModule,'@/lib/whatsapp':whatsapp};
+const purchaseSummary=load('components/product-purchase-summary.tsx');
+const ui={'@/store/cart-store':storeModule,'@/lib/whatsapp':whatsapp,'@/components/product-purchase-summary':purchaseSummary};
 const {AddToCartButton}=load('components/add-to-cart-button.tsx',ui);
 const {ProductActions}=load('app/producto/[slug]/product-actions.tsx',ui);
 const {ProductGrid,ProductCard}=load('components/product-grid.tsx',{...ui,'@/lib/pricing':require('../lib/pricing.ts'),'@/lib/products/public-families':require('../lib/products/public-families.ts'),'@/components/add-to-cart-button':{AddToCartButton}});

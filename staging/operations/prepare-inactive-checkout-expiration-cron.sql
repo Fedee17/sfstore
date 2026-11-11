@@ -20,5 +20,5 @@ set local statement_timeout='20s';
 select sfstore_maintenance.run_checkout_expiration(gen_random_uuid(),100) as result;
 commit;
 $job$);
-update cron.job set active=false where jobname='sfstore-checkout-expiration';
+select cron.alter_job(jobid,active:=false) from cron.job where jobname='sfstore-checkout-expiration';
 commit;

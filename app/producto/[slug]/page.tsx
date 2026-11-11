@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { SiteHeader } from "@/components/site-header";
 import { HomeProductCarousel } from "@/app/home-product-card";
-import { formatWebPrice, getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { ProductPricePanel, ProductPurchaseConditions } from "@/components/product-purchase-summary";
 import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
@@ -26,7 +26,8 @@ type ProductPageProps = {
 function createMetadataDescription(
   product: NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>,
 ) {
-  const source = product.shortDescription || product.description || product.name;
+  const information = getProductCommercialInformation(product);
+  const source = information.shortDescription || information.description || product.name;
 
   return source.length > 155 ? `${source.slice(0, 152).trim()}...` : source;
 }
@@ -92,64 +93,6 @@ function getProductGalleryImages(product: unknown) {
   return (product as ProductWithGalleryImages).images;
 }
 
-function PricePanel({
-  product,
-  isAvailable,
-}: {
-  product: NonNullable<Awaited<ReturnType<typeof getProductBySlug>>>;
-  isAvailable: boolean;
-}) {
-  const showTransferPrice = hasValidWebPrice(product.price);
-  const transferPrice = showTransferPrice ? getWebTransferPrice(product.price) : null;
-
-
-  return (
-    <div className="mt-4 overflow-hidden rounded-2xl border border-[#003B73]/15 bg-[#F7F9FC] p-4">
-      {transferPrice !== null ? (
-        <div className="product-price-grid min-w-0">
-          <div className="min-w-0">
-            <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
-              Precio por transferencia
-            </p>
-            <p className="product-price-value mt-2 text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
-              {formatWebPrice(transferPrice)}
-            </p>
-            <p className="mt-1 text-xs text-[#102033]/65">25% OFF · Transferencia · pago completo</p>
-          </div>
-          <div className="product-price-list min-w-0 self-start">
-            <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-              Precio lista
-            </p>
-            <p className="product-price-value mt-2 text-xl font-semibold text-[#102033]/70">
-              {formatWebPrice(product.price)}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="min-w-0">
-          <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-            Precio a confirmar
-          </p>
-          <p className="product-price-value mt-2 text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
-            Consultar precio
-          </p>
-        </div>
-      )}
-
-      {isAvailable ? (
-        <p className="mt-2 break-words text-sm font-medium text-[#0072CE]">
-          {product.kind === "combo" ? "Disponibilidad según componentes" : "Stock disponible"}: {product.stock} unidad
-          {product.stock === 1 ? "" : "es"}
-        </p>
-      ) : (
-        <p className="mt-2 break-words text-sm font-medium text-[#003B73]">
-          Sin stock por ahora. Consultanos y te avisamos si vuelve a entrar.
-        </p>
-      )}
-    </div>
-  );
-}
-
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
@@ -175,7 +118,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   )).filter(related => related.category === product.category && related.id !== product.id);
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
+    <main className="min-h-screen bg-[#F7F9FC] font-sans text-[#102033]">
       <AnalyticsView event="view_item" identity={product.id} params={{ items: [analyticsItem(product)].filter(Boolean) }} />
       <SiteHeader />
       <section className="mx-auto max-w-6xl px-5 py-5 sm:px-8 sm:py-8 lg:py-12">
@@ -207,8 +150,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </span>
         </nav>
 
-        <div className="mt-4 grid min-w-0 gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-          <div className="order-2 min-w-0 overflow-hidden rounded-[2rem] shadow-2xl shadow-[#102033]/10 lg:order-1">
+        <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-10">
+          <div className="min-w-0 overflow-hidden rounded-3xl border border-[#DCE3EA] bg-white">
             <ProductImageGallery
               fitViewport
               images={getProductGalleryImages(product)}
@@ -217,15 +160,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
           </div>
 
-          <article className="order-1 min-w-0 overflow-hidden rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-4 shadow-sm sm:p-8 lg:order-2">
+          <article className="min-w-0 space-y-6 rounded-3xl bg-[#FFFDFA] p-5 sm:p-7">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <span className="max-w-full break-words rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#0072CE]">
+              <span className="max-w-full break-words rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
                 {categoryLabels[product.category]}
               </span>
               <span
                 className={`max-w-full break-words rounded-full px-3 py-1 text-xs font-semibold ${
                   isAvailable
-                    ? "bg-[#0072CE] text-white"
+                    ? "bg-[#EEF2F6] text-[#003B73]"
                     : "bg-[#E52620]/10 text-[#E52620]"
                 }`}
               >
@@ -238,14 +181,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
               ) : null}
             </div>
 
-            <h1 className="mt-3 break-words text-2xl font-semibold leading-tight sm:text-4xl">
+            <h1 className="break-words text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
               {product.name}
             </h1>
             {information.shortDescription ? <p className="mt-2 whitespace-pre-line break-words text-sm leading-6">{information.shortDescription}</p> : null}
-            <PricePanel product={product} isAvailable={isAvailable} />
+            <ProductPricePanel price={product.price} />
             <ProductActions product={product} />
-            <ProductInformation product={product} />
-            {product.kind !== "combo" ? <Suspense fallback={<p role="status" className="mt-4 text-sm">Consultando conjuntos…</p>}><ComponentOffers headId={product.id}/></Suspense> : null}
+            <ProductPurchaseConditions attributes={productAttributes} />
+            <div className="space-y-5"><ProductInformation product={product} /></div>
+            {product.kind !== "combo" ? <Suspense fallback={null}><ComponentOffers headId={product.id}/></Suspense> : null}
           </article>
         </div>
       </section>

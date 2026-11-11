@@ -39,7 +39,7 @@ test('synthetic storefront: responsive Home, missing photos, exact SKU gallery, 
       await page.waitForLoadState('networkidle');
       await page.getByRole('button',{name:'Negro',exact:true}).click();
       await page.waitForFunction(()=>[...document.querySelectorAll('button[aria-pressed="true"]')].some(button=>button.textContent.includes('Negro')));
-      const mainPhoto=page.locator('img[class="block h-auto w-full"]');
+      const mainPhoto=page.locator('main > section img').first();
       const first=await mainPhoto.getAttribute('src');
       await page.getByRole('button',{name:/Ver imagen 2 de/}).click();
       assert.notEqual(await mainPhoto.getAttribute('src'),first);

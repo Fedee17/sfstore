@@ -39,13 +39,13 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   return (
     <div className="mt-4 min-w-0">
-      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+      <div className="grid min-w-0 gap-3">
         {isAvailable ? (
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={isAtMaxStock}
-            className="min-h-12 min-w-0 rounded-full bg-[#0072CE] px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-[#003B73] disabled:cursor-not-allowed disabled:bg-[#0072CE]/55"
+            className="min-h-12 min-w-0 rounded-full bg-[#102033] px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-[#003B73] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#003B73] disabled:cursor-not-allowed disabled:bg-[#45576A]"
           >
             {isAtMaxStock ? "Stock máximo en carrito" : "Agregar al carrito"}
           </button>
@@ -59,21 +59,18 @@ export function ProductActions({ product }: ProductActionsProps) {
             {validPrice ? "Consultar disponibilidad" : "Consultar precio"}
           </a>
         )}
-        {validPrice ? <a
+        {isAvailable ? <a
           href={getProductWhatsAppLink(product)}
           target="_blank"
           rel="noreferrer"
-          className="min-h-12 min-w-0 rounded-full border border-[#102033]/15 px-6 py-3.5 text-center text-sm font-semibold text-[#102033] transition hover:border-[#0072CE] hover:text-[#0072CE]"
+          className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-[#DCE3EA] px-5 py-2.5 text-center text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#003B73]"
         >
           Consultar por WhatsApp
         </a> : null}
       </div>
-        <p role="status" aria-atomic="true" className="mt-3 break-words text-sm font-semibold text-[#0072CE]">
+        <p role="status" aria-atomic="true" className={feedback ? "mt-3 break-words text-sm font-semibold text-[#003B73]" : "sr-only"}>
           {feedback}
         </p>
-      <p className="mt-4 break-words text-sm leading-6 text-[#102033]/60">
-        {product.kind === "combo" ? "¿Dudas sobre el conector o la compatibilidad con tu equipo? Consultanos antes de comprar." : "Te ayudamos a elegir según tus gustos, ocasión y presupuesto."}
-      </p>
     </div>
   );
 }

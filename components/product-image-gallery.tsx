@@ -74,23 +74,23 @@ export function ProductImageGallery({
               }
             }}
             alt={selectedImage.alt ?? productName}
-            className={fitViewport ? "block h-[clamp(16rem,52svh,30rem)] w-full bg-[#F7F9FC] object-contain" : "block h-auto w-full"}
+            className={fitViewport ? "block aspect-[4/3] h-auto w-full bg-[#F7F9FC] object-contain object-center" : "block h-auto w-full"}
             onError={() => setFailedImages((current) => ({ ...current, [selectedImage.url]: true }))}
           />
         )}
       </div>
 
       {showThumbnails && sortedImages.length > 1 ? (
-        <div className="grid grid-cols-4 gap-2 border-t border-[#F7F9FC]/10 bg-[#102033] p-3 sm:grid-cols-5">
+        <div className={`grid grid-cols-4 gap-2 border-t p-3 sm:grid-cols-5 ${fitViewport ? "border-[#DCE3EA] bg-white" : "border-[#F7F9FC]/10 bg-[#102033]"}`}>
           {sortedImages.map((image, index) => (
             <button
               key={`${image.url}-${index}`}
               type="button"
               onClick={() => setSelectedIndex(index)}
-              className={`aspect-square min-w-0 overflow-hidden rounded-2xl border transition ${
+              className={`aspect-square min-w-0 overflow-hidden rounded-xl border transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003B73] ${
                 index === activeIndex
                   ? "border-[#0072CE] opacity-100"
-                  : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
+                  : fitViewport ? "border-[#DCE3EA] opacity-80 hover:opacity-100" : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
               }`}
               aria-label={`Ver imagen ${index + 1} de ${productName}`}
               aria-pressed={index === activeIndex}

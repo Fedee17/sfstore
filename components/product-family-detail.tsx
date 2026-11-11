@@ -7,7 +7,7 @@ import Link from "next/link";
 import type { Product } from "@/types/product";
 import { publicCategoryPaths } from "@/lib/catalog/public-product-visibility";
 import { getFamilyRepresentativeImage } from "@/lib/products/family-presentation";
-import { formatWebPrice, getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { ProductPricePanel, ProductPurchaseConditions } from "@/components/product-purchase-summary";
 import { SiteHeader } from "@/components/site-header";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
@@ -26,7 +26,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
   const isColor = dimensions.length === 1 && dimensions[0].toLowerCase() === "color";
   const price = selected ? selected.price : product.price;
 
-  return <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
+  return <main className="min-h-screen bg-[#F7F9FC] font-sans text-[#102033]">
     <SiteHeader />
     <section className="mx-auto max-w-6xl px-4 py-3 sm:py-8 lg:px-5">
       <AnalyticsView event="view_item" identity={product.id} params={{ items: [analyticsItem(product)].filter(Boolean) }} />
@@ -34,7 +34,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
       <h1 className="my-3 break-words text-2xl font-semibold leading-tight sm:text-4xl lg:my-5">{product.name}</h1>
       <div className="grid min-w-0 gap-3 lg:grid-cols-2 lg:items-start lg:gap-5">
         <div className="order-1 -mx-3 min-w-0 overflow-hidden rounded-2xl lg:mx-0 lg:rounded-3xl">
-          <ProductImageGallery key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} />
+          <ProductImageGallery fitViewport key={selected?.id ?? product.id} images={images} placeholder={product.imagePlaceholder} productName={selected?.name ?? product.name} />
           {!selected && representative ? <p className="bg-white px-3 py-2 text-xs leading-5 text-[#102033]/75 lg:px-4 lg:py-3">
             Imagen representativa: {representative.label}
           </p> : null}
@@ -42,9 +42,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
         <div className="order-2 flex min-w-0 flex-col gap-3 lg:gap-4 lg:rounded-3xl lg:border lg:border-[#003B73]/20 lg:bg-white lg:p-6">
           <div aria-live="polite" aria-atomic="true" className="order-2 space-y-1 lg:order-1">
             {selected ? <p className="text-xs font-semibold text-[#003B73]">Precio de la variante elegida</p> : null}
-            {hasValidWebPrice(price) ? <><p data-testid="variant-transfer-price" className={`break-words font-bold ${selected ? "text-3xl" : "text-2xl lg:text-3xl"}`}>{selected ? "" : "Desde "}{formatWebPrice(getWebTransferPrice(price))}</p>
-            <p className="text-sm text-[#003B73]">25% OFF · Transferencia · pago completo</p>
-            <p data-testid="variant-list-price" className="text-sm text-[#102033]/70">Precio de lista: {selected ? "" : "desde "}{formatWebPrice(price)}</p></> : <p className="font-semibold">Precio a confirmar</p>}
+            <ProductPricePanel price={price} from={!selected} />
           </div>
           {dimensions.map(d => <fieldset key={d} className="order-1 min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#FFFDFA] px-3 pb-3 pt-1 lg:order-2">
             <legend className="mb-2 break-words px-1 font-semibold text-[#003B73]">{choices[d] ? `${d}: ${choices[d]}` : isColor ? "Elegí tu color" : `Elegí ${d.toLowerCase()}`}</legend>
@@ -80,7 +78,8 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
           </div>
           <p className="order-5 text-xs leading-5 text-[#102033]/70">Agregar al carrito no reserva stock; se verifica al preparar el pedido.</p>
           <a className="order-5 inline-flex min-h-11 items-center justify-center rounded-full border border-[#0072CE]/35 px-4 py-2 text-sm font-semibold text-[#003B73] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0072CE]" href={getProductWhatsAppLink(selected??product)} target="_blank" rel="noopener noreferrer">{selected?.stock===0?'Consultar disponibilidad por WhatsApp':'Consultar por WhatsApp'}</a>
-          {selected ? <div className="order-6"><ProductInformation key={selected.id} product={selected} showSummary /></div> : null}
+          <div className="order-5"><ProductPurchaseConditions attributes={selected?.attributes} /></div>
+          {selected ? <div className="order-6"><div className="space-y-5"><ProductInformation key={selected.id} product={selected} showSummary /></div></div> : null}
         </div>
       </div>
     </section>

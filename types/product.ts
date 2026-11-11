@@ -11,6 +11,7 @@ export type Product = {
   sku?: string | null;
   variants?: Product[];
   images?: {url:string;alt:string|null;sort_order:number;is_primary:boolean}[];
+  attributes?: {name:string;value:string;sort_order:number}[];
   id: string;
   name: string;
   slug: string;

@@ -51,6 +51,8 @@ function render(choices={},product=family){
   '@/components/product-image-gallery':{ProductImageGallery:({images=[],showThumbnails=true})=>React.createElement('div',{'data-gallery':JSON.stringify(images.map(i=>i.url)),'data-thumbnails':showThumbnails})},
   '@/components/add-to-cart-button':{AddToCartButton:({product:p})=>React.createElement('button',{disabled:p.stock<=0,'data-cart-product':p.id,'data-cart-price':p.price},'Agregar al carrito')},
  };
+ const purchase={};new Function('require','exports',ts.transpileModule(readFileSync(new URL('../components/product-purchase-summary.tsx',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n]??require(n),purchase);
+ modules['@/components/product-purchase-summary']=purchase;
  new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n]??require(n),exports);
  return renderToStaticMarkup(React.createElement(exports.ProductFamilyDetail,{product}));
 }
@@ -119,7 +121,7 @@ test('family thumbnails can be omitted without removing stored photos or changin
 test('the detail rounds displayed prices while keeping the selected SKU price exact for the cart',()=>{
  const variant={...black,price:129333.67};
  const html=render({Color:'Negro'},{...family,variants:[variant,grey,green]});
- assert.match(html,/data-testid="variant-list-price"[^>]*>Precio de lista: [^<]*129\.334<\/p>/);
+ assert.match(html,/data-testid="variant-list-price"[^>]*>[^<]*129\.334<\/span>/);
  assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.001<\/p>/);
  assert.match(html,/data-cart-price="129333\.67"/);
 });

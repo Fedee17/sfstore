@@ -9,6 +9,7 @@ export function WhatsAppFloatingButton() {
   if (pathname === "/admin" || pathname?.startsWith("/admin/")) return null;
   const purchaseFlow = pathname === "/carrito" || pathname === "/checkout" || pathname?.startsWith("/checkout/");
   if (purchaseFlow) return null;
+  const productDetail = pathname?.startsWith("/producto/");
   const href = buildWhatsAppUrl(
     "Hola SFSTORE, quiero hacer una consulta desde la web.",
   );
@@ -19,7 +20,7 @@ export function WhatsAppFloatingButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Consultar por WhatsApp"
-      className={`fixed bottom-5 right-4 z-50 inline-flex h-14 min-w-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-semibold text-white shadow-xl shadow-[#102033]/20 transition hover:bg-[#1DA851] focus:outline-none focus:ring-2 focus:ring-[#0072CE] focus:ring-offset-2 focus:ring-offset-[#F7F9FC] sm:right-6 sm:px-5 [@media(max-height:700px)]:px-0 ${styles.floating}`}
+      className={`fixed bottom-5 right-4 z-50 ${productDetail ? "hidden md:inline-flex" : "inline-flex"} h-14 min-w-14 items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-semibold text-white shadow-xl shadow-[#102033]/20 transition hover:bg-[#1DA851] focus:outline-none focus:ring-2 focus:ring-[#0072CE] focus:ring-offset-2 focus:ring-offset-[#F7F9FC] sm:right-6 sm:px-5 [@media(max-height:700px)]:px-0 ${styles.floating}`}
     >
       <svg
         aria-hidden="true"
