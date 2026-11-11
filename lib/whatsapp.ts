@@ -66,7 +66,9 @@ function productWhatsAppMessage(product: Product) {
     return [
       `Hola SFSTORE, quiero consultar por ${product.name}.`,
       "Lo vi en la web y me interesa para uso personal o regalo.",
-      "¿Me ayudás a combinarlo con termo, yerba o bombilla?",
+      /\b(termo|botella)\b/i.test(product.name)
+        ? "¿Me ayudás a combinarlo con mate, yerba o bombilla?"
+        : "¿Me ayudás a combinarlo con termo, yerba o bombilla?",
     ].join("\n");
   }
 

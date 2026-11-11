@@ -114,7 +114,7 @@ function PricePanel({
             <p className="product-price-value mt-2 text-3xl font-semibold leading-tight tracking-tight text-[#102033] sm:text-4xl">
               {formatWebPrice(transferPrice)}
             </p>
-            <p className="mt-1 text-xs text-[#102033]/65">25% OFF · pago completo</p>
+            <p className="mt-1 text-xs text-[#102033]/65">25% OFF · Transferencia · pago completo</p>
           </div>
           <div className="product-price-list min-w-0 self-start">
             <p className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">

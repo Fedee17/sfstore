@@ -132,7 +132,10 @@ async function FeaturedProducts() {
 }
 
 async function HomeRitualMatero() {
-  const products = getHomeEligibleProducts((await readHomeCatalog()).filter((product) => product.category === "mates"));
+  const catalog = await readHomeCatalog();
+  // Featured cards already appear in "Los más elegidos"; do not repeat them here.
+  const featuredIds = new Set(getHomeFeaturedProducts(catalog).map((product) => product.id));
+  const products = getHomeEligibleProducts(catalog.filter((product) => product.category === "mates" && !featuredIds.has(product.id)));
   const groups = [
     { label: "Mates", slugs: ["mates"] },
     { label: "Termos", slugs: ["termos"] },

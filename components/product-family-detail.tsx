@@ -43,7 +43,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
           <div aria-live="polite" aria-atomic="true" className="order-2 space-y-1 lg:order-1">
             {selected ? <p className="text-xs font-semibold text-[#003B73]">Precio de la variante elegida</p> : null}
             {hasValidWebPrice(price) ? <><p data-testid="variant-transfer-price" className={`break-words font-bold ${selected ? "text-3xl" : "text-2xl lg:text-3xl"}`}>{selected ? "" : "Desde "}{formatWebPrice(getWebTransferPrice(price))}</p>
-            <p className="text-sm text-[#003B73]">Transferencia · 25% OFF · pago completo</p>
+            <p className="text-sm text-[#003B73]">25% OFF · Transferencia · pago completo</p>
             <p data-testid="variant-list-price" className="text-sm text-[#102033]/70">Precio de lista: {selected ? "" : "desde "}{formatWebPrice(price)}</p></> : <p className="font-semibold">Precio a confirmar</p>}
           </div>
           {dimensions.map(d => <fieldset key={d} className="order-1 min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#FFFDFA] px-3 pb-3 pt-1 lg:order-2">

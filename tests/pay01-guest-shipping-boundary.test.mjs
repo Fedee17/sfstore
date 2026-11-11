@@ -89,7 +89,7 @@ test('quotation lookup is session-owned, hides customer PII, and does not create
 test('checkout proxy persists refreshed guest cookies before receipt rendering and never creates an identity',async()=>{
  let options,calls=0;const cookieValues=[{name:'sfstore-checkout-auth',value:'expired-synthetic'}],responseWrites=[];
  const request={cookies:{getAll:()=>cookieValues,set:(name,value)=>{cookieValues[0]={name,value};}}};
- const loaded=load('proxy.ts',{'@supabase/ssr':{createServerClient:(url,key,input)=>{options=input;return{auth:{getUser:async()=>{calls++;options.cookies.setAll([{name:'sfstore-checkout-auth',value:'refreshed-synthetic',options:{httpOnly:false}}]);}}};}},'next/server':{NextResponse:{next:()=>({cookies:{getAll:()=>[],set:(...args)=>responseWrites.push(args)},headers:new Headers()})}}},{process:{env:{NODE_ENV:'production',NEXT_PUBLIC_SUPABASE_URL:'https://synthetic.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'synthetic-public'}}});
+ const loaded=load('proxy.ts',{'@/lib/admin-authorization':{isAllowedAdminEmail:()=>false},'@supabase/ssr':{createServerClient:(url,key,input)=>{options=input;return{auth:{getUser:async()=>{calls++;options.cookies.setAll([{name:'sfstore-checkout-auth',value:'refreshed-synthetic',options:{httpOnly:false}}]);}}};}},'next/server':{NextResponse:{next:()=>({cookies:{getAll:()=>[],set:(...args)=>responseWrites.push(args)},headers:new Headers()})}}},{process:{env:{NODE_ENV:'production',NEXT_PUBLIC_SUPABASE_URL:'https://synthetic.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'synthetic-public'}}});
  const response=await loaded.proxy(request);assert.equal(calls,1);assert.equal(cookieValues[0].value,'refreshed-synthetic');assert.equal(responseWrites[0][2].httpOnly,true);assert.equal(responseWrites[0][2].secure,true);assert.match(response.headers.get('cache-control'),/no-store/);
  cookieValues.length=0;await loaded.proxy(request);assert.equal(calls,1);
 });
@@ -116,4 +116,23 @@ test('normalized Next loopback URL uses exact Host origin for session, checkout 
   assert.equal((await shipping.handleShippingAction(r.clone(),deps,'rates')).status,403);
  }
  assert.equal(calls,1);
+});
+
+test('admin proxy fails closed: redirects without an allowed session and never gates /admin/login',async()=>{
+ const env={NODE_ENV:'production',NEXT_PUBLIC_SUPABASE_URL:'https://synthetic.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'synthetic-public',ADMIN_ALLOWED_EMAILS:'admin@example.invalid'};
+ const run=async(pathname,user,{allowed=true,throws=false,envOverride=env}={})=>{
+  let calls=0,redirects=[];const request={url:'https://sfstore.invalid'+pathname,nextUrl:{pathname},cookies:{getAll:()=>[],set:()=>{}}};
+  const loaded=load('proxy.ts',{'@/lib/admin-authorization':{isAllowedAdminEmail:(email)=>allowed&&email==='admin@example.invalid'},'@supabase/ssr':{createServerClient:()=>({auth:{getUser:async()=>{calls++;if(throws)throw Error('synthetic');return{data:{user},error:user?null:Error('missing')};}}})},'next/server':{NextResponse:{next:()=>({kind:'next',cookies:{getAll:()=>[],set:()=>{}},headers:new Headers()}),redirect:(target)=>{redirects.push(String(target));return{kind:'redirect',headers:new Headers()};}}}},{process:{env:envOverride}});
+  const response=await loaded.proxy(request);return{response,calls,redirects};
+ };
+ const admin={id:randomUUID(),email:'admin@example.invalid',is_anonymous:false};
+ let r=await run('/admin/ventas',null);assert.equal(r.response.kind,'redirect');assert.match(r.redirects[0],/\/admin\/login$/);
+ r=await run('/admin/ventas',{...admin,is_anonymous:true});assert.equal(r.response.kind,'redirect');
+ r=await run('/admin/ventas',{...admin,email:'other@example.invalid'});assert.equal(r.response.kind,'redirect');
+ r=await run('/admin/ventas',admin,{throws:true});assert.equal(r.response.kind,'redirect');
+ r=await run('/admin/ventas',admin,{envOverride:{NODE_ENV:'production'}});assert.equal(r.response.kind,'redirect');assert.equal(r.calls,0);
+ r=await run('/admin/ventas',admin);assert.equal(r.response.kind,'next');assert.equal(r.calls,1);assert.match(r.response.headers.get('cache-control'),/no-store/);
+ r=await run('/admin',null);assert.equal(r.response.kind,'redirect');
+ r=await run('/admin/login',null);assert.equal(r.response.kind,'next');assert.equal(r.calls,0);
+ r=await run('/administracion',null);assert.equal(r.response.kind,'next');assert.equal(r.calls,0);
 });

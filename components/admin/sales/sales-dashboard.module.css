@@ -24,14 +24,14 @@
 .stockTitle { font-size: clamp(28px, 3.4vw, 40px); font-weight: 750; letter-spacing: -0.035em; margin: 0; line-height: 1.15; color: #101522; }
 .stockPanels { display: grid; gap: 28px; margin-top: 28px; }
 .stockPanel { padding: 24px 26px; border-radius: 16px; border-color: #deddd7; box-shadow: 0 2px 3px #1a201008; }
-.stockPanel h2 { font-size: clamp(24px, 2.6vw, 30px); line-height: 1.2; letter-spacing: -0.025em; color: #101522; }
+.stockPanel h3 { font-size: clamp(24px, 2.6vw, 30px); line-height: 1.2; letter-spacing: -0.025em; color: #101522; }
 .stockPanel > .muted { font-size: 17px; line-height: 1.45; margin-top: 7px; color: #50545e; }
 .stockHeading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 .stockCount { color: #252925; background: #f7f4ec; border-radius: 10px; padding: 6px 10px; font-size: 14px; font-weight: 600; white-space: nowrap; }
 .stockRiskCount::before { content: ''; display: inline-block; width: 10px; height: 10px; background: #d99400; border-radius: 50%; margin-right: 8px; }
 .stockList { list-style: none; margin: 18px 0 0; padding: 0; }
 .stockRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; align-items: center; gap: 8px 20px; min-width: 0; padding: 8px 0; border-top: 1px solid #dfdfd5; overflow-wrap: anywhere; }
-.stockRow h3 { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.4; color: #101522; }
+.stockRow h4 { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.4; color: #101522; }
 .stockRow .muted { margin-top: 4px; }
 .stockMetric { font-size: 16px; margin: 0; color: #50545e; line-height: 1.5; }
 .stockAction, .stockLink { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; color: #465826; font-size: 15px; font-weight: 600; }
