@@ -1196,3 +1196,5 @@ Plan de cinco pasos confirmado por el propietario. Paso 1 (código, rama codex/l
 Paso 2 integrado y paso 3 redactado el 11/11 en la misma rama (ea57e59 y siguiente): rediseño de ficha aplicado con 3-way sin tocar el worktree de origen; SEC-02 limitada a transfer_price porque las vistas públicas dependen de stock y sku; prueba PostgreSQL pendiente de ejecución con Docker. Sin push, sin SQL remoto, sin datos.
 
 Lote de datos del 11/11 (autorizado): seis productos de electrónica a borrador, 81 listas redondeadas + familia Stanley por base_price, once títulos corregidos; recibos en el scratchpad de la sesión. Redirecciones de slugs en código, renombre diferido al despliegue. Planilla de contenido entregada.
+
+Paso 5 iniciado el 11/11: informe reports/launch-audit-20261111 subido con la rama (891b769) y PR https://github.com/Fedee17/sfstore/pull/13 abierto con autorización del propietario; checks Vercel aprobados, preview bajo SSO. Integración a main, renombre de slugs en Supabase y SEC-02 siguen pendientes de ejecución y de su confirmación por acción.
