@@ -11,7 +11,7 @@ type CardProduct = {
 // Approved home copy, shown only while the catalog still supports the claim.
 const recommendations = [
   { slug: "al-haramain-dubai-night", evidence: ["salidas nocturnas"], text: "Para salidas nocturnas." },
-  { slug: "french-avenue-liquid-broun", evidence: ["citas", "salidas nocturnas"], text: "Para citas o salidas." },
+  { slug: "french-avenue-liquid-brun", evidence: ["citas", "salidas nocturnas"], text: "Para citas o salidas." },
   { slug: "homme-black-100ml", evidence: ["cálida", "dulce"], text: "Para gustos dulces y cálidos." },
   { slug: "la-voie", evidence: ["florales", "dulce"], text: "Para gustos florales y dulces." },
   { slug: "lattafa-khamrah", evidence: ["ocasiones especiales"], text: "Para ocasiones especiales." },
