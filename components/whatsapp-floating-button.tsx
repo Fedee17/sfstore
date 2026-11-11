@@ -9,7 +9,8 @@ export function WhatsAppFloatingButton() {
   if (pathname === "/admin" || pathname?.startsWith("/admin/")) return null;
   const purchaseFlow = pathname === "/carrito" || pathname === "/checkout" || pathname?.startsWith("/checkout/");
   if (purchaseFlow) return null;
-  const productDetail = pathname?.startsWith("/producto/");
+  // Product pages and the home keep their own WhatsApp CTA, so the floating button only shows from md up there.
+  const productDetail = pathname?.startsWith("/producto/") || pathname === "/";
   const href = buildWhatsAppUrl(
     "Hola SFSTORE, quiero hacer una consulta desde la web.",
   );
