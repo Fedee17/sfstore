@@ -1203,4 +1203,4 @@ Corte publicado el 11/11 («Sí, hacé el corte»): main fast-forward b8e66e1→
 
 SEC-02 probada en PostgreSQL aislado el 11/11 (5/5 con Docker) y preflight de Production hecho (anon aún lee transfer_price; sólo service role consulta products en el código). Aplicada en Production el 11/11 («Sí, aplicala») desde el editor SQL del panel con sesión del propietario; verificación PostgREST anon 401 en transfer_price y 200 en columnas públicas/vistas, service_role 200. Recibo sec02-applied-2026-11-11T15-27-16-816Z.json. Cierra SEC-02.
 
-Badge de tarjeta en móvil (11/11, opción B elegida sobre mockup): «Transf.» bajo 640 px, una línea a 390, repliegue a dos líneas bajo 380; CTA alineado al pie. Etiqueta de categoría retirada de las tarjetas de recomendaciones de la ficha (11/11). Pendiente de integrar a main.
+Badge de tarjeta en móvil (11/11, opción B elegida sobre mockup): «Transf.» bajo 640 px, una línea a 390, repliegue a dos líneas bajo 380; CTA alineado al pie. Etiqueta de categoría retirada de las tarjetas de recomendaciones de la ficha (11/11). Publicado: main 53b64ac en Production (deployment 7714508461), verificado a 390/1366.
