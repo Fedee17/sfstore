@@ -75,3 +75,15 @@ Veredicto visual: lista para salir con el deploy de la rama; la estética actual
 2. ~~Probar SEC-02 con Docker y aplicar sólo con autorización.~~ Hecho el 11/11 (recibo `sec02-applied-2026-11-11T15-27-16-816Z.json`).
 3. Completar la planilla de fotos y descripciones y aplicarla.
 4. ~~Decidir si el badge de tarjeta vuelve a una línea en 390 px.~~ Decidido el 11/11: «Transf.» en tarjetas bajo 640 px (una línea a 390, dos bajo 380); publicado en 53b64ac.
+
+## 8. Cambios posteriores al informe (11/11, todos publicados en main 53b64ac)
+
+| Cambio | Motivo | Commit | Verificación |
+|---|---|---|---|
+| Texto aprobado de portada y selectores de foto de French Avenue apuntan al slug nuevo `french-avenue-liquid-brun` | Seguimiento del renombre de slugs; sin esto se perdía la copia aprobada «Para citas o salidas.» | b4abf45, b41bca0 | 29 pruebas de portada; ficha y portada en Production |
+| Badge de tarjeta «25% OFF · Transf. · Efectivo» en una línea por debajo de 640 px; «Transferencia» completa desde 640 px; repliegue a dos líneas bajo 380 px | Decisión del propietario sobre mockup (opción B) | b41bca0 | Playwright a 360/390/1366 en preview y Production; sin recorte ni overflow |
+| Tarjetas de «Seguí explorando / Más en …» sin la etiqueta de categoría repetida (prop `hideLabel`, sólo en la ficha) | Pedido del propietario: el título de la sección ya lo dice | 53b64ac | Ficha en Production a 390: 0 etiquetas en la sección; portada conserva las suyas |
+| Corte publicado: `main` b8e66e1 → b4abf45 (código de la auditoría + renombre de 5 slugs en Supabase) → 53b64ac (tarjetas) | Autorizaciones «Sí, hacé el corte» y «Sí, publicá» | — | Deployments 7713903624 y 7714508461 success; rutas 200, 301 de slugs viejos, capturas 390/1366 |
+| SEC-02 aplicada en Production desde el editor SQL de Supabase | Autorización «Sí, aplicala» tras prueba Docker 5/5 | d46ca37 (archivo) | anon 401 en `transfer_price` y en `select *`; 200 en id/price/stock/sku y vistas; service_role 200 |
+
+Los recibos de datos (slugs, SEC-02) quedan en los artefactos de la sesión, fuera del repositorio.
