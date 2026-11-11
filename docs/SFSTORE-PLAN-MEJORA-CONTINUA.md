@@ -1200,3 +1200,5 @@ Lote de datos del 11/11 (autorizado): seis productos de electrónica a borrador,
 Paso 5 iniciado el 11/11: informe reports/launch-audit-20261111 subido con la rama (891b769) y PR https://github.com/Fedee17/sfstore/pull/13 abierto con autorización del propietario; checks Vercel aprobados, preview bajo SSO. Integración a main, renombre de slugs en Supabase y SEC-02 siguen pendientes de ejecución y de su confirmación por acción.
 
 Corte publicado el 11/11 («Sí, hacé el corte»): main fast-forward b8e66e1→b4abf45, Production 7713903624 verificada, cinco slugs renombrados en Supabase tras confirmar el código nuevo en el dominio (recibo slugs-2026-11-11T15-18-51-331Z.json); 301 y fichas nuevas comprobadas, capturas 390/1366 sin overflow. Quedan SEC-02 y contenido.
+
+SEC-02 probada en PostgreSQL aislado el 11/11 (5/5 con Docker) y preflight de Production hecho (anon aún lee transfer_price; sólo service role consulta products en el código). Aplicación pendiente de autorización; canal: editor SQL del panel de Supabase.
