@@ -15,7 +15,7 @@ function subscribeToLayout(update: () => void) {
 
 function getColumns() {
   if (window.matchMedia(reducedMotionQuery).matches) return 0;
-  return window.matchMedia(desktopQuery).matches ? 3 : 2;
+  return window.matchMedia(desktopQuery).matches ? 4 : 2;
 }
 
 function nextSlide(index: number, direction: number, last: number, loop: boolean) {

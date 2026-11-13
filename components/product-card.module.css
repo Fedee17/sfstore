@@ -30,8 +30,8 @@
   overflow: hidden;
   background: #f4f6f9;
 }
-/* Shared frame for Home, catalog and related cards: any photo orientation fits whole. */
-.photo { --photo-inset: 12px; width: 100%; aspect-ratio: 1; }
+/* Owner decision 13/11/2026: the 3:4 catalog photo fills the card edge to edge, uncropped; other ratios still fit whole. */
+.photo { --photo-inset: 0px; width: 100%; aspect-ratio: 3 / 4; }
 .cartPhoto { --photo-inset: 0px; aspect-ratio: 1; background: #fffdfa; }
 .photo img, .cartPhoto img {
   position: absolute;
@@ -40,7 +40,6 @@
   height: calc(100% - 2 * var(--photo-inset));
   object-fit: contain;
 }
-@media (width >= 640px) { .photo { --photo-inset: 16px; } }
 .placeholder { padding: 4px; color: #526479; font-size: .75rem; text-align: center; }
 .cartPhoto .placeholder { font-size: .625rem; }
 .body { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 6px; padding: 10px; }
@@ -106,8 +105,7 @@
 @media (width >= 640px) {
   .body { padding: 12px; }
 }
-.card[data-featured] .bottom { flex: 1; margin-block-start: 0; }
-.card[data-featured] .actions { margin-block-start: auto; }
+/* Price and button stay anchored to the card bottom (shared .bottom rule), so they line up whatever the name length. */
 .card[data-featured] .actions [role="status"] {
   position: absolute;
   width: 1px;
@@ -118,9 +116,10 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-/* Short desktop screens: cap the frame so the carousel fits the viewport; the photo still fits whole. */
-@media (width >= 768px) and (height <= 700px) {
-  .card[data-featured] .photo { max-block-size: var(--home-photo-height, max(105px, calc(100svh - 327px))); }
+/* Four carousel cards at 1024–1199px keep the one-line payment badge inside the card. */
+@media (1024px <= width < 1200px) {
+  .card[data-featured] .discount,
+  .card[data-featured] .payment { font-size: 10px; padding: 2px 4px; }
 }
 
 @media (width >= 1200px) and (height <= 700px) {
