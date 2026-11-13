@@ -14,4 +14,5 @@ test("P12: routes that override openGraph keep the shared current-brand share im
   assert.ok(existsSync(new URL("../public/logo-sfstore.png", import.meta.url)));
   assert.match(source("components/site-header.tsx"), /src="\/logo-sfstore\.png"/);
   assert.match(source("lib/seo/local-business.ts"), /logo: new URL\(brandLogoPath, url\)/);
+  assert.match(source("lib/seo/local-business.ts"), /image: new URL\(brandLogoPath, url\)/);
 });

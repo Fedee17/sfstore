@@ -10,6 +10,7 @@ export function buildLocalBusinessJsonLd(siteUrl = process.env.NEXT_PUBLIC_SITE_
     name: brand.name,
     url,
     logo: new URL(brandLogoPath, url).href,
+    image: new URL(brandLogoPath, url).href,
     telephone: `+549${brand.whatsapp}`,
     address: { "@type": "PostalAddress", ...brand.location },
     hasMap: brandLinks.maps,
