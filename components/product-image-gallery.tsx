@@ -72,7 +72,7 @@ export function ProductImageGallery({
               }
             }}
             alt={selectedImage.alt ?? productName}
-            className="block h-auto w-full bg-[#F7F9FC]"
+            className="block h-auto w-full"
             onError={() => setFailedImages((current) => ({ ...current, [selectedImage.url]: true }))}
           />
         )}

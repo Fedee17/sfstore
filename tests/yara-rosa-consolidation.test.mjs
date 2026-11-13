@@ -61,8 +61,14 @@ test("unexpected live stock or missing identity aborts planning", () => {
   assert.throws(() => buildYaraRosaConsolidationPlan([a]), /exactly both/);
 });
 test("Next redirect preserves old URL permanently toward A", async () => {
-  const config = await import(moduleUrl(source("next.config.ts").replace("./lib/products/yara-rosa-consolidation", identityUrl)));
-  assert.deepEqual(await config.default.redirects(), [{ source: `/producto/${b.slug}`, destination: `/producto/${a.slug}`, permanent: true }]);
+  const renamedUrl = moduleUrl(source("lib/products/renamed-slugs.ts"));
+  const config = await import(moduleUrl(source("next.config.ts").replace("./lib/products/yara-rosa-consolidation", identityUrl).replace("./lib/products/renamed-slugs", renamedUrl)));
+  const { RENAMED_PRODUCT_SLUGS } = await import(renamedUrl);
+  const [yara, ...renamed] = await config.default.redirects();
+  assert.deepEqual(yara, { source: `/producto/${b.slug}`, destination: `/producto/${a.slug}`, permanent: true });
+  // Slug corrections approved 11/11/2026 are separate permanent redirects that never involve either Yara slug.
+  assert.deepEqual(renamed, Object.entries(RENAMED_PRODUCT_SLUGS).map(([from, to]) => ({ source: `/producto/${from}`, destination: `/producto/${to}`, permanent: true })));
+  assert.ok(renamed.every((r) => ![a.slug, b.slug].some((slug) => r.source.endsWith(`/${slug}`) || r.destination.endsWith(`/${slug}`))));
 });
 test("Yara fallback is removed, unrelated fallback products remain", async () => {
   const fallback = await import(moduleUrl(source("data/products.ts")));
