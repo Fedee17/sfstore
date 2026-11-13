@@ -123,10 +123,11 @@ async function auditPublicPages(page,width) {
             await screenshot(page,'product-mobile');
             await action.click({timeout:10000});
             await goto(page,'/carrito');
-            await page.getByRole('heading',{name:'Resumen de compra'}).waitFor({timeout:12000});
-            const summary=page.locator('aside').first();
+            const summary=page.getByRole('complementary',{name:'Resumen de compra'});
+            await summary.waitFor({timeout:12000});
+            await summary.getByText('Ver detalle de precios',{exact:true}).click();
             const subtotal=await rowPrice(summary,'Subtotal de lista');
-            const total=await rowPrice(summary,'Productos por transferencia');
+            const total=money(await summary.getByText('Total de productos').first().locator('..').innerText({timeout:7000}));
             const expected=subtotal===null?null:subtotal*.75;
             note('carrito 25% '+item.slug,within(total,expected)&&within(subtotal,list)?'PASS':'FAIL',JSON.stringify({product:heading,subtotal,total,expected}), 'critical');
             await screenshot(page,'cart-mobile');
