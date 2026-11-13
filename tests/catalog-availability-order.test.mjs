@@ -82,6 +82,7 @@ function loadPage(file, products) {
     '@/components/catalog/catalog-sidebar': { CatalogSidebar: () => null },
     '@/components/analytics-view': { AnalyticsView: () => null },
     '@/lib/catalog/availability-order': ordering,
+    '@/lib/seo/share-image': { shareImage: { url: '/logo-sfstore.png', alt: 'SFSTORE Importados' }, brandLogoPath: '/logo-sfstore.png' },
     '@/lib/catalog/attribute-config': attributes,
     '@/lib/catalog/perfume-filters': perfumes, '@/lib/catalog/mate-filters': mates,
     '@/lib/catalog/search': search,

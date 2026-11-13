@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareImage } from "@/lib/seo/share-image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MobileCatalogFilters } from "@/components/catalog/mobile-catalog-filters";
@@ -28,11 +29,13 @@ export const metadata: Metadata = {
     description:
       "Perfumes dulces, frescos, intensos y elegantes. Te ayudamos a elegir el aroma ideal para vos o para regalar.",
     url: "/perfumes",
+    images: [shareImage],
   },
   twitter: {
     title: "Perfumes importados y árabes",
     description:
       "Perfumes dulces, frescos, intensos y elegantes. Te ayudamos a elegir el aroma ideal para vos o para regalar.",
+    images: [shareImage.url],
   },
 };
 

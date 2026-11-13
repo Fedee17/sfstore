@@ -23,6 +23,8 @@ test('checkout messages explain recovery and never echo an unknown server diagno
  assert.match(checkoutErrorMessage('CHECKOUT_STOCK_INSUFFICIENT'),/carrito.*cantidades/);
  assert.match(checkoutErrorMessage('CHECKOUT_SHIPPING_QUOTE_CHANGED'),/cotización.*No transfieras/);
  assert.match(checkoutErrorMessage('CHECKOUT_UNAUTHORIZED'),/sesión.*carrito se conserva/);
+ // UX-RES01: reservation limits explain how to recover instead of the generic failure.
+ for(const code of ['CHECKOUT_UNITS_LIMIT','CHECKOUT_PRODUCT_LIMIT','CHECKOUT_REVIEW_REQUIRED']){assert.notEqual(checkoutErrorMessage(code),checkoutErrorMessage(null));assert.match(checkoutErrorMessage(code),/carrito se conserva/);assert.doesNotMatch(checkoutErrorMessage(code),/[0-9]/);}
  assert.match(checkoutConnectionError,/conexión.*carrito se conserva/);
  assert.doesNotMatch(checkoutErrorMessage('secret-diagnostic'),/secret-diagnostic/);
  assert.equal(checkoutErrorMessage('__proto__'),checkoutErrorMessage(null));

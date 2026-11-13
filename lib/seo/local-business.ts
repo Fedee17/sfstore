@@ -1,4 +1,5 @@
 import { brand, brandLinks } from "@/lib/brand";
+import { brandLogoPath } from "@/lib/seo/share-image";
 
 export function buildLocalBusinessJsonLd(siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000") {
   const url = new URL("/", siteUrl).href;
@@ -8,7 +9,7 @@ export function buildLocalBusinessJsonLd(siteUrl = process.env.NEXT_PUBLIC_SITE_
     "@id": `${url}#store`,
     name: brand.name,
     url,
-    logo: new URL("/logo-sfstore-horizontal.png", url).href,
+    logo: new URL(brandLogoPath, url).href,
     telephone: `+549${brand.whatsapp}`,
     address: { "@type": "PostalAddress", ...brand.location },
     hasMap: brandLinks.maps,

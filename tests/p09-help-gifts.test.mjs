@@ -17,6 +17,7 @@ const modules = {
   './ritual-matero': { RitualMatero: () => null },
   '@/lib/catalog/availability-order': ordering,
   '@/lib/seo/local-business': { buildLocalBusinessJsonLd: () => ({}), serializeJsonLd: JSON.stringify },
+  '@/lib/seo/share-image': { shareImage: { url: '/logo-sfstore.png', alt: 'SFSTORE Importados' }, brandLogoPath: '/logo-sfstore.png' },
   'react/jsx-runtime': jsx,
   'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
   'next/server': { connection: async () => {} },

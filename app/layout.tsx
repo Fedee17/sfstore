@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { WhatsAppFloatingButton } from "@/components/whatsapp-floating-button";
 import { AnalyticsConsent } from "@/components/analytics-consent";
 import { Suspense } from "react";
+import { shareImage } from "@/lib/seo/share-image";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,20 +43,15 @@ export const metadata: Metadata = {
     description: siteDescription,
     url: "/",
     siteName: "SFSTORE Importados",
-    images: [
-      {
-        url: "/logo-sfstore-horizontal.png",
-        alt: "SFSTORE Importados",
-      },
-    ],
+    images: [shareImage],
     locale: "es_AR",
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "SFSTORE Importados",
     description: siteDescription,
-    images: ["/logo-sfstore-horizontal.png"],
+    images: [shareImage.url],
   },
 };
 

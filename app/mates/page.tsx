@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shareImage } from "@/lib/seo/share-image";
 import Link from "next/link";
 import { MobileCatalogFilters } from "@/components/catalog/mobile-catalog-filters";
 import { CatalogSidebar } from "@/components/catalog/catalog-sidebar";
@@ -26,11 +27,13 @@ export const metadata: Metadata = {
     description:
       "Mates, termos, yerbas, bombillas y accesorios para armar tu ritual o resolver un regalo con identidad argentina.",
     url: "/mates",
+    images: [shareImage],
   },
   twitter: {
     title: "Mates, termos y accesorios",
     description:
       "Mates, termos, yerbas, bombillas y accesorios para armar tu ritual o resolver un regalo con identidad argentina.",
+    images: [shareImage.url],
   },
 };
 
