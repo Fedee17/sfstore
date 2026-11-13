@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { shareImage } from "@/lib/seo/share-image";
 import { cache, Suspense } from "react";
 import { HomeProductCarousel } from "./home-product-card";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
@@ -24,11 +25,13 @@ export const metadata: Metadata = {
     description:
       "Elegí perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
     url: "/",
+    images: [shareImage],
   },
   twitter: {
     title: "Perfumes árabes, mates y regalos",
     description:
       "Elegí perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
+    images: [shareImage.url],
   },
 };
 

@@ -165,7 +165,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
             prefetch={false}
           >
             <img
-              src="/Logo%202.png"
+              src="/logo-sfstore.png"
               alt="SFSTORE Importados"
               className="h-full w-full scale-[1.08] object-cover"
             />

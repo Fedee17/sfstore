@@ -124,6 +124,7 @@ async function renderHome(products = [], featuredSelection = selection, hero) {
   modules['./ritual-matero'] = load('app/ritual-matero.tsx', modules);
   modules['@/lib/catalog/availability-order'] = ordering;
   modules['@/lib/seo/local-business'] = { buildLocalBusinessJsonLd: () => ({}), serializeJsonLd: JSON.stringify };
+  modules['@/lib/seo/share-image'] = { shareImage: { url: '/logo-sfstore.png', alt: 'SFSTORE Importados' }, brandLogoPath: '/logo-sfstore.png' };
   if (hero) modules['@/components/home-hero-slider'] = { HomeHeroSlider: hero };
   return new Promise((resolve, reject) => {
     const output = new PassThrough();
