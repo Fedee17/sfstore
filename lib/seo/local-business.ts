@@ -14,6 +14,7 @@ export function buildLocalBusinessJsonLd(siteUrl = process.env.NEXT_PUBLIC_SITE_
     telephone: `+549${brand.whatsapp}`,
     address: { "@type": "PostalAddress", ...brand.location },
     hasMap: brandLinks.maps,
+    priceRange: brand.priceRange,
     openingHoursSpecification: [{
       "@type": "OpeningHoursSpecification",
       dayOfWeek: brand.openingHours.days,
