@@ -41,6 +41,8 @@
   object-fit: contain;
 }
 .photo img { object-fit: cover; }
+/* Zoomed-out framings (lib/catalog/card-photo-framing.ts) fill the sides with the same photo, blurred. */
+.photo .backdrop { filter: blur(14px); transform: scale(1.15); }
 .placeholder { padding: 4px; color: #526479; font-size: .75rem; text-align: center; }
 .cartPhoto .placeholder { font-size: .625rem; }
 .body { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 6px; padding: 10px; }

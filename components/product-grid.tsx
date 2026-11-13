@@ -9,6 +9,7 @@ import type { PublicProduct } from "@/services/products";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { AnalyticsView } from "@/components/analytics-view";
 import { analyticsItem } from "@/lib/analytics/client";
+import { cardPhotoFraming } from "@/lib/catalog/card-photo-framing";
 import styles from "./product-card.module.css";
 
 type CardPricing = { list: number; special: number; savings: number | null; reduced: boolean };
@@ -29,9 +30,16 @@ export function ProductImage({ product, compact = false, onImageError }: Product
   };
 
   if (url && failedUrl !== url) {
+    const framing = compact ? null : cardPhotoFraming(url);
+    const zoomOut = framing?.width && framing.width < 1 ? framing.width : null;
+    const framedStyle = framing ? {
+      objectPosition: `50% ${framing.focusY}%`,
+      ...(zoomOut ? { left: `${(1 - zoomOut) * 50}%`, width: `${zoomOut * 100}%` } : {}),
+    } : undefined;
     return (
       <div className={imageClass}>
-        <img src={url} alt={product.primaryImageAlt ?? product.name} loading="lazy" decoding="async"
+        {zoomOut ? <img src={url} alt="" aria-hidden="true" loading="lazy" decoding="async" className={styles.backdrop} /> : null}
+        <img src={url} alt={product.primaryImageAlt ?? product.name} loading="lazy" decoding="async" style={framedStyle}
           ref={inspectImage}
           onLoad={({ currentTarget }) => inspectImage(currentTarget)}
           onError={() => {setFailedUrl(url);onImageError?.();}} />
