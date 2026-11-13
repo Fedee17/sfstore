@@ -30,16 +30,17 @@
   overflow: hidden;
   background: #f4f6f9;
 }
-/* Owner decision 13/11/2026: the 3:4 catalog photo fills the card edge to edge, uncropped; other ratios still fit whole. */
-.photo { --photo-inset: 0px; width: 100%; aspect-ratio: 3 / 4; }
-.cartPhoto { --photo-inset: 0px; aspect-ratio: 1; background: #fffdfa; }
+/* Owner decision 13/11/2026 (mockup C): every product card shows a square, zoomed-in photo edge to edge. */
+.photo { width: 100%; aspect-ratio: 1; }
+.cartPhoto { aspect-ratio: 1; background: #fffdfa; }
 .photo img, .cartPhoto img {
   position: absolute;
-  inset: var(--photo-inset);
-  width: calc(100% - 2 * var(--photo-inset));
-  height: calc(100% - 2 * var(--photo-inset));
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
+.photo img { object-fit: cover; }
 .placeholder { padding: 4px; color: #526479; font-size: .75rem; text-align: center; }
 .cartPhoto .placeholder { font-size: .625rem; }
 .body { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 6px; padding: 10px; }
