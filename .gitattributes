@@ -2,3 +2,5 @@
 /supabase/migrations/202610210001_public_catalog_component_security.sql text eol=lf
 /reports/catalog-component-security-postcheck-read-only.sql text eol=lf
 /supabase/migrations/202610240001_component_offer_images.sql text eol=lf
+/supabase/migrations/202611110001_revoke_public_transfer_price.sql text eol=lf
+/staging/migration-manifest.json text eol=lf
