@@ -12,6 +12,7 @@ test("Home publishes a sanitized Store JSON-LD built from the single brand addre
   assert.match(seo, /"@type": "Store"/);
   assert.match(seo, /\.\.\.brand\.location/);
   assert.match(seo, /priceRange: brand\.priceRange/);
+  assert.equal(brand.brand.location.postalCode, "2400");
   const backslash = String.fromCharCode(92);
   assert.ok(seo.includes(`.replace(/</g, "${backslash}${backslash}u003c")`));
   assert.match(source("app/page.tsx"), /application\/ld\+json[^\n]*serializeJsonLd\(buildLocalBusinessJsonLd\(\)\)/);
