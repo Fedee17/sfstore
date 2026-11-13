@@ -43,6 +43,14 @@ test('Ritual uses photo/stock/price eligibility without requiring the featured f
  const ritual=html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
  assert.match(ritual,/mate-visible/);assert.doesNotMatch(ritual,/mate-no-photo|mate-empty|Imagen no disponible/);
  assert.match(ritual,/Agregar al carrito/);assert.match(ritual,/25% OFF · (?:<[^>]+>)*Transferencia/);
+ // Only Mates has publications: no tablist, no empty Termos/Bombillas/Yerbas panels.
+ assert.doesNotMatch(ritual,/role="tablist"|role="tabpanel"|Termos|Yerbas/);
+});
+
+test('Ritual tabs list only matero groups that have publications',async()=>{
+ const html=await renderHome([product('mate-a',{category:'mates',categorySlug:'mates',featured:false}),product('termo-a',{category:'mates',categorySlug:'termos',featured:false})]);
+ const ritual=html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
+ assert.deepEqual([...ritual.matchAll(/role="tab"[^>]*>([^<]+)</g)].map(match=>match[1]),['Mates','Termos']);
 });
 
 test('featured family requires choosing an option; photographed single SKU has one add action',async()=>{
@@ -115,6 +123,7 @@ async function renderHome(products = [], featuredSelection = selection, hero) {
   modules['./home-product-card'] = cards;
   modules['./ritual-matero'] = load('app/ritual-matero.tsx', modules);
   modules['@/lib/catalog/availability-order'] = ordering;
+  modules['@/lib/seo/local-business'] = { buildLocalBusinessJsonLd: () => ({}), serializeJsonLd: JSON.stringify };
   if (hero) modules['@/components/home-hero-slider'] = { HomeHeroSlider: hero };
   return new Promise((resolve, reject) => {
     const output = new PassThrough();
@@ -138,10 +147,11 @@ test('discovery precedes featured and gifts/advice remain after featured without
   const sections = [...html.matchAll(/<section\b[^>]*>/g)].map(match => match[0]);
   const featured = sections.findIndex(section => section.includes('id="productos"'));
   assert.ok(featured >= 0);
-  assert.match(sections[featured + 1], /id="ritual-matero"/);
-  assert.match(sections[featured + 2], /id="regalos"/);
-  assert.match(sections[featured + 3], /aria-labelledby="advice-title"/);
-  assert.match(html, /25% de descuento\. Pago del 100%/);
+  // Without matero publications Ritual Matero is omitted instead of rendering empty tabs.
+  assert.doesNotMatch(html, /id="ritual-matero"/);
+  assert.match(sections[featured + 1], /id="regalos"/);
+  assert.match(sections[featured + 2], /aria-labelledby="advice-title"/);
+  assert.match(html, /25% de descuento abonando el total por transferencia/);
   assert.match(html, /Entregas a todo el país/);
   assert.doesNotMatch(html, /diseñador|perfumes importados|cuotas|envío gratis/i);
 });
@@ -307,7 +317,7 @@ test('Accesorios materos reuses the existing matero catalog without inventing a 
 });
 
 
-test('home keeps an empty hidden featured anchor when none are eligible, with Ritual Matero before gifts', async () => {
+test('home keeps an empty hidden featured anchor when none are eligible, and omits an empty Ritual Matero before gifts', async () => {
   for (const products of [[],[product('no',{featured:false})],[product('sold',{stock:0})]]) {
     const html=await renderHome(products);
     assert.doesNotMatch(html,/LOS MÁS ELEGIDOS|La vidriera está lista/);
@@ -316,8 +326,8 @@ test('home keeps an empty hidden featured anchor when none are eligible, with Ri
     const sections=[...html.matchAll(/<section\b[^>]*>/g)].map(m=>m[0]);
     const categories=sections.findIndex(s=>s.includes('id="explorar"'));
     assert.match(sections[categories+1],/id="productos"/);
-    assert.match(sections[categories+2],/id="ritual-matero"/);
-    assert.match(sections[categories+3],/id="regalos"/);
+    assert.doesNotMatch(html,/id="ritual-matero"/);
+    assert.match(sections[categories+2],/id="regalos"/);
   }
 });
 

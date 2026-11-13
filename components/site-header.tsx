@@ -59,14 +59,6 @@ function SearchIcon() {
   );
 }
 
-function HelpIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9">
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5A8.48 8.48 0 0 1 21 11v.5Z" />
-    </svg>
-  );
-}
-
 function CartIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9">
@@ -183,14 +175,6 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
 
           <div className="flex min-w-0 items-center justify-end gap-2 justify-self-end sm:gap-3 lg:ml-auto">
             <a
-              href="/ayuda"
-              aria-label="Ayuda y preguntas frecuentes"
-              className="hidden min-h-11 items-center gap-2 rounded-full border border-white/25 sm:inline-flex px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:px-4"
-            >
-              <HelpIcon />
-              <span className="text-xs sm:text-sm">Ayuda</span>
-            </a>
-            <a
               href="/carrito"
               className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-semibold text-[#003B73] transition hover:bg-[#EEF2F6] sm:px-4"
               aria-label={cartLabel}
@@ -220,7 +204,7 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
           <Link href="/perfumes" prefetch={false} aria-current={pathname.startsWith("/perfumes") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Perfumes</Link>
           <Link href="/mates" prefetch={false} aria-current={pathname.startsWith("/mates") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Mates</Link>
           <Link href="/accesorios" prefetch={false} aria-current={pathname.startsWith("/accesorios") ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 focus-visible:outline-2 focus-visible:outline-white">Accesorios</Link>
-          <Link href="/ayuda" prefetch={false} aria-label="Preguntas frecuentes" className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-white">Ayuda</Link>
+          <Link href="/ayuda" prefetch={false} aria-current={pathname === "/ayuda" ? "page" : undefined} className="inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-white">Ayuda</Link>
         </div>
         <div className="mx-auto hidden max-w-6xl flex-wrap justify-center gap-1 overflow-visible px-3 py-2 text-sm font-semibold sm:px-8 lg:flex">
           <Link
@@ -262,11 +246,10 @@ export function SiteHeader({ searchQuery = "" }: { searchQuery?: string }) {
           </a>
           <a
             href="/ayuda"
-            aria-label="Preguntas frecuentes"
             className={desktopLink}
             aria-current={pathname === "/ayuda" ? "page" : undefined}
           >
-            Preguntas frecuentes
+            Ayuda
           </a>
         </div>
     </nav>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { publicationAvailable } from "@/lib/products/public-families";
 import { getSavingsPercent } from "@/lib/pricing";
 import { formatWebPrice, getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
@@ -23,13 +23,9 @@ export function ProductImage({ product, compact = false, onImageError }: Product
   const url = product.primaryImageUrl;
   const imageClass = compact ? styles.cartPhoto : styles.photo;
   const inspectImage = (image: HTMLImageElement | null) => {
-    if (!image?.complete) return;
-    if (image.naturalWidth === 0) {
-      setFailedUrl(url ?? null);
-      onImageError?.();
-      return;
-    }
-    image.dataset.orientation = image.naturalHeight > image.naturalWidth ? "portrait" : "landscape";
+    if (!image?.complete || image.naturalWidth !== 0) return;
+    setFailedUrl(url ?? null);
+    onImageError?.();
   };
 
   if (url && failedUrl !== url) {
@@ -81,8 +77,7 @@ export function ProductCard({ product, label, featured = false, directPurchase =
   const canPurchase = directPurchase && available && validPrice && Boolean(product.primaryImageUrl?.trim()) && !chooseVariant;
 
   return (
-    <article className={styles.card} data-featured={featured || undefined} data-presentation={presentation} data-product-slug={product.slug}
-      style={featured && product.primaryImageUrl ? { "--featured-photo": `url(${JSON.stringify(product.primaryImageUrl)})` } as CSSProperties : undefined}>
+    <article className={styles.card} data-featured={featured || undefined} data-presentation={presentation} data-product-slug={product.slug}>
       {!preview && (!featured || directPurchase) ? <AnalyticsView event="view_item_list" identity={`${label}:${product.id}`} params={{ items: [analyticsItem(product)].filter(Boolean) }} /> : null}
       <a href={href} aria-label={`Ver producto ${product.name}`} className={styles.imageLink}>
         <ProductImage product={product} onImageError={onImageError} />
@@ -105,7 +100,7 @@ export function ProductCard({ product, label, featured = false, directPurchase =
               <div className={styles.priceRow}>
                 <p className={styles.special}><span className="sr-only">Precio especial: </span>{fromLabel ? <small>Desde </small> : null}{formatWebPrice(pricing.special)}</p>
                 <div className={styles.badges}>
-                  <span className={styles.payment}>{pricing.savings !== null ? `${pricing.savings}% OFF · ` : ''}<span className={styles.paymentLong}>Transferencia</span><span className={styles.paymentShort}>Transf.</span> · Efectivo</span>
+                  <span className={styles.payment}>{pricing.savings !== null ? `${pricing.savings}% OFF · ` : ''}<span className={styles.paymentMethod} data-short="Transf.">Transferencia</span> · Efectivo</span>
                 </div>
               </div>
             </>

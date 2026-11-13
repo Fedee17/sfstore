@@ -11,8 +11,8 @@
   align-items: flex-end;
   min-width: 0;
   width: 100%;
-  min-height: 172px;
-  aspect-ratio: 2 / 1;
+  /* Matches the 1080x608 source photos so no side is cropped. */
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 20px;
   background: #102033;

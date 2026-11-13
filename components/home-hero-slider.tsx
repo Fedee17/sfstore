@@ -51,8 +51,8 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
             </div>
             {hasImage ? (
               <picture className={continuous ? styles.picture : "absolute inset-0 block min-w-0 pt-14 sm:static sm:pt-0"}>
-                <source media="(min-width: 640px)" srcSet={activeSlide.imageSrcSet ?? activeSlide.imageSrc} sizes={continuous ? "(min-width: 1152px) 1088px, calc(100vw - 64px)" : "(min-width: 1152px) 730px, 65vw"} />
-                <img src={activeSlide.mobileImageSrc ?? activeSlide.imageSrc} srcSet={activeSlide.mobileImageSrcSet} sizes="calc(100vw - 40px)" alt={activeSlide.imageAlt} width={1600} height={666} loading="eager" fetchPriority={activeIndex === 0 ? "high" : "auto"} decoding="async" style={continuous && activeSlide.desktopImagePosition ? { "--hero-desktop-position": activeSlide.desktopImagePosition } as CSSProperties : undefined} className={continuous ? styles.photo : "h-full w-full object-contain object-bottom sm:aspect-[12/5] sm:object-center"} />
+                <source media="(min-width: 640px)" srcSet={activeSlide.imageSrcSet ?? activeSlide.imageSrc} sizes={continuous ? "(min-width: 1152px) 1088px, calc(100vw - 64px)" : "(min-width: 1152px) 730px, 65vw"} width={1600} height={616} />
+                <img src={activeSlide.mobileImageSrc ?? activeSlide.imageSrc} srcSet={activeSlide.mobileImageSrcSet} sizes="calc(100vw - 40px)" alt={activeSlide.imageAlt} width={768} height={1152} loading="eager" fetchPriority={activeIndex === 0 ? "high" : "auto"} decoding="async" style={continuous && activeSlide.desktopImagePosition ? { "--hero-desktop-position": activeSlide.desktopImagePosition } as CSSProperties : undefined} className={continuous ? styles.photo : "h-full w-full object-contain object-bottom sm:aspect-[12/5] sm:object-center"} />
               </picture>
             ) : null}
             {hasImage ? <div aria-hidden="true" className={continuous ? styles.shade : "pointer-events-none absolute inset-x-0 top-0 z-10 h-[232px] bg-[linear-gradient(to_bottom,rgba(16,32,51,0.96)_0%,rgba(16,32,51,0.76)_75%,transparent_100%)] sm:hidden"} /> : null}

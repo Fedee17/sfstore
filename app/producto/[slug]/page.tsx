@@ -42,7 +42,7 @@ export async function generateMetadata({
     return {
       title: "Producto",
       description:
-        "Producto de SFSTORE Importados. ConsultÃ¡ disponibilidad y opciones por WhatsApp.",
+        "Producto de SFSTORE Importados. Consultá disponibilidad y opciones por WhatsApp.",
     };
   }
 
@@ -153,7 +153,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-10">
           <div className="min-w-0 overflow-hidden rounded-3xl border border-[#DCE3EA] bg-white">
             <ProductImageGallery
-              fitViewport
               images={getProductGalleryImages(product)}
               placeholder={product.imagePlaceholder}
               productName={product.name}

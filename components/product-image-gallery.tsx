@@ -14,7 +14,6 @@ type ProductImageGalleryProps = {
   placeholder: string;
   productName: string;
   showThumbnails?: boolean;
-  fitViewport?: boolean;
 };
 
 function sortImages(images: ProductGalleryImage[]) {
@@ -36,7 +35,6 @@ export function ProductImageGallery({
   placeholder,
   productName,
   showThumbnails = true,
-  fitViewport = false,
 }: ProductImageGalleryProps) {
   const sortedImages = sortImages(images).filter((image) => image.url);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -74,23 +72,23 @@ export function ProductImageGallery({
               }
             }}
             alt={selectedImage.alt ?? productName}
-            className={fitViewport ? "block h-auto w-full bg-[#F7F9FC]" : "block h-auto w-full"}
+            className="block h-auto w-full bg-[#F7F9FC]"
             onError={() => setFailedImages((current) => ({ ...current, [selectedImage.url]: true }))}
           />
         )}
       </div>
 
       {showThumbnails && sortedImages.length > 1 ? (
-        <div className={`grid grid-cols-4 gap-2 border-t p-3 sm:grid-cols-5 ${fitViewport ? "border-[#DCE3EA] bg-white" : "border-[#F7F9FC]/10 bg-[#102033]"}`}>
+        <div className="grid grid-cols-4 gap-2 border-t border-[#DCE3EA] bg-white p-3 sm:grid-cols-5">
           {sortedImages.map((image, index) => (
             <button
               key={`${image.url}-${index}`}
               type="button"
               onClick={() => setSelectedIndex(index)}
-              className={`aspect-square min-w-0 overflow-hidden rounded-xl border transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003B73] ${
+              className={`aspect-square min-w-0 overflow-hidden rounded-xl border bg-[#F4F6F9] p-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003B73] ${
                 index === activeIndex
                   ? "border-[#0072CE] opacity-100"
-                  : fitViewport ? "border-[#DCE3EA] opacity-80 hover:opacity-100" : "border-[#F7F9FC]/15 opacity-70 hover:opacity-100"
+                  : "border-[#DCE3EA] opacity-80 hover:opacity-100"
               }`}
               aria-label={`Ver imagen ${index + 1} de ${productName}`}
               aria-pressed={index === activeIndex}
@@ -99,7 +97,7 @@ export function ProductImageGallery({
                 src={image.url}
                 alt={image.alt ?? productName}
                 loading="lazy"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             </button>
           ))}

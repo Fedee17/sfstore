@@ -11,6 +11,7 @@ import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getCatalogPublications } from "@/services/products";
 import { RitualMatero } from "./ritual-matero";
 import { availableFirst } from "@/lib/catalog/availability-order";
+import { buildLocalBusinessJsonLd, serializeJsonLd } from "@/lib/seo/local-business";
 import categoryStyles from "./home-category.module.css";
 import featuredStyles from "./home-featured.module.css";
 
@@ -39,7 +40,7 @@ const benefits = [
   },
   {
     title: "Pago por transferencia",
-    description: "25% de descuento. Pago del 100%.",
+    description: "25% de descuento abonando el total por transferencia",
     icon: "payment",
   },
   {
@@ -144,8 +145,8 @@ async function HomeRitualMatero() {
   ].map(({ label, slugs }) => ({
     label,
     products: availableFirst(products.filter((product) => slugs.includes(product.categorySlug ?? product.category))).slice(0, 8),
-  }));
-  return <RitualMatero groups={groups} />;
+  })).filter((group) => group.products.length);
+  return groups.length ? <RitualMatero groups={groups} /> : null;
 }
 
 export default function Home() {
@@ -186,6 +187,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildLocalBusinessJsonLd()) }} />
       <SiteHeader />
 
       <h1 className="sr-only">Perfumes árabes, mates y regalos</h1>
@@ -231,7 +233,6 @@ export default function Home() {
             <Link href="/mates?categoria=bombillas" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver complementos materos</Link>
             <a href={giftWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></a>
           </div>
-          <p className="mt-3 text-xs leading-5 text-[#526479]">«Consultar regalos» abre WhatsApp en una pestaña nueva.</p>
         </div>
       </section>
 
