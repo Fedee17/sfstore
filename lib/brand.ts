@@ -14,6 +14,7 @@ export const brand = {
   address: `${location.streetAddress}, ${location.addressLocality}, ${location.addressRegion}, Argentina`,
   hours: "Lunes a sábado, de 17:30 a 20:30 hs",
   openingHours: { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "17:30", closes: "20:30" },
+  priceRange: "$2.000–$150.000",
   colors: {
     primary: "#0072CE",
     deepBlue: "#003B73",
