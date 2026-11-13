@@ -1,15 +1,9 @@
 .section { font-family:var(--font-geist-sans), Arial, Helvetica, sans-serif; }
 .section:empty { display: none; }
 @media (width >= 768px) and (height <= 700px) {
-  .section {
-    --home-photo-height: clamp(105px, calc(100svh - 408px), 260px);
-    padding-block: 16px;
-  }
+  .section { padding-block: 16px; }
 
   .section .sectionTitle { font-size: 29px; }
-}
-@media (1024px <= width < 1200px) and (height <= 700px) {
-  .section { --home-photo-height: clamp(105px, calc(100svh - 472px), 220px); }
 }
 .sectionTitle {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -79,7 +73,8 @@
   .carousel { --arrow-offset:-48px; }
 }
 @media(min-width:1024px) {
-  .track { --columns:3; --gap:20px; }
+  /* Four narrower cards keep the full 3:4 photo and the price inside a 700px-tall screen. */
+  .track { --columns:4; --gap:20px; }
 }
 @media (width >= 1200px) and (height <= 700px) {
   .section { padding-block: 12px; }
