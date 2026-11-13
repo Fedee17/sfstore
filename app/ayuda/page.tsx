@@ -38,7 +38,6 @@ export default function HelpPage() {
             <Link href="/mates" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0072CE] px-5 text-sm font-semibold text-[#003B73] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Explorar Mates</Link>
             <a href={buildWhatsAppUrl("Hola SFSTORE, quiero armar un regalo y necesito ayuda para elegir.")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#0072CE] px-5 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></a>
           </div>
-          <p className="mt-3 text-xs leading-5 text-[#526479]">«Consultar regalos» abre WhatsApp en una pestaña nueva.</p>
         </section>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/buscar" className="inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 text-sm font-semibold text-white">Explorar productos</Link>

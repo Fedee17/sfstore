@@ -28,14 +28,19 @@
   position: relative;
   place-items: center;
   overflow: hidden;
-  background: #f2f5f8;
+  background: #f4f6f9;
 }
-.photo { width: 100%; aspect-ratio: 4 / 3; max-block-size: 176px; }
-.cartPhoto { aspect-ratio: 1; background: #fffdfa; }
-.photo img, .cartPhoto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.card[data-presentation="catalog"] .photo { aspect-ratio: 16 / 10; }
-.card[data-presentation="catalog"] .photo img { object-fit: cover; object-position: center 62%; }
-.card[data-presentation="catalog"] .photo img[data-orientation="portrait"] { object-fit: contain; object-position: center; }
+/* Shared frame for Home, catalog and related cards: any photo orientation fits whole. */
+.photo { --photo-inset: 12px; width: 100%; aspect-ratio: 1; }
+.cartPhoto { --photo-inset: 0px; aspect-ratio: 1; background: #fffdfa; }
+.photo img, .cartPhoto img {
+  position: absolute;
+  inset: var(--photo-inset);
+  width: calc(100% - 2 * var(--photo-inset));
+  height: calc(100% - 2 * var(--photo-inset));
+  object-fit: contain;
+}
+@media (width >= 640px) { .photo { --photo-inset: 16px; } }
 .placeholder { padding: 4px; color: #526479; font-size: .75rem; text-align: center; }
 .cartPhoto .placeholder { font-size: .625rem; }
 .body { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 6px; padding: 10px; }
@@ -74,8 +79,11 @@
 /* Owner decision 11/11/2026: one-line badge on narrow cards; full word from 640px. */
 .payment { white-space: nowrap; }
 @media (width < 380px) { .payment { white-space: normal; } }
-.paymentLong { display: none; }
-@media (width >= 640px) { .paymentLong { display: inline; } .paymentShort { display: none; } }
+/* One word in the DOM (clean for screen readers, copy and scrapers); narrow cards draw the abbreviation silently. */
+@media (width < 640px) {
+  .paymentMethod { font-size: 0; }
+  .paymentMethod::after { content: attr(data-short) / ""; font-size: .6875rem; }
+}
 .actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; }
 .actions > * { flex: 1 1 112px; min-width: 0; }
 .button, .secondary {
@@ -98,7 +106,6 @@
 @media (width >= 640px) {
   .body { padding: 12px; }
 }
-.card[data-featured] .photo { aspect-ratio: .78; max-block-size: none; border-radius: 0 0 18px 18px; }
 .card[data-featured] .bottom { flex: 1; margin-block-start: 0; }
 .card[data-featured] .actions { margin-block-start: auto; }
 .card[data-featured] .actions [role="status"] {
@@ -111,73 +118,12 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-.card[data-featured] .photo img {
-  object-fit: cover;
-  transform: scale(var(--photo-scale-mobile, 1));
-  transform-origin: 50% var(--photo-origin-mobile, 65%);
-}
-@media (width >= 1024px) {
-  .card[data-featured] .photo { aspect-ratio: 1.27; border-radius: 0 0 20px 20px; }
-  .card[data-featured] .photo img {
-    object-position: var(--photo-position-desktop, center 60%);
-    transform: scale(var(--photo-scale-desktop, 1));
-    transform-origin: center;
-  }
-}
-
-.card[data-product-slug="al-haramain-dubai-night"] { --photo-scale-mobile:1.3; --photo-origin-mobile:70%; --photo-scale-desktop:1.04; --photo-position-desktop:center 65%; }
-.card[data-product-slug="dispenser-de-yerba-en-madera"] { --photo-scale-mobile:1.16; --photo-origin-mobile:75%; --photo-scale-desktop:1.02; --photo-position-desktop:center 64%; }
-.card[data-product-slug="french-avenue-liquid-brun"] { --photo-scale-mobile:1.32; --photo-origin-mobile:80%; --photo-scale-desktop:1.12; --photo-position-desktop:center 70%; }
-.card[data-product-slug="homme-black-100ml"] { --photo-scale-mobile:1.48; --photo-origin-mobile:83%; --photo-scale-desktop:1.26; --photo-position-desktop:center 80%; }
-.card[data-product-slug="la-voie"] { --photo-scale-mobile:1.1; --photo-origin-mobile:65%; --photo-scale-desktop:1; --photo-position-desktop:center 50%; }
-.card[data-product-slug="lattafa-khamrah"] { --photo-scale-mobile:1.12; --photo-origin-mobile:75%; --photo-scale-desktop:1; --photo-position-desktop:center 61%; }
+/* Short desktop screens: cap the frame so the carousel fits the viewport; the photo still fits whole. */
 @media (width >= 768px) and (height <= 700px) {
-  .card[data-featured] .photo {
-    --short-photo-height: var(--home-photo-height, max(105px, calc(100svh - 327px)));
-    max-height: var(--short-photo-height);
-  }
-
-  .card[data-featured] .photo:has(img)::before {
-    content: "";
-    position: absolute;
-    inset: -12px;
-    background: var(--featured-photo) center / cover no-repeat;
-    filter: blur(9px);
-    opacity: .65;
-  }
-
-  .card[data-featured] .photo img {
-    left: 50%;
-    right: auto;
-    max-width: calc(var(--short-photo-height) * var(--short-photo-width-ratio, 1.6));
-    object-position: center var(--short-photo-focus, 60%);
-    transform: translateX(-50%);
-    mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
-  }
-  .card[data-product-slug="al-haramain-dubai-night"] { --short-photo-width-ratio: 1.46; --short-photo-focus: 69%; }
-  .card[data-product-slug="dispenser-de-yerba-en-madera"] { --short-photo-width-ratio: 1.21; --short-photo-focus: 69%; }
-  .card[data-product-slug="french-avenue-liquid-brun"] { --short-photo-width-ratio: 1.47; --short-photo-focus: 66%; }
-  .card[data-product-slug="homme-black-100ml"] { --short-photo-width-ratio: 1.67; --short-photo-focus: 79%; }
-  .card[data-product-slug="la-voie"] { --short-photo-width-ratio: 1.45; --short-photo-focus: 49%; }
-  .card[data-product-slug="lattafa-khamrah"] { --short-photo-width-ratio: 1.35; --short-photo-focus: 63%; }
+  .card[data-featured] .photo { max-block-size: var(--home-photo-height, max(105px, calc(100svh - 327px))); }
 }
 
 @media (width >= 1200px) and (height <= 700px) {
-  .card[data-featured] .photo {
-    aspect-ratio: 1.27;
-    max-block-size: none;
-  }
-
-  .card[data-featured] .photo:has(img)::before { content: none; }
-  .card[data-featured] .photo img {
-    left: 0;
-    right: 0;
-    max-width: none;
-    object-position: var(--photo-position-desktop, center 60%);
-    transform: scale(var(--photo-scale-desktop, 1));
-    mask-image: none;
-  }
-
   .card[data-featured] .body { padding: 10px; gap: 4px; }
   .card[data-featured] .name { font-size: 18px; }
   .card[data-featured] .bottom { gap: 4px; }

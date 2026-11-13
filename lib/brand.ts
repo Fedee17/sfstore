@@ -1,10 +1,19 @@
-﻿export const brand = {
+const location = {
+  streetAddress: "Juan de Garay 2090",
+  addressLocality: "San Francisco",
+  addressRegion: "Córdoba",
+  addressCountry: "AR",
+} as const;
+
+export const brand = {
   name: "SFSTORE Importados",
   categories: ["Perfumes", "Mates"],
   whatsapp: "3564646475",
   instagram: "sfstore.importados",
-  address: "Juan de Garay 2090, Cordoba, Argentina",
+  location,
+  address: `${location.streetAddress}, ${location.addressLocality}, ${location.addressRegion}, Argentina`,
   hours: "Lunes a sábado, de 17:30 a 20:30 hs",
+  openingHours: { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "17:30", closes: "20:30" },
   colors: {
     primary: "#0072CE",
     deepBlue: "#003B73",
@@ -26,5 +35,5 @@
 export const brandLinks = {
   whatsapp: `https://wa.me/549${brand.whatsapp}`,
   instagram: `https://instagram.com/${brand.instagram}`,
-  maps: "https://www.google.com/maps/search/?api=1&query=Juan%20de%20Garay%202090%2C%20Cordoba%2C%20Argentina",
+  maps: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(brand.address)}`,
 } as const;

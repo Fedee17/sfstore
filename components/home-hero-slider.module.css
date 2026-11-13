@@ -2,6 +2,8 @@
   position: relative;
   isolation: isolate;
   min-height: 480px;
+  /* Follow the art-directed source ratios (768x1152 mobile, 1600x616 desktop) to avoid cropping the focal point. */
+  aspect-ratio: 2 / 3;
   background: #102033;
 }
 .picture { position: absolute; inset: 0; }
@@ -31,7 +33,7 @@
   .title { font-size: 26px; line-height: 30px; }
 }
 @media (min-width: 640px) {
-  .scene { min-height: 260px; display: flex; align-items: center; }
+  .scene { min-height: 260px; aspect-ratio: 1600 / 616; display: flex; align-items: center; }
   .photo { object-position: var(--hero-desktop-position, right center); }
   .copy { width: 224px; padding: 24px; }
   .copy a { font-size: 14px; white-space: nowrap; }

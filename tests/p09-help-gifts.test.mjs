@@ -16,6 +16,7 @@ const modules = {
   './home-product-card': { HomeProductCarousel: () => null },
   './ritual-matero': { RitualMatero: () => null },
   '@/lib/catalog/availability-order': ordering,
+  '@/lib/seo/local-business': { buildLocalBusinessJsonLd: () => ({}), serializeJsonLd: JSON.stringify },
   'react/jsx-runtime': jsx,
   'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
   'next/server': { connection: async () => {} },
@@ -70,7 +71,7 @@ test('gift help keeps browsing internal and explicitly identifies the external W
   assert.match(html, /href="\/mates"[^>]*>Explorar Mates/);
   assert.match(html, /href="https:\/\/wa\.me\/[^\"]+" target="_blank" rel="noopener noreferrer"/);
   assert.match(html, /Consultar regalos.*WhatsApp, abre una pestaña nueva/);
-  assert.match(html, /«Consultar regalos» abre WhatsApp en una pestaña nueva/);
+  assert.doesNotMatch(html, /«Consultar regalos» abre WhatsApp/);
   assert.equal((html.match(/<summary /g) ?? []).length, 8);
 });
 
@@ -85,7 +86,8 @@ test('home gifts keeps browsing and WhatsApp actions in the single consolidated 
   assert.match(gift, /href="\/perfumes"/);
   assert.match(gift, /href="\/mates"/);
   assert.match(gift, /href="https:\/\/wa\.me\//);
-  assert.match(gift, /abre WhatsApp en una pestaña nueva/);
+  assert.match(gift, /<span class="sr-only"> por WhatsApp, abre una pestaña nueva<\/span>/);
+  assert.doesNotMatch(gift, /«Consultar regalos» abre WhatsApp/);
   assert.doesNotMatch(gift, /<a\b[^>]*>(?:(?!<\/a>)[\s\S])*<a\b/);
   for (const path of ['/perfumes', '/mates', '/mates?categoria=bombillas']) assert.ok(html.includes(`href="${path}"`));
   assert.match(html, /Ver perfumes para regalar/);

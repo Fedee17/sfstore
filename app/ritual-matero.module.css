@@ -30,5 +30,3 @@
 @media (width >= 1200px) and (height <= 550px) {
   .tabs { margin-block: 4px 6px; }
 }
-
-.empty { padding-block: 12px; color: #526479; font-size: .875rem; }
