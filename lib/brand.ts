@@ -2,6 +2,7 @@ const location = {
   streetAddress: "Juan de Garay 2090",
   addressLocality: "San Francisco",
   addressRegion: "Córdoba",
+  postalCode: "2400",
   addressCountry: "AR",
 } as const;
 
