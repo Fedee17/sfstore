@@ -27,11 +27,6 @@ export function calculateListFromSpecial(value: string) {
   return { listText, specialText, list: Number(listText), special: Number(specialText) };
 }
 
-export function suggestSpecialFromCost(value: string): string | null {
-  if (!value.trim()) return null;
-  return adminMoneyText((parseAdminMoneyCents(value) * BigInt(3) + BigInt(1)) / BigInt(2));
-}
-
 export function assertCalculatedListPrice(list: number, special: number | null) {
   if (special === null) throw new Error("Completá el precio especial antes de aplicar el cálculo.");
   const expected = calculateListFromSpecial(String(special));
