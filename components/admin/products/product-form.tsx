@@ -39,7 +39,7 @@ import {
 import type { AdminCategory, AdminProduct } from "@/services/admin";
 import { calculateListFromSpecial, parseAdminMoneyCents } from "@/lib/products/admin-price-calculation";
 import { calculatePerfumePricePolicy, supportsPerfumePricePolicy } from "@/lib/products/perfume-price-policy";
-import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { getEffectiveCashPrice } from "@/lib/web-transfer-pricing";
 import { PriceCalculatorPreview } from "./price-calculator-preview";
 
 type ProductFormProps = {
@@ -471,7 +471,9 @@ export function ProductForm({
   const router = useRouter();
   const calculatePriceEnabled = !product?.family_id && !connector;
   const [costInput, setCostInput] = useState(String(product?.cost ?? ""));
-  const [specialInput, setSpecialInput] = useState(String(product?.transfer_price ?? ""));
+  // With the calculator the cash field holds the price the store charges today; saving approves it.
+  const chargedCash = product && calculatePriceEnabled ? String(getEffectiveCashPrice({ price: product.price, transfer_price: product.transfer_price ?? null, cash_price_approved_at: product.cash_price_approved_at })) : String(product?.transfer_price ?? "");
+  const [specialInput, setSpecialInput] = useState(chargedCash);
   const [listInput, setListInput] = useState(String(product?.price ?? 0));
   const [listPriceApplied, setListPriceApplied] = useState(false);
   const [perfumePriceApplied, setPerfumePriceApplied] = useState(false);
@@ -479,11 +481,9 @@ export function ProductForm({
   const [pricingName, setPricingName] = useState(product?.name ?? "");
   let proposedList: ReturnType<typeof calculateListFromSpecial> | null = null;
   let calculationError = "";
-  let effectiveTransfer: number | null = null;
   if (calculatePriceEnabled) {
     try { if (specialInput.trim()) proposedList = calculateListFromSpecial(specialInput); }
     catch (error) { calculationError = error instanceof Error ? error.message : "Revisá el precio especial."; }
-    try { effectiveTransfer = getWebTransferPrice(Number(parseAdminMoneyCents(listInput)) / 100); } catch { /* Display no fabricated amount. */ }
   }
   const displayMoney = (value: number | string) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(Number(value));
 
@@ -718,10 +718,10 @@ export function ProductForm({
           <PriceCalculatorPreview purchase={costInput} onPurchaseChange={value => { setCostInput(value); setPerfumePriceApplied(false); }}
             current={product ? {
               list: parseAdminMoneyCents(String(product.price)),
-              cash: product.transfer_price == null ? undefined : parseAdminMoneyCents(String(product.transfer_price)),
+              cash: parseAdminMoneyCents(chargedCash),
             } : undefined}
             onApply={prices => { setListInput(prices.list); setSpecialInput(prices.cash); setListPriceApplied(false); setPerfumePriceApplied(false); }}
-            onKeep={() => { setListInput(String(product?.price ?? 0)); setSpecialInput(String(product?.transfer_price ?? "")); setListPriceApplied(false); setPerfumePriceApplied(false); }}
+            onKeep={() => { setListInput(String(product?.price ?? 0)); setSpecialInput(chargedCash); setListPriceApplied(false); setPerfumePriceApplied(false); }}
           />
         )}
         <ProductFormFields collapsed={calculatePriceEnabled}>
@@ -838,8 +838,8 @@ export function ProductForm({
             <div className="grid gap-2 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] px-4 py-3 md:col-span-2" aria-live="polite">
               <input type="hidden" name="perfumePricePolicy" value={perfumePriceApplied ? "applied" : "manual"} />
               <input type="hidden" name="listPriceCalculation" value={listPriceApplied ? "applied" : "manual"} />
+              <input type="hidden" name="cashPriceApproval" value="calculator" />
               {proposedList ? <p className="text-sm">Especial ingresado: <strong>{displayMoney(proposedList.special)}</strong> · Lista calculada: <strong>{displayMoney(proposedList.list)}</strong>.</p> : <p className="text-sm">Ingresá un precio especial para calcular la lista.</p>}
-              {effectiveTransfer !== null ? <p className="text-sm">Transferencia con la lista actual: <strong>{displayMoney(effectiveTransfer)}</strong>.</p> : null}
               {calculationError ? <p role="alert" className="text-sm font-semibold">{calculationError}</p> : null}
               {perfumePolicyEligible ? <>
                 <button type="button" disabled={!perfumeSuggestion || isSubmitting} onClick={() => {

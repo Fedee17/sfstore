@@ -373,7 +373,15 @@ async function saveProductForm(formData: FormData, operationType: "create_produc
         throw new ProductSaveError("El producto cambio desde que lo abriste. Recarga antes de guardar.", "reload");
       }
     }
-    const product = await applyDescriptionFallbacks(payload);
+    const described = await applyDescriptionFallbacks(payload);
+    // Saved from the calculator form: the cash price becomes the one the store charges (stored_cash migration).
+    const cashApproved = formData.get("cashPriceApproval") === "calculator";
+    if (cashApproved) {
+      if (existing?.family_id) throw new Error("El precio de este SKU se administra desde su familia.");
+      const cash = described.transfer_price;
+      if (cash === null || cash <= 0 || cash > described.price) throw new Error("Ingresá un precio de contado mayor que cero y no superior al de lista.");
+    }
+    const product = cashApproved ? { ...described, cash_price_approved: true as const } : described;
     const category = await getProductCategoryInfo(product.category_id);
     const previousCategory = existing && existing.category_id !== product.category_id
       ? await getProductCategoryInfo(existing.category_id) : null;

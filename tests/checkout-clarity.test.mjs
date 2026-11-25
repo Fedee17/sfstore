@@ -15,7 +15,7 @@ function load(file,modules,append=''){
  const exports={};new Function('require','exports',ts.transpileModule(read(file)+append,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>Object.hasOwn(modules,n)?modules[n]:require(n),exports);return exports;
 }
 const render=Component=>renderToStaticMarkup(React.createElement(Component));
-const item={productId:'synthetic',name:'Producto de prueba',slug:'test',category:'mates',price:100,quantity:2,stock:3};
+const item={productId:'synthetic',name:'Producto de prueba',slug:'test',category:'mates',price:100,transferPrice:75,quantity:2,stock:3};
 const modules={'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:()=>null},'@/components/site-header':{SiteHeader:()=>null},'@/store/cart-store':{useCartStore:()=>({items:[item],totalItems:2,subtotal:200}),cartItemKey:()=>item.productId},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{mates:'Mates'},publicCategoryPaths:{mates:'/mates'}},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:[]},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}};
 
 test('before order creation cart and checkout never render transfer destination; retain total and essential conditions',()=>{

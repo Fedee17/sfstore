@@ -78,12 +78,14 @@ test("Yara fallback is removed, unrelated fallback products remain", async () =>
 
 function fakeClient(rows, error = null) {
   return { from(table) {
-    let selected = table==="public_catalog_skus"?rows.filter(p=>p.status==="active"&&!p.historical_identity&&p.web_visible&&!p.commercial_blocked&&p.categories?.is_active).map(p=>({...p,category_slug:p.categories.slug})).sort((a,b)=>a.id.localeCompare(b.id)):[...rows];
+    // public_catalog_cash_prices answers the database policy in force today (list × 0,75, cent rounding).
+    let selected = table==="public_catalog_cash_prices"?rows.map(p=>({id:p.id,cash_price:Number(p.price)>0?Math.floor((Math.round(p.price*100)*75+50)/100)/100:null})).sort((x,y)=>x.id.localeCompare(y.id)):table==="public_catalog_skus"?rows.filter(p=>p.status==="active"&&!p.historical_identity&&p.web_visible&&!p.commercial_blocked&&p.categories?.is_active).map(p=>({...p,category_slug:p.categories.slug})).sort((a,b)=>a.id.localeCompare(b.id)):[...rows];
     let single = false;
     const query = {
       select() { return query; },
       eq(key, value) { selected = selected.filter((row) => key.startsWith("categories.") ? row.categories?.[key.slice(11)] === value : row[key] === value); return query; },
       gt(key,value) { selected=selected.filter(row=>row[key]>value);return query; },
+      in(key,values) { selected=selected.filter(row=>values.includes(row[key]));return query; },
       neq(key, value) { selected = selected.filter((row) => key.startsWith("categories.") ? row.categories?.[key.slice(11)] !== value : row[key] !== value); return query; },
       order() { return query; }, limit() { return query; },
       maybeSingle() { single = true; return query; },
@@ -124,7 +126,7 @@ test("real sitemap filters B and keeps A", async () => {
 });
 test("consultation catalog excludes B even before archival", async () => {
   globalThis.__yaraReadOnlyClient = fakeClient([publicRow(a), publicRow(b)]);
-  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/store-sales", new URL("../lib/store-sales.ts", import.meta.url).href).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
+  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/web-transfer-pricing", new URL("../lib/web-transfer-pricing.ts", import.meta.url).href).replace("@/lib/store-sales", new URL("../lib/store-sales.ts", import.meta.url).href).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
   assert.deepEqual((await catalog.getQuickCatalogProducts()).data.map((product) => product.id), [a.id]);
 });
 
@@ -132,7 +134,7 @@ const paymentServiceUrl = moduleUrl(source("services/order-payments.ts")
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/order-payments", moduleUrl(source("lib/order-payments.ts"))));
 const mutationGuardUrl = moduleUrl('export async function assertCurrentCommercialOperation(){throw new Error("UNEXPECTED_MUTATION_IN_READ_ONLY_TEST");}');
-const saleService = await import(moduleUrl(source("services/store-sales.ts").replace("@/lib/store-sale-date",new URL("../lib/store-sale-date.ts",import.meta.url).href)
+const saleService = await import(moduleUrl(source("services/store-sales.ts").replace("@/lib/web-transfer-pricing", new URL("../lib/web-transfer-pricing.ts", import.meta.url).href).replace("@/lib/store-sale-date",new URL("../lib/store-sale-date.ts",import.meta.url).href)
   .replace("@/services/commercial-history-guards", mutationGuardUrl)
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/store-sales", moduleUrl(source("lib/store-sales.ts")))
@@ -168,7 +170,7 @@ test("post-apply recommendation eligibility keeps only active A with stock 1", a
   const finalA = { ...a, ...buildYaraRosaConsolidationPlan([a, b]).productUpdates[0].patch, stock: 1 };
   const finalB = { ...b, status: "archived", featured: false, stock: 0 };
   globalThis.__yaraReadOnlyClient = fakeClient([publicRow(finalA), publicRow(finalB)]);
-  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/store-sales", new URL("../lib/store-sales.ts", import.meta.url).href).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
+  const catalog = await import(moduleUrl(source("services/admin-catalog.ts").replace("@/lib/web-transfer-pricing", new URL("../lib/web-transfer-pricing.ts", import.meta.url).href).replace("@/lib/store-sales", new URL("../lib/store-sales.ts", import.meta.url).href).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/server", mockUrl)));
   const query = await import(moduleUrl(source("lib/admin/perfume-recommendation-query.ts")
     .replace("@/lib/catalog/attribute-config", moduleUrl(source("lib/catalog/attribute-config.ts")))));
   const eligible = query.getEligiblePerfumeRecommendationProducts((await catalog.getQuickCatalogProducts()).data);

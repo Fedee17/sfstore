@@ -14,9 +14,9 @@ const config=load('lib/catalog/attribute-config.ts');
 const info=load('lib/products/commercial-information.ts',{'@/lib/catalog/attribute-config':config});
 const {getProductCommercialInformation:describe}=info;
 const {ProductInformation}=load('components/product-information.tsx',{'react/jsx-runtime':jsx,'@/lib/products/commercial-information':info});
-const purchaseSummary=load('components/product-purchase-summary.tsx',{'@/lib/web-transfer-pricing':prices});
+const purchaseSummary=load('components/product-purchase-summary.tsx',{'@/lib/web-transfer-pricing':prices,'@/lib/pricing':require('../lib/pricing.ts')});
 const attr=(name,value)=>({name,value});
-const base={id:'synthetic',name:'PRUEBA',slug:'synthetic',kind:'simple',category:'perfumes',price:100,stock:2,shortDescription:'Resumen de prueba',description:'Primer párrafo.\n\nSegundo párrafo.',attributes:[]};
+const base={id:'synthetic',name:'PRUEBA',slug:'synthetic',kind:'simple',category:'perfumes',price:100,transferPrice:75,stock:2,shortDescription:'Resumen de prueba',description:'Primer párrafo.\n\nSegundo párrafo.',attributes:[]};
 
 test('registered perfume profile reuses labels, legacy aliases and explicit notes without inferring duration',()=>{
  const product={...base,attributes:[attr('Familia olfativa','Cítrico'),attr('olfactory_family','citrico'),attr('Intensidad','media'),attr('Ocasión','noche'),attr('occasion','valor-desconocido'),attr('Notas','bergamota'),attr('Duración','12 horas')]};
@@ -52,9 +52,13 @@ test('import templates disappear while actual commercial sentences and attribute
 });
 
 test('purchase summary preserves rounding, price order and only documented originality',()=>{
- const html=renderToStaticMarkup(React.createElement(purchaseSummary.ProductPricePanel,{price:129333.67}));
+ const html=renderToStaticMarkup(React.createElement(purchaseSummary.ProductPricePanel,{price:129333.67,cash:97000.25}));
  assert.match(html,/line-through/);assert.ok(html.indexOf('129.334')<html.indexOf('97.001'));assert.match(html,/25% OFF · Transferencia/);
- for(const price of [0,null,NaN]) assert.doesNotMatch(renderToStaticMarkup(React.createElement(purchaseSummary.ProductPricePanel,{price})),/25% OFF|line-through|\$\s*0/);
+ // The badge names the real discount of the stored cash price (calculator example: 64.500 / 56.100 → 13%).
+ const stored=renderToStaticMarkup(React.createElement(purchaseSummary.ProductPricePanel,{price:64500,cash:56100}));
+ assert.match(stored,/56\.100/);assert.match(stored,/13% OFF · Transferencia/);assert.doesNotMatch(stored,/25%/);
+ for(const cash of [null,undefined,0,150]) assert.doesNotMatch(renderToStaticMarkup(React.createElement(purchaseSummary.ProductPricePanel,{price:100,cash})),/OFF|line-through|\$\s*150/);
+ for(const price of [0,null,NaN]) assert.doesNotMatch(renderToStaticMarkup(React.createElement(purchaseSummary.ProductPricePanel,{price,cash:75})),/25% OFF|line-through|\$\s*0/);
  const conditions=attributes=>renderToStaticMarkup(React.createElement(purchaseSummary.ProductPurchaseConditions,{attributes}));
  assert.doesNotMatch(conditions([]),/Originalidad|originales|gratis|inmediato/i);
  assert.match(conditions([attr('Originalidad','Dato confirmado de prueba')]),/Dato confirmado de prueba/);

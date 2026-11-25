@@ -24,10 +24,11 @@ function load(file, overrides={}, globals={}, append='') {
 const whatsapp=load('lib/whatsapp.ts',{'@/lib/pricing':require('../lib/pricing.ts')});
 const storage=new Map();
 const {useCartStore,cartItemKey}=load('store/cart-store.ts',{}, {localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}});
-const product=(price,extra={})=>({id:'test',name:'Producto sintético',slug:'synthetic',kind:'simple',category:'perfumes',price,stock:3,featured:false,imagePlaceholder:'SY',shortDescription:'Prueba',...extra});
+// Catalog products carry the database cash price (75% of list until approved), or none when the list is invalid.
+const product=(price,extra={})=>({id:'test',name:'Producto sintético',slug:'synthetic',kind:'simple',category:'perfumes',price,transferPrice:web.hasValidWebPrice(price)?web.getWebTransferPrice(price):null,stock:3,featured:false,imagePlaceholder:'SY',shortDescription:'Prueba',...extra});
 const invalid=[null,undefined,0,-1,NaN,Infinity,-Infinity,'100',Number.MAX_VALUE,0.001];
 const storeModule={useCartStore,cartItemKey};
-const purchaseSummary=load('components/product-purchase-summary.tsx');
+const purchaseSummary=load('components/product-purchase-summary.tsx',{'@/lib/pricing':require('../lib/pricing.ts')});
 const ui={'@/store/cart-store':storeModule,'@/lib/whatsapp':whatsapp,'@/components/product-purchase-summary':purchaseSummary};
 const {AddToCartButton}=load('components/add-to-cart-button.tsx',ui);
 const {ProductActions}=load('app/producto/[slug]/product-actions.tsx',ui);
@@ -39,7 +40,7 @@ test('a purchasable price is a positive finite amount within the existing web mo
   for(const [price,net] of [[0.01,0.01],[1.34,1.01],[22000,16500],[15800,11850],[30666.67,23000]]){
     assert.equal(web.hasValidWebPrice(price),true);assert.equal(web.getWebTransferPrice(price),net);
   }
-  assert.equal(web.getWebTransferSubtotal([{price:30666.67,quantity:3}]),69000);
+  assert.equal(web.getWebTransferSubtotal([{transferPrice:web.getWebTransferPrice(30666.67),quantity:3}]),69000);
 });
 
 test('the two confirmed cases use Consultar precio, retain availability and never quote a free price',()=>{
@@ -79,7 +80,8 @@ test('current and legacy storage remove invalid prices, rebuild forged totals an
     const rows=[valid,...[0,null,-1,'100'].map((price,i)=>({...valid,productId:`bad-${i}`,price}))];
     storage.set('sfstore-cart',JSON.stringify({version,state:{items:rows,subtotal:999999,totalItems:999}}));
     await useCartStore.persist.rehydrate();
-    const state=useCartStore.getState();assert.deepEqual(state.items,[valid]);assert.equal(state.subtotal,200);assert.equal(state.totalItems,2);assert.equal(state.invalidPriceNotice,true);
+    // Lines saved without a cash price get the rule in force when they were saved (75% of list).
+    const state=useCartStore.getState();assert.deepEqual(state.items,[{...valid,transferPrice:75}]);assert.equal(state.subtotal,200);assert.equal(state.totalItems,2);assert.equal(state.invalidPriceNotice,true);
     assert.equal(typeof state.addItem,'function');assert.equal(state.items[0].primaryImageUrl,'/exact.svg');
   }
 });

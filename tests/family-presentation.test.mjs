@@ -11,8 +11,8 @@ import {getFamilyRepresentativeImage} from '../lib/products/family-presentation.
 import {groupPublicProducts} from '../lib/products/public-families.ts';
 import * as prices from '../lib/web-transfer-pricing.ts';
 const image={url:'/synthetic-grey.svg',alt:'Gris de prueba',is_primary:true,sort_order:0};
-const black={id:'black',kind:'variant',familyId:'family',familyName:'Familia de prueba',familySlug:'family',name:'Prueba Negro',sku:'BLACK',slug:'black',category:'mates',price:100,stock:2,featured:false,shortDescription:'Prueba',imagePlaceholder:'PR',variantOptions:{Color:'Negro'},images:[{...image,url:'/synthetic-black.svg'}]};
-const grey={...black,id:'grey',sku:'GREY',name:'Prueba Gris',price:120,variantOptions:{Color:'Gris'},images:[image,{...image,url:'/synthetic-grey-detail.svg',is_primary:false,sort_order:1}]};
+const black={id:'black',kind:'variant',familyId:'family',familyName:'Familia de prueba',familySlug:'family',name:'Prueba Negro',sku:'BLACK',slug:'black',category:'mates',price:100,transferPrice:75,stock:2,featured:false,shortDescription:'Prueba',imagePlaceholder:'PR',variantOptions:{Color:'Negro'},images:[{...image,url:'/synthetic-black.svg'}]};
+const grey={...black,id:'grey',sku:'GREY',name:'Prueba Gris',price:120,transferPrice:90,variantOptions:{Color:'Gris'},images:[image,{...image,url:'/synthetic-grey-detail.svg',is_primary:false,sort_order:1}]};
 const green={...black,id:'green',sku:'GREEN',stock:0,variantOptions:{Color:'Verde'}};
 const [family]=groupPublicProducts([black,grey,green]);
 const approvals=[{familyId:'family',sourceProductId:'grey',imageUrl:image.url,label:'Gris'}];
@@ -51,7 +51,7 @@ function render(choices={},product=family){
   '@/components/product-image-gallery':{ProductImageGallery:({images=[],showThumbnails=true})=>React.createElement('div',{'data-gallery':JSON.stringify(images.map(i=>i.url)),'data-thumbnails':showThumbnails})},
   '@/components/add-to-cart-button':{AddToCartButton:({product:p})=>React.createElement('button',{disabled:p.stock<=0,'data-cart-product':p.id,'data-cart-price':p.price},'Agregar al carrito')},
  };
- const purchase={};new Function('require','exports',ts.transpileModule(readFileSync(new URL('../components/product-purchase-summary.tsx',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n]??require(n),purchase);
+ const purchase={};new Function('require','exports',ts.transpileModule(readFileSync(new URL('../components/product-purchase-summary.tsx',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>n==='@/lib/pricing'?require('../lib/pricing.ts'):modules[n]??require(n),purchase);
  modules['@/components/product-purchase-summary']=purchase;
  new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n]??require(n),exports);
  return renderToStaticMarkup(React.createElement(exports.ProductFamilyDetail,{product}));
@@ -119,7 +119,7 @@ test('family thumbnails can be omitted without removing stored photos or changin
 });
 
 test('the detail rounds displayed prices while keeping the selected SKU price exact for the cart',()=>{
- const variant={...black,price:129333.67};
+ const variant={...black,price:129333.67,transferPrice:97000.25};
  const html=render({Color:'Negro'},{...family,variants:[variant,grey,green]});
  assert.match(html,/data-testid="variant-list-price"[^>]*>[^<]*129\.334<\/span>/);
  assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.001<\/p>/);

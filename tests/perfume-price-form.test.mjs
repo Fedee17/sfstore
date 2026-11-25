@@ -3,8 +3,10 @@ import {test}from 'node:test';
 import {pricingFormHarness}from './fixtures/component-gallery-render.mjs';
 
 test('existing editor never recalculates on open or cost-only edits and applies the policy only on click',()=>{
- const h=pricingFormHarness();assert.equal(h.input('price').props.value,'21999');assert.equal(h.input('transferPrice').props.value,'16500');
- h.change('cost','20000');assert.equal(h.input('price').props.value,'21999');assert.equal(h.input('transferPrice').props.value,'16500');
+ // The cash field opens with the price the store charges: 75% of list while the stored value is not approved.
+ const h=pricingFormHarness();assert.equal(h.input('price').props.value,'21999');assert.equal(h.input('transferPrice').props.value,'16499.25');
+ assert.equal(pricingFormHarness({approved:true}).input('transferPrice').props.value,'16500');
+ h.change('cost','20000');assert.equal(h.input('price').props.value,'21999');assert.equal(h.input('transferPrice').props.value,'16499.25');
  h.click('Calcular precio sugerido (+40%)');assert.equal(h.input('price').props.value,'37333.33');assert.equal(h.input('transferPrice').props.value,'28000.00');assert.equal(h.input('perfumePricePolicy').props.value,'applied');
  h.change('cost','30000');assert.equal(h.input('price').props.value,'37333.33');assert.equal(h.input('transferPrice').props.value,'28000.00');assert.equal(h.input('perfumePricePolicy').props.value,'manual');
 });

@@ -43,7 +43,7 @@ const benefits = [
   },
   {
     title: "Pago por transferencia",
-    description: "25% de descuento abonando el total por transferencia",
+    description: "Precio de contado abonando el total por transferencia",
     icon: "payment",
   },
   {

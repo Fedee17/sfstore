@@ -267,6 +267,12 @@
       "stagingFile": "staging/supabase/migrations/202611110001_revoke_public_transfer_price.sql",
       "sourceSha256": "05cf0c620c212668b6b115afcdf7f97dbd9ddb30c006b2faf32e11e13b494160",
       "stagingSha256": "05cf0c620c212668b6b115afcdf7f97dbd9ddb30c006b2faf32e11e13b494160"
+    },
+    {
+      "source": "supabase/migrations/202611260001_stored_cash_prices.sql",
+      "stagingFile": "staging/supabase/migrations/202611260001_stored_cash_prices.sql",
+      "sourceSha256": "58d70a3b7cabce48ecc00eb0577784b54f0721217df1d5756759de701523f2a9",
+      "stagingSha256": "58d70a3b7cabce48ecc00eb0577784b54f0721217df1d5756759de701523f2a9"
     }
   ]
 }

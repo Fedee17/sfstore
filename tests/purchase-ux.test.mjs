@@ -12,7 +12,7 @@ import * as categories from '../lib/catalog/public-product-visibility.ts';
 const require=createRequire(import.meta.url);
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 function load(f,modules){const out={};new Function('require','exports',ts.transpileModule(read(f),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>Object.hasOwn(modules,n)?modules[n]:(n.endsWith('.module.css')?{default:new Proxy({}, {get:(_,key)=>key})}:require(n)),out);return out;}
-const items=['cc','lightning'].map(connector=>({productId:'synthetic',comboConnector:connector,name:'Cargador '+connector,slug:connector,category:'accesorios',price:30666.67,quantity:1,stock:2}));
+const items=['cc','lightning'].map(connector=>({productId:'synthetic',comboConnector:connector,name:'Cargador '+connector,slug:connector,category:'accesorios',price:30666.67,transferPrice:23000,quantity:1,stock:2}));
 const store={useCartStore:()=>({items,totalItems:2,subtotal:61333.34}),cartItemKey:i=>i.comboConnector};
 const hooks={...React,useState:v=>[v,()=>{}],useRef:()=>({current:null}),useEffect:()=>{}};
 const modules={...analyticsRenderStubs,'react':hooks,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:({item})=>React.createElement('span',null,item.name)},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':store,'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'}};
@@ -32,8 +32,8 @@ test('checkout line totals and pickup summary use the same unit-rounded transfer
  assert.match(html,/Total exacto por transferencia/);assert.match(html,/46\.000,00/);
  assert.equal((html.match(/23\.000<\/p>/g)||[]).length,2);
  assert.doesNotMatch(html,/Se confirma al crear el pedido/);
- assert.equal(prices.getWebTransferSubtotal([{price:30666.67,quantity:3}]),69000);
- assert.equal(prices.getWebTransferSubtotal([{price:100,quantity:2}]),150);
+ assert.equal(prices.getWebTransferSubtotal([{transferPrice:prices.getWebTransferPrice(30666.67),quantity:3}]),69000);
+ assert.equal(prices.getWebTransferSubtotal([{transferPrice:75,quantity:2}]),150);
 });
 test('home hero does not render an unapproved raster advertisement or duplicate payment conditions',()=>{
  const Hero=load('components/home-hero-slider.tsx',modules).HomeHeroSlider;

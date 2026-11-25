@@ -152,7 +152,8 @@ test('discovery precedes featured and gifts/advice remain after featured without
   assert.doesNotMatch(html, /id="ritual-matero"/);
   assert.match(sections[featured + 1], /id="regalos"/);
   assert.match(sections[featured + 2], /aria-labelledby="advice-title"/);
-  assert.match(html, /25% de descuento abonando el total por transferencia/);
+  assert.match(html, /Precio de contado abonando el total por transferencia/);
+  assert.doesNotMatch(html, /25% de descuento/);
   assert.match(html, /Entregas a todo el país/);
   assert.doesNotMatch(html, /diseñador|perfumes importados|cuotas|envío gratis/i);
 });
@@ -375,7 +376,7 @@ test('home featured carousel displays the selected products by descending displa
   const html = await renderHome([
     product('a', { price: 200, transferPrice: 90 }),
     product('b', { price: 150, transferPrice: 120 }),
-    product('c', { price: 100, transferPrice: null }),
+    product('c', { price: 100, transferPrice: 100 }),
   ]);
   assert.ok(html.includes("<strong>LOS MÁS ELEGIDOS</strong> DE SF STORE"));
   assert.deepEqual([...html.matchAll(/data-product-slug="([^"]+)"/g)].map(match => match[1]), ['b', 'c', 'a']);

@@ -20,7 +20,7 @@ function load(file,modules={},globals={},append=''){
 const memory=new Map(),storage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
 const {useCartStore,cartItemKey}=load('store/cart-store.ts',{'@/lib/products/component-combos':combos},{localStorage:storage});
 const photo=(url,primary=true)=>({url,alt:'Foto exacta de prueba',sort_order:primary?2:0,is_primary:primary});
-const sku=(color)=>({id:color,name:`Termo — Color: ${color} · SKU-${color}`,familyName:'Termo de prueba',familyId:'family',kind:'variant',variantLabel:`Color: ${color}`,sku:`SKU-${color}`,slug:'family',category:'mates',price:100,stock:3,featured:false,shortDescription:'SYNTHETIC',imagePlaceholder:'T',images:[photo(`/detail-${color}.svg`,false),photo(`/sku-${color}.svg`)]});
+const sku=(color)=>({id:color,name:`Termo — Color: ${color} · SKU-${color}`,familyName:'Termo de prueba',familyId:'family',kind:'variant',variantLabel:`Color: ${color}`,sku:`SKU-${color}`,slug:'family',category:'mates',price:100,transferPrice:75,stock:3,featured:false,shortDescription:'SYNTHETIC',imagePlaceholder:'T',images:[photo(`/detail-${color}.svg`,false),photo(`/sku-${color}.svg`)]});
 
 test('cart retains each SKU photo, color, quantities and exact prices without family cover or economic changes',()=>{
  useCartStore.getState().clearCart(); const grey=sku('Gris'),black=sku('Negro'),before=JSON.stringify(grey);
@@ -55,7 +55,7 @@ test('simple products and the two virtual connectors keep only their own photogr
 });
 
 test('cart and checkout retain the SKU, round displayed prices up and show the exact payable total',()=>{
- useCartStore.getState().clearCart();useCartStore.getState().addItem({...sku('Gris'),price:100.01});
+ useCartStore.getState().clearCart();useCartStore.getState().addItem({...sku('Gris'),price:100.01,transferPrice:75.01});
  const state=useCartStore.getState(),modules={'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity},'@/components/site-header':{SiteHeader:()=>null},'@/store/cart-store':{useCartStore:()=>state,cartItemKey},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{mates:'Mates'},publicCategoryPaths:{mates:'/mates'}},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/components/transfer-alias':{TransferAlias:()=>null},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':argentina,'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}};
  const Cart=load('components/cart-content.tsx',modules).default;
  const Checkout=load('app/checkout/page.tsx',modules,{},'\nexport { CheckoutContent };').CheckoutContent;

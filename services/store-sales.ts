@@ -1,4 +1,5 @@
 import { assertCurrentCommercialOperation } from "@/services/commercial-history-guards";
+import { getEffectiveCashPrice } from "@/lib/web-transfer-pricing";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { commercialDayBounds, validateStoreSaleDate } from "@/lib/store-sale-date";
 import { type StoreSalePaymentMethod, getStoreSaleDisplayName } from "@/lib/store-sales";
@@ -15,6 +16,8 @@ export type StoreSaleProduct = {
   sku: string | null;
   price: number;
   transfer_price: number | null;
+  /** Charged cash price (commercial_cash_unit_price); combos use their own rule. */
+  cash_price?: number;
   stock: number;
   status: string;
   categories: { name: string } | null;
@@ -115,7 +118,7 @@ function paymentSummary(total: number, payments: OrderPayment[]) {
 export async function listStoreSaleProducts() {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, name, commercial_label, slug, sku, price, transfer_price, stock, status, categories(name)")
+    .select("id, name, commercial_label, slug, sku, price, transfer_price, cash_price_approved_at, stock, status, categories(name)")
     .eq("historical_identity", false)
     .neq("id", YARA_ROSA.archivedId)
     .eq("status", "active")
@@ -128,6 +131,7 @@ export async function listStoreSaleProducts() {
 
   return (data ?? []).map((product) => ({
     ...product,
+    cash_price: getEffectiveCashPrice(product),
     name: product.commercial_label ?? product.name,
     categories: firstRelation(product.categories),
   })) as StoreSaleProduct[];

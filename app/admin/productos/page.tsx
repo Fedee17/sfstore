@@ -1,4 +1,5 @@
 ﻿import { AdminNav } from "@/components/admin/admin-nav";
+import { getEffectiveCashPrice } from "@/lib/web-transfer-pricing";
 import Link from "next/link";
 import { catalogIssues, LOW_STOCK_LIMIT } from "@/lib/admin/catalog-review";
 
@@ -416,7 +417,8 @@ export default async function AdminProductsPage({
           <div className="mt-8 grid min-w-0 gap-4">
             {pageProducts.map((product) => {
               const stockState = getStockState(product.stock);
-              const marginBasePrice = product.transfer_price ?? product.price;
+              const chargedCash = getEffectiveCashPrice({ price: product.price, transfer_price: product.transfer_price ?? null, cash_price_approved_at: product.cash_price_approved_at });
+              const marginBasePrice = chargedCash;
 
               return (
                 <article
@@ -469,7 +471,7 @@ export default async function AdminProductsPage({
                         />
                         <PriceBlock
                           label="Transferencia/efectivo"
-                          value={formatMoney(product.transfer_price)}
+                          value={formatMoney(chargedCash)}
                           variant="highlight"
                         />
                         <PriceBlock
@@ -480,9 +482,7 @@ export default async function AdminProductsPage({
                           label="Margen"
                           value={formatMargin(product.cost, marginBasePrice)}
                           note={
-                            product.transfer_price
-                              ? "sobre precio especial"
-                              : undefined
+                            "sobre precio de contado"
                           }
                         />
                       </div>

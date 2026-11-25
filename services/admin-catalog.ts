@@ -6,7 +6,7 @@ import type {
 } from "@/lib/admin/quick-catalog";
 
 import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
-import { getStoreSaleUnitPrice } from "@/lib/store-sales";
+import { getEffectiveCashPrice } from "@/lib/web-transfer-pricing";
 
 type RelationOne<T> = T | T[] | null;
 
@@ -50,6 +50,7 @@ export async function getQuickCatalogProducts(): Promise<{
         stock,
         price,
         transfer_price,
+        cash_price_approved_at,
         categories (id, name, slug),
         product_attributes (name, value),
         product_images (url, alt, sort_order, is_primary)
@@ -71,7 +72,7 @@ export async function getQuickCatalogProducts(): Promise<{
         stock: row.stock,
         price: Number(row.price),
         transfer_price: Number(row.price) > 0
-          ? getStoreSaleUnitPrice({ price: Number(row.price), transfer_price: null }) : null,
+          ? getEffectiveCashPrice(row) : null,
         category: firstRelation(row.categories),
         attributes: row.product_attributes ?? [],
         images: row.product_images ?? [],

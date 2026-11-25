@@ -18,10 +18,11 @@ const service = await import(url(source("services/products.ts").replace("@/lib/c
   .replace("@/lib/catalog/public-product-visibility", url(source("lib/catalog/public-product-visibility.ts")))
   .replace("@/lib/products/yara-rosa-consolidation", url(source("lib/products/yara-rosa-consolidation.ts")))
   .replace("@/lib/supabase/client", url("export const getSupabaseClient = () => globalThis.__commercialCatalogClient;"))));
-function client(rows,error=null) {
- return {from(){let selected=rows.map(p=>({...p,category_slug:p.categories?.slug}));
+function client(rows,error=null,cash={}) {
+ // public_catalog_cash_prices answers the database rule (list × 0,75 for unapproved products), never transfer_price.
+ return {from(table){let selected=table==="public_catalog_cash_prices"?rows.map(p=>({id:p.id,cash_price:p.id in cash?cash[p.id]:Number(p.price)>0?Math.floor((Math.round(p.price*100)*75+50)/100)/100:null})):rows.map(p=>({...p,category_slug:p.categories?.slug}));
   const q={select:()=>q,eq:(k,v)=>{selected=selected.filter(p=>p[k]===v);return q;},neq:(k,v)=>{selected=selected.filter(p=>p[k]!==v);return q;},
-   gt:(k,v)=>{selected=selected.filter(p=>p[k]>v);return q;},order:()=>q,limit:()=>q,
+   gt:(k,v)=>{selected=selected.filter(p=>p[k]>v);return q;},in:(k,v)=>{selected=selected.filter(p=>v.includes(p[k]));return q;},order:()=>q,limit:()=>q,
    then:(resolve,reject)=>Promise.resolve({data:selected,error}).then(resolve,reject)};return q;}};
 }
 
@@ -29,7 +30,8 @@ const row = { id: "synthetic", name: "Synthetic", slug: "synthetic", status: "ac
 
 test("web price follows 25% exactly once with PostgreSQL cent rounding", () => {
   for (const [list, expected] of [[100, 75], [100.01, 75.01], [1.34, 1.01], [0.02, 0.02], [0, 0]]) assert.equal(getWebTransferPrice(list), expected);
-  assert.equal(getWebTransferSubtotal([{ price: 1.34, quantity: 100 }]), 101);
+  assert.equal(getWebTransferSubtotal([{ transferPrice: getWebTransferPrice(1.34), quantity: 100 }]), 101);
+  assert.throws(() => getWebTransferSubtotal([{ price: 1.34, quantity: 1 }]), /cash price/);
   assert.throws(() => getWebTransferPrice(Number.NaN));
   assert.throws(() => getWebTransferPrice(-1));
 });
@@ -39,6 +41,15 @@ test("public catalog ignores the stored internal transfer price without mutating
   assert.equal((await service.getProductsByCategorySlug("perfumes"))[0].transferPrice, 75.01);
   assert.equal((await service.getProductBySlug("synthetic")).transferPrice, 75.01);
   assert.equal(row.transfer_price, 80.03);
+});
+
+test("an approved cash price from the database is shown exactly; an invalid one offers no cash price", async () => {
+  globalThis.__commercialCatalogClient = client([row], null, { synthetic: 87.5 });
+  assert.equal((await service.getProductBySlug("synthetic")).transferPrice, 87.5);
+  for (const invalid of [null, 0, 120]) {
+    globalThis.__commercialCatalogClient = client([row], null, { synthetic: invalid });
+    assert.equal((await service.getProductBySlug("synthetic")).transferPrice, null);
+  }
 });
 
 test("missing or invalid public prices do not break the catalog or invent a transfer price", async () => {
@@ -92,8 +103,12 @@ test("actual catalog cards never use a legacy 80% transfer field", async () => {
   };
   const add = load("components/add-to-cart-button.tsx", { react: React, "react/jsx-runtime": jsx, "@/lib/web-transfer-pricing": web, "@/lib/whatsapp": { getProductWhatsAppLink: () => "/synthetic" }, "@/store/cart-store": { useCartStore: (selector) => selector({ items: [], addItem() {} }) } });
   const { ProductGrid } = load("components/product-grid.tsx", { react: React, "react/jsx-runtime": jsx, "@/lib/products/public-families": await import("../lib/products/public-families.ts"), "@/lib/pricing": pricing, "@/lib/web-transfer-pricing": web, "@/lib/whatsapp": { getProductWhatsAppLink: () => "/synthetic" }, "@/components/add-to-cart-button": add });
-  for (const transferPrice of [80, null]) {
-    const html = renderToStaticMarkup(React.createElement(ProductGrid, { products: [{ id: "synthetic", name: "Synthetic", slug: "synthetic", category: "perfumes", price: 100, transferPrice, stock: 2, imagePlaceholder: "SY" }], label: "Synthetic" }));
+  // The stale stored transfer_price never reaches the card: the service maps the database cash price (test above).
+  // The card shows Product.transferPrice; without a valid one it offers no discounted price.
+  const card = transferPrice => renderToStaticMarkup(React.createElement(ProductGrid, { products: [{ id: "synthetic", name: "Synthetic", slug: "synthetic", category: "perfumes", price: 100, transferPrice, stock: 2, imagePlaceholder: "SY" }], label: "Synthetic" }));
+  for (const transferPrice of [null, 120]) assert.doesNotMatch(card(transferPrice), /OFF|$s*120|80%/);
+  {
+    const html = card(75);
     assert.match(html, /75/);
     assert.match(html, /25% OFF · (?:<[^>]+>)*Transferencia/);
     // Owner decision 11/11/2026: the badge names Transferencia · Efectivo; only the legacy 80% wording stays forbidden.

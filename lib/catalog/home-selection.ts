@@ -1,6 +1,6 @@
 import type { PublicProduct } from "../../services/products";
 import { publicationAvailable } from "../products/public-families";
-import { getWebTransferPrice, hasValidWebPrice } from "../web-transfer-pricing";
+import { hasValidWebPrice } from "../web-transfer-pricing";
 import { isDecantProduct } from "./perfume-recommendation";
 
 export type HomeFeaturedProduct = PublicProduct & { homePriceFrom?: boolean };
@@ -20,16 +20,16 @@ export function getHomeEligibleProducts(products: PublicProduct[]): HomeFeatured
     if (isDecant(product)) continue;
     if (product.kind === "family") {
       const variants = (product.variants ?? []).filter(variant =>
-        publicationAvailable(variant) && hasValidWebPrice(variant.price) && !isDecant(variant)
+        publicationAvailable(variant) && hasValidWebPrice(variant.price) && hasValidWebPrice(variant.transferPrice) && !isDecant(variant)
       );
       if (!variants.length) continue;
       const priceSource = variants.reduce((a, b) => a.price <= b.price ? a : b);
       const photoSource = hasPhoto(priceSource) ? priceSource : hasPhoto(product) ? product : variants.find(hasPhoto);
       if (!photoSource) continue;
-      eligible.push({ ...product, price: priceSource.price, transferPrice: getWebTransferPrice(priceSource.price),
+      eligible.push({ ...product, price: priceSource.price, transferPrice: Math.min(...variants.map(variant => variant.transferPrice as number)),
         primaryImageUrl: photoSource.primaryImageUrl, primaryImageAlt: photoSource.primaryImageAlt,
         homePriceFrom: variants.some(variant => variant.price !== priceSource.price) });
-    } else if (publicationAvailable(product) && hasValidWebPrice(product.price) && hasPhoto(product)) {
+    } else if (publicationAvailable(product) && hasValidWebPrice(product.price) && hasValidWebPrice(product.transferPrice) && hasPhoto(product)) {
       eligible.push(product);
     }
   }
