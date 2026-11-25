@@ -27,13 +27,6 @@ test('strict monetary validation rejects invalid precision, signs, exponents and
   assert.throws(()=>money.calculateListFromSpecial('0'));
   assert.throws(()=>money.calculateListFromSpecial('9999999999.99'));
 });
-test('cost suggestion rounds half up independently and is never used to overwrite the special',()=>{
-  assert.equal(money.suggestSpecialFromCost(''),null);
-  assert.equal(money.suggestSpecialFromCost('10000'),'15000.00');
-  assert.equal(money.suggestSpecialFromCost('0.01'),'0.02');
-  assert.equal(money.suggestSpecialFromCost('0.03'),'0.05');
-  assert.throws(()=>money.suggestSpecialFromCost('-1'));
-});
 test('server calculation verification rejects a tampered or missing special/list pair',()=>{
   money.assertCalculatedListPrice(30666.67,23000);
   assert.throws(()=>money.assertCalculatedListPrice(30666.66,23000));

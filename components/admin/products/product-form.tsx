@@ -13,6 +13,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type ReactNode,
 } from "react";
 import {
   deleteProductImage,
@@ -36,9 +37,10 @@ import {
   normalizeProductImageFileType,
 } from "@/lib/products/product-image-files";
 import type { AdminCategory, AdminProduct } from "@/services/admin";
-import { calculateListFromSpecial, suggestSpecialFromCost, parseAdminMoneyCents } from "@/lib/products/admin-price-calculation";
+import { calculateListFromSpecial, parseAdminMoneyCents } from "@/lib/products/admin-price-calculation";
 import { calculatePerfumePricePolicy, supportsPerfumePricePolicy } from "@/lib/products/perfume-price-policy";
 import { getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { PriceCalculatorPreview } from "./price-calculator-preview";
 
 type ProductFormProps = {
   action: (
@@ -50,6 +52,16 @@ type ProductFormProps = {
   submitLabel: string;
   connector?: "cc" | "lightning";
 };
+
+function ProductFormFields({ collapsed, children }: { collapsed: boolean; children: ReactNode }) {
+  if (!collapsed) return children;
+  return (
+    <details className="mt-5 border-t border-[#8B5E3C]/15 pt-2">
+      <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold text-[#465826]">Ver otros datos del producto</summary>
+      {children}
+    </details>
+  );
+}
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
 const INITIAL_ACTION_STATE: ProductFormActionState = {
@@ -467,12 +479,10 @@ export function ProductForm({
   const [pricingName, setPricingName] = useState(product?.name ?? "");
   let proposedList: ReturnType<typeof calculateListFromSpecial> | null = null;
   let calculationError = "";
-  let suggestedSpecial: string | null = null;
   let effectiveTransfer: number | null = null;
   if (calculatePriceEnabled) {
     try { if (specialInput.trim()) proposedList = calculateListFromSpecial(specialInput); }
     catch (error) { calculationError = error instanceof Error ? error.message : "Revisá el precio especial."; }
-    try { suggestedSpecial = suggestSpecialFromCost(costInput); } catch { /* Invalid cost remains subject to form/server validation. */ }
     try { effectiveTransfer = getWebTransferPrice(Number(parseAdminMoneyCents(listInput)) / 100); } catch { /* Display no fabricated amount. */ }
   }
   const displayMoney = (value: number | string) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(Number(value));
@@ -692,12 +702,29 @@ export function ProductForm({
           }
           submitLockRef.current = true;
         }}
-        className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm"
+        // A required field inside the collapsed «Ver otros datos del producto» opens it so the browser can show the error.
+        onInvalidCapture={(event) => { (event.target as HTMLElement).closest("details")?.setAttribute("open", ""); }}
+        // With the calculator the form uses the approved calculator card (Codex, 26/11/2026).
+        className={calculatePriceEnabled ? "mt-4 rounded-2xl bg-white p-4 sm:mt-5 sm:rounded-[2rem] sm:px-8 sm:py-7"
+          : "mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm"}
       >
         <UnsavedChangesGuard enabled={actionState.status!=="success"}/>
         {product ? <input type="hidden" name="productId" value={product.id} /> : null}
         {connector ? <input type="hidden" name="connector" value={connector} /> : null}
 
+        {calculatePriceEnabled && (
+          // Approved calculator (Codex, 26/11/2026). «Aplicar precios» only fills the list and cash fields below;
+          // saving the product stays the separate submit button. The legacy list/perfume validations do not apply.
+          <PriceCalculatorPreview purchase={costInput} onPurchaseChange={value => { setCostInput(value); setPerfumePriceApplied(false); }}
+            current={product ? {
+              list: parseAdminMoneyCents(String(product.price)),
+              cash: product.transfer_price == null ? undefined : parseAdminMoneyCents(String(product.transfer_price)),
+            } : undefined}
+            onApply={prices => { setListInput(prices.list); setSpecialInput(prices.cash); setListPriceApplied(false); setPerfumePriceApplied(false); }}
+            onKeep={() => { setListInput(String(product?.price ?? 0)); setSpecialInput(String(product?.transfer_price ?? "")); setListPriceApplied(false); setPerfumePriceApplied(false); }}
+          />
+        )}
+        <ProductFormFields collapsed={calculatePriceEnabled}>
         <fieldset disabled={isSubmitting || actionState.retryMode === "retry" || actionState.retryMode === "reload"} className="grid min-w-0 gap-5 md:grid-cols-2">
           {!connector ? <>
           <label className="grid gap-2">
@@ -865,7 +892,6 @@ export function ProductForm({
               onChange={(event) => { setCostInput(event.target.value); setPerfumePriceApplied(false); }}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
-            {calculatePriceEnabled && !perfumePolicyEligible ? <span className="text-xs leading-5 text-[#1F1F1F]/60">{suggestedSpecial !== null ? "Especial sugerido (costo × 1,50): " + displayMoney(suggestedSpecial) + "." : "Ingresá un costo válido para ver la sugerencia."} Es orientativo: no modifica el precio especial manual.</span> : null}
           </label>
 
           <label className="grid gap-2">
@@ -993,6 +1019,7 @@ export function ProductForm({
             ) : null}
           </div>
         </fieldset>
+        </ProductFormFields>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <button
             type="submit"

@@ -1,5 +1,5 @@
 import {createRequire} from 'node:module';
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 import ts from 'typescript';
 import React from 'react';
 import * as attributes from '../../lib/catalog/attribute-config.ts';
@@ -22,7 +22,9 @@ const mocks={
  '@/lib/catalog/attribute-config':{...attributes,getAttributeFieldsForCategory:()=>[],getCatalogAttributeValues:()=>[]},
  '@/lib/product-taxonomy':{MATE_PRODUCT_TYPES:[],PRODUCT_ATTRIBUTE_NAMES:{brand:'Marca',type:'Tipo'}},
 };
-function load(file){const out={};const code=ts.transpileModule(readFileSync(new URL(file,root),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',code)(n=>mocks[n]??(n.startsWith('@/')?load(n.slice(2)+'.ts'):n.startsWith('.')?load(new URL(n,new URL(file,root))):require(n)),out);return out;}
+// Relative imports may omit the extension (e.g. ./price-calculator-preview -> .tsx).
+function relative(n,file){const base=new URL(n,new URL(file,root));return [base,new URL(base.href+'.tsx'),new URL(base.href+'.ts')].find(u=>/\.tsx?$/.test(u.pathname)&&existsSync(u))??base;}
+function load(file){const out={};const code=ts.transpileModule(readFileSync(new URL(file,root),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','exports',code)(n=>mocks[n]??(n.startsWith('@/')?load(n.slice(2)+'.ts'):n.startsWith('.')?load(relative(n,file)):require(n)),out);return out;}
 const {ProductForm}=load('components/admin/products/product-form.tsx');
 export function renderGallery(connector='cc'){
  const product={id:'11111111-1111-4111-8111-111111111111',name:'PRUEBA LOCAL',slug:'synthetic',status:'draft',price:30666.67,stock:0,featured:false,category_id:'category',categories:null,product_images:[]};
