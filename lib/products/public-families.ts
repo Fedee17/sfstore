@@ -7,8 +7,10 @@ export function groupPublicProducts<T extends Product>(products: T[]): T[] {
   rows.sort((a,b)=>(a.variantLabel??a.name).localeCompare(b.variantLabel??b.name,"es")||a.id.localeCompare(b.id));
   const first=rows[0],eligible=rows.some(p=>p.stock>0)?rows.filter(p=>p.stock>0):rows;
   const priceSource=eligible.reduce((a,b)=>a.price<=b.price?a:b);
+  // «Desde» shows each lowest amount: the cheapest cash price may belong to another SKU than the cheapest list price.
+  const cashPrices=eligible.map(p=>p.transferPrice).filter((v):v is number=>typeof v==="number"&&Number.isFinite(v)&&v>0);
   simple.push({...first,id,kind:"family",sku:null,variantOptions:undefined,variantLabel:undefined,name:first.familyName??first.name,slug:first.familySlug??first.slug,
-    price:priceSource.price,transferPrice:priceSource.transferPrice,stock:0,featured:rows.some(p=>p.featured),variants:rows});
+    price:priceSource.price,transferPrice:cashPrices.length===eligible.length?Math.min(...cashPrices):null,stock:0,featured:rows.some(p=>p.featured),variants:rows});
  }
  return simple.sort((a,b)=>Number(b.featured)-Number(a.featured)||a.name.localeCompare(b.name,"es")||a.id.localeCompare(b.id));
 }

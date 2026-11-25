@@ -184,7 +184,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.name}
             </h1>
             {information.shortDescription ? <p className="mt-2 whitespace-pre-line break-words text-sm leading-6">{information.shortDescription}</p> : null}
-            <ProductPricePanel price={product.price} />
+            <ProductPricePanel price={product.price} cash={product.transferPrice} />
             <ProductActions product={product} />
             <ProductPurchaseConditions attributes={productAttributes} />
             <div className="space-y-5"><ProductInformation product={product} /></div>

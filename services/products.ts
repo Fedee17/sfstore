@@ -35,6 +35,7 @@ type SupabaseAttribute = {
 };
 
 type SupabaseProductRow = {
+  cash_price?: number | string | null; // From public_catalog_cash_prices, never computed here.
   family_id?: string | null;
   family_name?: string | null;
   family_slug?: string | null;
@@ -120,7 +121,7 @@ function mapSupabaseProduct(row: SupabaseProductRow): PublicProduct | null {
     slug: row.slug,
     category: publicCategory,
     price: Number(row.price),
-    transferPrice: hasValidWebPrice(Number(row.price)) ? getWebTransferPrice(Number(row.price)) : null,
+    transferPrice: hasValidWebPrice(Number(row.price)) && hasValidWebPrice(Number(row.cash_price)) && Number(row.cash_price) <= Number(row.price) ? Number(row.cash_price) : null,
     stock: row.stock,
     featured: row.featured,
     shortDescription: row.short_description,
@@ -158,10 +159,28 @@ async function readPublicSkuRows(slug?: string, family?: string, slugs?: string[
   if(family)query=query.eq("family_slug",family);
   const {data,error}=await query;
   if(error||data===null)throw new Error("PUBLIC_CATALOG_READ_FAILED");
-  if(!data.length)return rows;
+  if(!data.length)return attachCashPrices(rows);
   for(const row of data as SupabaseProductRow[]){if(after&&row.id<=after)throw new Error("PUBLIC_CATALOG_PAGINATION_FAILED");rows.push(row);after=row.id;}
  }
  throw new Error("PUBLIC_CATALOG_INCOMPLETE");
+}
+// The cash (one-payment) price comes from the database rule (public_catalog_cash_prices): the price saved with the
+// admin calculator, otherwise 75% of list. A failed read fails the catalog instead of showing an amount checkout would not charge.
+async function attachCashPrices(rows:SupabaseProductRow[]):Promise<SupabaseProductRow[]> {
+ const cash=new Map<string,number|string|null>(), ids=rows.map(row=>row.id);
+ for(let start=0;start<ids.length;start+=100){
+  const chunk=ids.slice(start,start+100);let after:string|null=null;
+  for(let page=0;;page++){
+   if(page>=500)throw new Error("PUBLIC_CATALOG_CASH_INCOMPLETE");
+   let query=getSupabaseClient().from("public_catalog_cash_prices").select("id,cash_price").in("id",chunk).order("id").limit(200);
+   if(after)query=query.gt("id",after);
+   const {data,error}=await query;
+   if(error||data===null)throw new Error("PUBLIC_CATALOG_CASH_READ_FAILED");
+   if(!data.length)break;
+   for(const row of data as {id:string;cash_price:number|string|null}[]){if(after&&row.id<=after)throw new Error("PUBLIC_CATALOG_CASH_PAGINATION_FAILED");cash.set(row.id,row.cash_price);after=row.id;}
+  }
+ }
+ return rows.map(row=>({...row,cash_price:cash.get(row.id)??null}));
 }
 const mapRows=(rows:SupabaseProductRow[])=>rows.map(mapSupabaseProduct).filter((p):p is PublicProduct=>p!==null);
 const OFFER_COLUMNS="id,name,connector,head_slug,cable_slug,presentation_product,combo_list_price,combo_transfer_price,price_version,image_id,image_url,image_alt,image_gallery";

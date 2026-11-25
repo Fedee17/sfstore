@@ -4,7 +4,7 @@ import { brand } from "@/lib/brand";
 
 import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { formatWebPrice, getWebTransferSubtotal, getWebTransferPrice } from "@/lib/web-transfer-pricing";
+import { formatWebPrice, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
 import { CartItemIdentity } from "@/components/cart-item-identity";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
@@ -473,7 +473,7 @@ function CheckoutContent() {
                     {shippingQuote?.status === "quotation_required" ? <div><p>No hay tarifa aprobada para este destino y transporte. Solicitá una cotización: no se confirma un pedido ni se reserva stock hasta aceptar el total definitivo. No transfieras antes de conocerlo.</p>
                       <button type="button" disabled={isSubmitting || !!quotationId} onClick={requestQuotation} className="mt-3 rounded-xl border p-3">Solicitar cotización</button>
                     </div> : null}
-                    {approvedTotal !== null ? <p role="status">Cotización aprobada: el total incluye los productos con 25% de descuento y el envío. Al aceptar se verificará nuevamente la disponibilidad y el precio. No transfieras hasta obtener el pedido con su total final.</p> : null}
+                    {approvedTotal !== null ? <p role="status">Cotización aprobada: el total incluye los productos a precio de contado y el envío. Al aceptar se verificará nuevamente la disponibilidad y el precio. No transfieras hasta obtener el pedido con su total final.</p> : null}
                     {quotationId ? <div><button type="button" disabled={isSubmitting} onClick={refreshQuotation} className="rounded border p-3">Consultar cotización del local</button><p role="status">Solicitud registrada: {quotationId}. El local revisará el transporte elegido y comunicará el costo. No es un pedido confirmado ni una reserva. No transfieras todavía.</p></div> : null}
 
                   </div>
@@ -490,7 +490,7 @@ function CheckoutContent() {
 
             <aside className="h-fit rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Resumen</h2>
-              <p className="mt-2 text-sm leading-6 text-[#102033]/75">Transferencia bancaria completa: 25% de descuento sobre los productos. Los precios de referencia se redondean hacia arriba; el total exacto puede incluir centavos.</p>
+              <p className="mt-2 text-sm leading-6 text-[#102033]/75">Transferencia bancaria completa: precio de contado de los productos. Los precios de referencia se redondean hacia arriba; el total exacto puede incluir centavos.</p>
               <div className="mt-6 space-y-4">
                 {items.map((item) => (
                   <div
@@ -505,10 +505,7 @@ function CheckoutContent() {
                         </p>
                       </div>
                       <p className="self-end break-words font-semibold text-[#003B73]">
-                        {formatWebPrice(
-                          getWebTransferPrice(item.price) *
-                            item.quantity,
-                        )}
+                        {formatWebPrice(getWebTransferSubtotal([item]))}
                       </p>
                     </div>
                   </div>
@@ -526,7 +523,7 @@ function CheckoutContent() {
                     {formatWebPrice(subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between"><span>Productos por transferencia (25% OFF)</span><span>{formatWebPrice(getWebTransferSubtotal(items))}</span></div>
+                <div className="flex justify-between"><span>Productos por transferencia</span><span>{formatWebPrice(getWebTransferSubtotal(items))}</span></div>
                 <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
                   <span className="font-semibold">{shippingRequired ? "Total exacto con envío" : "Total exacto por transferencia · retiro"}</span>
                   <span className="font-semibold text-[#003B73]">

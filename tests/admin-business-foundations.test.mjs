@@ -5,6 +5,7 @@ import ts from 'typescript';
 import {buildCommercialDay} from '../lib/commercial-reporting/daily.ts';
 import {commercialDayBounds} from '../lib/commercial-reporting/periods.ts';
 import * as pricing from '../lib/store-sales.ts';
+import * as webPricing from '../lib/web-transfer-pricing.ts';
 
 test('daily figures keep confirmed sales, dated receipts and monthly pending amounts separate',()=>{
  const sale=(id,extra={})=>({id,occurredOn:'2026-11-07',excluded:false,confirmed:true,totalCents:10000,pendingCents:0,issues:[],...extra});
@@ -23,12 +24,12 @@ test('inventory day includes the Argentine late evening and excludes the next mi
  const source=readFileSync(new URL('../services/inventory.ts',import.meta.url),'utf8');
  assert.match(source,/commercialDayBounds\(filters.from\).startInclusive/);assert.match(source,/commercialDayBounds\(filters.to\).endExclusive/);
 });
-test('consultation ignores a stale stored transfer price and uses the same suggestion as a sale',async()=>{
+test('consultation ignores a stale stored transfer price, shows an approved one and uses the same cash price as a sale',async()=>{
  const source=readFileSync(new URL('../services/admin-catalog.ts',import.meta.url),'utf8');
- const out={};const rows=[{id:'synthetic',price:100,transfer_price:1,stock:2,categories:null}];
+ const out={};const rows=[{id:'synthetic',price:100,transfer_price:1,stock:2,categories:null},{id:'approved',price:100,transfer_price:87,cash_price_approved_at:'2026-11-26T12:00:00Z',stock:2,categories:null}];
  const query={select(){return this;},eq(){return this;},neq(){return this;},async order(){return {data:rows,error:null};}};
  new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(name=>({
-  '@/lib/supabase/server':{getSupabaseAdminClient:()=>({from:()=>query})},'@/lib/store-sales':pricing,'@/lib/products/yara-rosa-consolidation':{YARA_ROSA:{archivedId:'unused'}}
+  '@/lib/supabase/server':{getSupabaseAdminClient:()=>({from:()=>query})},'@/lib/store-sales':pricing,'@/lib/web-transfer-pricing':webPricing,'@/lib/products/yara-rosa-consolidation':{YARA_ROSA:{archivedId:'unused'}}
  }[name]),out);
- const result=await out.getQuickCatalogProducts();assert.equal(result.data[0].transfer_price,75);assert.equal(rows[0].transfer_price,1);
+ const result=await out.getQuickCatalogProducts();assert.equal(result.data[0].transfer_price,75);assert.equal(rows[0].transfer_price,1);assert.equal(result.data[1].transfer_price,87);
 });

@@ -16,7 +16,7 @@ import * as visibility from '../lib/catalog/public-product-visibility.ts';
 import * as yara from '../lib/products/yara-rosa-consolidation.ts';
 import * as availability from '../lib/catalog/availability-order.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
-import { publicRows, publicOffers, invalidRows, filterFixtureRows } from './fixtures/search-public-catalog.mjs';
+import { publicRows, publicOffers, invalidRows, filterFixtureRows, fixtureCashPrice } from './fixtures/search-public-catalog.mjs';
 
 const require = createRequire(import.meta.url);
 function load(file, modules) {
@@ -31,15 +31,15 @@ function load(file, modules) {
 function harness({ rows = publicRows, offers = publicOffers, fail = false } = {}) {
   const calls = [];
   const db = { from(table) {
-    assert.ok(['public_catalog_skus', 'public_component_offers'].includes(table), 'Only public projections may be read');
+    assert.ok(['public_catalog_skus', 'public_catalog_cash_prices', 'public_component_offers'].includes(table), 'Only public projections may be read');
     const params = new URLSearchParams();
     const q = {
       select(columns) { assert.doesNotMatch(columns, /cost|audit/); return q; }, order() { return q; }, limit() { return q; },
       gt(k, v) { params.set(k, 'gt.' + v); return q; }, eq(k, v) { params.set(k, 'eq.' + v); return q; },
-      or(v) { params.set('or', v); return q; },
+      or(v) { params.set('or', v); return q; }, in(k, v) { params.set(k, 'in.(' + v.join(',') + ')'); return q; },
       then(ok, bad) {
         calls.push(table);
-        return Promise.resolve({ data: fail ? null : filterFixtureRows(table === 'public_catalog_skus' ? rows : offers, params), error: fail ? { code: 'SYNTHETIC_FAILURE' } : null }).then(ok, bad);
+        return Promise.resolve({ data: fail ? null : filterFixtureRows(table === 'public_catalog_skus' ? rows : table === 'public_catalog_cash_prices' ? rows.map(fixtureCashPrice) : offers, params), error: fail ? { code: 'SYNTHETIC_FAILURE' } : null }).then(ok, bad);
       },
     };
     return q;

@@ -33,9 +33,9 @@ export function renderGallery(connector='cc'){
 
 
 // Exercise the existing component handlers without network, credentials or a save action.
-export function pricingFormHarness({category='perfumes',type='Perfumes',family=false}={}){
+export function pricingFormHarness({category='perfumes',type='Perfumes',family=false,approved=false}={}){
  const h={cursor:0,values:[]};
- const product={id:'11111111-1111-4111-8111-111111111111',name:'Perfume de prueba',slug:'synthetic',status:'draft',price:21999,transfer_price:16500,cost:10000,stock:0,featured:false,category_id:'category',family_id:family?'family':null,categories:null,product_images:[],product_attributes:[{name:'Tipo',value:type}]};
+ const product={id:'11111111-1111-4111-8111-111111111111',name:'Perfume de prueba',slug:'synthetic',status:'draft',price:21999,transfer_price:16500,cash_price_approved_at:approved?'2026-11-26T12:00:00Z':null,cost:10000,stock:0,featured:false,category_id:'category',family_id:family?'family':null,categories:null,product_images:[],product_attributes:[{name:'Tipo',value:type}]};
  const props={product,categories:[{id:'category',name:'Categoria',slug:category}],action:()=>{throw Error('NO_REMOTE_SAVE')},submitLabel:'Guardar'};
  function render(){h.cursor=0;activeHarness=h;try{return ProductForm(props)}finally{activeHarness=null}}
  function flatten(node){return Array.isArray(node)?node.flatMap(flatten):node&&typeof node==='object'?[node,...flatten(node.props?.children)]:[]}

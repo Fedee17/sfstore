@@ -7,9 +7,9 @@ import * as componentCombos from '../lib/products/component-combos.ts';
 import * as webPricing from '../lib/web-transfer-pricing.ts';
 import {groupPublicProducts,publicationAvailable} from '../lib/products/public-families.ts';
 import {buildCommercialAnalytics} from '../lib/commercial-reporting/analytics.ts';
-const simple={id:'simple',name:'Simple',slug:'simple',category:'mates',price:100,stock:2,featured:false,shortDescription:'Synthetic',imagePlaceholder:'SY'};
+const simple={id:'simple',name:'Simple',slug:'simple',category:'mates',price:100,transferPrice:75,stock:2,featured:false,shortDescription:'Synthetic',imagePlaceholder:'SY'};
 const black={...simple,id:'black',name:'Family — Color: Negro',sku:'BLACK',kind:'variant',familyId:'family',familyName:'Family',familySlug:'family',variantLabel:'Color: Negro',variantOptions:{Color:'Negro'}};
-const green={...black,id:'green',name:'Family — Color: Verde',sku:'GREEN',price:120,variantLabel:'Color: Verde',variantOptions:{Color:'Verde'}};
+const green={...black,id:'green',name:'Family — Color: Verde',sku:'GREEN',price:120,transferPrice:90,variantLabel:'Color: Verde',variantOptions:{Color:'Verde'}};
 test('one publication per family, never a second inventory counter; simple product unchanged',()=>{
  const before=JSON.stringify([simple,black,green]);const rows=groupPublicProducts([simple,black,green]);assert.equal(rows.length,2);assert.deepEqual(rows.find(p=>p.id==='simple'),simple);
  const f=rows.find(p=>p.id==='family');assert.equal(f.kind,'family');assert.equal(f.stock,0);assert.equal(f.price,100);assert.equal(f.variants.length,2);assert.equal(publicationAvailable(f),true);assert.equal(JSON.stringify([simple,black,green]),before);
@@ -28,7 +28,7 @@ test('legacy cart rehydrates without inventing variants; SKU remain distinct and
  const store=cartWithLegacy();await store.persist.rehydrate();assert.equal(store.getState().items[0].productId,'old-simple');assert.equal(store.getState().subtotal,100);assert.equal(store.getState().totalItems,1);
  store.getState().addItem(groupPublicProducts([black,green])[0]);assert.equal(store.getState().items.length,1);
  store.getState().addItem(black);store.getState().addItem(green);assert.equal(store.getState().items.length,3);assert.equal(store.getState().items.find(p=>p.productId==='green').sku,'GREEN');
- store.getState().addItem({...black,price:110,stock:1,name:'Refreshed'});const line=store.getState().items.find(p=>p.productId==='black');assert.equal(line.price,110);assert.equal(line.quantity,1);assert.equal(line.name,'Refreshed');
+ store.getState().addItem({...black,price:110,transferPrice:82.5,stock:1,name:'Refreshed'});const line=store.getState().items.find(p=>p.productId==='black');assert.equal(line.price,110);assert.equal(line.quantity,1);assert.equal(line.name,'Refreshed');
 });
 test('monthly family/variant rankings aggregate snapshots once, leaving undocumented old lines unclassified',()=>{
  const input={orders:[{id:'order',channel:'store',status:'completed',payment_status:'paid',historical_import:false,historical_occurred_on:null,affects_inventory:true,created_at:'2026-10-18T15:00:00Z',subtotal:300,discount:75,shipping_cost:0,total:225,cost_snapshot_policy:null}],

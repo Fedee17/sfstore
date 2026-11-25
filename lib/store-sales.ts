@@ -2,9 +2,10 @@ export const STORE_SALE_PAYMENT_METHODS = ["cash", "transfer", "debit", "credit"
 export type StoreSalePaymentMethod = (typeof STORE_SALE_PAYMENT_METHODS)[number];
 
 // Preview only: PostgreSQL re-reads and locks products before authorizing a sale.
-// Round per unit, identically to the online 25% policy; never use transfer_price.
+// Round per unit, identically to the web: cashPrice is the product's charged cash price (commercial_cash_unit_price);
+// without it (combos) the 75% rule applies.
 export function calculateStoreSalePricing(
-  lines: { price: number; quantity: number; saleUnitPrice?: number }[],
+  lines: { price: number; quantity: number; cashPrice?: number; saleUnitPrice?: number }[],
   methods: readonly string[],
 ) {
   const discounted = methods.length > 0 && methods.every((method) => method === "cash" || method === "transfer");
@@ -15,7 +16,8 @@ export function calculateStoreSalePricing(
       throw new Error("Producto, precio o cantidad no válidos.");
     }
     const cents = BigInt(Math.round(line.price * 100));
-    const suggested = discounted ? (cents * BigInt(75) + BigInt(50)) / BigInt(100) : cents;
+    const cash = line.cashPrice !== undefined && Number.isFinite(line.cashPrice) && line.cashPrice > 0 && line.cashPrice <= line.price ? BigInt(Math.round(line.cashPrice * 100)) : null;
+    const suggested = discounted ? cash ?? (cents * BigInt(75) + BigInt(50)) / BigInt(100) : cents;
     let unit = suggested;
     if (line.saleUnitPrice !== undefined) {
       unit = BigInt(Math.round(parseStoreSaleUnitPrice(String(line.saleUnitPrice)) * 100));

@@ -25,6 +25,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
   const images = selected ? selected.images ?? [] : representative ? [representative.image] : [];
   const isColor = dimensions.length === 1 && dimensions[0].toLowerCase() === "color";
   const price = selected ? selected.price : product.price;
+  const cash = selected ? selected.transferPrice : product.transferPrice;
 
   return <main className="min-h-screen bg-[#F7F9FC] font-sans text-[#102033]">
     <SiteHeader />
@@ -42,7 +43,7 @@ export function ProductFamilyDetail({ product }: { product: Product }) {
         <div className="order-2 flex min-w-0 flex-col gap-3 lg:gap-4 lg:rounded-3xl lg:border lg:border-[#003B73]/20 lg:bg-white lg:p-6">
           <div aria-live="polite" aria-atomic="true" className="order-2 space-y-1 lg:order-1">
             {selected ? <p className="text-xs font-semibold text-[#003B73]">Precio de la variante elegida</p> : null}
-            <ProductPricePanel price={price} from={!selected} />
+            <ProductPricePanel price={price} cash={cash} from={!selected} />
           </div>
           {dimensions.map(d => <fieldset key={d} className="order-1 min-w-0 rounded-2xl border border-[#DCE3EA] bg-[#FFFDFA] px-3 pb-3 pt-1 lg:order-2">
             <legend className="mb-2 break-words px-1 font-semibold text-[#003B73]">{choices[d] ? `${d}: ${choices[d]}` : isColor ? "Elegí tu color" : `Elegí ${d.toLowerCase()}`}</legend>

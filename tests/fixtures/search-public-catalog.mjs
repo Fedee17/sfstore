@@ -38,6 +38,8 @@ export const invalidRows = [
   }),
 ];
 
+// Same as the database's current policy (list_x075_v1) unless a row states its stored cash price.
+export const fixtureCashPrice = row => ({ id: row.id, cash_price: row.cash_price !== undefined ? row.cash_price : Number(row.price) > 0 ? Math.round(Number(row.price) * 75) / 100 : null });
 export function filterFixtureRows(rows, params) {
   let result = [...rows].sort((a, b) => a.id.localeCompare(b.id) || (a.connector ?? '').localeCompare(b.connector ?? ''));
   for (const [key, value] of params) {
@@ -62,10 +64,10 @@ export async function startPublicFixtureServer({ rows = publicRows, offers = pub
     const url = new URL(req.url, 'http://127.0.0.1');
     requests.push({ method: req.method, path: url.pathname });
     const table = url.pathname.split('/').at(-1);
-    if (req.method !== 'GET' || !['public_catalog_skus', 'public_component_offers'].includes(table)) {
+    if (req.method !== 'GET' || !['public_catalog_skus', 'public_catalog_cash_prices', 'public_component_offers'].includes(table)) {
       res.writeHead(405); res.end('FIXTURE_READ_ONLY'); return;
     }
-    const data = filterFixtureRows(table === 'public_catalog_skus' ? rows : offers, url.searchParams);
+    const data = filterFixtureRows(table === 'public_catalog_skus' ? rows : table === 'public_catalog_cash_prices' ? rows.map(fixtureCashPrice) : offers, url.searchParams);
     res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(data));
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));

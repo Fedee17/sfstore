@@ -46,7 +46,7 @@ function faq(html, title) {
 
 test('help separates payment reporting, bank verification and pickup authorization', () => {
   const html = help();
-  assert.match(faq(html, '¿Cómo pago mi compra?'), /25%.*precio de lista.*total definitivo/);
+  assert.match(faq(html, '¿Cómo pago mi compra?'), /precio de contado.*de lista.*total definitivo/);
   assert.match(faq(html, '¿Dónde adjunto el comprobante?'), /pantalla del pedido.*Informar pago y adjuntar comprobante/);
   assert.match(faq(html, '¿Dónde adjunto el comprobante?'), /PDF, PNG o JPEG de hasta 3 MiB/);
   assert.match(faq(html, '¿Dónde adjunto el comprobante?'), /WhatsApp no reemplaza este paso/);

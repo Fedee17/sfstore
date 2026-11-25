@@ -62,6 +62,11 @@ export function StoreSaleForm({ products, recipes = [], initialProductId, initia
   }} />;
 }
 
+// Search-result preview: the product's cash price with cash/transfer, its list price otherwise.
+function suggestedUnitPrice(product: { price: number | string; cash_price?: number }, methods: string[]) {
+  return calculateStoreSalePricing([{ price: Number(product.price), cashPrice: product.cash_price, quantity: 1 }], methods).items[0].unitPrice;
+}
+
 function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, initialSaleDate }: { products: StoreSaleProduct[]; recipes: ComponentRecipe[]; onNextSale: () => void; initialProductId?:string; initialSaleDate?:string }) {
   const [state, action] = useActionState(createStoreSaleAction, initialState);
   const [query, setQuery] = useState("");
@@ -81,7 +86,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
     const parts = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
     if (parts.some(p => !p) || !recipe.prices_approved || !recipe.combo_price_version || !recipe.combo_list_price) return null;
     return { ...parts[0]!, id: `${recipe.presentation_product}:${connector}`, name: componentPublicationName(connector),
-      sku: null, price: recipe.combo_list_price, stock: Math.min(...parts.map(p => p!.stock)), comboRecipe: recipe, comboConnector: connector };
+      sku: null, price: recipe.combo_list_price, cash_price: undefined, stock: Math.min(...parts.map(p => p!.stock)), comboRecipe: recipe, comboConnector: connector };
   }).filter((p): p is NonNullable<typeof p> => p !== null))], [products, recipes]);
   const matches = useMemo(() => {
     return choices
@@ -89,15 +94,17 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
       .slice(0, 10);
   }, [choices, query]);
 
+  const previewMethods = payments.map((payment) => payment.method);
+  const previewPrices = new Map(matches.map((product) => [product.id, suggestedUnitPrice(product, previewMethods)]));
   const suggestedPricing = calculateStoreSalePricing(
-    lines.map((line) => ({ price: Number(line.product.price), quantity: line.quantity })),
+    lines.map((line) => ({ price: Number(line.product.price), cashPrice: line.product.cash_price, quantity: line.quantity })),
     payments.map((payment) => payment.method),
   );
   let pricing = suggestedPricing;
   let priceError = "";
   try {
     if (lines.some(line => line.saleUnitPrice !== undefined)) pricing = calculateStoreSalePricing(
-      lines.map(line => ({ price: Number(line.product.price), quantity: line.quantity,
+      lines.map(line => ({ price: Number(line.product.price), cashPrice: line.product.cash_price, quantity: line.quantity,
         ...(line.saleUnitPrice !== undefined ? { saleUnitPrice: parseStoreSaleUnitPrice(line.saleUnitPrice) } : {}) })),
       payments.map(payment => payment.method),
     );
@@ -167,7 +174,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
       <section className="rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm">
         <h2 className="text-xl font-semibold">Productos</h2>
         <p className="mt-1 text-sm text-[#1F1F1F]/60">
-          El precio sugerido incluye 25% de descuento en efectivo o transferencia. Con otros medios se sugiere el precio de lista. Podés ajustar el precio para esta venta.
+          El precio sugerido es el de contado en efectivo o transferencia. Con otros medios se sugiere el precio de lista. Podés ajustar el precio para esta venta.
         </p>
 
         {componentError ? <p role="alert" className="mt-3 text-sm">{componentError}</p> : null}
@@ -201,7 +208,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                     <span className="block font-semibold">{product.name}</span>
                     <span className="text-xs text-[#1F1F1F]/55">
                       {product.sku ? `SKU ${product.sku} · ` : ""}
-                      Stock {product.stock} · {currencyFormatter.format(calculateStoreSalePricing([{ price: Number(product.price), quantity: 1 }], payments.map((payment) => payment.method)).items[0].unitPrice)}
+                      Stock {product.stock} · {currencyFormatter.format(previewPrices.get(product.id)!)}
                     </span>
                   </button>
                 ))

@@ -61,6 +61,7 @@ export type AdminProduct = {
   status: string;
   price: number;
   transfer_price?: number | null;
+  cash_price_approved_at?: string | null;
   compare_at_price?: number | null;
   cost?: number | null;
   stock: number;
@@ -277,6 +278,7 @@ export async function getAdminProducts(
         status,
         price,
         transfer_price,
+        cash_price_approved_at,
         compare_at_price,
         cost,
         stock,
@@ -404,6 +406,7 @@ export async function getAdminProductById(
             status,
             price,
             transfer_price,
+            cash_price_approved_at,
             compare_at_price,
             cost,
             stock,

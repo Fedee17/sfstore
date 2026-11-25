@@ -1,7 +1,7 @@
 "use client";
 
 import { publicCategoryPaths } from "@/lib/catalog/public-product-visibility";
-import { formatWebPrice, getWebTransferPrice, getWebTransferSubtotal, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { formatWebPrice, getWebTransferSubtotal, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore, cartItemKey } from "@/store/cart-store";
 import { CartItemIdentity } from "@/components/cart-item-identity";
@@ -13,16 +13,16 @@ export default function CartContent({ compact = false, titleId, onContinueShoppi
   onContinueShopping?: () => void;
 }) {
   const { items, totalItems, subtotal, removeItem, increaseQuantity, decreaseQuantity, clearCart, invalidPriceNotice } = useCartStore();
-  const hasInvalidPrice = items.some(item => !hasValidWebPrice(item.price));
-  const hasRoundedPrice = items.some(item => hasValidWebPrice(item.price) &&
-    (!Number.isInteger(item.price) || !Number.isInteger(getWebTransferPrice(item.price))));
+  const hasInvalidPrice = items.some(item => !hasValidWebPrice(item.price) || !hasValidWebPrice(item.transferPrice));
+  const hasRoundedPrice = items.some(item => hasValidWebPrice(item.price) && hasValidWebPrice(item.transferPrice) &&
+    (!Number.isInteger(item.price) || !Number.isInteger(item.transferPrice)));
   const transferSubtotal = hasInvalidPrice ? null : getWebTransferSubtotal(items);
   const shoppingHref = publicCategoryPaths[items[items.length - 1]?.category ?? "perfumes"];
   const whatsappHref = buildWhatsAppUrl([
     "Hola SFSTORE, quiero consultar por estos productos:",
     ...items.map(item => `${item.quantity} x ${item.name}`),
     "Pago: transferencia bancaria completa.",
-    "El precio final con 25% de descuento se confirma al crear el pedido.",
+    "El precio final de contado se confirma al crear el pedido.",
   ].join("\n"));
   const Heading = compact ? "h2" : "h1";
 
@@ -44,7 +44,7 @@ export default function CartContent({ compact = false, titleId, onContinueShoppi
         <div className={styles.layout}>
           <div className={styles.items}>
             {items.map(item => {
-              const unitPrice = hasValidWebPrice(item.price) ? getWebTransferPrice(item.price) : null;
+              const unitPrice = hasValidWebPrice(item.price) && hasValidWebPrice(item.transferPrice) ? item.transferPrice : null;
               return (
                 <article key={cartItemKey(item)} className={styles.item}>
                   <CartItemIdentity item={item}>
@@ -74,7 +74,7 @@ export default function CartContent({ compact = false, titleId, onContinueShoppi
               <span>Total de productos<span className="sr-only"> · Productos por transferencia</span></span>
               <strong>{transferSubtotal === null ? "Precio a confirmar" : formatWebPrice(transferSubtotal)}</strong>
             </div>
-            <p className={styles.payment}>25% OFF por transferencia.</p>
+            <p className={styles.payment}>Precio de contado por transferencia.</p>
             <details className={styles.breakdown}>
               <summary>Ver detalle de precios</summary>
               <dl>

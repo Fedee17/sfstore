@@ -1,13 +1,14 @@
 import { brand } from "@/lib/brand";
 import type { CatalogAttribute } from "@/lib/catalog/attribute-config";
-import { formatWebPrice, getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { getSavingsPercent } from "@/lib/pricing";
+import { formatWebPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 
-export function ProductPricePanel({ price, from = false }: { price: number; from?: boolean }) {
-  if (!hasValidWebPrice(price)) return <div><p className="text-sm text-[#45576A]">Precio a confirmar</p><p className="text-xl font-semibold">Consultar precio</p></div>;
+export function ProductPricePanel({ price, cash, from = false }: { price: number; cash?: number | null; from?: boolean }) {
+  if (!hasValidWebPrice(price) || !hasValidWebPrice(cash) || cash > price) return <div><p className="text-sm text-[#45576A]">Precio a confirmar</p><p className="text-xl font-semibold">Consultar precio</p></div>;
   return <div className="min-w-0 space-y-2" aria-label="Precio del producto">
     <p className="text-sm text-[#45576A]">Lista: <span data-testid="variant-list-price" className="line-through">{from ? "Desde " : ""}{formatWebPrice(price)}</span></p>
-    <p data-testid="variant-transfer-price" className="product-price-value text-4xl font-bold leading-tight tracking-tight text-[#0072CE]">{from ? "Desde " : ""}{formatWebPrice(getWebTransferPrice(price))}</p>
-    <span className="inline-flex rounded-md bg-[#0072CE]/10 px-2 py-1 text-xs font-semibold text-[#003B73]">25% OFF · Transferencia · Efectivo</span>
+    <p data-testid="variant-transfer-price" className="product-price-value text-4xl font-bold leading-tight tracking-tight text-[#0072CE]">{from ? "Desde " : ""}{formatWebPrice(cash)}</p>
+    <span className="inline-flex rounded-md bg-[#0072CE]/10 px-2 py-1 text-xs font-semibold text-[#003B73]">{getSavingsPercent(price, cash) ? `${getSavingsPercent(price, cash)}% OFF · ` : ""}Transferencia · Efectivo</span>
   </div>;
 }
 

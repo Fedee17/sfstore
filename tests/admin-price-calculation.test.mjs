@@ -13,7 +13,7 @@ test('exact cent conversion preserves approved special amounts and quantities', 
   for(const [special,list] of [['16500','22000.00'],['11850','15800.00'],['23000','30666.67'],['0.01','0.01'],['0.02','0.03']]){
     const result=money.calculateListFromSpecial(special);
     assert.equal(result.listText,list);assert.equal(getWebTransferPrice(result.list),Number(special));
-    assert.equal(getWebTransferSubtotal([{price:result.list,quantity:3}]),Math.round(Number(special)*100)*3/100);
+    assert.equal(getWebTransferSubtotal([{transferPrice:getWebTransferPrice(result.list),quantity:3}]),Math.round(Number(special)*100)*3/100);
   }
   for(let cents=1;cents<=100000;cents++){
     const result=money.calculateListFromSpecial((cents/100).toFixed(2));
