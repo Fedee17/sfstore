@@ -50,7 +50,8 @@ function deps(mode, { payment = {}, order = {}, confirm = { status: 'approved', 
     ...over,
   };
 }
-const post = (body, headers = {}) => new Request('https://sfstore.example/api/mercadopago/x', { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
+const post = (body, headers = {}, query = '') => new Request(`https://sfstore.example/api/mercadopago/x${query}`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
+const sign = (id, ts = '1795600000000') => ({ 'x-signature': `ts=${ts},v1=${createHmac('sha256', 'secreto').update(`id:${id};request-id:req-1;ts:${ts};`).digest('hex')}`, 'x-request-id': 'req-1' });
 const rpcNames = d => d.calls.rpc.map(([name]) => name);
 const refusing = code => ({ rpc: async () => { throw new Error(code); } });
 
@@ -63,7 +64,6 @@ test('with payments disabled every handler answers 410 and touches nothing', asy
 });
 
 test('payments off with the webhook secret loaded: signature checked, nothing read or settled', async () => {
-  const sign = id => ({ 'x-signature': `ts=1795600000,v1=${createHmac('sha256', 'secreto').update(`id:${id};request-id:req-1;ts:1795600000;`).digest('hex')}`, 'x-request-id': 'req-1' });
   const touched = [];
   const off = deps('contado', {}, { env: { MERCADO_PAGO_ACCESS_TOKEN: 'synthetic-placeholder', MERCADO_PAGO_WEBHOOK_SECRET: 'secreto' },
     getPayment: async () => { touched.push('payment'); }, getOrder: async () => { touched.push('order'); } });
@@ -77,6 +77,44 @@ test('payments off with the webhook secret loaded: signature checked, nothing re
   assert.deepEqual(touched, []);
   assert.equal(off.calls.rpc.length + off.calls.preference.length + off.calls.order.length + off.calls.expired.length, 0);
 });
+
+test('signed Order URLs use the lowercase ID in the manifest and the uppercase resource ID for lookup', async () => {
+  const id = 'ORD01M28P44G5FG8RJPM579EH56FV';
+  const signedId = id.toLowerCase();
+  const body = { type: 'order', data: { id } };
+  const headers = sign(signedId);
+  const order = deps('financiado', {}, { getOrder: async receivedId => {
+    assert.equal(receivedId, id);
+    return mpOrder({ id });
+  } });
+  for (const urlId of [id, signedId, `Ord${id.slice(3)}`]) {
+    const response = await handlers.handleWebhook(post(body, headers, `?data.id=${urlId}&type=order`), order);
+    assert.equal(response.status, 200, urlId);
+  }
+  assert.equal(order.calls.rpc.filter(([name]) => name === 'confirm_checkout_mercadopago_payment').length, 3);
+});
+
+for (const [type, id] of [['payment', '777'], ['order', mpOrderId.toLowerCase()]]) {
+  test(`${type} webhooks reject invalid or expired signatures and malformed URL IDs while payments are off`, async () => {
+    const off = deps('contado', {}, { env: { MERCADO_PAGO_WEBHOOK_SECRET: env.MERCADO_PAGO_WEBHOOK_SECRET } });
+    const body = { type, data: { id } };
+    const notify = (urlId, headers) => handlers.handleWebhook(
+      post(body, headers, `?data.id=${encodeURIComponent(urlId)}&type=${type}`), off,
+    );
+    const valid = await notify(id, sign(id));
+    assert.equal(valid.status, 503);
+    assert.equal((await valid.json()).code, 'AUTOMATIC_PAYMENTS_DISABLED');
+
+    const malformed = `${id};`;
+    for (const [urlId, headers] of [[id, sign('888')], [id, sign(id, '1795599699999')], [malformed, sign(malformed)],
+      [id, { ...sign(id), 'x-request-id': 'other-request' }]]) {
+      const rejected = await notify(urlId, headers);
+      assert.equal(rejected.status, 401);
+      assert.equal((await rejected.json()).code, 'WEBHOOK_SIGNATURE_INVALID');
+    }
+    assert.deepEqual(off.calls.rpc, []);
+  });
+}
 
 test('Checkout Pro uses the stored contado order only and reuses its open link', async () => {
   const d = deps('contado');
@@ -150,7 +188,6 @@ test('a confirmed or duplicated charge closes every open Checkout Pro link of it
 });
 
 test('webhook: signature required, charge re-read from Mercado Pago for both topics, retry on failures', async () => {
-  const sign = (id, ts = '1795600000') => ({ 'x-signature': `ts=${ts},v1=${createHmac('sha256', 'secreto').update(`id:${id};request-id:req-1;ts:${ts};`).digest('hex')}`, 'x-request-id': 'req-1' });
   const body = { type: 'payment', data: { id: '777' } };
   const ok = deps('contado');
   assert.equal((await handlers.handleWebhook(post(body, sign('777')), ok)).status, 200);

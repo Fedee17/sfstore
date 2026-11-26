@@ -80,8 +80,8 @@ export function financedOrder(order: MercadoPagoOrder, card: { token: string; in
   };
 }
 
-/** Checkout Pro payment id (digits) or Orders API order id (ORD…, ORDTST… in test). */
-export const isMercadoPagoChargeId = (id: string) => /^([0-9]{1,20}|ORD[A-Z0-9]{8,60})$/.test(id);
+/** Checkout Pro payment ID or Orders API ID, whose webhook representation can vary in case. */
+export const isMercadoPagoChargeId = (id: string) => /^(?:[0-9]{1,20}|ORD[A-Z0-9]{8,60})$/i.test(id);
 
 /**
  * Webhook authenticity (Mercado Pago «x-signature»): HMAC-SHA256 of `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
