@@ -1,8 +1,8 @@
 # SFSTORE — ESTÁNDARES DE DISEÑO Y DESARROLLO
 
-**Versión:** 1.0 · **Fecha:** 18/10/2026 · **Estado:** Propuesta para revisión y adopción  
+**Versión:** 1.3 · **Fecha:** 20/11/2026 · **Estado:** Estándar vigente de identidad boutique; migración global en curso  
 **Ámbito:** tienda online, experiencia móvil, checkout y panel administrador  
-**Documento rector:** `docs/SFSTORE-DIRECTRICES-MAESTRAS.md` (Manual Maestro de Experiencia Digital v1.0)
+**Documento rector:** `docs/SFSTORE-DIRECTRICES-MAESTRAS.md` (Manual Maestro de Experiencia Digital, versión interna 1.2)
 
 > **Regla central:** una funcionalidad está lista cuando funciona, se entiende, respeta la identidad de SFSTORE, facilita el objetivo del usuario y puede verificarse sin poner en riesgo operaciones reales.
 
@@ -17,7 +17,37 @@ Este documento convierte las directrices maestras en **criterios de implementaci
 
 ## 2. Identidad UI: sistema antes que pantallas
 
-**Estilo:** boutique cálida, natural, moderna, cercana y accesible. Referencias: verde oliva, marrones, blanco cálido, negro mate, madera y luz cálida. **No hay paleta HEX ni tipografías definitivas aprobadas:** se definirán tras auditar la interfaz y validar propuestas visuales. No crear una identidad alternativa por cuenta propia.
+**Estilo aprobado:** boutique cálida, natural, moderna, cercana y premium accesible. La referencia digital es la ficha de Éclaire aprobada, especialmente «Sobre este producto» y el bloque superior de información comercial. El azul histórico deja de ser la identidad objetivo del storefront. **No inventar códigos HEX ni una tipografía nueva:** extraer los valores efectivos de los componentes aprobados y `storefront-theme.css` en el candidato local. El archivo centralizado existe según el informe de Codex; verificar su ubicación y versión antes de editar.
+
+### 2.1 Lenguaje visual obligatorio
+
+| Elemento | Criterio |
+|---|---|
+| Fondo general | Marfil cálido, transiciones delicadas hacia beige, sin gris frío ni texturas recargadas. |
+| Superficies | Marfil y beige suaves; bordes delicados cálidos, radios coherentes y sombras sutiles. |
+| Verde oliva | Color principal de encabezados, enlaces y CTA; tonos claros para etiquetas y fondos, contraste suficiente. |
+| Texto | Marrón muy oscuro o tono aprobado equivalente; oliva para marca y acentos. |
+| Profundidad | Degradados y sombras discretos para botones y superficies, evitando efecto plano o brillo artificial; no aplicar por igual a todo. |
+| Vegetación | Hojas fotográficas naturales, verdes, luminosas y definidas, entrando desde esquinas o integradas al fondo; sin cajas visibles, desenfoques genéricos ni siluetas planas. |
+| Jerarquía | Marca secundaria, nombre protagonista, interlineado cómodo y grupos separados; evitar amontonar etiquetas, precios y CTA. |
+| Iconos | Trazo coherente, color contextual, tamaño legible, significado claro. Conservar colores de marca cuando corresponda (logo y WhatsApp). |
+| Fotografía | Producto real protagonista. No regenerar fotos del catálogo ni deformar o cortar envases para llenar un marco. |
+
+La decoración botánica es un recurso compartido y opcional según la superficie, no una obligación en cada tarjeta. Reutilizar los dos WebP existentes cuando cumplan la referencia; si el recurso no es fiel, sustituirlo de forma controlada, optimizada y previa aprobación visual. No introducir imágenes pesadas ni animaciones ornamentales que degraden rendimiento.
+
+### 2.2 Arquitectura del tema
+
+- `storefront-theme.css` es la fuente de verdad del tema público: tokens semánticos de color/superficie/texto/acciones/estados, tipografía, espaciados, radios, sombras y referencias botánicas. Reutilizar los valores aprobados; no duplicar literales por página.
+- Los componentes compartidos (SiteHeader, buscador, navegación, tarjeta de producto, galería, precios, badges, CTA, desplegables, formularios, avisos, carrito y totales) consumen tokens y definen sus estilos desde su propio módulo. Una ficha no puede sobrescribir externamente el header ni controlar estilos de otros componentes.
+- Preferir reutilización y variantes justificadas; no clonar componentes ni introducir una biblioteca nueva sin necesidad. Separar presentación de datos, lógica comercial y estados. El tema del storefront no debe alterar involuntariamente el panel admin.
+- La migración se activa de forma controlada por contenedor cuando sea necesario. Es una transición, no la arquitectura final: todas las páginas públicas deberán compartir el mismo lenguaje visual, incluidos checkout y su encabezado propio, respetando las diferencias funcionales.
+- Para refactors sin cambio visual, comparar capturas antes/después con datos, viewport y estados equivalentes; buscar coincidencia píxel por píxel donde sea razonable. Para cambios estéticos, comparar contra el mockup y capturas reales aprobados. Registrar diferencias justificadas y no ampliar alcance.
+
+### 2.3 Referencia visual y control de cambios
+
+La ficha de Éclaire aprobada y su composición «Sobre este producto» son la referencia de identidad, no un permiso para copiar literalmente su estructura a otras categorías. Usar las capturas vigentes del candidato local y los mockups aprobados de escritorio, móvil e información comercial (cuatro notas ilustradas). El mockup no sustituye datos, precios, recursos ni lógica real. Las comparativas de Codex están referenciadas en el documento de continuidad.
+
+**Regla de aceptación estética:** una recoloración del diseño anterior no constituye una adaptación completa. Deben coincidir proporciones autorizadas, jerarquía, espaciado, acabados y tratamiento de los recursos naturales. La primera versión del encabezado del 19/11 fue rechazada; usar el candidato corregido descrito en Continuidad, no una versión rechazada.
 
 **Reglas operativas:**
 
@@ -29,6 +59,14 @@ Este documento convierte las directrices maestras en **criterios de implementaci
 6. Cualquier cambio de paleta, logo, tipografía principal o patrón global requiere propuesta comparativa y aprobación del propietario.
 
 **Componentes a normalizar al auditar:** encabezado y navegación móvil, buscador, tarjeta, galería, selector de variantes, precio, CTA, badges, formulario, resumen de compra, mensajes de estado, tablas y filtros del admin. Reutilizar antes de duplicar.
+
+### 2.4 Protocolo de prototipos web y control profesional (obligatorio)
+
+1. Inventariar referencias, componentes y tokens reales del candidato; identificar alcance autorizado y cambios paralelos. La ficha de Éclaire implementada es la referencia estética; un boceto de otra página sólo define distribución autorizada.
+2. Construir el mockup como interfaz HTML/CSS/JS renderizada o vista previa del componente real, preferentemente en el candidato local aislado. Reutilizar tipografía, SiteHeader, tarjetas, precios, CTA, iconos y tokens. No crear un segundo sistema visual, ni una captura incrustada que simule una interfaz. Usar datos de prueba identificados cuando no haya datos reales disponibles. No conectar operaciones reales al prototipo.
+3. Entregar un enlace de vista previa local o un prototipo web autocontenido ejecutable, con navegación/interacciones pertinentes; comprobar a 320, 390, 768 y 1366 px según alcance. Las capturas son evidencia complementaria, nunca el mockup principal. No desplegar públicamente sin permiso. Si no se dispone del candidato o de navegador, declarar qué no se pudo comprobar; no presentar una imagen generada como sustituto.
+4. Antes de entregar, comparar lado a lado las vistas reales de home, ficha y componentes afectados: familia y pesos tipográficos, tokens efectivos, jerarquía, radios, sombras, iconos, espaciado, precios/ahorro, estados, fotos, recortes, contraste y ausencia de desbordamientos. Verificar variantes, nombres largos y agotados cuando corresponda. Corregir discrepancias no autorizadas antes de solicitar aprobación. Registrar evidencia de controles pertinentes, sin repetir auditorías ajenas al cambio.
+5. El propietario aprueba decisiones visuales/comerciales, no realiza el control de calidad del agente. Ninguna propuesta incoherente se considera lista por pasar pruebas técnicas. No prometer equivalencia sin verificarla.
 
 ## 3. Diseño responsive y accesibilidad
 
@@ -55,6 +93,14 @@ La primera pantalla debe responder **qué vende SFSTORE, por qué conviene explo
 - Enlaces y botones con verbos precisos: «Ver perfumes», «Explorar mates», «Elegir color», «Agregar al carrito».
 - Evitar banners vacíos, urgencias inventadas, testimonios ficticios y secciones sin intención comercial.
 
+### 4.1 Encabezado compartido
+
+Conservar el logo circular original, buscador visible, categorías, carrito, comportamiento responsive y menús accesibles. Usar oliva con profundidad sutil, buscador marfil con borde cálido e icono oliva, carrito con acabados del sistema, tipografía y separación coherentes con la ficha. Incorporar vegetación natural con moderación cuando no afecte lectura ni controles. No sustituir la navegación real por hamburguesa, cuenta o categorías nuevas que aparezcan solo en el mockup. La apariencia debe validarse sobre home, catálogo y ficha; el encabezado propio del checkout se adapta en su etapa.
+
+### 4.2 Contrato de la home (decisión del 19/11)
+
+Conservar la distribución seleccionada de «¿Qué estás buscando?», «Los más elegidos de SFSTORE» y «Ritual Matero»; adaptar sus acabados a los componentes reales de la ficha. Mantener intactos los banners y «¿Qué estás buscando?», incluidas sus fotografías ambientadas. «Los más elegidos de SFSTORE» y «Ritual Matero» muestran el packshot aprobado de cada producto sobre la superficie de tarjeta, sin recortes desprolijos, según la [regla de imágenes de producto](#51-fuente-compartida-de-imágenes-de-producto). Mientras un producto no tenga packshot aprobado, la tarjeta usa su fotografía real actual como respaldo temporal (decisión del 20/11), nunca un marcador «Imagen no disponible» ni una imagen ambiental. No aplicar fondos fotográficos al bloque de productos. Conservar títulos, descripciones breves y datos reales; reutilizar el precio/ahorro en variante compacta, sin duplicar cálculos. Mantener el encabezado vigente y no modificar secciones restantes sin autorización.
+
 ## 5. Catálogo y tarjetas de producto
 
 Una tarjeta aprobada permite reconocer **producto, variante si aplica, precio aplicable, disponibilidad** y siguiente acción sin abrir múltiples vistas.
@@ -66,9 +112,55 @@ Una tarjeta aprobada permite reconocer **producto, variante si aplica, precio ap
 - Agotado y no disponible deben distinguirse cuando el sistema contemple esos estados.
 - Los filtros por categoría, marca, uso o atributo deben reflejar datos realmente disponibles y consistentes; no inventar taxonomías.
 
+### 5.1 Fuente compartida de imágenes de producto
+
+- Una vez que ChatGPT genere los recursos y el propietario los apruebe visualmente, asignar la nueva imagen individual aprobada como principal del producto y de cada variante aplicable. Antes de aprobarla, cotejar con las fotos reales la identidad, presentación, proporciones, etiqueta y color. Hasta la aprobación de cada recurso, conservar la asignación actual.
+- Usar una única fuente de imágenes del catálogo para «Los más elegidos de SFSTORE», «Ritual Matero», catálogo, galería de la ficha, carrito y checkout. Cada recurso se guarda una sola vez y se reutiliza por referencia. Registrar cada asociación entre imagen e identidad una sola vez en la fuente compartida. Evitar archivos copiados, mapas de imágenes por pantalla o asociaciones duplicadas.
+- Resolver la principal con el identificador del producto o de la variante exacta cuando se conoce su SKU. Asociar un mismo recurso a varias identidades sólo si representa fielmente a cada una. Evitar inferencias por nombre, posición en la galería o similitud visual. El carrito y el checkout resuelven la imagen del SKU de la línea.
+- Conservar las fotografías reales actuales como imágenes secundarias de la galería, incluidas las que dejen de ser principales. Preservar sus asociaciones con el producto o variante y su orden relativo.
+- Antes de dar por implementado un lote, comprobar que las superficies incluidas resuelven la misma imagen para la misma identidad, que el cambio de variante muestra su imagen correspondiente y que las fotografías reales siguen disponibles en la galería.
+
+**Fotografías comerciales generadas con IA (procedimiento obligatorio, 20/11).**
+
+- **Regla fundamental:**
+  - Toda imagen generada parte de referencias visuales de productos reales de SFSTORE. Se usan fotografías del catálogo o tomas propias verificadas.
+  - El producto conserva fielmente forma, proporciones, colores, materiales, etiquetas, marcas, tapas, costuras, grabados y demás características.
+  - La IA puede crear una ambientación fotográfica nueva, pero no puede rediseñar, simplificar, inventar ni sustituir productos, envases o packaging.
+  - No se generan imágenes sólo a partir de texto, ni con productos genéricos o sin marca que representen a SFSTORE.
+- **Tipos de imagen** (no se mezclan):
+  - **Packshot individual:** producto y su caja cuando corresponda, sobre fondo transparente y sin escenario. Es la imagen principal objetivo del producto o variante, según las reglas anteriores de esta sección.
+  - **Fotografía real de respaldo:** la fotografía real actual del catálogo, tal como existe. Ocupa el lugar del packshot en tarjetas, galería, carrito y checkout mientras el producto no tenga packshot aprobado (ver 4.2). Es temporal, no se edita ni se regenera, y queda como secundaria en la galería cuando llega el packshot.
+  - **Fotografía ambiental:** productos reales recreados mediante IA dentro de una escena natural y coherente con SFSTORE. Se usa en banners, secciones editoriales y la navegación de la home. Nunca reemplaza al packshot ni a la fotografía real de respaldo, y no se asigna como imagen de catálogo, carrito o checkout.
+- **Criterio estético de la escena:**
+  - Priorizar luz cálida creíble, madera, vegetación natural, profundidad de campo moderada y materiales auténticos.
+  - Evitar renders artificiales, atardeceres exagerados, acabados plásticos o brillantes, escenarios excesivamente perfectos y objetos de utilería inventados que compitan con el producto, como cajas o moños ajenos al packaging real.
+  - El producto sigue siendo el protagonista.
+- **Flujo obligatorio:** se cumple con los subagentes existentes (`.codex/agents/` y sus equivalentes en Claude Code). Ningún paso lo revisa el mismo agente que lo produjo.
+  1. **Investigación de referencias.** `sfstore-product-researcher` confirma el SKU o la variante exacta y reúne las fotografías auténticas de referencia, con su origen. Sin referencias verificadas, el encargo no avanza.
+  2. **Generación.**
+     - `sfstore-perfume-photographer` (perfumes y decants) o `sfstore-product-photographer` (mates, termos y accesorios) generan candidatos a partir de esas referencias. Sólo con encargo explícito del propietario.
+     - Registran las referencias usadas, el tipo de recurso y el destino previsto.
+     - Trabajan fuera del código y del catálogo.
+  3. **Revisión independiente.**
+     - `sfstore-image-reviewer` coteja cada candidato con las referencias reales: identidad, proporciones, etiqueta, color, materiales, artefactos y criterio estético.
+     - Cuando el recurso va a una superficie concreta, `sfstore-design-reviewer` valida su integración con el sistema boutique.
+  4. **Aprobación visual del propietario** con el candidato aprobado por la revisión, mostrado en su contexto real.
+- **Rechazo y sustitución:**
+  - Una imagen que no supera la revisión se rechaza y no se presenta como opción ni se integra. Esto incluye diferencias de etiqueta, forma, color o marca, productos inventados y acabado de render.
+  - Ningún recurso generado sustituye una fotografía existente sin la aprobación visual expresa del propietario. Hasta entonces se conservan la asignación y los archivos actuales.
+
 ## 6. Ficha de producto y selección de variantes
 
 **Foco comercial:** ayudar a elegir, no solo mostrar especificaciones. Orden recomendado de información: nombre → imágenes → precio → disponibilidad → decisión de variante/cantidad → CTA → atributos y descripción útiles. Ajustar tras pruebas reales.
+
+### 6.1 Contrato visual de ficha boutique
+
+- Galería: mostrar primero la imagen principal aplicable y mantener las fotografías reales como secundarias según la [regla de imágenes de producto](#51-fuente-compartida-de-imágenes-de-producto). Mostrar la imagen completa, centrada y sin distorsión; en escritorio aprovechar el ancho y colocar las miniaturas en columna izquierda; en móvil miniaturas horizontales debajo. Flechas circulares marfil, foco visible y navegación existente. No rellenar con franjas grises o fondos desenfocados ni recortar para simular una foto horizontal. La proporción real de la imagen tiene prioridad.
+- Información comercial de perfumes: marca oliva separada, nombre oscuro protagonista con línea verde corta, descripción breve con interlineado cómodo, hasta cuatro notas representativas documentadas con ilustraciones específicas reutilizables. Espaciado orientativo de 16–24 px entre grupos, ajustable a la resolución; no imponerlo si causa overflow. Todas las notas permanecen disponibles en «Sobre este producto».
+- Precio: preservar lista tachada, indicación del descuento y medios aplicables, panel de precio final + ahorro con divisor e icono, según el componente existente. Precio y ahorro en la misma fila en escritorio; adaptar en móvil sin cortes. No hardcodear los montos de los mockups ni añadir selector de cantidad si no existe.
+- Acciones: «Agregar al carrito» de ancho completo y «Consultar por WhatsApp» debajo; conservar estados de compra, agotado, confirmación y comportamientos ya aprobados. No agregar favoritos ni calificaciones ficticias.
+- «Sobre este producto»: mantener diseño de encabezado oliva con vegetación, composición de tres ingredientes documentados sobre madera/naturaleza sin frasco repetido, descripción y recomendación breve, perfil e ideal para, pirámide ilustrada alineada por niveles y acordes con fuente. Respetar la disposición móvil aprobada: tarjetas apiladas, notas legibles y título de acordes encima de barras. Mostrar intensidad solo si está respaldada; barras de predominancia relativa documentada (no porcentajes químicos ni duración/proyección). Si las fuentes no permiten asignar niveles o longitudes, mostrar solamente las notas/acordes verificables, sin inventar. Ocultar opiniones propias vacías hasta contar con reseñas reales.
+- Validar la regla para todas las fichas de la categoría: controles automáticos de datos, imágenes y responsive en todo el catálogo, y revisión visual representativa de nombres largos, estados, variantes y casos excepcionales. No confundir pasar una muestra con auditar el 100 %.
 
 **Contrato de variantes (validado para Stanley MateSystem):**
 
@@ -84,7 +176,7 @@ Una tarjeta aprobada permite reconocer **producto, variante si aplica, precio ap
 
 ## 7. Carrito y checkout: confianza e integridad
 
-- Presentar para cada línea: producto, **variante exacta**, imagen coherente, cantidad, precio unitario y subtotal.
+- Presentar cada línea con producto, **variante exacta**, imagen principal resuelta según la [regla de imágenes de producto](#51-fuente-compartida-de-imágenes-de-producto), cantidad, precio unitario y subtotal.
 - Permitir corregir o quitar artículos con retroalimentación clara; conservar selección al recargar cuando esté soportado.
 - Mostrar importes, descuentos, total, modalidad de entrega y condiciones antes de confirmar. **No modificar reglas comerciales para resolver una cuestión visual.**
 - Comunicar estados: procesando, pendiente de pago, pago verificado, error, expiración de reserva, compra finalizada; mensajes siempre basados en estado real.
@@ -147,7 +239,7 @@ El repositorio usa **Next.js y Supabase**. La implementación deberá inspeccion
 
 ## 12. Proceso de trabajo ágil por riesgo
 
-**Bajo riesgo (documentación, textos no contractuales, estilos aislados):** inspeccionar → implementar → verificar → commit → informar. Evitar PR innecesarias.  
+**Bajo riesgo (documentación, textos no contractuales, estilos aislados):** inspeccionar → implementar → verificar → informar; commit solo con autorización correspondiente. Evitar PR innecesarias.  
 **Riesgo medio (UI funcional, navegación, nuevos componentes):** inspeccionar flujos → propuesta breve → implementar y probar en rama → verificar con móvil/escritorio → integrar según política vigente.  
 **Alto riesgo (precio, descuentos, inventario, ventas, pagos, reservas, DB, Production o Vercel):** preparar y ensayar → evidencia y plan de reversión → **autorización expresa del propietario** para operaciones productivas.
 
@@ -162,7 +254,7 @@ Para cada cambio, Codex debe informar de forma breve lo siguiente, usando **Sí 
 | Control | Criterio de aceptación |
 |---|---|
 | Negocio | Se identifica el problema y el beneficio esperado; no se prometen ventas sin medición |
-| Identidad | Respeta el manual maestro y los componentes aprobados |
+| Identidad | Prototipo web renderizado y comparación entre vistas reales y referencias aprobadas (control §2.4): paleta, jerarquía, espaciado, acabados, recursos y estructura conservada; no basta recolorear. Aprobación visual expresa del propietario para cerrar |
 | UX móvil | Se comprueba tarea principal en móvil y escritorio; estados completos |
 | Accesibilidad | Foco, teclado, etiquetas, contraste y estados verificables |
 | Contenido | Voseo, datos reales, CTA claro, sin afirmaciones inventadas |
@@ -185,12 +277,12 @@ Una tarea **no se declara totalmente terminada** si una comprobación aplicable 
 
 ## 15. Adopción y mejora continua
 
-**Estado v1.0:** propuesta de estándares, todavía no certifica que la web actual los cumpla. Se convertirá en referencia operativa una vez revisado e integrado con `AGENTS.md`.
+**Estado v1.1:** criterios de identidad y arquitectura aprobados; no certifica la publicación ni la aprobación visual de todos los componentes. Incorporar las reglas a `AGENTS.md` mediante el procedimiento autorizado de Codex.
 
-**Orden sugerido de aplicación:** (1) auditoría de web y admin; (2) sistema visual y tokens aprobados; (3) fricciones de ficha/variantes y navegación móvil; (4) carrito/checkout; (5) medición y mejora iterativa. Cambiar el orden si evidencia real indica una prioridad distinta.
+**Orden de aplicación vigente:** (1) fijar referencia visual y funcional → (2) centralizar el tema sin regresiones → (3) encabezado/navegación, home y catálogo por etapas → (4) carrito lateral y página de carrito juntos → (5) checkout y su encabezado propio → (6) verificación integral y publicación autorizada. El estado concreto se consulta en continuidad y el backlog canónico de repositorio, no se duplica aquí.
 
-**Copias y control:** mantener este Markdown versionado en el repositorio y su PDF con igual versión en el proyecto ChatGPT; si el contenido cambia, actualizar ambos y registrar motivo. El manual de redes permanece independiente.
+**Copias y control:** mantener el Markdown en el repositorio y en el proyecto ChatGPT con igual versión interna. Se conserva el nombre histórico del adjunto (`v1.0`) para sustituirlo sin duplicados; la cabecera interna define la versión vigente. Sincronizar con Codex y registrar cambios. El manual de redes permanece independiente.
 
 ---
 
-**Nota:** No se inspeccionó directamente el código actual ni se auditó la web publicada para redactar v1.0. Los puntos técnicos sobre el Stanley y sincronización de `main` se basan en los informes de ejecución aportados en este proyecto. Toda decisión nueva de interfaz o integración deberá verificarse en el repositorio vigente antes de implementarse.
+**Nota de evidencia:** actualización basada en las decisiones del propietario, mockups/capturas y reportes de Codex aportados hasta el 19/11/2026; no supone inspección directa del candidato local ni certificación de Production. Verificar los valores efectivos, archivos, recursos y pruebas en el repositorio antes de actuar.
