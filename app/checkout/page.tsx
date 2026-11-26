@@ -4,20 +4,19 @@ import { brand } from "@/lib/brand";
 
 import { Suspense, useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { formatWebPrice, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
+import { formatWebPrice, getWebRoundingDiscount, getWebTransferSubtotal } from "@/lib/web-transfer-pricing";
 import { CartItemIdentity } from "@/components/cart-item-identity";
 
 import { ensureGuestCheckoutSession } from "@/lib/checkout/guest-client";
 import { ARGENTINA_PROVINCES, type ShippingQuote } from "@/lib/checkout/argentina";
 import { CheckoutCaptcha } from "@/components/checkout-captcha";
-import { createOrderFromCheckout, getCheckoutOperationKey } from "@/services/orders";
-import { useCartStore, cartItemKey } from "@/store/cart-store";
+import { clearCheckoutOperations, createOrderFromCheckout, getCheckoutOperationKey, quotationOperationStorageKey } from "@/services/orders";
+import { useCartStore, useCartHydrated, cartItemKey } from "@/store/cart-store";
 import { AnalyticsView } from "@/components/analytics-view";
 import { analyticsItem, trackCreatedOrder } from "@/lib/analytics/client";
-
-
-type DeliveryMethod = "pickup" | "shipping";
-type Carrier = "Correo Argentino" | "Andreani" | "Via Cargo" | "";
+import { CatalogFrame } from "@/components/catalog/catalog-frame";
+import styles from "./checkout.module.css";
+import { carriers, clearShippingDraft, deliveryStepHref, parseDeliveryChoice, useShippingDraft, validateShippingAddress, type Carrier, type DeliveryMethod } from "@/lib/checkout/delivery-choice";
 
 type CheckoutForm = {
   fullName: string;
@@ -45,13 +44,16 @@ function CheckoutContent() {
   const requestedPayment = searchParams.get("payment");
   const unsupportedPayment = !!requestedPayment && requestedPayment !== "transfer";
   const paymentMethod = "transfer";
+  // Chosen in /checkout/entrega; without a valid value the form keeps both options (pickup preselected, as before).
+  const chosenDelivery = parseDeliveryChoice(searchParams.get("entrega"));
 
   const { items, totalItems, subtotal, clearCart } = useCartStore();
-  const [form, setForm] = useState<CheckoutForm>({
+  const cartHydrated = useCartHydrated();
+  const [formState, setForm] = useState<CheckoutForm>({
     fullName: "",
     phone: "",
     email: "",
-    deliveryMethod: "pickup",
+    deliveryMethod: chosenDelivery ?? "pickup",
     province: "",
     city: "",
     address: "",
@@ -67,7 +69,14 @@ function CheckoutContent() {
   const [approvedTotal,setApprovedTotal] = useState<number|null>(null);
   const [quotationId, setQuotationId] = useState<string|null>(null);
   const [submitError, setSubmitError] = useState("");
+  // Shipping calculation and quotation errors are shown next to their buttons, not at the foot of the summary.
+  const [shippingError, setShippingError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Address typed in /checkout/entrega (this tab only). Without a complete one the fields stay on screen.
+  const shippingDraft = useShippingDraft();
+  const stepAddress = chosenDelivery === "shipping" ? shippingDraft : null;
+  const addressFromStep = stepAddress !== null;
+  const form: CheckoutForm = stepAddress ? { ...formState, ...stepAddress } : formState;
   const feedbackRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
@@ -90,7 +99,10 @@ function CheckoutContent() {
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
     setErrors((currentErrors) => ({ ...currentErrors, [field]: undefined }));
     setSubmitError("");
-    if (["province","city","postalCode","deliveryMethod","address","carrier","fullName","phone","email"].includes(field)) { setShippingQuote(null); setSelectedQuoteKey(""); }
+    setShippingError("");
+    // A rate depends only on the destination. Contact data invalidates it only when it came from a manual quotation (requested with that data).
+    const destinationChanged = ["province","city","postalCode","deliveryMethod","address","carrier"].includes(field);
+    if (destinationChanged || quotationId !== null || approvedTotal !== null) { setShippingQuote(null); setSelectedQuoteKey(""); }
     setQuotationId(null); setApprovedTotal(null);
   };
 
@@ -109,21 +121,7 @@ function CheckoutContent() {
       nextErrors.email = "Ingresá un email válido.";
     }
 
-    if (shippingRequired) {
-      if (!form.carrier) nextErrors.carrier="Elegí el transporte preferido.";
-      if (!form.province.trim()) {
-        nextErrors.province = "Ingresá la provincia.";
-      }
-      if (!form.city.trim()) {
-        nextErrors.city = "Ingresá la ciudad.";
-      }
-      if (!form.address.trim()) {
-        nextErrors.address = "Ingresá la dirección.";
-      }
-      if (!form.postalCode.trim()) {
-        nextErrors.postalCode = "Ingresá el código postal.";
-      }
-    }
+    if (shippingRequired) Object.assign(nextErrors, validateShippingAddress(form));
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
@@ -169,6 +167,8 @@ function CheckoutContent() {
 
       void trackCreatedOrder(createdOrder.id, createdOrder.total);
       clearCart();
+      clearShippingDraft();
+      clearCheckoutOperations();
       router.push(
         `/checkout/exito?order=${createdOrder.id}`,
       );
@@ -186,401 +186,243 @@ function CheckoutContent() {
 
   const calculateShipping = async () => {
     if (submissionLock.current) return;
-    submissionLock.current = true; setIsSubmitting(true); setSubmitError(""); setShippingQuote(null); setSelectedQuoteKey(""); setApprovedTotal(null);
+    submissionLock.current = true; setIsSubmitting(true); setSubmitError(""); setShippingError(""); setShippingQuote(null); setSelectedQuoteKey(""); setApprovedTotal(null);
     try {
       await ensureGuestCheckoutSession(captchaToken);
       const response = await fetch("/api/checkout/shipping",{ method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim() }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error??"No se pudo calcular el envío.");
-      setShippingQuote({...result,rates:result.rates.filter((rate:{carrier:string})=>rate.carrier===form.carrier),status:result.rates.some((rate:{carrier:string})=>rate.carrier===form.carrier)?"available":"quotation_required"});
-    } catch (error) { setSubmitError(error instanceof Error ? error.message : "No se pudo calcular el envío."); }
+      const rates = (result.rates as ShippingQuote["rates"]).filter(rate=>rate.carrier===form.carrier);
+      setShippingQuote({...result,rates,status:rates.length?"available":"quotation_required"});
+      // A single rate for the chosen carrier leaves nothing to choose: preselect it (the buyer still confirms with the final button).
+      if (rates.length === 1) setSelectedQuoteKey(rates[0].quoteKey);
+    } catch (error) { setShippingError(error instanceof Error ? error.message : "No se pudo calcular el envío."); }
     finally { submissionLock.current = false; setIsSubmitting(false); }
   };
   const requestQuotation = async () => {
     if (submissionLock.current || !validateForm()) return;
-    submissionLock.current = true; setIsSubmitting(true); setSubmitError("");
+    submissionLock.current = true; setIsSubmitting(true); setSubmitError(""); setShippingError("");
     try {
       await ensureGuestCheckoutSession(captchaToken);
       const request = { customer:{fullName:form.fullName.trim(),phone:form.phone.trim(),email:form.email.trim()||undefined},shipping:{method:"shipping",carrier:form.carrier,province:form.province,city:form.city.trim(),postalCode:form.postalCode.trim(),address:form.address.trim()},paymentMethod:"transfer",items:items.map(item=>({productId:item.productId,quantity:item.quantity,...(item.comboConnector?{comboConnector:item.comboConnector}:{})})).sort((a,b)=>a.productId.localeCompare(b.productId)||(a.comboConnector??" ").localeCompare(b.comboConnector??" ")) };
-      const operationKey = await getCheckoutOperationKey(request,"sfstore-shipping-quotation-operation");
+      const operationKey = await getCheckoutOperationKey(request,quotationOperationStorageKey);
       const response = await fetch("/api/checkout/quotation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,operationKey})});
       const result = await response.json();if (!response.ok) throw new Error(result.error??"No se pudo solicitar la cotización.");
       setQuotationId(result.id);
-    } catch (error) { setSubmitError(error instanceof Error ? error.message : "No se pudo solicitar la cotización."); }
+    } catch (error) { setShippingError(error instanceof Error ? error.message : "No se pudo solicitar la cotización."); }
     finally { submissionLock.current = false;setIsSubmitting(false); }
   };
 
   const refreshQuotation = async () => {
     if (!quotationId || submissionLock.current) return;
-    submissionLock.current=true;setIsSubmitting(true);setSubmitError("");
+    submissionLock.current=true;setIsSubmitting(true);setSubmitError("");setShippingError("");
     try {
       const response=await fetch("/api/checkout/quotation?id="+encodeURIComponent(quotationId),{cache:"no-store"});const data=await response.json();
       if(!response.ok)throw new Error("No se pudo consultar la cotización. Conservá esta sesión.");
       if(data.status==="resolved"&&!data.accepted_order_id&&Date.parse(data.valid_until)<=Date.now()){
-        setQuotationId(null);setApprovedTotal(null);setSelectedQuoteKey("");setShippingQuote({country:"AR",status:"quotation_required",rates:[]});sessionStorage.removeItem("sfstore-shipping-quotation-operation");setSubmitError("La cotización venció. Solicitá una nueva; no transfieras.");return;
+        setQuotationId(null);setApprovedTotal(null);setSelectedQuoteKey("");setShippingQuote({country:"AR",status:"quotation_required",rates:[]});sessionStorage.removeItem(quotationOperationStorageKey);setShippingError("La cotización venció. Solicitá una nueva; no transfieras.");return;
       }
-      if(data.status!=="resolved"||data.accepted_order_id||!data.quote_key){setSubmitError("La cotización todavía no está disponible para aceptar. Consultá al local; no transfieras.");return;}
+      if(data.status!=="resolved"||data.accepted_order_id||!data.quote_key){setShippingError("La cotización todavía no está disponible para aceptar. Consultá al local; no transfieras.");return;}
       setShippingQuote({country:"AR",status:"available",rates:[{carrier:data.quoted_carrier,fee:Number(data.shipping_fee),quoteKey:data.quote_key}]});setSelectedQuoteKey(data.quote_key);setApprovedTotal(Number(data.quoted_total));
-    }catch(error){setSubmitError(error instanceof Error?error.message:"No se pudo consultar la cotización.");}finally{submissionLock.current=false;setIsSubmitting(false);}
+    }catch(error){setShippingError(error instanceof Error?error.message:"No se pudo consultar la cotización.");}finally{submissionLock.current=false;setIsSubmitting(false);}
   };
+  // Text inputs share one markup: label, field, inline error tied by aria-describedby.
+  const textField = (name: "fullName" | "phone" | "email" | "city" | "address" | "postalCode", label: string, extra: { type?: string; placeholder?: string; autoComplete?: string; className?: string } = {}) => (
+    <div className={`${styles.field} ${extra.className ?? ""}`}>
+      <label htmlFor={`checkout-${name}`}>{label}</label>
+      <input
+        type={extra.type} id={`checkout-${name}`} aria-invalid={Boolean(errors[name])} aria-describedby={errors[name] ? `error-${name}` : undefined} value={form[name]}
+        autoComplete={extra.autoComplete} placeholder={extra.placeholder}
+        onChange={(event) => updateField(name, event.target.value)}
+      />
+      {errors[name] ? <span id={`error-${name}`} className={styles.error}>{errors[name]}</span> : null}
+    </div>
+  );
   return (
-    <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
-      <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">
-        {items.length > 0 && !unsupportedPayment ? <AnalyticsView event="begin_checkout" identity="checkout" params={{ items: items.map(analyticsItem).filter(Boolean) }} /> : null}
-        <a
-          href="/carrito"
-          className="text-sm font-semibold text-[#003B73] transition hover:text-[#0072CE]"
-        >
-          Volver al carrito
-        </a>
+    <CatalogFrame>
+      <div className="mx-auto max-w-6xl px-5 py-6 sm:px-8">
+        <section className={styles.checkout} aria-labelledby="checkout-title">
+          {items.length > 0 && !unsupportedPayment ? <AnalyticsView event="begin_checkout" identity="checkout" params={{ items: items.map(analyticsItem).filter(Boolean) }} /> : null}
+          <a href="/carrito" className={styles.back}><span aria-hidden="true">←&nbsp;</span>Volver al carrito</a>
 
-        <div className="mt-10 flex flex-col justify-between gap-6 border-b border-[#003B73]/20 pb-8 md:flex-row md:items-end">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-              Checkout
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
-              Prepará tu pedido
-            </h1>
+          <div className={styles.header}>
+            <p className={styles.eyebrow}>Finalizar compra</p>
+            <h1 id="checkout-title">Prepará tu pedido</h1>
+            <p className={styles.lead}>Completá tus datos y elegí cómo recibir tu compra.</p>
           </div>
-          <p className="max-w-xl text-base leading-7 text-[#102033]/70">
-            Completá tus datos y elegí cómo recibir tu compra.
-          </p>
-        </div>
 
-        {items.length === 0 ? (
-          <div className="mt-12 rounded-[2rem] border border-[#003B73]/15 bg-white/65 p-8 text-center shadow-sm">
-            <h2 className="text-2xl font-semibold">
-              No hay productos para finalizar
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-[#102033]/65">
-              Sumá productos al carrito antes de preparar el pedido.
-            </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <a
-                href="/perfumes"
-                className="rounded-full bg-[#0072CE] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#003B73]"
-              >
-                Ver perfumes
-              </a>
-              <a
-                href="/mates"
-                className="rounded-full border border-[#0072CE]/35 px-6 py-3 text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] hover:bg-[#F7F9FC]"
-              >
-                Ver mates
-              </a>
+          {!cartHydrated ? <div className={styles.loading} aria-busy="true"><span className="sr-only">Cargando tu carrito…</span></div> : items.length === 0 ? (
+            <div className={`${styles.panel} ${styles.empty}`}>
+              <h2>No hay productos para finalizar</h2>
+              <p>Sumá productos al carrito antes de preparar el pedido.</p>
+              <div>
+                <a href="/perfumes" className={styles.primary}>Ver perfumes</a>
+                <a href="/mates" className={styles.secondary}>Ver mates</a>
+              </div>
             </div>
-          </div>
-        ) : (
-          <form ref={formRef}
-            onSubmit={handleSubmit}
-            onInvalid={(event) => {
-              event.preventDefault();
-              validateForm();
-            }}
-            className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]"
-          >
-            <div className="space-y-6">
-              <section className="rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-6 shadow-sm">
-                <h2 className="text-2xl font-semibold">Datos para procesar el pedido</h2>
-                <p className="mt-2">Comprá sin registro ni contraseña. Conservá esta sesión para consultar tu pedido.</p>
-                <div className="mt-6 grid gap-5">
-                  <label className="grid gap-2">
-                    <span className="text-sm font-semibold text-[#102033]/75">
-                      Nombre completo
-                    </span>
-                    <input
-                      id="checkout-fullName" aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName?"error-fullName":undefined} value={form.fullName}
-                      onChange={(event) =>
-                        updateField("fullName", event.target.value)
-                      }
-                      className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                      placeholder="Tu nombre y apellido"
-                    />
-                    {errors.fullName ? (
-                      <span id="error-fullName" className="text-xs font-semibold text-[#003B73]">
-                        {errors.fullName}
-                      </span>
-                    ) : null}
-                  </label>
-
-                  <div className="grid gap-5 md:grid-cols-2">
-                    <label className="grid gap-2">
-                      <span className="text-sm font-semibold text-[#102033]/75">
-                        Teléfono
-                      </span>
-                      <input
-                        id="checkout-phone" aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone?"error-phone":undefined} value={form.phone}
-                        onChange={(event) =>
-                          updateField("phone", event.target.value)
-                        }
-                        className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                        placeholder="3564..."
-                      />
-                      {errors.phone ? (
-                        <span id="error-phone" className="text-xs font-semibold text-[#003B73]">
-                          {errors.phone}
-                        </span>
-                      ) : null}
-                    </label>
-
-                    <label className="grid gap-2">
-                      <span className="text-sm font-semibold text-[#102033]/75">
-                        Email (opcional)
-                      </span>
-                      <input
-                        type="email"
-                        id="checkout-email" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email?"error-email":undefined} value={form.email}
-                        onChange={(event) =>
-                          updateField("email", event.target.value)
-                        }
-                        className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                        placeholder="tu@email.com"
-                      />
-                      {errors.email ? (
-                        <span id="error-email" className="text-xs font-semibold text-[#003B73]">
-                          {errors.email}
-                        </span>
-                      ) : null}
-                    </label>
+          ) : (
+            <form ref={formRef}
+              onSubmit={handleSubmit}
+              onInvalid={(event) => {
+                event.preventDefault();
+                validateForm();
+              }}
+              className={styles.layout}
+            >
+              <div className={styles.column}>
+                <section className={styles.panel}>
+                  <div>
+                    <h2>Datos para procesar el pedido</h2>
+                    <p className={`${styles.muted} mt-1`}>Comprá sin registro ni contraseña. Conservá esta sesión para consultar tu pedido.</p>
                   </div>
-                </div>
-              </section>
-
-              <section className="rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-6 shadow-sm">
-                <h2 className="text-2xl font-semibold">Tipo de entrega</h2>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => updateField("deliveryMethod", "pickup")}
-                    className={`rounded-2xl border p-4 text-left transition ${
-                      form.deliveryMethod === "pickup"
-                        ? "border-[#0072CE] bg-[#0072CE]/10"
-                        : "border-[#003B73]/15 bg-[#F7F9FC]"
-                    }`}
-                  >
-                    <span className="text-sm font-semibold text-[#0072CE]">
-                      Retiro en el local · Sin costo
-                    </span>
-                    <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Retiro sin cargo. Esperá la confirmación del local antes de retirar.
-                      <span className="mt-1 block">{brand.address}. {brand.hours}.</span>
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-
-                    onClick={() => updateField("deliveryMethod", "shipping")}
-                    className={`rounded-2xl border p-4 text-left transition ${
-                      form.deliveryMethod === "shipping"
-                        ? "border-[#003B73] bg-[#EEF2F6]"
-                        : "border-[#003B73]/15 bg-[#F7F9FC]"
-                    }`}
-                  >
-                    <span className="text-sm font-semibold text-[#003B73]">
-                      Envío
-                    </span>
-                    <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                      Dejá los datos para calcular y coordinar el despacho.
-                    </p>
-                  </button>
-                </div>
-
-                {shippingRequired ? (
-                  <div className="mt-6 grid gap-5">
-                    <div className="grid gap-5 md:grid-cols-2">
-                      <label className="grid gap-2">
-                        <span className="text-sm font-semibold text-[#102033]/75">
-                          Provincia
-                        </span>
-                        <select aria-label="Provincia" id="checkout-province" aria-invalid={Boolean(errors.province)} aria-describedby={errors.province?"error-province":undefined} value={form.province} onChange={event=>updateField("province",event.target.value)} className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3">
-                          <option value="">Seleccioná una provincia</option>
-                          {ARGENTINA_PROVINCES.map(province=><option key={province} value={province}>{province}</option>)}
-                        </select>
-                        {errors.province ? (
-                          <span id="error-province" className="text-xs font-semibold text-[#003B73]">
-                            {errors.province}
-                          </span>
-                        ) : null}
-                      </label>
-
-                      <label className="grid gap-2">
-                        <span className="text-sm font-semibold text-[#102033]/75">
-                          Localidad
-                        </span>
-                        <input
-                          id="checkout-city" aria-invalid={Boolean(errors.city)} aria-describedby={errors.city?"error-city":undefined} value={form.city}
-                          onChange={(event) =>
-                            updateField("city", event.target.value)
-                          }
-                          className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                        />
-                        {errors.city ? (
-                          <span id="error-city" className="text-xs font-semibold text-[#003B73]">
-                            {errors.city}
-                          </span>
-                        ) : null}
-                      </label>
-                    </div>
-
-                    <div className="grid gap-5 md:grid-cols-[1fr_180px]">
-                      <label className="grid gap-2">
-                        <span className="text-sm font-semibold text-[#102033]/75">
-                          Dirección
-                        </span>
-                        <input
-                          id="checkout-address" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address?"error-address":undefined} value={form.address}
-                          onChange={(event) =>
-                            updateField("address", event.target.value)
-                          }
-                          className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                        />
-                        {errors.address ? (
-                          <span id="error-address" className="text-xs font-semibold text-[#003B73]">
-                            {errors.address}
-                          </span>
-                        ) : null}
-                      </label>
-
-                      <label className="grid gap-2">
-                        <span className="text-sm font-semibold text-[#102033]/75">
-                          Código postal
-                        </span>
-                        <input
-                          id="checkout-postalCode" aria-invalid={Boolean(errors.postalCode)} aria-describedby={errors.postalCode?"error-postalCode":undefined} value={form.postalCode}
-                          onChange={(event) =>
-                            updateField("postalCode", event.target.value)
-                          }
-                          className="rounded-2xl border border-[#003B73]/20 bg-[#F7F9FC] px-4 py-3 outline-none transition focus:border-[#0072CE]"
-                        />
-                        {errors.postalCode ? (
-                          <span id="error-postalCode" className="text-xs font-semibold text-[#003B73]">
-                            {errors.postalCode}
-                          </span>
-                        ) : null}
-                      </label>
-                    </div>
-
-                    <label className="grid gap-2">Transporte preferido<select aria-label="Transporte preferido" id="checkout-carrier" aria-invalid={Boolean(errors.carrier)} aria-describedby={errors.carrier?"error-carrier":undefined} value={form.carrier} onChange={event=>updateField("carrier",event.target.value as Carrier)} className="rounded-xl border p-3"><option value="">Elegí un transporte</option>{["Correo Argentino","Andreani","Via Cargo"].map(carrier=><option key={carrier}>{carrier}</option>)}</select>{errors.carrier?<span id="error-carrier">{errors.carrier}</span>:null}</label><p>El costo depende del destino y de una tarifa aprobada por el local. Este formulario no contrata transporte.</p>
-                    <button type="button" disabled={isSubmitting} onClick={calculateShipping} className="rounded-xl border p-3">Calcular envío</button>
-                    {shippingQuote?.status === "available" ? <label className="grid gap-2">Tarifa disponible
-                      <select aria-label="Tarifa disponible" value={selectedQuoteKey} onChange={event=>setSelectedQuoteKey(event.target.value)} className="rounded-xl border p-3">
-                        <option value="">Elegí una tarifa</option>
-                        {shippingQuote.rates.filter(rate=>rate.carrier===form.carrier).map(rate=><option key={rate.quoteKey} value={rate.quoteKey}>{rate.carrier} · {currencyFormatter.format(rate.fee)}</option>)}
-                      </select>
-                    </label> : null}
-                    {shippingQuote?.status === "quotation_required" ? <div><p>No hay tarifa aprobada para este destino y transporte. Solicitá una cotización: no se confirma un pedido ni se reserva stock hasta aceptar el total definitivo. No transfieras antes de conocerlo.</p>
-                      <button type="button" disabled={isSubmitting || !!quotationId} onClick={requestQuotation} className="mt-3 rounded-xl border p-3">Solicitar cotización</button>
-                    </div> : null}
-                    {approvedTotal !== null ? <p role="status">Cotización aprobada: el total incluye los productos a precio de contado y el envío. Al aceptar se verificará nuevamente la disponibilidad y el precio. No transfieras hasta obtener el pedido con su total final.</p> : null}
-                    {quotationId ? <div><button type="button" disabled={isSubmitting} onClick={refreshQuotation} className="rounded border p-3">Consultar cotización del local</button><p role="status">Solicitud registrada: {quotationId}. El local revisará el transporte elegido y comunicará el costo. No es un pedido confirmado ni una reserva. No transfieras todavía.</p></div> : null}
-
+                  <div className={styles.fields}>
+                    {textField("fullName", "Nombre completo", { placeholder: "Tu nombre y apellido", autoComplete: "name", className: styles.wide })}
+                    {textField("phone", "Teléfono", { type: "tel", placeholder: "3564…", autoComplete: "tel" })}
+                    {textField("email", "Email (opcional)", { type: "email", placeholder: "tu@email.com", autoComplete: "email" })}
                   </div>
-                ) : null}
-              </section>
-
-              {paymentMethod === "transfer" ? (
-                <section className="rounded-[2rem] border border-[#0072CE]/20 bg-[#0072CE]/10 p-6 shadow-sm">
-                  <h2 className="text-2xl font-semibold text-[#102033]">Cómo sigue tu compra</h2>
-                  {shippingRequired && !selectedQuoteKey ? <p className="mt-4">Primero conocé y aceptá el total definitivo, incluido el envío. No transfieras mientras falta la cotización.</p> : <ol className="mt-5 grid gap-3 text-sm leading-6"><li>1. Preparás el pedido: verificamos precios y disponibilidad.</li><li>2. En la pantalla del pedido ves el importe definitivo y los datos para transferir.</li><li>3. Informás el pago y adjuntás el comprobante allí. El local verifica la acreditación.</li></ol>}
                 </section>
-              ) : null}
-            </div>
 
-            <aside className="h-fit rounded-[2rem] border border-[#003B73]/15 bg-white/75 p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Resumen</h2>
-              <p className="mt-2 text-sm leading-6 text-[#102033]/75">Transferencia bancaria completa: precio de contado de los productos. Los precios de referencia se redondean hacia arriba; el total exacto puede incluir centavos.</p>
-              <div className="mt-6 space-y-4">
-                {items.map((item) => (
-                  <div
-                    key={cartItemKey(item)}
-                    className="border-b border-[#003B73]/15 pb-4 last:border-b-0"
-                  >
-                    <div className="flex min-w-0 flex-col gap-2">
+                <section className={styles.panel}>
+                  <h2>Tipo de entrega</h2>
+                  {chosenDelivery ? (
+                    <div className={styles.chosen}>
+                      <p>
+                        <strong>{chosenDelivery === "pickup" ? "Retiro en el local · Sin cargo" : "Envío a domicilio"}</strong>
+                        {chosenDelivery === "pickup" ? <>{brand.address}. {brand.hours}. Esperá la confirmación del local antes de retirar.</> : addressFromStep ? <>{form.address}, {form.city}, {form.province} ({form.postalCode}). Transporte: {form.carrier}.</> : "Completá la dirección para calcular el envío."}
+                      </p>
+                      <a href={deliveryStepHref} className={styles.back}>Cambiar</a>
+                    </div>
+                  ) : (
+                    <div className={styles.legacyOptions}>
+                      <button type="button" className={styles.option} aria-pressed={form.deliveryMethod === "pickup"} data-selected={form.deliveryMethod === "pickup" || undefined} onClick={() => updateField("deliveryMethod", "pickup")}>
+                        <span>
+                          <strong>Retiro en el local · Sin cargo</strong>
+                          <span>Esperá la confirmación del local antes de retirar.</span>
+                          <span>{brand.address}. {brand.hours}.</span>
+                        </span>
+                      </button>
+                      <button type="button" className={styles.option} aria-pressed={form.deliveryMethod === "shipping"} data-selected={form.deliveryMethod === "shipping" || undefined} onClick={() => updateField("deliveryMethod", "shipping")}>
+                        <span>
+                          <strong>Envío a domicilio</strong>
+                          <span>Dejá los datos para calcular y coordinar el despacho.</span>
+                        </span>
+                      </button>
+                    </div>
+                  )}
+
+                  {shippingRequired ? (
+                    <div className="grid gap-4">
+                      {addressFromStep ? null : (
+                        <div className={styles.fields}>
+                          <div className={styles.field}>
+                            <label htmlFor="checkout-province">Provincia</label>
+                            <select aria-label="Provincia" id="checkout-province" autoComplete="address-level1" aria-invalid={Boolean(errors.province)} aria-describedby={errors.province ? "error-province" : undefined} value={form.province} onChange={event => updateField("province", event.target.value)}>
+                              <option value="">Seleccioná una provincia</option>
+                              {ARGENTINA_PROVINCES.map(province => <option key={province} value={province}>{province}</option>)}
+                            </select>
+                            {errors.province ? <span id="error-province" className={styles.error}>{errors.province}</span> : null}
+                          </div>
+                          {textField("city", "Localidad", { autoComplete: "address-level2" })}
+                          {textField("address", "Dirección", { autoComplete: "street-address" })}
+                          {textField("postalCode", "Código postal", { autoComplete: "postal-code" })}
+                          <div className={`${styles.field} ${styles.wide}`}>
+                            <label htmlFor="checkout-carrier">Transporte preferido</label>
+                            <select aria-label="Transporte preferido" id="checkout-carrier" aria-invalid={Boolean(errors.carrier)} aria-describedby={errors.carrier ? "error-carrier" : undefined} value={form.carrier} onChange={event => updateField("carrier", event.target.value as Carrier)}>
+                              <option value="">Elegí un transporte</option>
+                              {carriers.map(carrier => <option key={carrier}>{carrier}</option>)}
+                            </select>
+                            {errors.carrier ? <span id="error-carrier" className={styles.error}>{errors.carrier}</span> : null}
+                          </div>
+                        </div>
+                      )}
+                      <p className={styles.muted}>El costo del envío depende del destino. Lo calculamos con las tarifas del local.</p>
+                      <button type="button" disabled={isSubmitting} onClick={calculateShipping} className={styles.secondary}>Calcular envío</button>
+                      {shippingError ? <p role="alert" className={styles.alert}>{shippingError}</p> : null}
+                      {shippingQuote?.status === "available" ? <label className={styles.field}><span>Tarifa disponible</span>
+                        <select aria-label="Tarifa disponible" value={selectedQuoteKey} onChange={event => setSelectedQuoteKey(event.target.value)}>
+                          <option value="">Elegí una tarifa</option>
+                          {shippingQuote.rates.filter(rate => rate.carrier === form.carrier).map(rate => <option key={rate.quoteKey} value={rate.quoteKey}>{rate.carrier} · {currencyFormatter.format(rate.fee)}</option>)}
+                        </select>
+                      </label> : null}
+                      {shippingQuote?.status === "quotation_required" ? <div className="grid gap-3"><p className={styles.info}>No hay tarifa aprobada para este destino y transporte. Solicitá una cotización: no se confirma un pedido ni se reserva stock hasta aceptar el total definitivo. No transfieras antes de conocerlo.</p>
+                        <button type="button" disabled={isSubmitting || !!quotationId} onClick={requestQuotation} className={styles.secondary}>Solicitar cotización</button>
+                      </div> : null}
+                      {approvedTotal !== null ? <p role="status" className={styles.info}>Cotización aprobada: el total incluye los productos a precio de contado y el envío. Al aceptar se verificará nuevamente la disponibilidad y el precio. No transfieras hasta obtener el pedido con su total final.</p> : null}
+                      {quotationId ? <div className="grid gap-3"><button type="button" disabled={isSubmitting} onClick={refreshQuotation} className={styles.secondary}>Consultar cotización del local</button><p role="status" className={styles.info}>Solicitud registrada: {quotationId}. El local revisará el transporte elegido y comunicará el costo. No es un pedido confirmado ni una reserva. No transfieras todavía.</p></div> : null}
+                    </div>
+                  ) : null}
+                </section>
+
+                {paymentMethod === "transfer" ? (
+                  <section className={styles.panel}>
+                    <h2>Cómo sigue tu compra</h2>
+                    {shippingRequired && !selectedQuoteKey ? <p className={styles.info}>Primero conocé y aceptá el total definitivo, incluido el envío. No transfieras mientras falta la cotización.</p> : <ol className={styles.steps}><li>1. Preparás el pedido: verificamos precios y disponibilidad.</li><li>2. En la pantalla del pedido ves el importe definitivo y los datos para transferir.</li><li>3. Informás el pago y adjuntás el comprobante allí. El local verifica la acreditación.</li></ol>}
+                  </section>
+                ) : null}
+              </div>
+
+              <aside className={styles.panel} aria-label="Resumen del pedido">
+                <div>
+                  <h2>Resumen</h2>
+                  <p className={`${styles.muted} mt-1`}>Transferencia bancaria completa: precio de contado de los productos.</p>
+                </div>
+                <div className="grid gap-3.5">
+                  {items.map((item) => (
+                    <div key={cartItemKey(item)} className={styles.lineItem}>
                       <div className="min-w-0">
                         <CartItemIdentity item={item} />
-                        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-                          {categoryLabels[item.category]} · {item.quantity} unidad(es)
-                        </p>
+                        <p className={`${styles.lineMeta} mt-1`}>{categoryLabels[item.category]} · {item.quantity} {item.quantity === 1 ? "unidad" : "unidades"}</p>
                       </div>
-                      <p className="self-end break-words font-semibold text-[#003B73]">
-                        {formatWebPrice(getWebTransferSubtotal([item]))}
-                      </p>
+                      <p className={styles.linePrice}>{formatWebPrice(getWebTransferSubtotal([item]))}</p>
                     </div>
+                  ))}
+                </div>
+
+                <div className={styles.rows}>
+                  <div><span>Productos</span><span>{totalItems}</span></div>
+                  <div><span>Subtotal de lista</span><span>{formatWebPrice(subtotal)}</span></div>
+                  <div><span>Productos a precio de contado</span><span>{formatWebPrice(getWebTransferSubtotal(items))}</span></div>
+                  {getWebRoundingDiscount(items) > 0 ? <div><span>Descuento por redondeo</span><span>−{currencyFormatter.format(getWebRoundingDiscount(items))}</span></div> : null}
+                  <div className={styles.totalRow}>
+                    <span>{shippingRequired ? "Total con envío" : "Total con retiro en el local"}</span>
+                    <span data-pending={(shippingRequired && !selectedQuoteKey) || undefined}>{shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : currencyFormatter.format(Math.round((getWebTransferSubtotal(items) + (shippingQuote?.rates.find(rate => rate.quoteKey === selectedQuoteKey)?.fee ?? 0))*100)/100)}</span>
                   </div>
-                ))}
-              </div>
+                  <div><span>Pago</span><span>{paymentLabel}</span></div>
+                </div>
 
-              <div className="mt-6 space-y-3 border-t border-[#003B73]/15 pt-5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[#102033]/65">Productos</span>
-                  <span className="font-semibold">{totalItems}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#102033]/65">Subtotal de lista</span>
-                  <span className="font-semibold">
-                    {formatWebPrice(subtotal)}
-                  </span>
-                </div>
-                <div className="flex justify-between"><span>Productos por transferencia</span><span>{formatWebPrice(getWebTransferSubtotal(items))}</span></div>
-                <div className="flex justify-between border-t border-[#003B73]/15 pt-3 text-base">
-                  <span className="font-semibold">{shippingRequired ? "Total exacto con envío" : "Total exacto por transferencia · retiro"}</span>
-                  <span className="font-semibold text-[#003B73]">
-                    {shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : currencyFormatter.format(Math.round((getWebTransferSubtotal(items) + (shippingQuote?.rates.find(rate => rate.quoteKey === selectedQuoteKey)?.fee ?? 0))*100)/100)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#102033]/65">Pago</span>
-                  <span className="font-semibold">{paymentLabel}</span>
-                </div>
-              </div>
+                {paymentMethod === "transfer" ? (
+                  <p className={styles.info}>No transfieras todavía: los datos de pago aparecen al crear el pedido. Desde que se crea el pedido tenés 24 horas para transferir el 100% del importe e informar el pago. No se admiten señas ni pagos parciales.</p>
+                ) : null}
 
-              {paymentMethod === "transfer" ? (
-                <div className="mt-5 rounded-2xl border border-[#0072CE]/25 bg-[#0072CE]/10 p-4 text-sm leading-6 text-[#102033]/75">
-                  No transfieras todavía: los datos de pago aparecen al crear el pedido. Desde su creación tenés 24 horas para transferir el 100% del importe e informar el pago. No se admiten señas ni pagos parciales.
-                </div>
-              ) : null}
-
-              {unsupportedPayment ? <p role="alert" className="mt-3">El método solicitado no está habilitado. Volvé al carrito para elegir un pago manual.</p> : null}
-              <CheckoutCaptcha onToken={setCaptchaToken} />
-              {submitError ? (
-                <div
-                  id="checkout-feedback"
-                  ref={feedbackRef}
-                  role="alert"
-                  tabIndex={-1}
-                  className="mt-4 rounded-2xl border border-[#003B73]/25 bg-[#EEF2F6] p-4 text-sm font-semibold text-[#003B73]"
+                {unsupportedPayment ? <p role="alert" className={styles.alert}>El método solicitado no está habilitado. Volvé al carrito para elegir un pago manual.</p> : null}
+                <CheckoutCaptcha onToken={setCaptchaToken} />
+                {submitError ? (
+                  <div id="checkout-feedback" ref={feedbackRef} role="alert" tabIndex={-1} className={styles.alert}>
+                    {submitError}
+                  </div>
+                ) : null}
+                <button
+                  type="submit"
+                  aria-describedby={submitError ? "checkout-feedback" : undefined}
+                  disabled={isSubmitting || unsupportedPayment || (shippingRequired && !selectedQuoteKey)}
+                  className={styles.primary}
                 >
-                  {submitError}
-                </div>
-              ) : null}
-              <button
-                type="submit"
-                aria-describedby={submitError ? "checkout-feedback" : undefined}
-                disabled={isSubmitting || unsupportedPayment || (shippingRequired && !selectedQuoteKey)}
-                className="mt-6 flex w-full items-center justify-center rounded-full bg-[#102033] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#0072CE] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSubmitting ? "Creando pedido..." : approvedTotal !== null ? "Aceptar total y preparar pedido por transferencia" : checkoutLabel}
-              </button>
-            </aside>
-          </form>
-        )}
-      </section>
-    </main>
+                  {isSubmitting ? "Preparando pedido…" : approvedTotal !== null ? "Aceptar total y preparar pedido por transferencia" : checkoutLabel}
+                </button>
+                {shippingRequired && !selectedQuoteKey ? <p className={styles.muted}>Para continuar, calculá el envío y elegí una tarifa.</p> : null}
+              </aside>
+            </form>
+          )}
+        </section>
+      </div>
+    </CatalogFrame>
   );
 }
 
 export default function CheckoutPage() {
-  const fallback = (
-    <main className="min-h-screen bg-[#F7F9FC] text-[#102033]" />
-  );
-
   return (
-    <Suspense fallback={fallback}>
+    <Suspense fallback={<CatalogFrame>{null}</CatalogFrame>}>
       <CheckoutContent />
     </Suspense>
   );
 }
-
-

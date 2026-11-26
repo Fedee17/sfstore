@@ -1,0 +1,72 @@
+:root {
+  --sf-botanical-corner: url("/perfume-notes/vegetacion-ficha.webp");
+  --sf-botanical-band: url("/perfume-notes/botanica.webp");
+  --sf-foliage: url("/perfume-notes/follaje-encabezado.webp");
+  --sf-perfume-paper: #fdf9f2;
+  --sf-perfume-ink: #34241a;
+  --sf-perfume-olive: #414b24;
+  --sf-perfume-olive-dark: #34401e;
+  --sf-perfume-sand: #f1e6d7;
+  --sf-perfume-line: #ded4c4;
+}
+
+[data-storefront-theme="boutique"],
+[data-storefront-chrome] {
+  --boutique-canvas: #fcf7ef;
+  --boutique-surface: #fffcf6;
+  --boutique-soft: #eee9d9;
+  --boutique-badge: #e5e8ce;
+  --boutique-olive: #444f25;
+  --boutique-action: var(--boutique-olive);
+  --boutique-price: var(--boutique-olive);
+  --boutique-focus: #637134;
+  /* Owner decision 21/11: errors get their own muted brick tone, distinct from olive links and notices. */
+  --boutique-danger: #9a3324;
+  --boutique-heading: #352416;
+  --boutique-ink: #3e3125;
+  --boutique-muted: #685748;
+  --boutique-disabled: #756b5e;
+  --boutique-border: #e2d6c6;
+  --boutique-shadow: 0 1px 2px #61432613, 0 7px 19px #61432612;
+  --boutique-action-hover: #303919;
+  --boutique-title-size: clamp(2.125rem, 4vw, 3rem);
+  --boutique-perfume-title-size: clamp(2.125rem, 3vw, 2.75rem);
+  --boutique-title-line: #7a8a48;
+  --boutique-note-surface: #fdf8ee;
+  --boutique-note-shadow: 0 2px 4px #61432620;
+  --boutique-page-background:
+    radial-gradient(ellipse at 88% 0, #efdfc766, transparent 540px),
+    radial-gradient(ellipse at 7% 29rem, #fffcf7, transparent 46rem),
+    linear-gradient(180deg, #faf0e4, var(--boutique-canvas) 39rem, #f8f0e4);
+  --boutique-buy-background: linear-gradient(157deg, #59682c 0%, #45541c 45%, #303c12 100%);
+  --boutique-buy-hover: linear-gradient(157deg, #4f6026, #354215 66%, #293510);
+  --boutique-buy-shadow: inset 0 1px 0 #d4dc9140, inset 0 -1px 0 #262b1270, 0 3px 7px #4d3a2326;
+  --boutique-contact-border: #b8ac85;
+  --boutique-contact-background: linear-gradient(180deg, #fffdf8, #f6eee0);
+  --boutique-contact-hover: linear-gradient(180deg, #f8f5e8, #ebe4cf);
+  --boutique-contact-shadow: inset 0 1px 0 #fff, 0 2px 4px #61432619;
+  --boutique-support-background: linear-gradient(165deg, #fffdf8, var(--boutique-surface) 55%, #faf3e8);
+  --boutique-support-weight: 750;
+}
+
+[data-storefront-chrome] {
+  --boutique-header-olive: linear-gradient(108deg, #44482a, #505834 66%, #3b4424);
+  --boutique-header-background:
+    radial-gradient(ellipse at 69% 0%, #838a4d50, transparent 64%),
+    linear-gradient(180deg, #25291710, #25291724),
+    var(--boutique-header-olive);
+  --boutique-nav-background: linear-gradient(180deg, #25291724, #2529173b), var(--boutique-header-olive);
+  --boutique-header-foliage: var(--sf-foliage);
+  --boutique-header-foliage-shadow: drop-shadow(0 5px 5px #1b211485);
+  --boutique-nav-line: #ded0a846;
+  --boutique-nav-active: #f4df9a;
+  --boutique-nav-shadow: 0 2px 4px #49361f14, 0 7px 18px #49361f30;
+  --boutique-header-control: linear-gradient(165deg, var(--boutique-surface), #eee6d3);
+  --boutique-header-control-line: #fff8e4bb;
+  --boutique-header-control-shadow: inset 0 0 0 1px var(--boutique-header-control-line), 0 2px 5px #211d1330;
+  --boutique-header-cart-ink: #424720;
+}
+[data-storefront-theme="boutique"] {
+  --boutique-home-card-radius: 1.25rem;
+  --boutique-home-section-title: clamp(1.375rem, 2.55vw, 2.125rem);
+}

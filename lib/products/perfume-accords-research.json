@@ -1,0 +1,1618 @@
+{
+  "9am-pour-femme": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/9am-pour-femme",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 91.63
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 66.24
+      },
+      {
+        "label": "Almizclado",
+        "originalLabel": "Musky",
+        "relativeStrength": 64.67
+      }
+    ]
+  },
+  "al-haramain-dubai-night": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/amber-oud-dubai-night",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 89.02
+      },
+      {
+        "label": "Oud",
+        "originalLabel": "Oud",
+        "relativeStrength": 84.07
+      },
+      {
+        "label": "Rosa",
+        "originalLabel": "Rose",
+        "relativeStrength": 83.93
+      }
+    ]
+  },
+  "club-de-nuit-iconic": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/club-de-nuit-blue-iconic",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 93.48
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 72.27
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 67.17
+      }
+    ]
+  },
+  "club-de-nuit-maleka": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/club-de-nuit-maleka",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Iris",
+        "originalLabel": "Iris",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Atalcado",
+        "originalLabel": "Powdery",
+        "relativeStrength": 95.4
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 90.41
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 85.86
+      }
+    ]
+  },
+  "club-de-nuit-woman": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/club-de-nuit-woman",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Pachulí",
+        "originalLabel": "Patchouli",
+        "relativeStrength": 64.82
+      },
+      {
+        "label": "Rosa",
+        "originalLabel": "Rose",
+        "relativeStrength": 63.72
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 63.14
+      }
+    ]
+  },
+  "french-avenue-liquid-brun": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/liquid-brun",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 98.49
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 96.69
+      },
+      {
+        "label": "Canela",
+        "originalLabel": "Cinnamon",
+        "relativeStrength": 79.38
+      }
+    ]
+  },
+  "hawas-malibu": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-malibu",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 85.22
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 77.81
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 76.64
+      }
+    ]
+  },
+  "hawas-tropical": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-tropical",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Verde",
+        "originalLabel": "Green",
+        "relativeStrength": 97.57
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 94.26
+      },
+      {
+        "label": "Coco",
+        "originalLabel": "Coconut",
+        "relativeStrength": 90.96
+      }
+    ]
+  },
+  "homme-black-100ml": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/odyssey-homme",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 75.33
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 73.29
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 69.01
+      }
+    ]
+  },
+  "la-voie": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/la-voie",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Flores blancas",
+        "originalLabel": "White floral",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Nardo",
+        "originalLabel": "Tuberose",
+        "relativeStrength": 65.97
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 55.48
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 51.73
+      }
+    ]
+  },
+  "lattafa-khamrah": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/khamrah",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 82.15
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 80.45
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 76.37
+      }
+    ]
+  },
+  "lattafa-yara-rosa": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/yara",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 97.58
+      },
+      {
+        "label": "Atalcado",
+        "originalLabel": "Powdery",
+        "relativeStrength": 94.7
+      },
+      {
+        "label": "Tropical",
+        "originalLabel": "Tropical",
+        "relativeStrength": 63.02
+      }
+    ]
+  },
+  "perfume-lattafa-yara-tous": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/yara-tous",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Tropical",
+        "originalLabel": "Tropical",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 95.02
+      },
+      {
+        "label": "Flores blancas",
+        "originalLabel": "White floral",
+        "relativeStrength": 80.18
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 79.93
+      }
+    ]
+  },
+  "momento-riffs": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/momento",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 86.93
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 82.72
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 75.68
+      }
+    ]
+  },
+  "rasasi-hawas-for-him": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-for-him",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 96.77
+      },
+      {
+        "label": "Acuático",
+        "originalLabel": "Aquatic",
+        "relativeStrength": 86.38
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 79.71
+      }
+    ]
+  },
+  "afnan-9-am-dive": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/9am",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Almizclado",
+        "originalLabel": "Musky",
+        "relativeStrength": 62.96
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 59.96
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 59.84
+      }
+    ]
+  },
+  "afnan-9-pm-elixir": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/9pm-elixir",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 72.55
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 68.13
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 65.48
+      }
+    ]
+  },
+  "club-de-nuit-intense-man": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/club-de-nuit-intense-man",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 70.81
+      },
+      {
+        "label": "Cuero",
+        "originalLabel": "Leather",
+        "relativeStrength": 61.99
+      },
+      {
+        "label": "Ahumado",
+        "originalLabel": "Smoky",
+        "relativeStrength": 55.59
+      }
+    ]
+  },
+  "club-de-nuit-sillage": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/club-de-nuit-sillage",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Almizclado",
+        "originalLabel": "Musky",
+        "relativeStrength": 60.63
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 59.98
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 55.43
+      }
+    ]
+  },
+  "confidential-gold-100ml": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/confidential-private-gold",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 73.78
+      },
+      {
+        "label": "Atalcado",
+        "originalLabel": "Powdery",
+        "relativeStrength": 53.85
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 52.25
+      }
+    ]
+  },
+  "decant-game-of-spades-full-house": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/game-of-spades-full-house",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 69.68
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 61.95
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 57.78
+      }
+    ]
+  },
+  "decant-hawas-kobra": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-kobra",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 96.66
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 74.45
+      },
+      {
+        "label": "Almizclado",
+        "originalLabel": "Musky",
+        "relativeStrength": 70.76
+      }
+    ]
+  },
+  "decant-hawas-verde": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-verde",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 86.47
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 85.88
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 83.75
+      }
+    ]
+  },
+  "decant-rayhaan-elixir": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/rayhaan-elixir",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 67.84
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 66.81
+      },
+      {
+        "label": "Verde",
+        "originalLabel": "Green",
+        "relativeStrength": 55.41
+      }
+    ]
+  },
+  "hawas-elixir": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-elixir",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 82.12
+      },
+      {
+        "label": "Verde",
+        "originalLabel": "Green",
+        "relativeStrength": 70.88
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 64.89
+      }
+    ]
+  },
+  "hawas-fire-rasasi": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-fire",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 85.45
+      },
+      {
+        "label": "Mineral",
+        "originalLabel": "Mineral",
+        "relativeStrength": 66.33
+      },
+      {
+        "label": "Marino",
+        "originalLabel": "Marine",
+        "relativeStrength": 62.36
+      }
+    ]
+  },
+  "lattafa-asad": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/asad",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 91.37
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 86.35
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 83.55
+      }
+    ]
+  },
+  "lattafa-eclaire": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/eclaire",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 70.35
+      },
+      {
+        "label": "Caramelo",
+        "originalLabel": "Caramel",
+        "relativeStrength": 63.9
+      },
+      {
+        "label": "Lactónico",
+        "originalLabel": "Lactonic",
+        "relativeStrength": 60.38
+      }
+    ]
+  },
+  "lattafa-mayar-100ml": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/mayar",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Rosa",
+        "originalLabel": "Rose",
+        "relativeStrength": 68.03
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 62.65
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 61.08
+      }
+    ]
+  },
+  "lattafa-mayar-natural-intense": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/mayar-natural-intense",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Floral",
+        "originalLabel": "Floral",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Acuático",
+        "originalLabel": "Aquatic",
+        "relativeStrength": 93.91
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 70.14
+      },
+      {
+        "label": "Ozónico",
+        "originalLabel": "Ozonic",
+        "relativeStrength": 68.91
+      }
+    ]
+  },
+  "lattafa-qaed-al-fursan": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/qaed-al-fursan",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 95.46
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 69.23
+      },
+      {
+        "label": "Tropical",
+        "originalLabel": "Tropical",
+        "relativeStrength": 68.89
+      }
+    ]
+  },
+  "lattafa-yara-candy": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/yara-candy",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 83.93
+      },
+      {
+        "label": "Atalcado",
+        "originalLabel": "Powdery",
+        "relativeStrength": 76.21
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 70.36
+      }
+    ]
+  },
+  "lattafa-yara-moi": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/yara-moi",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Flores blancas",
+        "originalLabel": "White floral",
+        "relativeStrength": 96.77
+      },
+      {
+        "label": "Pachulí",
+        "originalLabel": "Patchouli",
+        "relativeStrength": 80.97
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 71.25
+      }
+    ]
+  },
+  "odyssey-aqua": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/odyssey-aqua-edition",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 89.1
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 88.14
+      },
+      {
+        "label": "Verde",
+        "originalLabel": "Green",
+        "relativeStrength": 73.42
+      }
+    ]
+  },
+  "odyssey-artisto": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/odyssey-artisto",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Coco",
+        "originalLabel": "Coconut",
+        "relativeStrength": 77.11
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 75.25
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 73.53
+      }
+    ]
+  },
+  "odyssey-go-mango": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/odyssey-go-mango",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Tropical",
+        "originalLabel": "Tropical",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 89.17
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 87.34
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 67.96
+      }
+    ]
+  },
+  "odyssey-limoni": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/odyssey-limoni-fresh",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 46.35
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 45.21
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 43.29
+      }
+    ]
+  },
+  "odyssey-wild-one": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/odyssey-wild-one-gold-edition",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 86.2
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 78.48
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 71.95
+      }
+    ]
+  },
+  "qaed-al-fursan-untamed": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/qaed-al-fursan-untamed",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 95.78
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 95.02
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 79.62
+      }
+    ]
+  },
+  "salvo-elixir-60ml": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/salvo-elixir",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 99.09
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 97.27
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 84.91
+      }
+    ]
+  },
+  "sceptre-malachite-maison-alhambra": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/sceptre-malachite",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 78.03
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 60.7
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 53.71
+      }
+    ]
+  },
+  "vulcan-feu-french-avenue": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/vulcan-feu",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Tropical",
+        "originalLabel": "Tropical",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 98.68
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 93.23
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 73.3
+      }
+    ]
+  },
+  "lattafa-opulent-dubai": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/opulent-dubai",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Tropical",
+        "originalLabel": "Tropical",
+        "relativeStrength": 97.29
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 87.56
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 70.37
+      }
+    ]
+  },
+  "afnan-turathi-blue": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/turathi-blue",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Almizclado",
+        "originalLabel": "Musky",
+        "relativeStrength": 72.23
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 66.52
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 65
+      }
+    ]
+  },
+  "fakhar-rose-gold": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/fakhar-rose",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Flores blancas",
+        "originalLabel": "White floral",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 54.89
+      },
+      {
+        "label": "Nardo",
+        "originalLabel": "Tuberose",
+        "relativeStrength": 54.24
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 46.99
+      }
+    ]
+  },
+  "lattafa-asad-bourbon": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/asad-bourbon",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cacao",
+        "originalLabel": "Cacao",
+        "relativeStrength": 90.06
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 76.46
+      },
+      {
+        "label": "Lavanda",
+        "originalLabel": "Lavender",
+        "relativeStrength": 76.42
+      }
+    ]
+  },
+  "lattafa-bade-e-al-oud-sublime": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/bade-e-al-oud-sublime",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Fresco",
+        "originalLabel": "Fresh",
+        "relativeStrength": 61
+      },
+      {
+        "label": "Tropical",
+        "originalLabel": "Tropical",
+        "relativeStrength": 46.83
+      },
+      {
+        "label": "Rosa",
+        "originalLabel": "Rose",
+        "relativeStrength": 45.86
+      }
+    ]
+  },
+  "lattafa-pride-nebras": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/nebras",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 95.62
+      },
+      {
+        "label": "Cacao",
+        "originalLabel": "Cacao",
+        "relativeStrength": 64.02
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 54.97
+      }
+    ]
+  },
+  "bharara-rome-pour-femme": {
+    "version": 1,
+    "sourceUrl": "https://www.cacheperfume.com/products/bharara-rome-3-4-oz-edp-women",
+    "consultedAt": "2026-11-18",
+    "method": "documented-list",
+    "methodNote": "Lista explícita Main accords de Caché Perfumes, corroborada cualitativamente con SADULUXURY y LaBelle. Sin longitudes ni intensidades verificables; no se asignan valores a las notas ni al orden.",
+    "accords": [
+      {
+        "label": "Floral",
+        "originalLabel": "Floral"
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody"
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity"
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla"
+      }
+    ]
+  },
+  "stallion-53-uomo-intense": {
+    "version": 1,
+    "sourceUrl": "https://www.fragrantica.com/perfume/Stallion-53/Uomo-Intense-137428.html",
+    "consultedAt": "2026-11-18",
+    "method": "documented-list",
+    "methodNote": "Main accords consultados en el resultado indexado de Fragrantica. Identidad Uomo Intense por Stallion 53 contrastada con fabricante y Parfumo; se descarta Stallion 53 por Emper (otra fragancia). No se obtuvieron longitudes del gráfico; sin barras.",
+    "accords": [
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody"
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic"
+      },
+      {
+        "label": "Lavanda",
+        "originalLabel": "Lavender"
+      },
+      {
+        "label": "Violeta",
+        "originalLabel": "Violet"
+      }
+    ]
+  },
+  "decant-hawas-elixir": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-elixir",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 82.12
+      },
+      {
+        "label": "Verde",
+        "originalLabel": "Green",
+        "relativeStrength": 70.88
+      },
+      {
+        "label": "Fresco especiado",
+        "originalLabel": "Fresh spicy",
+        "relativeStrength": 64.89
+      }
+    ]
+  },
+  "decant-hawas-fire": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-fire",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Aromático",
+        "originalLabel": "Aromatic",
+        "relativeStrength": 85.45
+      },
+      {
+        "label": "Mineral",
+        "originalLabel": "Mineral",
+        "relativeStrength": 66.33
+      },
+      {
+        "label": "Marino",
+        "originalLabel": "Marine",
+        "relativeStrength": 62.36
+      }
+    ]
+  },
+  "decant-hawas-malibu": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-malibu",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 85.22
+      },
+      {
+        "label": "Cítrico",
+        "originalLabel": "Citrus",
+        "relativeStrength": 77.81
+      },
+      {
+        "label": "Frutal",
+        "originalLabel": "Fruity",
+        "relativeStrength": 76.64
+      }
+    ]
+  },
+  "decant-hawas-tropical": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/hawas-tropical",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Verde",
+        "originalLabel": "Green",
+        "relativeStrength": 97.57
+      },
+      {
+        "label": "Amaderado",
+        "originalLabel": "Woody",
+        "relativeStrength": 94.26
+      },
+      {
+        "label": "Coco",
+        "originalLabel": "Coconut",
+        "relativeStrength": 90.96
+      }
+    ]
+  },
+  "decant-lattafa-khamrah": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/khamrah",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 82.15
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 80.45
+      },
+      {
+        "label": "Ambarado",
+        "originalLabel": "Amber",
+        "relativeStrength": 76.37
+      }
+    ]
+  },
+  "decant-liquid-brun": {
+    "version": 1,
+    "sourceUrl": "https://fragrani.com/en/perfumes/liquid-brun",
+    "consultedAt": "2026-11-18",
+    "method": "source-bar-width",
+    "methodNote": "Lectura del estilo --w de .ac-row .ac-fill en Main accords de FRAGRANI. Se conserva el porcentaje de ancho publicado (escala gráfica 0–100, máximo 100), sin convertir el orden en puntuaciones. Referencia orientativa del sitio, no concentración química, duración ni proyección.",
+    "accords": [
+      {
+        "label": "Dulce",
+        "originalLabel": "Sweet",
+        "relativeStrength": 100
+      },
+      {
+        "label": "Cálido especiado",
+        "originalLabel": "Warm spicy",
+        "relativeStrength": 98.49
+      },
+      {
+        "label": "Vainilla",
+        "originalLabel": "Vanilla",
+        "relativeStrength": 96.69
+      },
+      {
+        "label": "Canela",
+        "originalLabel": "Cinnamon",
+        "relativeStrength": 79.38
+      }
+    ]
+  }
+}

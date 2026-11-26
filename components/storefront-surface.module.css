@@ -1,0 +1,22 @@
+.canvas {
+  position: relative;
+  isolation: isolate;
+  color: var(--boutique-ink);
+  background: var(--boutique-page-background);
+}
+
+/* Owner decision 20/11: the warm canvas background can span a whole page without theming its text. */
+.pageBackground { background: var(--boutique-page-background); }
+
+.botanicalCorner::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto auto;
+  width: clamp(108px, 17vw, 234px);
+  aspect-ratio: 181 / 101;
+  background: var(--sf-botanical-corner) right top / cover no-repeat;
+  mask-image: linear-gradient(to left, #000 74%, transparent), linear-gradient(#000 66%, transparent);
+  mask-composite: intersect;
+  pointer-events: none;
+  content: "";
+}

@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { getWebTransferPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
@@ -36,7 +37,15 @@ type CartState = {
   increaseQuantity: (productId: string) => void;
   decreaseQuantity: (productId: string) => void;
   clearCart: () => void;
+  restoreItems: (items: CartItem[]) => void;
+  syncCatalog: (catalog: Record<string, { price: number; cashPrice?: number | null; stock: number }>) => void;
+  /** Buyer-facing notices of the last catalog sync; shared by the cart page and drawer, never persisted. */
+  syncNotices: string[];
+  clearSyncNotices: () => void;
 };
+
+/** Fired after a product is added, so the cart drawer can open (owner request 20/11). */
+export const cartAddedEvent = "sfstore:cart-added";
 
 /** Display-only snapshot of this SKU; never use a family or component photo. */
 function getCartPresentation(product?: Product) {
@@ -80,6 +89,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       invalidPriceNotice: false,
+      syncNotices: [],
       items: [],
       totalItems: 0,
       subtotal: 0,
@@ -197,6 +207,28 @@ export const useCartStore = create<CartState>()(
           ),
         ),
       clearCart: () => set({ items: [], totalItems: 0, subtotal: 0, invalidPriceNotice: false }),
+      // Undo of a removal: puts back the exact lines the buyer had a moment ago.
+      restoreItems: (items) => set(withTotals(items)),
+      // Brings simple SKUs up to the current public price and stock. Combos and SKUs missing from the answer stay
+      // as they are: checkout validates them server-side. Leaves one buyer-facing notice per change.
+      syncCatalog: (catalog) => {
+        const notices: string[] = [];
+        set(state => {
+          const items = state.items.flatMap(item => {
+            const current = item.comboConnector ? undefined : catalog[item.productId];
+            if (!current || typeof current.price !== "number" || !Number.isSafeInteger(current.stock)) return [item];
+            const name = item.displayName ?? item.name;
+            if (current.stock <= 0) { notices.push(`${name} se agotó y lo quitamos del carrito.`); return []; }
+            const next = { ...item, stock: current.stock };
+            const cash = hasValidWebPrice(current.cashPrice) ? current.cashPrice : null;
+            if (hasValidWebPrice(current.price) && (current.price !== item.price || cash !== item.transferPrice)) { next.price = current.price; next.transferPrice = cash; notices.push(`Cambió el precio de ${name}.`); }
+            if (item.quantity > current.stock) { next.quantity = current.stock; notices.push(current.stock === 1 ? `Queda 1 unidad de ${name}: ajustamos la cantidad.` : `Quedan ${current.stock} unidades de ${name}: ajustamos la cantidad.`); }
+            return [next];
+          });
+          return { ...withTotals(items), syncNotices: notices };
+        });
+      },
+      clearSyncNotices: () => set({ syncNotices: [] }),
     }),
     {
       name: "sfstore-cart",
@@ -212,7 +244,15 @@ export const useCartStore = create<CartState>()(
         const rows = Array.isArray(previous?.items) ? previous.items.filter(item => item && typeof item.productId === "string" && Number.isSafeInteger(item.quantity) && item.quantity > 0).map(withCashPrice) : [];
         return { ...current, ...withTotals(rows), invalidPriceNotice: previous?.invalidPriceNotice === true || rows.some(item => !hasValidWebPrice(item.price)) };
       },
+      partialize: ({ items, totalItems, subtotal, invalidPriceNotice }) => ({ items, totalItems, subtotal, invalidPriceNotice }),
       storage: createJSONStorage(() => localStorage),
     },
   ),
 );
+
+const subscribeToCartHydration = (update: () => void) => useCartStore.persist.onFinishHydration(update);
+
+/** Review 21/11: false on the server and until the saved cart is read, so pages do not flash an empty-cart message. */
+export function useCartHydrated() {
+  return useSyncExternalStore(subscribeToCartHydration, () => useCartStore.persist.hasHydrated(), () => false);
+}

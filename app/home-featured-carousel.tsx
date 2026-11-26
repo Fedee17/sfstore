@@ -2,19 +2,21 @@
 
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import styles from "./home-featured.module.css";
+import { reducedMotionQuery, useCarouselRotation } from "@/components/use-carousel-rotation";
 
 const desktopQuery = "(min-width: 1024px)";
-const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
-const rotationInterval = 4000;
+const tabletQuery = "(min-width: 768px)";
 
 function subscribeToLayout(update: () => void) {
-  const queries = [desktopQuery, reducedMotionQuery].map(query => window.matchMedia(query));
+  const queries = [desktopQuery, tabletQuery, reducedMotionQuery].map(query => window.matchMedia(query));
   queries.forEach(query => query.addEventListener("change", update));
   return () => queries.forEach(query => query.removeEventListener("change", update));
 }
 
-function getColumns() {
+function getColumns(layout: "featured" | "ritual") {
   if (window.matchMedia(reducedMotionQuery).matches) return 0;
+  // Owner request 20/11: Ritual Matero shows two horizontal cards from tablets on.
+  if (layout === "ritual") return window.matchMedia(tabletQuery).matches ? 2 : 1;
   return window.matchMedia(desktopQuery).matches ? 4 : 2;
 }
 
@@ -29,9 +31,9 @@ function nextSlide(index: number, direction: number, last: number, loop: boolean
   return { index: next, animate: true };
 }
 
-export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; previews?: ReactNode[] }) {
+export function HomeFeaturedCarousel({ cards, previews, layout = "featured" }: { cards: ReactNode[]; previews?: ReactNode[]; layout?: "featured" | "ritual" }) {
   const trackId = useId();
-  const columns = useSyncExternalStore(subscribeToLayout, getColumns, () => 0);
+  const columns = useSyncExternalStore(subscribeToLayout, () => getColumns(layout), () => 0);
   const carousel = useRef<HTMLDivElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
@@ -40,9 +42,9 @@ export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; 
   const [hovering, setHovering] = useState(false);
   const [stopped, setStopped] = useState(false);
   const enabled = columns > 0 && cards.length > columns;
-  const swipe = enabled && columns === 2;
-  const arrows = enabled && !swipe;
-  const loop = arrows && previews?.length === cards.length;
+  const swipe = enabled && (columns === 1 || columns === 2);
+  const arrows = enabled && (!swipe || layout === "ritual");
+  const loop = arrows && !swipe && previews?.length === cards.length;
   const last = loop ? cards.length - 1 : enabled ? cards.length - columns : 0;
   const index = loop ? Math.max(-1, Math.min(slide.index, cards.length)) : Math.max(0, Math.min(slide.index, last));
   const offset = loop ? columns + 1 : 0;
@@ -63,7 +65,12 @@ export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; 
   }
 
   function move(direction: number) {
-    setSlide(previous => nextSlide(previous.index, direction, last, loop));
+    const current = viewport.current;
+    const first = track.current?.children[0] as HTMLElement | undefined;
+    const second = track.current?.children[1] as HTMLElement | undefined;
+    const stride = first && second ? second.offsetLeft - first.offsetLeft : 0;
+    const visibleIndex = swipe && current && stride > 0 ? Math.round(current.scrollLeft / stride) : null;
+    setSlide(previous => nextSlide(visibleIndex ?? previous.index, direction, last, loop));
   }
 
   useEffect(() => {
@@ -73,33 +80,14 @@ export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; 
     return () => observer.disconnect();
   }, [enabled]);
 
-  useEffect(() => {
-    if (!enabled || !visible || hovering || stopped) return;
-
-    function schedule() {
-      window.clearTimeout(timer);
-      if (document.hidden) return;
-      timer = window.setTimeout(() => {
-        setSlide(previous => nextSlide(previous.index, 1, last, loop));
-        schedule();
-      }, rotationInterval);
-    }
-
-    let timer: number;
-    schedule();
-    document.addEventListener("visibilitychange", schedule);
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("visibilitychange", schedule);
-    };
-  }, [enabled, visible, hovering, stopped, last, loop]);
+  useCarouselRotation(enabled && visible && !hovering && !stopped, () => setSlide(previous => nextSlide(previous.index, 1, last, loop)));
 
   useEffect(() => {
     if (!swipe || !viewport.current || !track.current) return;
     const first = track.current.children[0] as HTMLElement;
     const current = track.current.children[index] as HTMLElement;
     viewport.current.scrollTo({ left: current.offsetLeft - first.offsetLeft, behavior: slide.animate ? "smooth" : "instant" });
-  }, [swipe, index, slide.animate]);
+  }, [swipe, index, slide]);
 
   return (
     <div
@@ -107,6 +95,7 @@ export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; 
       className={styles.carousel}
       data-rotating-layout={enabled || undefined}
       data-swipe={swipe || undefined}
+      data-layout={layout}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       onFocusCapture={() => setStopped(true)}
@@ -135,7 +124,7 @@ export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; 
           }}
         >
           {entries.map(({ card, position, key }) => {
-            const peripheral = arrows && (position < index || position >= index + columns);
+            const peripheral = arrows && !swipe && (position < index || position >= index + columns);
             return <div key={key} inert={peripheral} aria-hidden={peripheral || undefined}
               data-peripheral={peripheral || undefined}>{card}</div>;
           })}
@@ -150,3 +139,4 @@ export function HomeFeaturedCarousel({ cards, previews }: { cards: ReactNode[]; 
     </div>
   );
 }
+

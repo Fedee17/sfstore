@@ -1,3 +1,4 @@
+import * as deliveryChoice from '../lib/checkout/delivery-choice.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
@@ -47,7 +48,7 @@ test('legacy carts without saved images remain readable and never borrow a famil
 test('simple products and the two virtual connectors keep only their own photograph, never a physical component photo',()=>{
  useCartStore.getState().clearCart();const head={...sku('Cabezal'),id:'head',familyId:undefined,kind:'simple',stock:4},cable={...head,id:'cable',stock:4};
  useCartStore.getState().addItem(head);assert.equal(useCartStore.getState().items[0].primaryImageUrl,'/sku-Cabezal.svg');useCartStore.getState().clearCart();
- for(const connector of ['cc','lightning']) useCartStore.getState().addItem({...head,id:`virtual-${connector}`,kind:'combo',familyName:undefined,name:`Combo ${connector}`,images:[photo(`/combo-${connector}.svg`)],price:30666.67,combo:{presentationId:'recipe',connector,priceVersion:'v1',recipeName:'Test',head,cable:{...cable,id:connector}}});
+ for(const connector of ['cc','lightning']) useCartStore.getState().addItem({...head,id:`virtual-${connector}`,kind:'combo',familyName:undefined,name:`Combo ${connector}`,images:[photo(`/combo-${connector}.svg`)],price:30666.67,transferPrice:23000,combo:{presentationId:'recipe',connector,priceVersion:'v1',recipeName:'Test',head,cable:{...cable,id:connector}}});
  assert.deepEqual(useCartStore.getState().items.map(i=>[cartItemKey(i),i.primaryImageUrl]),[['recipe:cc','/combo-cc.svg'],['recipe:lightning','/combo-lightning.svg']]);
  assert.equal(prices.getWebTransferSubtotal(useCartStore.getState().items),46000);
  useCartStore.getState().clearCart();useCartStore.getState().addCombo('recipe','Legacy','cc',30666.67,'v1',head,cable);
@@ -56,14 +57,18 @@ test('simple products and the two virtual connectors keep only their own photogr
 
 test('cart and checkout retain the SKU, round displayed prices up and show the exact payable total',()=>{
  useCartStore.getState().clearCart();useCartStore.getState().addItem({...sku('Gris'),price:100.01,transferPrice:75.01});
- const state=useCartStore.getState(),modules={'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity},'@/components/site-header':{SiteHeader:()=>null},'@/store/cart-store':{useCartStore:()=>state,cartItemKey},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{mates:'Mates'},publicCategoryPaths:{mates:'/mates'}},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/components/transfer-alias':{TransferAlias:()=>null},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':argentina,'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}};
+ const state=useCartStore.getState(),modules={'@/lib/checkout/delivery-choice':deliveryChoice,'@/components/catalog/catalog-frame':{CatalogFrame:({children})=>React.createElement('main',null,children)},'./checkout.module.css':{default:{}},'../checkout.module.css':{default:{}},'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity},'@/components/site-header':{SiteHeader:()=>null},'@/store/cart-store':{useCartHydrated:()=>true,useCartStore:()=>state,cartItemKey},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{mates:'Mates'},publicCategoryPaths:{mates:'/mates'}},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/components/transfer-alias':{TransferAlias:()=>null},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':argentina,'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}};
  const Cart=load('components/cart-content.tsx',modules).default;
  const Checkout=load('app/checkout/page.tsx',modules,{},'\nexport { CheckoutContent };').CheckoutContent;
  for(const Component of [Cart,Checkout]){
   const html=renderToStaticMarkup(React.createElement(Component));assert.match(html,/src="\/sku-Gris.svg"/);assert.match(html,/Color: Gris/);assert.match(html,/SKU-Gris/);assert.match(html,/Termo de prueba/);assert.doesNotMatch(html,/detail-Gris.svg/);assert.match(html,/>\$\s*76</);assert.match(html,/\$\s*101</);
  }
- assert.match(renderToStaticMarkup(React.createElement(Cart)),/redondeados hacia arriba/);
+ // Owner decision 20/11: the cart shows the rounded amount without a rounding notice.
+ assert.doesNotMatch(renderToStaticMarkup(React.createElement(Cart)),/redonde/);
  assert.match(renderToStaticMarkup(React.createElement(Checkout)),/\$\s*75,01/);
+ // Owner decision 20/11: the cents between the shown $ 76 and the exact $ 75,01 are named as a rounding discount.
+ assert.match(renderToStaticMarkup(React.createElement(Checkout)),/Descuento por redondeo<\/span><span>−\$\s*0,99</);
+ assert.equal(prices.getWebRoundingDiscount([{transferPrice:prices.getWebTransferPrice(100),quantity:2}]),0);
 });
 
 test('cart thumbnails use the compact frame while catalog photos use the product frame',()=>{

@@ -1,3 +1,4 @@
+import * as deliveryChoice from '../lib/checkout/delivery-choice.ts';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -9,19 +10,20 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import * as prices from '../lib/web-transfer-pricing.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import * as categories from '../lib/catalog/public-product-visibility.ts';
+import { rotationStub } from './fixtures/carousel-rotation-stub.mjs';
 const require=createRequire(import.meta.url);
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 function load(f,modules){const out={};new Function('require','exports',ts.transpileModule(read(f),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>Object.hasOwn(modules,n)?modules[n]:(n.endsWith('.module.css')?{default:new Proxy({}, {get:(_,key)=>key})}:require(n)),out);return out;}
 const items=['cc','lightning'].map(connector=>({productId:'synthetic',comboConnector:connector,name:'Cargador '+connector,slug:connector,category:'accesorios',price:30666.67,transferPrice:23000,quantity:1,stock:2}));
 const store={useCartStore:()=>({items,totalItems:2,subtotal:61333.34}),cartItemKey:i=>i.comboConnector};
 const hooks={...React,useState:v=>[v,()=>{}],useRef:()=>({current:null}),useEffect:()=>{}};
-const modules={...analyticsRenderStubs,'react':hooks,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:({item})=>React.createElement('span',null,item.name)},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':store,'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'}};
+const modules={...analyticsRenderStubs,'@/lib/checkout/delivery-choice':deliveryChoice,'@/components/catalog/catalog-frame':{CatalogFrame:({children})=>React.createElement('main',null,children)},'./checkout.module.css':{default:{}},'../checkout.module.css':{default:{}},'react':hooks,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity:({item})=>React.createElement('span',null,item.name)},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':categories,'@/store/cart-store':{...store,useCartHydrated:()=>true},'@/components/site-header':{SiteHeader:()=>null},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'./use-carousel-rotation':rotationStub};
 
 test('cart labels list, discount and transfer subtotal without applying the discount twice',()=>{
  const Cart=load('components/cart-content.tsx',modules).default;
  const html=renderToStaticMarkup(React.createElement(Cart));
  assert.match(html,/Subtotal de lista/);assert.match(html,/61\.334/);
- assert.match(html,/Descuento por transferencia/);assert.match(html,/15\.334/);
+ assert.match(html,/Descuento/);assert.match(html,/15\.334/);
  assert.match(html,/Productos por transferencia/);assert.match(html,/46\.000/);
  assert.match(html,/Cargador cc/);assert.match(html,/Cargador lightning/);assert.doesNotMatch(html,/Se confirma al crear el pedido|Alias:/);
  assert.match(html,/Quitar una unidad/);assert.match(html,/Agregar una unidad/);
@@ -29,11 +31,12 @@ test('cart labels list, discount and transfer subtotal without applying the disc
 test('checkout line totals and pickup summary use the same unit-rounded transfer contract',()=>{
  const Page=load('app/checkout/page.tsx',{...modules,'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:[]},'@/components/transfer-alias':{TransferAlias:()=>null},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;
  const html=renderToStaticMarkup(React.createElement(Page));
- assert.match(html,/Total exacto por transferencia/);assert.match(html,/46\.000,00/);
+ assert.match(html,/Total con retiro en el local/);assert.match(html,/46\.000,00/);
+ assert.match(html,/Productos a precio de contado/);assert.doesNotMatch(html,/unidad\(es\)|25% OFF/);
  assert.equal((html.match(/23\.000<\/p>/g)||[]).length,2);
  assert.doesNotMatch(html,/Se confirma al crear el pedido/);
  assert.equal(prices.getWebTransferSubtotal([{transferPrice:prices.getWebTransferPrice(30666.67),quantity:3}]),69000);
- assert.equal(prices.getWebTransferSubtotal([{transferPrice:75,quantity:2}]),150);
+ assert.equal(prices.getWebTransferSubtotal([{transferPrice:prices.getWebTransferPrice(100),quantity:2}]),150);
 });
 test('home hero does not render an unapproved raster advertisement or duplicate payment conditions',()=>{
  const Hero=load('components/home-hero-slider.tsx',modules).HomeHeroSlider;

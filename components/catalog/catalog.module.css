@@ -1,0 +1,83 @@
+/* Catalog surfaces (Perfumes, Mates, Accesorios, Buscar). Only boutique tokens from app/storefront-theme.css. */
+/* The canvas fills short pages down to the viewport edge. */
+.page { display: flex; flex-direction: column; min-block-size: 100dvh; }
+.canvas { flex: 1 0 auto; padding-block-end: 1rem; }
+
+.title { color: var(--boutique-heading); font-weight: 800; letter-spacing: -.025em; }
+/* Owner decision 20/11: same olive rule as the approved Éclaire title (product-detail-layout). */
+.title::after {
+  display: block;
+  inline-size: 3rem;
+  block-size: .25rem;
+  margin-block-start: .625rem;
+  border-radius: 999px;
+  background: var(--boutique-title-line);
+  content: "";
+}
+@media (width >= 1024px) { .title::after { margin-block-start: .75rem; } }
+.lead { color: var(--boutique-muted); }
+.subtitle { color: var(--boutique-heading); font-weight: 700; letter-spacing: -.015em; }
+.divider { border-block-end: 1px solid var(--boutique-border); }
+.count { color: var(--boutique-muted); }
+
+/* Secondary action: same finish as the product page contact button. */
+.contact {
+  border: 1px solid var(--boutique-contact-border);
+  background: var(--boutique-contact-background);
+  color: var(--boutique-olive);
+  box-shadow: var(--boutique-contact-shadow);
+}
+.contact:hover { background: var(--boutique-contact-hover); }
+
+/* Primary action: same finish as the product page buy button. */
+.primary {
+  background: var(--boutique-buy-background);
+  color: var(--boutique-surface);
+  box-shadow: var(--boutique-buy-shadow);
+}
+.primary:hover { background: var(--boutique-buy-hover); }
+
+.contact:focus-visible,
+.primary:focus-visible,
+.question:focus-visible,
+.item:focus-visible,
+.summary:focus-visible,
+.scroll:focus-visible,
+.field:focus-visible,
+.option:focus-visible,
+.filter:focus-visible { outline: 2px solid var(--boutique-focus); outline-offset: 2px; }
+
+.panel {
+  border: 1px solid var(--boutique-border);
+  background: var(--boutique-surface);
+  box-shadow: var(--boutique-shadow);
+}
+.emptyText { color: var(--boutique-muted); }
+
+/* Sidebar and mobile preferences. */
+.heading { color: var(--boutique-heading); }
+.item { color: var(--boutique-olive); }
+.item:hover, .summary:hover { background: var(--boutique-soft); }
+.item[aria-current="true"] { background: var(--boutique-soft); }
+.link { color: var(--boutique-olive); }
+.link:hover { color: var(--boutique-action-hover); }
+.summary { color: var(--boutique-olive); }
+.groupOpen[open] { border-color: var(--boutique-border); }
+.hint { color: var(--boutique-muted); }
+.option { border-color: var(--boutique-border); background: var(--boutique-surface); color: var(--boutique-ink); }
+.option:hover { background: var(--boutique-soft); }
+.option[aria-pressed="true"] { border-color: var(--boutique-action); background: var(--boutique-badge); color: var(--boutique-olive); }
+.filter { color: var(--boutique-olive); }
+.filter:hover { background: var(--boutique-soft); }
+.filter[aria-pressed="true"] { background: var(--boutique-badge); color: var(--boutique-olive); }
+/* Muted border keeps the unchecked box at 3:1 or more against the surface (WCAG 1.4.11). */
+.check { border: 1px solid var(--boutique-muted); background: var(--boutique-surface); }
+.filter[aria-pressed="true"] .check { border-color: var(--boutique-action); background: var(--boutique-action); }
+
+.dialog { background: var(--boutique-surface); color: var(--boutique-ink); }
+.dialog::backdrop { background: color-mix(in srgb, var(--boutique-heading, #352416) 45%, transparent); }
+.field { border: 1px solid var(--boutique-border); background: var(--boutique-surface); color: var(--boutique-ink); }
+.dialogBar { border-color: var(--boutique-border); background: var(--boutique-surface); }
+
+/* Review 21/11: on short landscape phones the 58dvh sheet left 48px for the filters; use the full height there. */
+@media (height < 500px) { .dialog { height: 100dvh; max-height: 100dvh; border-radius: 0; } }

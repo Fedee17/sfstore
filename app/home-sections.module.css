@@ -1,0 +1,110 @@
+/* Home sections outside the discovery block (owner request 20/11). Only boutique tokens from app/storefront-theme.css,
+   reusing approved finishes: panels of the catalog, contact/buy buttons of the product page, olive panel of the category cards. */
+/* Review 21/11: clip both axes so the last decorative branch does not extend the page into a white strip. */
+.page { position: relative; isolation: isolate; overflow: clip; color: var(--boutique-ink); }
+
+/* Owner request 20/11: the approved header foliage (transparent cut-out) peeks from the free page gutters, behind the content.
+   Only where the gutters leave room for it; phones and tablets have no free side space. */
+.leaves { position: relative; }
+.leaves::before, .leaves::after {
+  position: absolute;
+  z-index: -1;
+  inline-size: clamp(9rem, 13vw, 13rem);
+  aspect-ratio: 1;
+  background: var(--sf-foliage) center / contain no-repeat;
+  filter: drop-shadow(0 5px 6px #1b211440);
+  pointer-events: none;
+}
+/* data-leaf names the gutters that get a branch; --leaf-left / --leaf-right move it down the section. */
+.leaves:is([data-leaf="left"], [data-leaf="both"])::before {
+  inset-block-start: var(--leaf-left, -1rem);
+  inset-inline-start: calc(50% - 50vw - 3rem);
+  transform: scaleX(-1) rotate(-14deg);
+  content: "";
+}
+.leaves:is([data-leaf="right"], [data-leaf="both"])::after {
+  inset-block-start: var(--leaf-right, 30%);
+  inset-inline-end: calc(50% - 50vw - 3rem);
+  transform: rotate(12deg);
+  content: "";
+}
+/* Smaller, turned branches so repeated leaves don't read as copies. */
+.leaves[data-leaf-small]::before { inline-size: clamp(7rem, 10vw, 10rem); transform: scaleX(-1) rotate(28deg); }
+.leaves[data-leaf-small]::after { inline-size: clamp(7rem, 10vw, 10rem); transform: rotate(-24deg); }
+@media (width < 1280px) { .leaves::before, .leaves::after { display: none; } }
+
+.panel {
+  border: 1px solid var(--boutique-border);
+  background: var(--boutique-surface);
+  box-shadow: var(--boutique-shadow);
+}
+.icon { background: var(--boutique-badge); color: var(--boutique-olive); }
+.heading { color: var(--boutique-heading); }
+.text { color: var(--boutique-muted); }
+
+.contact {
+  border: 1px solid var(--boutique-contact-border);
+  background: var(--boutique-contact-background);
+  color: var(--boutique-olive);
+  box-shadow: var(--boutique-contact-shadow);
+}
+.contact:hover { background: var(--boutique-contact-hover); }
+.contact:focus-visible { outline: 2px solid var(--boutique-focus); outline-offset: 3px; }
+
+/* «Elegí un regalo a tu manera» (owner request 20/11): four equal cards, two columns on phones and one row from tablets.
+   Small horizontal strip of real product cutouts on the boutique canvas, centred label below; the contact option keeps the buy finish. */
+.giftGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; padding: 0; list-style: none; }
+@media (width >= 768px) { .giftGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; } }
+.giftGrid > li { display: flex; min-width: 0; }
+.giftCard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--boutique-border);
+  border-radius: 1rem;
+  background: var(--boutique-surface);
+  box-shadow: var(--boutique-shadow);
+  color: var(--boutique-olive);
+}
+.giftCard:hover { border-color: var(--boutique-contact-border); }
+.giftCard:focus-visible { outline: 2px solid var(--boutique-focus); outline-offset: 3px; }
+.giftPhotos {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6%;
+  aspect-ratio: 5 / 2;
+  /* The strip takes its height from the ratio only, so every card keeps the same photo height. */
+  contain: size;
+  padding: .5rem .75rem .375rem;
+  border-block-end: 1px solid var(--boutique-border);
+  background: var(--boutique-canvas);
+}
+.giftPhotos img { min-width: 0; max-inline-size: 30%; block-size: 100%; inline-size: auto; object-fit: contain; }
+.giftLabel {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  /* Room for two lines, so labels of one or two lines give the same card height. */
+  min-block-size: 3.75rem;
+  padding: .625rem .5rem;
+  font-size: .875rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: center;
+}
+.giftCard:hover .giftLabel { background: var(--boutique-soft); }
+.giftCard[data-contact] .giftLabel { background: var(--boutique-buy-background); color: var(--boutique-surface); }
+.giftCard[data-contact]:hover .giftLabel { background: var(--boutique-buy-hover); }
+
+/* Same olive panel and ivory text as the «¿Qué estás buscando?» cards. */
+.advice {
+  background: var(--boutique-buy-background);
+  color: var(--boutique-surface);
+  box-shadow: var(--boutique-shadow);
+}
+.adviceText { color: color-mix(in srgb, var(--boutique-surface) 88%, transparent); }
+.advice .contact:focus-visible { outline-color: var(--boutique-surface); }

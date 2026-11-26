@@ -8,14 +8,15 @@
   max-height: 100dvh;
   padding: 0;
   border: 0;
-  background: #f7f9fc;
-  color: #102033;
-  box-shadow: -12px 0 36px #10203326;
+  /* Owner request 20/11: drawer on the boutique canvas (header chrome tokens). */
+  background: var(--boutique-canvas, #f7f9fc);
+  color: var(--boutique-ink, #102033);
+  box-shadow: -12px 0 36px #4d3a2326;
   overflow: hidden;
 }
-.drawer::backdrop { background: #10203366; }
-.close { position: absolute; inset: 12px 12px auto auto; z-index: 1; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #003b73; }
+.drawer::backdrop { background: color-mix(in srgb, var(--boutique-heading, #352416) 40%, transparent); }
+.close { position: absolute; inset: 12px 12px auto auto; z-index: 1; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--boutique-olive, #003b73); }
 .close svg { width: 22px; height: 22px; }
-.close:hover { background: #e6f2ff; }
-.close:focus-visible { outline: 2px solid #0072ce; outline-offset: 2px; }
+.close:hover { background: var(--boutique-soft, #e6f2ff); }
+.close:focus-visible { outline: 2px solid var(--boutique-focus, #0072ce); outline-offset: 2px; }
 :global(body):has(.drawer[open]) { overflow: hidden; }

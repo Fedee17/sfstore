@@ -201,12 +201,22 @@ async function readPublicComboRows(selection?: {presentationId:string;connector:
  }
  throw new Error("PUBLIC_COMBO_INCOMPLETE");
 }
-async function comboPublications(physical: PublicProduct[]) {
+async function comboPublications(physical: Promise<PublicProduct[]>) {
  // A missing/unavailable offer contract must not prevent buying ordinary products.
- try{return projectComponentPublications(physical,await readPublicComboRows());}catch{return [];}
+ try {
+  const [products, offers] = await Promise.all([physical, readPublicComboRows()]);
+  return projectComponentPublications(products, offers);
+ } catch { return []; }
 }
+
+async function readCatalogPublications(): Promise<PublicProduct[]> {
+ const physical = readPublicSkuRows().then(mapRows);
+ const [products, combos] = await Promise.all([physical, comboPublications(physical)]);
+ return [...groupPublicProducts(products), ...combos];
+}
+
 export async function getProductsByCategorySlug(categorySlug:SupportedPublicCategory):Promise<PublicProduct[]> {
- try{const physical=mapRows(await readPublicSkuRows());return [...groupPublicProducts(physical),...await comboPublications(physical)].filter(product=>product.category===categorySlug);}
+ try{return (await readCatalogPublications()).filter(product=>product.category===categorySlug);}
  catch{return fallbackByCategory(categorySlug);}
 }
 export async function getProductBySlug(slug:string):Promise<PublicProduct|null> {
@@ -231,5 +241,5 @@ export async function getRelatedProducts(categoryId:string|undefined,currentProd
  return (await getCatalogPublications()).filter(p=>p.categoryId===categoryId&&p.id!==currentProductId).slice(0,4);
 }
 export async function getCatalogPublications():Promise<PublicProduct[]> {
- try{const physical=mapRows(await readPublicSkuRows());return [...groupPublicProducts(physical),...await comboPublications(physical)];}catch{return [];}
+ try{return await readCatalogPublications();}catch{return [];}
 }

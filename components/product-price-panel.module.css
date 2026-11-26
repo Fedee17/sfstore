@@ -1,0 +1,11 @@
+.compact { display: grid; container-type: inline-size; min-width: 0; gap: .375rem; color: var(--boutique-price); }
+.listRow { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .45rem; }
+.list { color: var(--boutique-muted); font-size: .75rem; font-weight: 600; overflow-wrap: anywhere; }
+.badge { max-width: 100%; border-radius: 999px; padding: .22rem .45rem; background: var(--boutique-badge); color: var(--boutique-olive); font-size: .6875rem; font-weight: 700; line-height: 1.2; }
+.valuePanel { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .375rem; padding: .45rem .5rem; border-radius: .75rem; background: var(--boutique-soft); }
+.value { min-width: 0; font-size: clamp(1.125rem, 13cqi, 1.625rem); line-height: 1; font-weight: 800; letter-spacing: -.04em; overflow-wrap: anywhere; }
+/* «Desde» inline before the price (owner request 20/11), so family cards keep the panel height of single products. */
+.from { margin-inline-end: .2rem; font-size: .75rem; font-weight: 650; letter-spacing: 0; color: var(--boutique-olive); }
+.savings { display: flex; align-items: center; gap: .25rem; padding-inline-start: .45rem; border-inline-start: 1px solid color-mix(in srgb, currentColor 45%, transparent); font-size: .6875rem; line-height: 1.15; }
+.savingsAmount { display: block; font-weight: 750; }
+.tagIcon { width: .875rem; height: .875rem; flex-shrink: 0; }

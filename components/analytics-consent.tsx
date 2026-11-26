@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { analyticsItem, CONSENT_KEY, getAnalytics, publicRoute, track } from "@/lib/analytics/client";
 import { cartItemKey, useCartStore } from "@/store/cart-store";
+import styles from "./analytics-consent.module.css";
 
 export function AnalyticsConsent() {
   const pathname = usePathname();
@@ -11,6 +12,31 @@ export function AnalyticsConsent() {
   const analytics = getAnalytics();
   const revision = useSyncExternalStore(analytics.subscribe, analytics.snapshot, () => 0);
   const [preferences, setPreferences] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [details, setDetails] = useState(false);
+  const notice = useRef<HTMLElement>(null);
+  const manage = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
+  const eligible = revision > 0 && analytics.enabled() && publicRoute(pathname) !== null;
+  const show = eligible && (preferences || analytics.consent() === "unknown" && !dismissed);
+
+  useEffect(() => {
+    if (!show || !notice.current) return;
+    const element = notice.current;
+    const resize = new ResizeObserver(() => {
+      document.documentElement.style.setProperty("--sfstore-consent-height", `${Math.ceil(element.getBoundingClientRect().height)}px`);
+    });
+    resize.observe(element);
+    if (preferences) element.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+    return () => { resize.disconnect(); document.documentElement.style.removeProperty("--sfstore-consent-height"); };
+  }, [show, preferences]);
+
+  useEffect(() => {
+    if (!show && restoreFocus.current) {
+      manage.current?.focus({ preventScroll: true });
+      restoreFocus.current = false;
+    }
+  }, [show]);
 
   useEffect(() => { analytics.initialize(); }, [analytics]);
   useEffect(() => {
@@ -48,26 +74,41 @@ export function AnalyticsConsent() {
     return () => { unsubscribe(); window.removeEventListener("storage", sync); document.removeEventListener("click", contact); };
   }, [analytics]);
 
-  if (revision === 0 || !analytics.enabled() || !publicRoute(pathname)) return null;
-  const show = preferences || analytics.consent() === "unknown";
-  const choose = (choice: "accepted" | "rejected") => { analytics.choose(choice); setPreferences(false); };
-  return <section aria-label="Preferencias de medición" className="border-t border-[#DCE3EA] bg-[#FFFDFA] px-4 py-4 text-[#102033]">
-    <div className="mx-auto max-w-6xl">
-      {show ? <>
-        <h2 className="text-base font-semibold">¿Nos ayudás a mejorar SFSTORE?</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6">Con tu permiso, usamos Google Analytics para conocer cómo se navega la tienda. Utiliza cookies e identificadores de navegación; no enviamos tus datos de contacto, mensajes ni información de pago. Podés comprar sin aceptar y cambiar tu elección acá.</p>
-        <div className="mt-3 flex flex-wrap gap-3">
-          <button type="button" onClick={() => choose("accepted")} className="min-h-11 rounded-full border border-[#003B73] bg-white px-5 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">Aceptar medición</button>
-          <button type="button" onClick={() => choose("rejected")} className="min-h-11 rounded-full border border-[#003B73] bg-white px-5 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">Rechazar medición</button>
-          {preferences && analytics.consent() !== "unknown" ? <button type="button" className="min-h-11 px-3 text-sm underline" onClick={() => setPreferences(false)}>Cerrar</button> : null}
+  if (!eligible) return null;
+  const close = () => { restoreFocus.current = true; setDismissed(true); setPreferences(false); setDetails(false); };
+  const choose = (choice: "accepted" | "rejected") => { analytics.choose(choice); close(); };
+  return <section aria-label="Preferencias de medición">
+    {!show ? <div className={styles.footer}>
+      <span>Medición {analytics.consent() === "accepted" ? "activada" : "desactivada"}</span>
+      <button ref={manage} type="button" className={styles.link} aria-expanded={show} aria-controls="sfstore-consent-notice"
+        onClick={() => { setDetails(true); setPreferences(true); }}>Gestionar preferencias</button>
+    </div> : null}
+    {show ? <>
+      <div aria-hidden="true" className={styles.spacer} />
+      <section ref={notice} id="sfstore-consent-notice" data-analytics-notice aria-labelledby="sfstore-consent-title"
+        aria-describedby="sfstore-consent-description" className={styles.notice} onKeyDown={event => { if (event.key === "Escape") close(); }}>
+        <svg aria-hidden="true" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2" className={styles.icon}>
+          <path d="M39 24a8 8 0 0 1-8-10 7 7 0 0 1-7-8A19 19 0 1 0 43 25a7 7 0 0 1-4-1Z" />
+          <circle cx="15" cy="17" r="2" /><circle cx="12" cy="29" r="1.5" /><circle cx="24" cy="25" r="2" /><circle cx="27" cy="37" r="1.5" />
+        </svg>
+        <div className={styles.copy}>
+          <h2 id="sfstore-consent-title">¿Nos ayudás a mejorar SFSTORE?</h2>
+          <p id="sfstore-consent-description">Con tu permiso, usamos estadísticas de navegación para mejorar tu experiencia.</p>
         </div>
-      </> : <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold">Medición {analytics.consent() === "accepted" ? "activada" : "desactivada"}</p>
-          <p className="mt-1 text-sm">Podés cambiar tu elección cuando quieras. Comprar no requiere aceptar la medición.</p>
+        <button type="button" className={styles.close} aria-label="Cerrar aviso sin cambiar mi decisión" onClick={close}>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m6 6 12 12M6 18 18 6" /></svg>
+        </button>
+        <div className={styles.actions}>
+          <button type="button" className={styles.accept} onClick={() => choose("accepted")}>Aceptar</button>
+          <button type="button" className={styles.reject} onClick={() => choose("rejected")}>Rechazar</button>
         </div>
-        <button type="button" className="min-h-11 rounded-full border border-[#003B73] bg-white px-5 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2" onClick={() => setPreferences(true)}>Preferencias de medición</button>
-      </div>}
-    </div>
+        <button type="button" className={`${styles.link} ${styles.preferences}`} aria-expanded={details} aria-controls="sfstore-consent-details"
+          onClick={() => setDetails(!details)}>Gestionar preferencias</button>
+        {details ? <div id="sfstore-consent-details" className={styles.details}>
+          <p>Google Analytics utiliza cookies e identificadores de navegación. No enviamos tus datos de contacto, mensajes ni información de pago. Podés comprar sin aceptar y cambiar tu elección cuando quieras.</p>
+          <p>Medición {analytics.consent() === "accepted" ? "activada" : "desactivada"}. Cerrar este aviso no cambia tu decisión.</p>
+        </div> : null}
+      </section>
+    </> : null}
   </section>;
 }

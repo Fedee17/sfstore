@@ -9,7 +9,7 @@ const events = new Set(["view_item_list", "view_item", "select_item_variant", "a
 
 export function publicRoute(path: string): string | null {
   const clean = path.split(/[?#]/, 1)[0];
-  if (["/", "/perfumes", "/mates", "/accesorios", "/buscar", "/ayuda", "/carrito", "/checkout", "/checkout/exito", "/checkout/cancelado"].includes(clean)) return clean;
+  if (["/", "/perfumes", "/mates", "/accesorios", "/buscar", "/ayuda", "/carrito", "/checkout", "/checkout/entrega", "/checkout/exito", "/checkout/cancelado"].includes(clean)) return clean;
   return /^\/producto\/[^/]+$/.test(clean) ? "/producto/[slug]" : null;
 }
 

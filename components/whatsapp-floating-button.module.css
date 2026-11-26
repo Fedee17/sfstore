@@ -3,6 +3,19 @@
   inset-block-end: 76px;
   inline-size: 52px;
   block-size: 52px;
+  /* Owner request 20/11: same olive finish as the buy buttons (header chrome tokens). */
+  background: var(--boutique-buy-background, #102747);
+  color: var(--boutique-surface, #fff);
+  box-shadow: var(--boutique-buy-shadow, none), 0 10px 22px #2b201433;
+}
+.cart:hover { background: var(--boutique-buy-hover, #003b73); }
+.cart:focus-visible { outline: 2px solid var(--boutique-focus, #0072ce); outline-offset: 2px; }
+
+/* Product pages use their in-page WhatsApp action under the md breakpoint. */
+@media (width < 768px) {
+  .productCart {
+    inset-block-end: calc(16px + env(safe-area-inset-bottom));
+  }
 }
 
 @media (width < 1024px) {
@@ -47,4 +60,22 @@
   :global(body:has(#productos, .storefront-catalog)) .label {
     display: none;
   }
+}
+
+@media (1024px <= width < 1440px) {
+  :global(body:has([data-product-detail])) .floating {
+    inline-size: 56px;
+    padding-inline: 0;
+  }
+
+  :global(body:has([data-product-detail])) .label {
+    display: none;
+  }
+}
+
+/* Review 21/11: on short landscape phones both floating buttons covered a third of the screen; keep them at the 44px minimum. */
+@media (height < 500px) {
+  .cart { inset-block-end: 64px; inline-size: 44px; block-size: 44px; }
+  .floating { bottom: 12px; inline-size: 44px; min-inline-size: 44px; block-size: 44px; padding-inline: 0; }
+  .label { display: none; }
 }

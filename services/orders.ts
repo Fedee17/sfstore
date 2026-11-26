@@ -49,7 +49,15 @@ export async function createOrderFromCheckout(payload: CreateOrderFromCheckoutPa
   return result as CreatedOrder;
 }
 
-export async function getCheckoutOperationKey(request: unknown, storageKey = "sfstore-checkout-operation") {
+export const checkoutOperationStorageKey = "sfstore-checkout-operation";
+export const quotationOperationStorageKey = "sfstore-shipping-quotation-operation";
+
+/** After an order exists its idempotency keys are spent; leaving them would make the next purchase in this tab look like a lost session. */
+export function clearCheckoutOperations() {
+  try { sessionStorage.removeItem(checkoutOperationStorageKey); sessionStorage.removeItem(quotationOperationStorageKey); } catch { /* Storage unavailable: nothing to clear. */ }
+}
+
+export async function getCheckoutOperationKey(request: unknown, storageKey = checkoutOperationStorageKey) {
   const serialized = JSON.stringify(request);
   const digest = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(serialized));
   const signature = Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,"0")).join("");

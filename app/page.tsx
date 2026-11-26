@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { shareImage } from "@/lib/seo/share-image";
-import { cache, Suspense } from "react";
+import { cache, Suspense, type CSSProperties } from "react";
 import { HomeProductCarousel } from "./home-product-card";
 import { HomeHeroSlider, type HomeHeroSlide } from "@/components/home-hero-slider";
 import { SiteHeader } from "@/components/site-header";
@@ -13,11 +13,14 @@ import { getCatalogPublications } from "@/services/products";
 import { RitualMatero } from "./ritual-matero";
 import { availableFirst } from "@/lib/catalog/availability-order";
 import { buildLocalBusinessJsonLd, serializeJsonLd } from "@/lib/seo/local-business";
+import surface from "@/components/storefront-surface.module.css";
 import categoryStyles from "./home-category.module.css";
 import featuredStyles from "./home-featured.module.css";
+import sections from "./home-sections.module.css";
 
 export const metadata: Metadata = {
-  title: "Perfumes árabes, mates y regalos",
+  // The root page does not get the layout's title template: the brand goes in explicitly.
+  title: { absolute: "SFSTORE Importados · Perfumes árabes, mates y regalos" },
   description:
     "Elegí perfumes árabes, mates, termos y regalos con ayuda personalizada. Comprá online o consultá por WhatsApp.",
   openGraph: {
@@ -83,19 +86,35 @@ function BenefitIcon({ type }: { type: (typeof benefits)[number]["icon"] }) {
 
 function BenefitCard({ benefit }: { benefit: (typeof benefits)[number] }) {
   return (
-    <article className="flex min-w-0 gap-3 rounded-2xl border border-[#003B73]/15 bg-white/75 p-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#0072CE]/10 text-[#0072CE]">
+    <article className={`${sections.panel} flex min-w-0 gap-3 rounded-2xl p-3`}>
+      <div className={`${sections.icon} flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl`}>
         <BenefitIcon type={benefit.icon} />
       </div>
       <div className="min-w-0">
-        <h3 className="break-words text-base font-semibold text-[#102033]">
+        <h3 className={`${sections.heading} break-words text-base font-semibold`}>
           {benefit.title}
         </h3>
-        <p className="mt-1 break-words text-xs leading-5 text-[#526479]">
+        <p className={`${sections.text} mt-1 break-words text-xs leading-5`}>
           {benefit.description}
         </p>
       </div>
     </article>
+  );
+}
+
+// Real SFSTORE product cutouts already published for the Home cards (public/home/recortes), no generated imagery.
+const giftPhotos = {
+  perfumes: ["e3c4db80802b1a4e727d980d04ead04b", "acf33c73d25c67355bfe1bce166464cb", "2f58e023b68a98850b389759c84d1d53"],
+  mates: ["1781480545296-img-0438-optimizada", "602a7f25e48a8cc49d5e6e65be1f2f93", "f52744c352e1e666a3bd244e94e2ab3e"],
+  complementos: ["1780979127511-img-5811-optimizada", "03f8114a95056b8ec5ef82664e089857", "1781480153667-img-0541-optimizada"],
+  consulta: ["04a6587e1d96a6f9495f7c19a666b587", "1781480512488-img-0436-optimizada", "a7f64d75c6cb89bfca951d6b366a2168"],
+};
+
+function GiftPhotos({ photos }: { photos: string[] }) {
+  return (
+    <span aria-hidden="true" className={sections.giftPhotos}>
+      {photos.map((photo) => <img key={photo} src={`/home/recortes/${photo}.webp`} alt="" loading="lazy" decoding="async" />)}
+    </span>
   );
 }
 
@@ -129,8 +148,8 @@ async function FeaturedProducts() {
 
   return (
     <>
-      <h2 id="home-featured-title" className={featuredStyles.title}><strong>LOS MÁS ELEGIDOS</strong> DE SF STORE</h2>
-      <HomeProductCarousel products={featuredProducts} />
+      <h2 id="home-featured-title" className={featuredStyles.sectionTitle}>LOS MÁS ELEGIDOS DE SF STORE</h2>
+      <HomeProductCarousel products={featuredProducts} hideLabel />
     </>
   );
 }
@@ -140,10 +159,10 @@ async function HomeRitualMatero() {
   // Featured cards already appear in "Los más elegidos"; do not repeat them here.
   const featuredIds = new Set(getHomeFeaturedProducts(catalog).map((product) => product.id));
   const products = getHomeEligibleProducts(catalog.filter((product) => product.category === "mates" && !featuredIds.has(product.id)));
+  // Owner decision 20/11: only three tabs; the other matero categories stay in the catalog.
   const groups = [
     { label: "Mates", slugs: ["mates"] },
     { label: "Termos", slugs: ["termos"] },
-    { label: "Bombillas y Bombillones", slugs: ["bombillas", "bombillones"] },
     { label: "Yerbas", slugs: ["yerbas"] },
   ].map(({ label, slugs }) => ({
     label,
@@ -189,7 +208,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
+    <main data-storefront-theme="boutique" className={`${surface.pageBackground} ${sections.page} min-h-screen font-sans`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(buildLocalBusinessJsonLd()) }} />
       <SiteHeader />
 
@@ -198,7 +217,7 @@ export default function Home() {
       <HomeHeroSlider slides={heroSlides} />
 
 
-      <section className="mx-auto max-w-6xl px-5 py-3 sm:px-8 lg:py-4">
+      <section data-leaf="right" data-leaf-small="" className={`${sections.leaves} mx-auto max-w-6xl px-5 py-3 sm:px-8 lg:py-4`}>
         <div className="grid gap-2 md:grid-cols-3">
           {benefits.map((benefit) => (
             <BenefitCard key={benefit.title} benefit={benefit} />
@@ -206,43 +225,46 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="explorar" className="mx-auto max-w-6xl px-5 py-5 sm:px-8 lg:py-8" aria-labelledby="explore-title">
-        <h2 id="explore-title" className={featuredStyles.sectionTitle}>¿Qué estás buscando?</h2>
-        <div className={categoryStyles.grid}>
-          <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/category-perfumes.webp" />
-          <CategoryCard href="/mates" title="Mates" description="Tradición en cada cebada" imageSrc="/home/category-mates.webp" />
-          <CategoryCard href="/mates?categoria=termos" title="Termos" description="Compañeros en cada aventura" imageSrc="/home/category-termos.webp" />
-          <CategoryCard href="/mates" title="Accesorios materos" description="Todo para acompañar tu ritual" imageSrc="/home/category-accesorios.webp" />
-        </div>
-      </section>
-
-      <section id="productos" aria-labelledby="home-featured-title" className={`${featuredStyles.section} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`}>
-        <Suspense fallback={<div className={featuredStyles.loading} aria-hidden="true" />}>
-          <FeaturedProducts />
-        </Suspense>
-      </section>
-
-      <Suspense fallback={null}>
-        <HomeRitualMatero />
-      </Suspense>
-
-      <section id="regalos" className="mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10" aria-labelledby="gifts-title">
-        <div className="rounded-[2rem] border border-[#003B73]/15 bg-white/70 p-5 sm:p-7">
-          <h2 id="gifts-title" className="text-2xl font-semibold sm:text-3xl">Elegí un regalo a tu manera</h2>
-          <p className="mt-3 text-sm leading-6 text-[#526479]">Explorá opciones o pedinos ayuda para elegir según sus gustos y tu presupuesto.</p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/perfumes" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver perfumes para regalar</Link>
-            <Link href="/mates" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver mates para regalar</Link>
-            <Link href="/mates?categoria=bombillas" className="inline-flex min-h-11 items-center rounded-full border border-[#003B73]/30 px-5 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Ver complementos materos</Link>
-            <a href={giftWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></a>
+      <div data-storefront-theme="boutique" className={[featuredStyles.discovery, sections.leaves, "font-sans"].join(" ")} data-leaf="right" style={{ "--leaf-right": "62%" } as CSSProperties}>
+        <section id="explorar" data-leaf="left" data-leaf-small="" className={`${sections.leaves} mx-auto max-w-6xl px-5 py-5 sm:px-8 lg:py-8`} aria-labelledby="explore-title">
+          <h2 id="explore-title" className={featuredStyles.sectionTitle}>¿Qué estás buscando?</h2>
+          <div className={categoryStyles.grid}>
+            <CategoryCard href="/perfumes" title="Perfumes árabes" description="Encontrá tu próxima fragancia." imageSrc="/home/category-perfumes.webp" />
+            <CategoryCard href="/mates" title="Mates" description="Tradición en cada cebada" imageSrc="/home/category-mates.webp" />
+            <CategoryCard href="/mates?categoria=termos" title="Termos" description="Compañeros en cada aventura" imageSrc="/home/category-termos.webp" />
+            <CategoryCard href="/mates" title="Accesorios materos" description="Todo para acompañar tu ritual" imageSrc="/home/category-accesorios.webp" />
           </div>
+        </section>
+
+        <section id="productos" aria-labelledby="home-featured-title" data-leaf="both" style={{ "--leaf-left": "8rem", "--leaf-right": "55%" } as CSSProperties} className={`${featuredStyles.section} ${sections.leaves} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`}>
+          <Suspense fallback={<div className={featuredStyles.loading} aria-hidden="true" />}>
+            <FeaturedProducts />
+          </Suspense>
+        </section>
+
+        <Suspense fallback={null}>
+          <HomeRitualMatero />
+        </Suspense>
+      </div>
+
+      <section id="regalos" data-leaf="both" data-leaf-small="" className={`${sections.leaves} mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-10`} aria-labelledby="gifts-title">
+        <div className={`${sections.panel} rounded-[2rem] p-5 sm:p-7`}>
+          <h2 id="gifts-title" className={`${sections.heading} text-2xl font-semibold sm:text-3xl`}>Elegí un regalo a tu manera</h2>
+          <p className={`${sections.text} mt-3 text-sm leading-6`}>Explorá opciones o pedinos ayuda para elegir según sus gustos y tu presupuesto.</p>
+          {/* Owner request 20/11: four equal cards, a small strip of real SFSTORE product cutouts above each option. */}
+          <ul className={`${sections.giftGrid} mt-5`}>
+            <li><Link href="/perfumes" className={sections.giftCard}><GiftPhotos photos={giftPhotos.perfumes} /><span className={sections.giftLabel}>Ver perfumes para regalar</span></Link></li>
+            <li><Link href="/mates" className={sections.giftCard}><GiftPhotos photos={giftPhotos.mates} /><span className={sections.giftLabel}>Ver mates para regalar</span></Link></li>
+            <li><Link href="/mates?categoria=bombillas" className={sections.giftCard}><GiftPhotos photos={giftPhotos.complementos} /><span className={sections.giftLabel}>Ver complementos materos</span></Link></li>
+            <li><a href={giftWhatsAppLink} target="_blank" rel="noopener noreferrer" className={sections.giftCard} data-contact=""><GiftPhotos photos={giftPhotos.consulta} /><span className={sections.giftLabel}>Consultar regalos<span className="sr-only"> por WhatsApp, abre una pestaña nueva</span></span></a></li>
+          </ul>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 pb-16 pt-4 sm:px-8" aria-labelledby="advice-title">
-        <div className="flex flex-col gap-4 rounded-3xl bg-[#102033] p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-7">
-          <div><h2 id="advice-title" className="text-xl font-semibold">¿No sabés qué elegir?</h2><p className="mt-2 text-sm text-white/85">Te asesoramos por WhatsApp.</p></div>
-          <a href={generalWhatsAppLink} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#102033] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">Consultar por WhatsApp<span className="sr-only">, abre una pestaña nueva</span></a>
+      <section data-leaf="left" style={{ "--leaf-left": "30%" } as CSSProperties} className={`${sections.leaves} mx-auto max-w-6xl px-5 pb-16 pt-4 sm:px-8`} aria-labelledby="advice-title">
+        <div className={`${sections.advice} flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7`}>
+          <div><h2 id="advice-title" className="text-xl font-semibold">¿No sabés qué elegir?</h2><p className={`${sections.adviceText} mt-2 text-sm`}>Te asesoramos por WhatsApp.</p></div>
+          <a href={generalWhatsAppLink} target="_blank" rel="noopener noreferrer" className={`${sections.contact} inline-flex min-h-11 items-center justify-center rounded-full px-5 py-3 text-sm font-semibold`}>Consultar por WhatsApp<span className="sr-only">, abre una pestaña nueva</span></a>
         </div>
       </section>
     </main>

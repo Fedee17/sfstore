@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import styles from "./catalog.module.css";
 
 export type CatalogCategoryOption = {
   label: string;
@@ -99,9 +100,9 @@ export function CatalogSidebar({
     <div className="min-w-0">
       {!selectedCategoryItem ? (
         <div className="min-w-0">
-          <h2 className="px-3 py-2 text-sm font-bold text-[#102033]">Categorías</h2>
+          <h2 className={`${styles.heading} px-3 py-2 text-sm font-bold`}>Categorías</h2>
           <nav
-            className={`grid min-w-0 gap-1 ${scrollCategories ? "max-h-[min(16rem,50dvh)] overflow-y-auto overscroll-contain pe-1 focus-visible:outline-2 focus-visible:outline-[#0072CE]" : ""}`}
+            className={`grid min-w-0 gap-1 ${scrollCategories ? `${styles.scroll} max-h-[min(16rem,50dvh)] overflow-y-auto overscroll-contain pe-1` : ""}`}
             aria-label={ariaLabel}
             tabIndex={scrollCategories ? 0 : undefined}
           >
@@ -109,7 +110,7 @@ export function CatalogSidebar({
               type="button"
               onClick={() => router.push(basePath, { scroll: false })}
               aria-current="true"
-              className="flex min-h-11 w-full cursor-pointer items-center rounded-lg bg-[#E8F3FF] px-3 py-2 text-left text-sm font-bold text-[#003B73] focus-visible:outline-2 focus-visible:outline-[#0072CE]"
+              className={`${styles.item} flex min-h-11 w-full cursor-pointer items-center rounded-lg px-3 py-2 text-left text-sm font-bold`}
             >
               Todos
             </button>
@@ -118,7 +119,7 @@ export function CatalogSidebar({
                 key={category.hrefValue}
                 type="button"
                 onClick={() => selectCategory(category)}
-                className="flex min-h-11 w-full min-w-0 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#003B73] transition hover:bg-[#E8F3FF] focus-visible:outline-2 focus-visible:outline-[#0072CE]"
+                className={`${styles.item} flex min-h-11 w-full min-w-0 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold transition`}
               >
                 <span className="min-w-0 break-words">{category.label}</span>
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -133,20 +134,20 @@ export function CatalogSidebar({
           {!compactFilters ? <button
             type="button"
             onClick={() => router.push(basePath, { scroll: false })}
-            className="inline-flex min-h-10 cursor-pointer items-center text-sm font-semibold text-[#0072CE] transition hover:text-[#003B73]"
+            className={`${styles.link} inline-flex min-h-10 cursor-pointer items-center text-sm font-semibold transition`}
           >
             ← Volver a categorías
           </button> : null}
 
-          <div className={`flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-[#DCE3EA] ${compactFilters ? "px-2 pb-2" : "mt-2 pb-4"}`}>
-            <h2 className={`min-w-0 break-words font-semibold text-[#102033] ${compactFilters ? "text-sm" : "text-xl"}`}>
+          <div className={`${styles.divider} flex min-w-0 flex-wrap items-center justify-between gap-2 ${compactFilters ? "px-2 pb-2" : "mt-2 pb-4"}`}>
+            <h2 className={`${styles.heading} min-w-0 break-words font-semibold ${compactFilters ? "text-sm" : "text-xl"}`}>
               {compactFilters ? "Filtros" : selectedCategoryItem.label}
             </h2>
             {hasActiveFilters ? (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="shrink-0 cursor-pointer text-xs font-semibold text-[#0072CE] underline-offset-4 hover:underline"
+                className={`${styles.link} shrink-0 cursor-pointer text-xs font-semibold underline-offset-4 hover:underline`}
               >
                 Limpiar filtros
               </button>
@@ -158,13 +159,13 @@ export function CatalogSidebar({
               const selectedOption = group.options.find((option) => option.value === searchParams.get(group.param));
               return (
                 <FilterGroup key={group.param} name={compactFilters ? "catalog-filter-groups" : undefined}
-                  className={compactFilters ? "min-w-0 rounded-lg border border-transparent open:border-[#DCE3EA]" : "min-w-0"}>
+                  className={compactFilters ? `${styles.groupOpen} min-w-0 rounded-lg border border-transparent` : "min-w-0"}>
                   {compactFilters ? (
-                    <summary className="min-h-10 cursor-pointer rounded-lg px-2 py-2.5 text-sm font-semibold text-[#003B73] hover:bg-[#E8F3FF] focus-visible:outline-2 focus-visible:outline-[#0072CE]">
+                    <summary className={`${styles.summary} min-h-10 cursor-pointer rounded-lg px-2 py-2.5 text-sm font-semibold`}>
                       {group.label}
-                      {selectedOption ? <span className="block ps-4 text-xs text-[#526479]">{selectedOption.label}</span> : null}
+                      {selectedOption ? <span className={`${styles.hint} block ps-4 text-xs`}>{selectedOption.label}</span> : null}
                     </summary>
-                  ) : <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#102033]/55">
+                  ) : <p className={`${styles.hint} text-xs font-bold uppercase tracking-[0.12em]`}>
                     {group.label}
                   </p>}
                   <div className={`grid min-w-0 gap-1 ${compactFilters ? "max-h-[min(13rem,40dvh)] overflow-y-auto overscroll-contain p-1" : "mt-2"}`}>
@@ -177,19 +178,11 @@ export function CatalogSidebar({
                           type="button"
                           aria-pressed={active}
                           onClick={() => updateFilter(group.param, option.value)}
-                          className={`flex min-h-9 w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-sm transition ${
-                            active
-                              ? "bg-[#0072CE]/10 font-semibold text-[#0072CE]"
-                              : "text-[#003B73] hover:bg-[#EEF2F6]"
-                          }`}
+                          className={`${styles.filter} flex min-h-9 w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-sm transition ${active ? "font-semibold" : ""}`}
                         >
                           <span
                             aria-hidden="true"
-                            className={`h-3.5 w-3.5 shrink-0 rounded border ${
-                              active
-                                ? "border-[#0072CE] bg-[#0072CE]"
-                                : "border-[#003B73]/30 bg-white"
-                            }`}
+                            className={`${styles.check} h-3.5 w-3.5 shrink-0 rounded`}
                           />
                           <span className="min-w-0 break-words">{option.label}</span>
                         </button>
@@ -204,7 +197,7 @@ export function CatalogSidebar({
           {!compactFilters ? <button
             type="button"
             onClick={clearFilters}
-            className="mt-5 inline-flex min-h-10 w-full cursor-pointer items-center justify-center rounded-full border border-[#0072CE]/30 px-4 py-2 text-sm font-semibold text-[#0072CE] transition hover:border-[#0072CE] hover:bg-[#EEF2F6]"
+            className={`${styles.contact} mt-5 inline-flex min-h-10 w-full cursor-pointer items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition`}
           >
             {viewAllLabel ?? `Ver todos los ${selectedCategoryItem.label}`}
           </button> : null}
