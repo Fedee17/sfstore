@@ -33,7 +33,7 @@ describe('stored cash prices / isolated PostgreSQL WASM', { skip: !runtimePath, 
     await db.exec(read('tests/fixtures/storage-permissions.sql'));
     const manifest = JSON.parse(read('staging/migration-manifest.json'));
     for (const entry of manifest.applicationOrder) {
-      if (entry.source.endsWith('202611260001_stored_cash_prices.sql')) continue;
+      if (/2026112600(01|02)_stored_cash/.test(entry.source)) continue;
       try { await db.exec(read(entry.stagingFile)); } catch (error) { throw new Error(entry.source + ': ' + error.message); }
     }
     await db.exec(read('staging/supabase/seed.sql'));
@@ -58,6 +58,7 @@ describe('stored cash prices / isolated PostgreSQL WASM', { skip: !runtimePath, 
   test('existing products keep exactly 75% of list, whatever their legacy stored value', async () => {
     const legacy = await product({ cash: 15300 }), empty = await product({ cash: null });
     await db.exec(migration);
+    await db.exec(read('supabase/migrations/202611260002_stored_cash_explicit_grants.sql'));
     for (const id of [legacy, empty]) {
       assert.equal(await checkout(id), 13275);
       assert.equal(await cash(id), 13275);
