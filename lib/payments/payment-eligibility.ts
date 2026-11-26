@@ -5,7 +5,7 @@ import { MAX_INSTALLMENTS } from "../products/commercial-pricing.ts";
 // order was created with. Any mismatch is rejected (refund or manual review); it never confirms the order.
 export type PriceMode = "contado" | "financiado";
 export type ReceivedMethod = "cash" | "transfer" | "account_money" | "debit_card" | "credit_card";
-export type ReceivedPayment = { method: ReceivedMethod; installments: number; amountCents: bigint; currency: string; approved: boolean; externalReference: string };
+export type ReceivedPayment = { method: ReceivedMethod; installments: number; amountCents: bigint; orderAmountCents?: bigint; currency: string; approved: boolean; externalReference: string };
 export type PayableOrder = { reference: string; mode: PriceMode; totalCents: bigint };
 
 export function priceModeFor(method: ReceivedMethod, installments: number): PriceMode {
@@ -20,6 +20,7 @@ export function assertPaymentMatchesOrder(order: PayableOrder, payment: Received
   if (payment.externalReference !== order.reference) throw new Error("El pago no corresponde a este pedido.");
   if (payment.currency !== "ARS") throw new Error("Moneda no admitida.");
   if (priceModeFor(payment.method, payment.installments) !== order.mode) throw new Error("El medio o las cuotas no corresponden al precio del pedido.");
+  if (payment.orderAmountCents !== undefined && payment.orderAmountCents !== order.totalCents) throw new Error("El importe de la orden de Mercado Pago no coincide con el total del pedido.");
   if (payment.amountCents !== order.totalCents) throw new Error("El importe no coincide con el total del pedido.");
 }
 
@@ -31,18 +32,19 @@ export function fromMercadoPagoPayment(payment: { payment_type_id: string; insta
   return { method, installments: payment.installments, amountCents: parseAdminMoneyCents(String(payment.transaction_amount)), currency: payment.currency_id, approved: payment.status === "approved", externalReference: payment.external_reference };
 }
 
-// Mercado Pago Orders API order (GET /v1/orders/{id}) → received payment. Exactly one transaction whose amount is the
-// order total; the amount compared is the store's (paid_amount may add Mercado Pago's own interest on top).
+// Mercado Pago Orders API order (GET /v1/orders/{id}) → one transaction with both the nominal and actually paid amounts.
 type OrdersApiOrder = { status: string; status_detail: string; external_reference: string; total_amount: string; currency: string;
-  transactions?: { payments?: { amount: string; status: string; status_detail: string; payment_method: { type: string; installments: number } }[] } };
+  transactions?: { payments?: { amount: string; paid_amount?: string; status: string; status_detail: string; payment_method: { type: string; installments: number } }[] } };
 export function fromMercadoPagoOrder(order: OrdersApiOrder): ReceivedPayment {
   const payments = order.transactions?.payments ?? [];
   if (payments.length !== 1) throw new Error("La orden de Mercado Pago debe tener una sola transacción.");
   const [payment] = payments;
   const method = MP_TYPES[payment.payment_method?.type];
   if (!method) throw new Error("Medio de Mercado Pago no habilitado: " + payment.payment_method?.type + ".");
-  const amountCents = parseAdminMoneyCents(payment.amount);
-  if (amountCents !== parseAdminMoneyCents(order.total_amount)) throw new Error("El importe de la transacción no coincide con la orden.");
+  const orderAmountCents = parseAdminMoneyCents(order.total_amount);
+  if (parseAdminMoneyCents(payment.amount) !== orderAmountCents) throw new Error("El importe de la transacción no coincide con la orden.");
+  if (typeof payment.paid_amount !== "string") throw new Error("Mercado Pago no informó el importe efectivamente pagado.");
+  const amountCents = parseAdminMoneyCents(payment.paid_amount);
   const approved = order.status === "processed" && order.status_detail === "accredited" && payment.status === "processed" && payment.status_detail === "accredited";
-  return { method, installments: payment.payment_method.installments, amountCents, currency: order.currency, approved, externalReference: order.external_reference };
+  return { method, installments: payment.payment_method.installments, amountCents, orderAmountCents, currency: order.currency, approved, externalReference: order.external_reference };
 }

@@ -27,7 +27,7 @@ const mpOrderId = 'ORDTST01M8BZ0SJDRK3F6AH3085GVRGV';
 const env = { MERCADOPAGO_PAYMENTS_ENABLED: '1', MERCADO_PAGO_ACCESS_TOKEN: 'synthetic-placeholder', MERCADO_PAGO_WEBHOOK_SECRET: 'secreto', NEXT_PUBLIC_SITE_URL: 'https://sfstore.example' };
 const stored = { contado: { reference: 'SF-1', priceMode: 'contado', total: 15300, expiresAt: '2026-11-27T10:00:00Z', preferenceUrl: null }, financiado: { reference: 'SF-1', priceMode: 'financiado', total: 17700, expiresAt: '2026-11-27T10:00:00Z', preferenceUrl: null } };
 const mpOrder = (over = {}) => ({ id: mpOrderId, status: 'processed', status_detail: 'accredited', external_reference: 'SF-1', total_amount: '17700.00', currency: 'ARS',
-  transactions: { payments: [{ id: 'PAY01X', amount: '17700.00', status: 'processed', status_detail: 'accredited', payment_method: { id: 'visa', type: 'credit_card', installments: 3 } }] }, ...over });
+  transactions: { payments: [{ id: 'PAY01X', amount: '17700.00', paid_amount: '17700.00', status: 'processed', status_detail: 'accredited', payment_method: { id: 'visa', type: 'credit_card', installments: 3 } }] }, ...over });
 
 function deps(mode, { payment = {}, order = {}, confirm = { status: 'approved', orderId }, open = [] } = {}, over = {}) {
   const calls = { rpc: [], preference: [], expired: [], order: [] };
