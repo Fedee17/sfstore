@@ -63,11 +63,17 @@ test('webhook signatures are verified with the secret, the request id and a rece
   assert.equal(mp.verifyWebhookSignature({ signature: null, requestId, dataId, secret, nowMs: now }), false);
   assert.equal(mp.verifyWebhookSignature({ signature: sign(ts), requestId: null, dataId, secret, nowMs: now }), false);
   assert.equal(mp.verifyWebhookSignature({ signature: 'ts=1,v1=zz', requestId, dataId, secret, nowMs: now }), false);
-  // Orders API ids are alphanumeric and enter the manifest in lower case.
   const order = 'ORDTST01M8BZ0SJDRK3F6AH3085GVRGV';
-  assert.equal(mp.verifyWebhookSignature({ signature: sign(ts, order.toLowerCase()), requestId, dataId: order, secret, nowMs: now }), true);
-  assert.equal(mp.verifyWebhookSignature({ signature: sign(ts, order.toLowerCase()), requestId, dataId: 'ORDTST01M8BZ0SJDRK3F6AH3085GVRGW', secret, nowMs: now }), false);
+  assert.equal(mp.verifyWebhookSignature({ signature: sign(ts, order), requestId, dataId: 'ORDTST01M8BZ0SJDRK3F6AH3085GVRGW', secret, nowMs: now }), false);
   assert.equal(mp.verifyWebhookSignature({ signature: sign(ts, 'abc;request-id:x'), requestId, dataId: 'abc;request-id:x', secret, nowMs: now }), false);
+});
+
+test('Order signature verification preserves the case of the signed identifier', () => {
+  const dataId = 'ORD01H00000000000000000000000';
+  const requestId = 'req-1', secret = 'secreto-de-prueba', nowMs = 1795600000000;
+  const sign = id => `ts=${nowMs},v1=${createHmac('sha256', secret).update(`id:${id};request-id:${requestId};ts:${nowMs};`).digest('hex')}`;
+  assert.equal(mp.verifyWebhookSignature({ signature: sign(dataId), requestId, dataId, secret, nowMs }), true);
+  assert.equal(mp.verifyWebhookSignature({ signature: sign(dataId.toLowerCase()), requestId, dataId, secret, nowMs }), false);
 });
 
 function harness(order, payment) {
