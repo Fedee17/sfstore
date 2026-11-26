@@ -78,9 +78,9 @@ function mercadoPagoRoutes(env){
  const pricing=load('lib/products/commercial-pricing.ts',{'./admin-price-calculation.ts':admin});
  const eligibility=load('lib/payments/payment-eligibility.ts',{'../products/admin-price-calculation.ts':admin,'../products/commercial-pricing.ts':pricing});
  const mp=load('lib/payments/mercadopago.ts',{'node:crypto':crypto,'../products/commercial-pricing.ts':pricing,'./payment-eligibility.ts':eligibility});
- const handlers=load('lib/payments/mercadopago-handlers.ts',{'../checkout/contract.ts':contract,'../products/commercial-pricing.ts':pricing,'./mercadopago.ts':mp});
+ const handlers=load('lib/payments/mercadopago-handlers.ts',{'../checkout/contract.ts':contract,'../products/commercial-pricing.ts':pricing,'../products/admin-price-calculation.ts':admin,'./mercadopago.ts':mp});
  const calls=[];const forbidden=name=>async()=>{calls.push(name);throw Error('Forbidden while disabled: '+name);};
- const deps={env,nowMs:()=>Date.now(),authorizeBuyer:forbidden('authorize'),rpc:forbidden('rpc'),createPreference:forbidden('preference'),createPayment:forbidden('payment'),getPayment:forbidden('getPayment')};
+ const deps={env,nowMs:()=>Date.now(),authorizeBuyer:forbidden('authorize'),rpc:forbidden('rpc'),createPreference:forbidden('preference'),createOrder:forbidden('createOrder'),processOrder:forbidden('processOrder'),getOrder:forbidden('getOrder'),getPayment:forbidden('getPayment')};
  return {calls,routes:mpFiles.map(file=>load(file,{'@/lib/payments/mercadopago-handlers':handlers,'@/services/mercadopago-server':{mercadoPagoDeps:()=>deps}}))};
 }
 test('PAY-01 orders cannot enter Mercado Pago: switched off, no route reaches Mercado Pago, the database or the legacy code',async()=>{

@@ -14,6 +14,7 @@ test('payments stay off unless explicitly enabled with token and webhook secret'
   assert.equal(mp.isMercadoPagoEnabled({ MERCADOPAGO_PAYMENTS_ENABLED: '1', MERCADO_PAGO_ACCESS_TOKEN: 'x' }), false);
   assert.equal(mp.isMercadoPagoEnabled({ MERCADOPAGO_PAYMENTS_ENABLED: '0', MERCADO_PAGO_ACCESS_TOKEN: 'x', MERCADO_PAGO_WEBHOOK_SECRET: 'y' }), false);
   assert.equal(mp.isMercadoPagoEnabled({ MERCADOPAGO_PAYMENTS_ENABLED: '1', MERCADO_PAGO_ACCESS_TOKEN: 'x', MERCADO_PAGO_WEBHOOK_SECRET: 'y' }), true);
+  assert.equal(mp.isMercadoPagoEnabled({ VERCEL_ENV: 'preview', MERCADOPAGO_PAYMENTS_ENABLED: '1', MERCADO_PAGO_ACCESS_TOKEN: 'x', MERCADO_PAGO_WEBHOOK_SECRET: 'y' }), false);
 });
 
 test('Checkout Pro charges the stored contado total in exactly one installment', () => {
@@ -34,15 +35,13 @@ test('Checkout Pro charges the stored contado total in exactly one installment',
 
 test('Checkout API (Orders API) charges the stored financiado total in 2 or 3 installments only', () => {
   for (const installments of [2, 3]) {
-    const { body, idempotencyKey } = mp.financedOrder(financiado, { ...card, installments });
+    const { body } = mp.financedOrder(financiado, { ...card, installments });
     assert.equal(body.type, 'online');
-    assert.equal(body.processing_mode, 'automatic');
+    assert.equal(body.processing_mode, 'manual');
+    assert.equal(body.capture_mode, 'automatic');
     assert.equal(body.total_amount, '17700.00');
     assert.deepEqual(body.transactions.payments, [{ amount: '17700.00', payment_method: { id: 'visa', type: 'credit_card', token: card.token, installments, statement_descriptor: 'SFSTORE' } }]);
     assert.equal(body.external_reference, 'SF-000123');
-    assert.ok(idempotencyKey.length <= 128);
-    assert.match(idempotencyKey, new RegExp(`^SF-000123:${installments}:[0-9a-f]{24}$`));
-    assert.notEqual(idempotencyKey, mp.financedOrder(financiado, { ...card, token: card.token + 'x', installments }).idempotencyKey); // new token, new attempt
   }
   assert.equal(mp.financedOrder({ ...financiado, totalCents: B(1770005) }, card).body.total_amount, '17700.05');
   for (const installments of [1, 4, 6, 2.5, Number.NaN]) assert.throws(() => mp.financedOrder(financiado, { ...card, installments }), /cuotas/);

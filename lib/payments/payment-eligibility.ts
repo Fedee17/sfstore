@@ -33,7 +33,7 @@ export function fromMercadoPagoPayment(payment: { payment_type_id: string; insta
 }
 
 // Mercado Pago Orders API order (GET /v1/orders/{id}) → one transaction with both the nominal and actually paid amounts.
-type OrdersApiOrder = { status: string; status_detail: string; external_reference: string; total_amount: string; currency: string;
+type OrdersApiOrder = { status: string; status_detail: string; external_reference: string; total_amount: string; currency?: string;
   transactions?: { payments?: { amount: string; paid_amount?: string; status: string; status_detail: string; payment_method: { type: string; installments: number } }[] } };
 export function fromMercadoPagoOrder(order: OrdersApiOrder): ReceivedPayment {
   const payments = order.transactions?.payments ?? [];
@@ -46,5 +46,5 @@ export function fromMercadoPagoOrder(order: OrdersApiOrder): ReceivedPayment {
   if (typeof payment.paid_amount !== "string") throw new Error("Mercado Pago no informó el importe efectivamente pagado.");
   const amountCents = parseAdminMoneyCents(payment.paid_amount);
   const approved = order.status === "processed" && order.status_detail === "accredited" && payment.status === "processed" && payment.status_detail === "accredited";
-  return { method, installments: payment.payment_method.installments, amountCents, orderAmountCents, currency: order.currency, approved, externalReference: order.external_reference };
+  return { method, installments: payment.payment_method.installments, amountCents, orderAmountCents, currency: order.currency ?? "", approved, externalReference: order.external_reference };
 }

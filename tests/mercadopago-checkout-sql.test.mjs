@@ -4,22 +4,39 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { Client } from 'pg';
 
-// Migration 202611270001 (Mercado Pago checkout) on an isolated PostgreSQL (WASM). Synthetic data only, no network.
+// Synthetic PostgreSQL only. A local native cluster additionally exercises independent connections.
 const root = resolve(import.meta.dirname, '..');
 const runtimePath = process.env.SFSTORE_TEST_PGLITE_MODULE;
+const port = Number(process.env.SFSTORE_TEST_MP_PG_PORT || 0);
 const read = file => readFileSync(join(root, file), 'utf8');
 
-describe('Mercado Pago checkout / isolated PostgreSQL WASM', { skip: !runtimePath, concurrency: false }, () => {
+const localClient = async () => {
+  assert.ok(Number.isInteger(port) && port > 1024 && port <= 65535);
+  const client = new Client({ host: '127.0.0.1', port, user: 'postgres', database: 'sfstore_mp_synthetic', ssl: false, connectionTimeoutMillis: 5000 });
+  await client.connect();
+  return client;
+};
+
+describe(`Mercado Pago checkout / isolated PostgreSQL ${port ? 'native' : 'WASM'}`, { skip: !runtimePath && !port, concurrency: false }, () => {
   let db;
   const q = async (sql, args = []) => (await db.query(sql, args)).rows;
   const one = async (sql, args = []) => (await q(sql, args))[0];
   const category = '11111111-1111-4111-8111-111111111111';
   before(async () => {
-    const runtime = createRequire(join(runtimePath, 'package.json'));
-    const { PGlite } = runtime('@electric-sql/pglite');
-    const { pgcrypto } = runtime('@electric-sql/pglite/contrib/pgcrypto');
-    db = new PGlite({ extensions: { pgcrypto } });
+    if (port) {
+      db = await localClient();
+      db.exec = text => db.query(text);
+      db.close = () => db.end();
+      assert.equal((await one('select current_database() name')).name, 'sfstore_mp_synthetic');
+      assert.equal((await one("select count(*)::int n from pg_class where relnamespace='public'::regnamespace and relkind in ('r','v','m','p')")).n, 0);
+    } else {
+      const runtime = createRequire(join(runtimePath, 'package.json'));
+      const { PGlite } = runtime('@electric-sql/pglite');
+      const { pgcrypto } = runtime('@electric-sql/pglite/contrib/pgcrypto');
+      db = new PGlite({ extensions: { pgcrypto } });
+    }
     await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
     await db.exec(read('tests/fixtures/storage-permissions.sql'));
     for (const entry of JSON.parse(read('staging/migration-manifest.json')).applicationOrder) {
@@ -122,6 +139,14 @@ describe('Mercado Pago checkout / isolated PostgreSQL WASM', { skip: !runtimePat
     await q("select review_checkout_mercadopago_payment('ORDTST01REVIEWNOAMOUNT',$1,'Sin datos.',null)", [transfer.orderNumber]);
     assert.deepEqual((await q("select amount, review_kind from checkout_mercadopago_payments where provider_payment_id like 'ORDTST01REVIEW%' order by provider_payment_id")),
       [{ amount: "100.00", review_kind: "review" }, { amount: null, review_kind: "review" }]);
+    const financed = await order('financiado');
+    const reservedStock = await one('select stock from products where id=$1', [item]);
+    for (const [providerId, amount] of [['ORDREVIEWUNDERPAID', 17699.99], ['ORDREVIEWSURCHARGE', 21189]]) {
+      await q("select review_checkout_mercadopago_payment($1,$2,'El importe pagado no coincide.',$3)", [providerId, financed.orderNumber, amount]);
+    }
+    assert.deepEqual(await one('select status,payment_status from orders where id=$1', [financed.id]), { status: 'pending', payment_status: 'pending' });
+    assert.equal((await one("select count(*)::int n from inventory_movements where order_id=$1 and movement_type='sale'", [financed.id])).n, 0);
+    assert.deepEqual(await one('select stock from products where id=$1', [item]), reservedStock);
     await assert.rejects(q("insert into order_payments(order_id,method,amount,status,reference) values($1,'mercadopago',15300,'approved','mercadopago:forged')", [cases[0][0].id]), /CHECKOUT_MANUAL_PAYMENT_REQUIRED/);
   });
 
@@ -176,6 +201,63 @@ describe('Mercado Pago checkout / isolated PostgreSQL WASM', { skip: !runtimePat
       await assert.rejects(q('select * from checkout_mercadopago_preferences'));
       await assert.rejects(q("select resolve_checkout_mercadopago_review('1',gen_random_uuid(),'abc')"));
       await assert.rejects(q("select confirm_checkout_mercadopago_payment('1','x',1,1,'account_money','ARS')"));
+      await assert.rejects(q('select * from checkout_mercadopago_card_attempts'));
+      await assert.rejects(q('select claim_checkout_mercadopago_card_attempt(gen_random_uuid(),gen_random_uuid())'));
     } finally { await db.exec('reset role'); }
+  });
+
+  async function financedCheckout() {
+    await enable(true);
+    const item = await product({ stock: 2 });
+    const order = await checkout(item, { paymentMethod: 'mercadopago', priceMode: 'financiado' });
+    const buyer = (await one('select buyer_id from checkout_operations where order_id=$1', [order.id])).buyer_id;
+    return { item, order, buyer };
+  }
+
+  const claim = (buyer, orderId, client = db) => client.query('select claim_checkout_mercadopago_card_attempt($1,$2) r', [buyer, orderId]).then(result => result.rows[0].r);
+  const bind = (buyer, orderId, lease, providerId) => one('select bind_checkout_mercadopago_card_attempt($1,$2,$3,$4) r', [buyer, orderId, lease, providerId]).then(result => result.r);
+  const ageLease = orderId => q("update checkout_mercadopago_card_attempts set lease_until=clock_timestamp()-interval '1 second' where order_id=$1", [orderId]);
+
+  test('an expired unbound lease cannot authorize a charge, including after another submission', async () => {
+    const { order, buyer } = await financedCheckout();
+    const first = await claim(buyer, order.id);
+    await assert.rejects(claim(randomUUID(), order.id), /CHECKOUT_NOT_FOUND/);
+    assert.deepEqual(await claim(buyer, order.id), { busy: true });
+    await ageLease(order.id);
+    const second = await claim(buyer, order.id);
+    assert.notEqual(second.attemptId, first.attemptId);
+    assert.equal(second.providerOrderId, null);
+    assert.equal(await bind(buyer, order.id, first.leaseId, 'ORDSTALEATTEMPT'), false);
+    assert.equal(await bind(buyer, order.id, second.leaseId, 'ORDCURRENTATTEMPT'), true);
+    assert.equal(await bind(buyer, order.id, second.leaseId, 'ORDINDEPENDENTCHARGE'), false);
+    await ageLease(order.id);
+    const recovery = await claim(buyer, order.id);
+    assert.equal(recovery.attemptId, second.attemptId);
+    assert.equal(recovery.providerOrderId, 'ORDCURRENTATTEMPT');
+    assert.notEqual(recovery.leaseId, second.leaseId);
+    await q('select release_checkout_mercadopago_card_attempt($1,$2,$3)', [order.id, second.leaseId, recovery.providerOrderId]);
+    assert.deepEqual(await claim(buyer, order.id), { busy: true });
+  });
+
+  test('independent connections elect a single attempt and settle duplicate notifications exactly once', { skip: !port }, async () => {
+    const { order, item, buyer } = await financedCheckout();
+    const other = await localClient();
+    const second = await localClient();
+    try {
+      await Promise.all([other.query('set role service_role'), second.query('set role service_role')]);
+      const results = await Promise.all([claim(buyer, order.id, other), claim(buyer, order.id, second)]);
+      assert.equal(results.filter(result => result.busy).length, 1);
+      const elected = results.find(result => !result.busy);
+      const providerId = 'ORDCONCURRENTATTEMPT';
+      assert.equal(await bind(buyer, order.id, elected.leaseId, providerId), true);
+      const settle = client => client.query('select confirm_checkout_mercadopago_payment($1,$2,17700,3,$3,$4) r', [providerId, order.orderNumber, 'credit_card', 'ARS']).then(result => result.rows[0].r);
+      const settled = await Promise.all([settle(other), settle(second)]);
+      assert.equal(settled.filter(result => result.replayed).length, 1);
+      assert.ok(settled.every(result => result.status === 'approved'));
+      assert.equal((await one("select count(*)::int n from order_payments where order_id=$1 and status='approved'", [order.id])).n, 1);
+      assert.equal((await one("select count(*)::int n from inventory_movements where order_id=$1 and movement_type='sale'", [order.id])).n, 1);
+      assert.equal((await one('select stock from products where id=$1', [item])).stock, 1);
+      await assert.rejects(claim(buyer, order.id), /CHECKOUT_ALREADY_PAID/);
+    } finally { await Promise.all([other.end(), second.end()]); }
   });
 });

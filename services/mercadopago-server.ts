@@ -8,7 +8,7 @@ import type { MercadoPagoOrderRecord, MercadoPagoPaymentRecord } from "@/lib/pay
 // (never sent to the browser) and Supabase service-role RPCs. Requests time out instead of hanging the checkout.
 const API = "https://api.mercadopago.com";
 
-async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string; accept?: (status: number, body: unknown) => T | undefined } = {}): Promise<T> {
+async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string } = {}): Promise<T> {
   const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
   if (!token) throw new Error("MERCADOPAGO_NOT_CONFIGURED");
   const response = await fetch(API + path, {
@@ -22,16 +22,28 @@ async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string
     signal: AbortSignal.timeout(15000),
   });
   if (response.ok) return response.json() as Promise<T>;
-  const accepted = init.accept?.(response.status, await response.json().catch(() => null));
-  if (accepted !== undefined) return accepted;
   throw new Error(`MERCADOPAGO_HTTP_${response.status}`);
 }
 
-// POST /v1/orders answers 402 when the card charge failed; the created (failed) order comes in `data`.
-const failedOrder = (status: number, body: unknown) => {
-  const data = (body as { data?: MercadoPagoOrderRecord } | null)?.data;
-  return status === 402 && typeof data?.id === "string" ? data : undefined;
-};
+async function getProviderOrder(id: string): Promise<MercadoPagoOrderRecord> {
+  const order = await mp<MercadoPagoOrderRecord>(`/v1/orders/${encodeURIComponent(id)}`);
+  const currencyNeeded = order.status === "created" || (order.status === "processed" && order.status_detail === "accredited");
+  if (order.currency || !currencyNeeded) return order;
+
+  // The ID endpoint can omit currency. The Orders search response includes it.
+  const createdMs = Date.parse(order.created_date ?? "");
+  const now = Date.now();
+  if (!Number.isFinite(createdMs) || createdMs > now || order.id !== id || !order.external_reference) throw new Error("MERCADOPAGO_ORDER_CURRENCY_UNAVAILABLE");
+  const hour = 60 * 60 * 1000;
+  const query = new URLSearchParams({
+    external_reference: order.external_reference, type: "online", page_size: "50",
+    begin_date: new Date(createdMs - hour).toISOString(), end_date: new Date(Math.min(now, createdMs + hour)).toISOString(),
+  });
+  const result = await mp<{ data?: { id: string; external_reference: string; currency?: string }[] }>(`/v1/orders?${query}`);
+  const exact = result.data?.find(row => row.id === id && row.external_reference === order.external_reference);
+  if (typeof exact?.currency !== "string" || !exact.currency) throw new Error("MERCADOPAGO_ORDER_CURRENCY_UNAVAILABLE");
+  return { ...order, currency: exact.currency };
+}
 
 export function mercadoPagoDeps(): MercadoPagoDeps {
   return {
@@ -45,8 +57,11 @@ export function mercadoPagoDeps(): MercadoPagoDeps {
     },
     createPreference: body => mp("/checkout/preferences", { method: "POST", body: JSON.stringify(body) }),
     expirePreference: async (id, body) => { await mp(`/checkout/preferences/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(body) }); },
-    createOrder: request => mp<MercadoPagoOrderRecord>("/v1/orders", { method: "POST", body: JSON.stringify(request.body), idempotencyKey: request.idempotencyKey, accept: failedOrder }),
-    getOrder: id => mp<MercadoPagoOrderRecord>(`/v1/orders/${encodeURIComponent(id)}`),
+    createOrder: request => mp<MercadoPagoOrderRecord>("/v1/orders", { method: "POST", body: JSON.stringify(request.body), idempotencyKey: request.idempotencyKey }),
+    processOrder: async (id, idempotencyKey) => {
+      await mp(`/v1/orders/${encodeURIComponent(id)}/process`, { method: "POST", idempotencyKey });
+    },
+    getOrder: getProviderOrder,
     getPayment: id => mp<MercadoPagoPaymentRecord>(`/v1/payments/${encodeURIComponent(id)}`),
   };
 }

@@ -38,14 +38,14 @@ async function post(path: string, body: unknown) {
 // Server outcome of a card payment (lib/payments/mercadopago.ts SettlementOutcome) as the buyer reads it.
 const outcomeText: Record<string, string> = {
   approved: "Pago aprobado. Actualizando tu pedido…",
-  pending: "Tu pago está en proceso. Te confirmamos el pedido cuando Mercado Pago lo acredite; no vuelvas a pagar.",
+  pending: "Estamos verificando el pago. Si sigue pendiente, podés reintentar desde este mismo pedido. Primero verificaremos el intento anterior.",
   rejected: "El pago no fue aprobado. Podés intentar con otra tarjeta.",
   review: "Recibimos el pago y lo estamos revisando. Escribinos si tenés dudas; no vuelvas a pagar.",
 };
 // Refusals the buyer must read as such (the order changed since the page loaded); the receipt is re-read to show it.
 const refusalText: Record<string, string> = {
   CHECKOUT_ALREADY_PAID: "Este pedido ya está pagado. No hace falta volver a pagar.",
-  CHECKOUT_EXPIRED: "La reserva de este pedido venció y no se cobró nada. Volvé a armar el pedido desde el carrito.",
+  CHECKOUT_EXPIRED: "La reserva de este pedido venció. Si ya intentaste pagar, verificá el estado en Mercado Pago antes de volver a comprar.",
 };
 
 export function MercadoPagoPayment({ orderId, mode, total }: Props) {

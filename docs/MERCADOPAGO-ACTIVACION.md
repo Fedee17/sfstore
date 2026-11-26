@@ -7,10 +7,12 @@ Rama `codex/mercadopago-20261126`. Este documento no autoriza push, merge, despl
 | Modalidad | Producto de Mercado Pago | Precio cobrado | Identificador guardado |
 | --- | --- | --- | --- |
 | 1 pago (dinero en cuenta, débito o crédito) | Checkout Pro (`/checkout/preferences`) | Contado | Pago numérico |
-| Crédito en 2 o 3 cuotas | Checkout API con Card Payment Brick (`/v1/orders`, clave de idempotencia) | Lista | Orden `ORD…` |
+| Crédito en 2 o 3 cuotas | Checkout API con Card Payment Brick (creación manual y procesamiento de una sola orden) | Lista | Orden `ORD…` |
 
 - Importes, cuotas y referencia salen siempre del pedido guardado, nunca del navegador.
 - La confirmación la decide la base (`confirm_checkout_mercadopago_payment`): un solo pago aprobado por pedido. No descuenta stock dos veces.
+- Para cuotas, PostgreSQL concede un intento de 90 segundos antes de crear la orden en modo manual. Solo la orden vinculada al intento puede procesarse. Si se pierde la respuesta, el reintento consulta esa misma orden y conserva la clave de procesamiento. Solo un resultado terminal sin cobro habilita otra tarjeta en el mismo pedido.
+- El importe esperado debe coincidir con el importe informado como efectivamente pagado. Un recargo, un faltante o un importe pagado ausente dejan el pedido en revisión.
 - Pedido pagado: SFSTORE rechaza nuevos intentos (409 `CHECKOUT_ALREADY_PAID`) y vence en Mercado Pago los links de Checkout Pro abiertos.
 - Pagos cobrados que no confirman el pedido van a **Administrador → Pedidos web → Mercado Pago**:
   - **Requiere devolución:** duplicado, reserva vencida o sin pedido.
@@ -58,6 +60,8 @@ Respuestas:
 **Verificación obligatoria antes de activar:** «Simular notificación» de ambos tópicos no debe responder 401. Un 401 indica que el secreto o el formato de la firma no coinciden. Con el id ficticio de la simulación, lo esperable es 503, porque el pago no existe en Mercado Pago. La prueba definitiva es la notificación del primer pago real (paso 4), que debe confirmar el pedido sin intervención. Para ids `ORD…`, el manifiesto se firma con el id en minúsculas, y eso todavía no se verificó con una notificación real.
 
 ## Migración
+
+`supabase/migrations/202611270002_mercadopago_card_attempts.sql` agrega el registro de intentos para cuotas y sus RPC de uso exclusivo del servidor. Debe estar aplicada antes de habilitar cuotas con esta versión. Antes de activar, validar el flujo manual completo y la oferta sin interés en el entorno de prueba de Mercado Pago.
 
 `supabase/migrations/202611270001_mercadopago_checkout.sql`:
 
