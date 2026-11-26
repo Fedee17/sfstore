@@ -1,6 +1,6 @@
 # SFSTORE — MANUAL MAESTRO DE EXPERIENCIA DIGITAL
 
-**Versión:** 1.0 · **Fecha:** 18/10/2026 · **Estado:** Directrices iniciales para revisión y adopción · **Ámbito:** tienda online y panel administrador
+**Versión:** 1.2 · **Fecha:** 19/11/2026 · **Estado:** Identidad boutique aprobada; despliegue global pendiente · **Ámbito:** tienda online y panel administrador
 
 > **Propósito:** que cada decisión digital en SFSTORE considere simultáneamente identidad de marca, experiencia de usuario (UX), diseño (UI), conversión (CRO), contenido comercial, medición y confiabilidad técnica. Una función que «anda» no está terminada si genera confusión o dificulta vender.
 
@@ -21,7 +21,9 @@
 
 **Principios:** fotos y productos protagonistas; espacio visual entre elementos; jerarquía clara; contraste legible; accesibilidad; lenguaje argentino con voseo, amable y específico. No usar reclamos vacíos como «calidad premium al mejor precio».
 
-**Decisiones todavía abiertas:** paleta HEX definitiva, tipografías, escala espacial y componentes base. Se aprobarán tras revisar la web actual y ejemplos visuales; **no se presentan valores arbitrarios como identidad oficial**.
+**Decisión vigente del propietario:** toda la tienda pública debe compartir la estética boutique de la ficha de Éclaire y «Sobre este producto» aprobados. Verde oliva, marfil cálido, beige y marrón; hojas fotográficas naturales, luminosas y definidas; bordes suaves, sombras cálidas y profundidad sutil. Los acabados, proporciones y jerarquías forman parte de la identidad: no alcanza cambiar colores en una interfaz antigua. El logo original y las fotografías reales son inalterables salvo autorización expresa. Los códigos de color, tipografía y escala efectivos se obtienen del sistema centralizado en el candidato local, no de valores inventados. La paleta azul es histórica y su sustitución se realiza por etapas con aprobación visual.
+
+**Identidad sin fricción:** el lenguaje boutique debe aportar percepción de calidad y facilitar la compra, no saturar. El espacio entre título, descripción, notas y precios crea orden; la vegetación es secundaria y nunca tapa información. La estructura comercial y los estados aprobados se conservan. Las reglas detalladas de implementación viven exclusivamente en `SFSTORE-ESTANDARES-DISENO-DESARROLLO.md`.
 
 ## 03. UX: cómo debe comprar el cliente
 
@@ -39,7 +41,7 @@
 
 ## 04. UI: componentes y reglas de diseño
 
-- **Sistema consistente:** tokens de color y tipografía, botones, campos, tarjetas, badges, mensajes y espaciados reutilizables; no estilos improvisados por pantalla.
+- **Sistema consistente:** tokens semánticos centralizados en `storefront-theme.css` y componentes reutilizables; cada componente consume el tema desde su módulo. No duplicar estilos, no aplicar sobrescrituras desde fichas individuales ni reinventar componentes al migrar una página. El mismo sistema debe cubrir descubrimiento, catálogo, ficha, carrito, checkout y páginas informativas; el panel admin conserva sus necesidades operativas.
 - **Tarjeta de producto:** imagen nítida, nombre comprensible, precio confiable, estado de stock y acceso claro a detalle. Evitar demasiadas insignias.
 - **Ficha:** imágenes suficientemente grandes, precio y variante visibles, descripción con información para decidir, CTA destacado; fotografías reales antes que decoración.
 - **Selector de color:** la opción elegida determina el **SKU a comprar**. Al elegir un color cambia la foto principal a la correspondiente; la galería sigue navegable sin cambiar involuntariamente el color seleccionado. Estado agotado visible y compra bloqueada.
@@ -110,11 +112,11 @@ SFSTORE utiliza Next.js y Supabase. Mantener controles de autenticación, autori
 
 **A. Brief de una pantalla:** problema del cliente o del operador; objetivo comercial; usuario y contexto; alcance; datos confirmados; restricciones.
 
-**B. Diseño antes de código:** flujo UX, jerarquía visual, microcopy, variantes y estados, criterio de accesibilidad, hipótesis de conversión.
+**B. Diseño antes de código:** flujo UX, jerarquía visual, microcopy, variantes y estados, criterio de accesibilidad, hipótesis de conversión. Partir de capturas reales y elementos ya aprobados; un mockup de adaptación estética no puede inventar funcionalidades ni cambiar componentes. Entregar prototipos web navegables o vistas previas renderizadas, nunca mockups de interfaz como imágenes. Obtener aprobación del propietario para decisiones visuales nuevas después del control profesional previo definido en Estándares §2.4.
 
 **C. Implementación controlada:** reutilizar patrones y componentes; proteger datos y reglas de negocio; pruebas local/staging.
 
-**D. Verificación:** evidencia visual en celular/escritorio, escenarios funcionales, precio/stock correctos y eventos instrumentados cuando aplique.
+**D. Verificación:** evidencia visual en celular/escritorio comparada con la referencia aprobada, escenarios funcionales, precio/stock correctos y eventos instrumentados cuando aplique. Comprobar coherencia entre vistas con el sistema compartido antes de presentar; el propietario no debe detectar errores evitables. Separar aprobación técnica de aprobación estética; no cerrar el diseño si el propietario lo rechaza aunque supere todas las pruebas.
 
 **E. Publicación y aprendizaje:** autorización requerida, monitoreo pospublicación, medición con período definido y registro de oportunidades.
 
@@ -135,17 +137,17 @@ SFSTORE utiliza Next.js y Supabase. Mantener controles de autenticación, autori
 - **Documento maestro:** principios estables; cambia solo con decisión explícita del propietario.
 - **Estándares de desarrollo:** reglas implementables y específicas de arquitectura; se derivan de este manual.
 - **Plan de mejora continua:** backlog vivo de problemas, hipótesis, responsables, resultados y prioridades.
-- **Dos copias:** versión Markdown en repositorio y copia PDF en proyecto ChatGPT. **Esta entrega proporciona los archivos; cargarlos al repositorio/proyecto no ocurre automáticamente.**
-- **Versionado:** mismo nombre/versión/fecha en ambas copias; registrar cambios relevantes. Si difieren, resolver antes de realizar trabajos basados en ellas.
+- **Dos copias:** versión Markdown en repositorio y copia Markdown en proyecto ChatGPT. **Entregar un archivo actualizado no carga ni sincroniza automáticamente ninguna de las dos copias.**
+- **Versionado:** misma versión interna y fecha en ambas copias; conservar el nombre histórico del adjunto para reemplazarlo sin duplicados. Si difieren, resolver antes de realizar trabajos basados en ellas.
 - **Manual de redes:** mantener *SFSTORE — Manual Maestro de Contenido 2026* independiente y referenciado, no duplicarlo.
 
 ## 12. Próxima aplicación práctica
 
-1. Auditar tienda y panel actuales con capturas móviles y de escritorio y recorridos de compra, sin modificaciones.
-2. Definir y aprobar paleta, tipografías y componentes base a partir de esa auditoría.
-3. Elegir tres fricciones prioritarias por impacto estimado y esfuerzo, sin inventar métricas.
-4. Implementar por etapas y medir antes/después cuando exista instrumentación confiable.
+1. Usar la ficha de Éclaire aprobada y el sistema centralizado como referencia, preservando las decisiones previas.
+2. Migrar las superficies públicas progresivamente: encabezado/navegación, home, catálogo, carrito y checkout; resolver particularidades sin estilos independientes innecesarios.
+3. Validar cada etapa con capturas reales y pruebas funcionales; aplicar las exigencias técnicas de los estándares. El encabezado global requiere todavía aprobación de fidelidad estética.
+4. Medir antes/después cuando exista instrumentación confiable; nunca prometer resultados de conversión sin datos.
 
 ---
 
-**Nota de estado:** este manual v1.0 formaliza principios y objetivos conocidos de SFSTORE. No certifica el diseño actual, la implementación de analítica ni resultados de conversión; requieren auditoría y validación específicas.
+**Nota de estado:** esta actualización v1.1 recoge las decisiones visuales del propietario hasta el 19/11/2026. No certifica la implementación publicada, la analítica ni resultados de conversión; verificar cada uno por separado.
