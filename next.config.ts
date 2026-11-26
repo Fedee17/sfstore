@@ -4,6 +4,20 @@ import { YARA_ROSA } from "./lib/products/yara-rosa-consolidation";
 import { RENAMED_PRODUCT_SLUGS } from "./lib/products/renamed-slugs";
 
 const nextConfig: NextConfig = {
+  // Review 21/11: do not advertise the framework.
+  poweredByHeader: false,
+  // Review 21/11: no page (order receipt, payment report) may be framed by another site; no full URLs leak by referrer.
+  async headers() {
+    return [{
+      source: "/:path*",
+      headers: [
+        { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+      ],
+    }];
+  },
   async redirects() {
     return [
       { source: `/producto/${YARA_ROSA.archivedSlug}`, destination: `/producto/${YARA_ROSA.canonicalSlug}`, permanent: true },
