@@ -10,6 +10,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # SFSTORE — Contexto progresivo
 
+## Regla prioritaria: agilidad operativa y respuestas accionables
+
+- Si el propietario aprueba un diseño, decisión o etapa y el siguiente paso ya está definido, **entregar directamente la instrucción ejecutable o ejecutar la acción autorizada**; no consumir una respuesta solo en reconocer la aprobación, resumirla o preguntar si quiere continuar.
+- Si pide un prompt para Codex/Claude, entregar **un único prompt listo para copiar**, orientado a completar el trabajo sin rondas innecesarias; no reemplazarlo por explicaciones, planes o confirmaciones.
+- Priorizar **tiempo hasta el resultado**: mínimo de clics, campos, pasos, mensajes y esperas, con datos esenciales a primera vista y opciones avanzadas ocultas. Reutilizar soluciones y verificaciones vigentes; no reinvestigar ni rediseñar lo aprobado.
+- Resolver internamente decisiones técnicas menores y verificables dentro del alcance autorizado. Pedir intervención del propietario solo para una decisión comercial o visual no resuelta, autenticación imprescindible o una autorización de seguridad/Production que falte.
+- En cierres: resultado comprobado, bloqueo real si existe y siguiente acción concreta en pocas líneas. **No agregar próximos pasos genéricos, ofrecimientos ni informes extensos por defecto**. La brevedad nunca elimina pruebas, permisos, controles o límites de publicación.
+
 ## Inicio de cada tarea
 
 1. Leer [PROJECT_CONTEXT](docs/PROJECT_CONTEXT.md): único estado de continuidad (última evidencia de Production/main, tarea, bloqueos y próximo paso). Confirmar cwd, rama, status y worktrees; no cambiar checkouts ni pisar cambios ajenos.
