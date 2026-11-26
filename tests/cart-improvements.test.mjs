@@ -63,7 +63,7 @@ test('adding a product announces it so the always-mounted drawer opens and refre
 
 test('cart catalog endpoint is read-only, bounded and fail-closed',async()=>{
  let catalog=[{id:'a',kind:'simple',price:100,transferPrice:75,stock:2},{id:'fam',kind:'family',price:1,stock:0,variants:[{id:'v1',kind:'variant',price:150,transferPrice:112.5,stock:4}]}];
- const route=load('app/api/catalog/cart/route.ts',{'next/cache':{unstable_cache:fn=>fn},'@/lib/catalog/public-catalog-revalidation':{PUBLIC_CATALOG_CACHE_TAG:'public-catalog',revalidatePublicCatalogCaches:()=>{}},'@/services/products':{getCatalogPublications:async()=>catalog}});
+ const route=load('app/api/catalog/cart/route.ts',{'next/cache':{unstable_cache:fn=>fn},'@/lib/catalog/public-catalog-revalidation':{PUBLIC_CATALOG_CACHE_TAG:'public-catalog'},'@/services/products':{getCatalogPublications:async()=>catalog}});
  const get=async query=>{const response=await route.GET(new Request('http://local/api/catalog/cart'+query));return [response.status,await response.json()];};
  assert.deepEqual(await get('?ids=a,v1,fam,missing'),[200,{a:{price:100,cashPrice:75,stock:2},v1:{price:150,cashPrice:112.5,stock:4}}]);
  assert.equal((await get(''))[0],400);

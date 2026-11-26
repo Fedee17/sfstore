@@ -2,8 +2,7 @@
 
 import { assertPerfumePricePolicy, supportsPerfumePricePolicy } from "@/lib/products/perfume-price-policy";
 import { assertUploadFormData } from "@/lib/uploads/limits";
-import { revalidatePath } from "next/cache";
-import { revalidateProductPaths, revalidatePublicCatalogCaches } from "@/lib/catalog/public-catalog-revalidation";
+import { revalidateAfterWrite, revalidateProducts } from "@/lib/catalog/public-catalog-revalidation";
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
@@ -296,15 +295,17 @@ function persistedProductState(row: {
   };
 }
 
+// Runs after the write is committed: if the category cannot be read, every section is refreshed instead of failing.
 async function revalidateOperationalProductPaths(
   product: OperationalProductSnapshot,
+  extraPaths: string[] = [],
 ) {
-  const category = await getProductCategoryInfo(product.category_id);
-  revalidateProductPaths({
+  const category = await getProductCategoryInfo(product.category_id).catch(() => null);
+  revalidateProducts("producto", [{
     productId: product.id,
     slug: product.slug,
-    categorySlugs: [category?.slug],
-  });
+    categorySlugs: category ? [category.slug] : undefined,
+  }], extraPaths);
 }
 
 async function saveProductForm(formData: FormData, operationType: "create_product" | "update_product"): Promise<ProductFormActionState> {
@@ -372,12 +373,8 @@ async function saveProductForm(formData: FormData, operationType: "create_produc
     };
   });
   const persisted = result.product;
-  // Cache invalidation is post-commit: a failure must not turn a committed save into an error.
-  try {
-    revalidateProductPaths({ productId, slug: persisted.slug, previousSlug: plan.previousSlug, categorySlugs: plan.categorySlugs });
-  } catch {
-    console.warn("[product-save] Guardado confirmado; no se pudo actualizar la cache", { operationKey, productId });
-  }
+  // Post-commit and failure-safe: a cache failure never turns a committed save into an error.
+  revalidateProducts("producto", [{ productId, slug: persisted.slug, previousSlug: plan.previousSlug, categorySlugs: plan.categorySlugs }]);
   return {
     status: "success",
     message: operationType === "create_product" ? "Producto creado correctamente." : "Producto actualizado correctamente.",
@@ -437,8 +434,7 @@ export async function updateComponentGallery(_state: ProductFormActionState, for
 }
 
 function revalidateComponentGallery(productId: string) {
-  for (const path of ["/", "/accesorios", "/buscar", "/carrito", `/admin/productos/${productId}/editar`, ...(["cc","lightning"] as const).map(c => `/producto/combo-${productId}-${c}`)]) revalidatePath(path);
-  revalidatePublicCatalogCaches();
+  revalidateAfterWrite("galería de componentes", ["/", "/accesorios", "/buscar", "/carrito", `/admin/productos/${productId}/editar`, ...(["cc","lightning"] as const).map(c => `/producto/combo-${productId}-${c}`)], { publicCatalog: true });
 }
 
 async function editComponentImage(form: FormData, action: "primary" | "previous" | "next" | "delete") {
@@ -549,8 +545,7 @@ export async function updateProductStock(
       createdBy: user.id,
     });
 
-    await revalidateOperationalProductPaths(existingProduct);
-    revalidatePath("/admin/inventario");
+    await revalidateOperationalProductPaths(existingProduct, ["/admin/inventario"]);
 
     if (result.status === "no_change") {
       return {

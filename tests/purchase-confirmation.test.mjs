@@ -93,12 +93,15 @@ test("the service delegates confirmation to one RPC without client stock math", 
 
 test("the server action requires admin and revalidates affected views", () => {
   assert.match(actions, /confirmPurchaseAction[\s\S]+requireAdminActionSession\(\)/i);
+  // CAT-03: post-write invalidation goes through the shared failure-safe helper.
+  const confirmation = actions.match(/revalidateAfterWrite\("confirmación de compra", \[([^\]]+)\]/);
+  assert.ok(confirmation, "confirmPurchaseAction revalidates through revalidateAfterWrite");
   for (const path of [
     "/admin/compras",
     "/admin/productos",
     "/admin/consulta",
   ]) {
-    assert.match(actions, new RegExp(`revalidatePath\\(\"${path}\"\\)`));
+    assert.ok(confirmation[1].includes(`"${path}"`), path);
   }
 });
 

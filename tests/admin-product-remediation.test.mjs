@@ -151,6 +151,6 @@ test("product edits revalidate old and new public surfaces precisely", () => {
     assert.match(revalidation, new RegExp(path.replaceAll("/", "\\/")));
   }
   assert.match(revalidation, /previousSlug && previousSlug !== slug/);
-  assert.match(revalidation, /paths\.add\(`\/producto\/\$\{previousSlug\}`\)/);
+  assert.match(revalidation, /paths\.push\(`\/producto\/\$\{previousSlug\}`\)/);
   assert.match(revalidation, /`\/admin\/productos\/\$\{productId\}\/editar`/);
 });

@@ -50,7 +50,7 @@ function serverFixture(options={}){
     '@/lib/catalog/attribute-config':{getAttributeFieldsForCategory:()=>[]},
     '@/lib/product-taxonomy':{PRODUCT_ATTRIBUTE_NAMES:{brand:'Marca',type:'Tipo'}},
     '@/lib/products/auto-descriptions':{getAutoDescriptions:()=>({}),applyAutoDescriptionFallbacks:p=>p},
-    'next/cache':{revalidatePath:()=>{}},
+    '@/lib/catalog/public-catalog-revalidation':{revalidateProducts:()=>{},revalidateAfterWrite:()=>{}},
     '@/services/product-save':{
       fingerprintProductSubmission:async()=> 'hash',
       createProductSaveService:request=>{requests.push(request);return {

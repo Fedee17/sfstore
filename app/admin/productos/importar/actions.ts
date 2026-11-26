@@ -36,7 +36,7 @@ import type {
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { getYaraRosaCanonicalId } from "@/lib/products/yara-rosa-consolidation";
 import { applyConfirmedProductImportRows } from "@/services/product-import";
-import { revalidateProductPaths } from "@/lib/catalog/public-catalog-revalidation";
+import { revalidateProducts } from "@/lib/catalog/public-catalog-revalidation";
 
 const MAX_GOOGLE_RESPONSE_SIZE = 2 * 1024 * 1024;
 const GOOGLE_SHEETS_TIMEOUT_MS = 12000;
@@ -301,15 +301,12 @@ export async function confirmProductImport(
       formData.get("previewPayload"),
       mode,
       async (rows) => {
-        // Same revalidation as a product save, even if the batch stops halfway: rows before the failure are written.
+        // Same revalidation as a product save, once for the whole batch, even if it stops halfway: rows before the
+        // failure are written. It never throws, so it cannot replace the import result or its error.
         try {
           return await applyConfirmedProductImportRows(rows);
         } finally {
-          try {
-            for (const row of rows) revalidateProductPaths({ slug: row.slug, categorySlugs: [row.categorySlug] });
-          } catch {
-            console.warn("[product-import] Importación procesada; no se pudo actualizar la cache");
-          }
+          revalidateProducts("importación", rows.map(row => ({ slug: row.slug, categorySlugs: [row.categorySlug] })));
         }
       },
     );

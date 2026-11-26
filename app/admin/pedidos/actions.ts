@@ -1,7 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { revalidatePublicCatalogCaches } from "@/lib/catalog/public-catalog-revalidation";
+import { revalidateAfterWrite } from "@/lib/catalog/public-catalog-revalidation";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
@@ -43,11 +42,9 @@ function readItems(formData: FormData) {
   })));
 }
 
-function revalidateCustomerOrder(orderId?: string) {
-  revalidatePath("/admin/pedidos");
-  if (orderId) revalidatePath(`/admin/pedidos/${orderId}`);
-  // Order transitions and deliveries can change stock read by the cart.
-  revalidatePublicCatalogCaches();
+// Order transitions and deliveries can change stock read by the cart.
+function revalidateCustomerOrder(orderId?: string, extraPaths: string[] = []) {
+  revalidateAfterWrite("pedido", ["/admin/pedidos", ...(orderId ? [`/admin/pedidos/${orderId}`] : []), ...extraPaths], { publicCatalog: true });
 }
 
 export async function saveCustomerOrderAction(
@@ -137,9 +134,7 @@ export async function deliverCustomerOrderAction(
     const user = await requireAdminActionSession();
     if (!orderId) throw new Error("Falta el ID del pedido.");
     const result = await deliverCustomerOrder(orderId, user.id);
-    revalidateCustomerOrder(orderId);
-    revalidatePath("/admin/productos");
-    revalidatePath("/admin/inventario");
+    revalidateCustomerOrder(orderId, ["/admin/productos", "/admin/inventario"]);
     return {
       status: "success",
       orderId,
