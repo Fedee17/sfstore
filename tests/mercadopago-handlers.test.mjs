@@ -62,6 +62,22 @@ test('with payments disabled every handler answers 410 and touches nothing', asy
   }
 });
 
+test('payments off with the webhook secret loaded: signature checked, nothing read or settled', async () => {
+  const sign = id => ({ 'x-signature': `ts=1795600000,v1=${createHmac('sha256', 'secreto').update(`id:${id};request-id:req-1;ts:1795600000;`).digest('hex')}`, 'x-request-id': 'req-1' });
+  const touched = [];
+  const off = deps('contado', {}, { env: { MERCADO_PAGO_ACCESS_TOKEN: 'synthetic-placeholder', MERCADO_PAGO_WEBHOOK_SECRET: 'secreto' },
+    getPayment: async () => { touched.push('payment'); }, getOrder: async () => { touched.push('order'); } });
+  assert.equal((await handlers.handleWebhook(post({ type: 'payment', data: { id: '777' } }), off)).status, 401);
+  assert.equal((await handlers.handleWebhook(post({ type: 'payment', data: { id: '777' } }, sign('778')), off)).status, 401);
+  const valid = await handlers.handleWebhook(post({ type: 'payment', data: { id: '777' } }, sign('777')), off);
+  assert.equal(valid.status, 503);
+  assert.equal((await valid.json()).code, 'AUTOMATIC_PAYMENTS_DISABLED');
+  assert.equal((await handlers.handleWebhook(post({ type: 'order', data: { id: mpOrderId } }, sign(mpOrderId.toLowerCase())), off)).status, 503);
+  for (const handle of [handlers.handleCreatePreference, handlers.handleCardPayment]) assert.equal((await handle(post({ orderId }), off)).status, 410);
+  assert.deepEqual(touched, []);
+  assert.equal(off.calls.rpc.length + off.calls.preference.length + off.calls.order.length + off.calls.expired.length, 0);
+});
+
 test('Checkout Pro uses the stored contado order only and reuses its open link', async () => {
   const d = deps('contado');
   const response = await handlers.handleCreatePreference(post({ orderId, total: 1, priceMode: 'contado' }), d);

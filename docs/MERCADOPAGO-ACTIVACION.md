@@ -19,7 +19,7 @@ Rama `codex/mercadopago-20261126`. Este documento no autoriza push, merge, despl
 
 ## Interruptores (todos apagados por defecto)
 
-1. **Servidor:** `MERCADOPAGO_PAYMENTS_ENABLED=1`, con `MERCADO_PAGO_ACCESS_TOKEN` y `MERCADO_PAGO_WEBHOOK_SECRET` cargados. Si falta alguno, las rutas responden 410.
+1. **Servidor:** `MERCADOPAGO_PAYMENTS_ENABLED=1`, con `MERCADO_PAGO_ACCESS_TOKEN` y `MERCADO_PAGO_WEBHOOK_SECRET` cargados. Si falta alguno, las rutas de pago responden 410. El webhook, con el secreto cargado, verifica igual la firma (401 si es falsa) y responde 503 sin leer ni confirmar nada.
 2. **Base:** `checkout_payment_settings.mercadopago_enabled`. Habilita Mercado Pago en un pago.
 3. **Base:** `checkout_payment_settings.mercadopago_installments_enabled`. Habilita las cuotas y requiere también el interruptor 2. Activarlo solo cuando la cuenta financie 2 y 3 cuotas sin interés para el comprador.
 

@@ -136,7 +136,8 @@ async function expireOpenPreferences(deps: MercadoPagoDeps, orderId: string) {
  * Topic "payment" carries Checkout Pro payments; topic "order" carries Checkout API orders.
  */
 export async function handleWebhook(request: Request, deps: MercadoPagoDeps): Promise<Response> {
-  if (!isMercadoPagoEnabled(deps.env)) return disabled();
+  const enabled = isMercadoPagoEnabled(deps.env);
+  if (!enabled && !deps.env.MERCADO_PAGO_WEBHOOK_SECRET) return disabled();
   try {
     const url = new URL(request.url);
     const body = await readJson(request, 16384).catch(() => ({} as Record<string, unknown>));
@@ -146,6 +147,9 @@ export async function handleWebhook(request: Request, deps: MercadoPagoDeps): Pr
     const valid = verifyWebhookSignature({ signature: request.headers.get("x-signature"), requestId: request.headers.get("x-request-id"), dataId,
       secret: deps.env.MERCADO_PAGO_WEBHOOK_SECRET ?? "", nowMs: deps.nowMs() });
     if (!valid) return Response.json({ code: "WEBHOOK_SIGNATURE_INVALID" }, { status: 401, headers: noStore });
+    // Payments off but secret loaded: the signature is still checked, so the panel's simulation verifies URL and secret,
+    // and nothing is read or settled. 503 keeps Mercado Pago retrying a real notification until payments are back on.
+    if (!enabled) return Response.json({ code: "AUTOMATIC_PAYMENTS_DISABLED" }, { status: 503, headers: noStore });
     if (type === "payment") await settleMercadoPagoPayment(dataId, { ...settlementDeps(deps), fetchPayment: id => deps.getPayment(id) });
     else if (type === "order") await settleMercadoPagoOrder(dataId.toUpperCase(), { ...settlementDeps(deps), fetchOrder: id => deps.getOrder(id) });
     else return new Response(null, { status: 204, headers: noStore });
