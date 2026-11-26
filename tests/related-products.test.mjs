@@ -114,6 +114,31 @@ test("at most four suggestions, catalog untouched", () => {
   assert.equal(JSON.stringify(catalog), copy);
 });
 
+// Real catalog (26/11): porta mates, dispenser and despolvillador live in the public «Accesorios» section with
+// subcategory «accesorios»; vasos térmicos share the termos kind. A mate must still reach those accessories.
+const accessory = (slug, categorySlug, options) => ({ ...matero(slug, categorySlug, options), category: "accesorios" });
+
+test("mates: matero accessories from the Accesorios section are cross-sold, never electronics or gift boxes", () => {
+  const current = matero("mate-camionero", "mates");
+  const catalog = [
+    current, matero("mate-torpedo", "mates"), matero("bombilla-pico", "bombillas"),
+    matero("quencher-celeste", "vasos-termicos"), matero("quencher-negro", "vasos-termicos"),
+    accessory("cargador", "electronica"), accessory("box-argentina", "regalos"), accessory("porta-mate-cuero", "accesorios"),
+  ];
+  assert.deepEqual(slugs(selectRelatedProducts(current, catalog)), ["bombilla-pico", "quencher-celeste", "porta-mate-cuero", "quencher-negro"]);
+});
+
+test("mates: a real termo comes before vasos térmicos inside the termos kind", () => {
+  const current = matero("mate-camionero", "mates");
+  const catalog = [current, matero("quencher", "vasos-termicos", { featured: true }), matero("termo-goat", "termos")];
+  assert.deepEqual(slugs(selectRelatedProducts(current, catalog)), ["termo-goat", "quencher"]);
+});
+
+test("accessories outside the matero taxonomy keep their own section only", () => {
+  const charger = accessory("cargador", "electronica");
+  assert.deepEqual(slugs(selectRelatedProducts(charger, [charger, accessory("cable", "electronica"), matero("mate-x", "mates")])), ["cable"]);
+});
+
 test("mates: bombillas and bombillones count as one kind, so the four suggestions stay varied", () => {
   const current = matero("mate-a", "mates");
   const catalog = [current, matero("bombilla", "bombillas"), matero("bombillon", "bombillones"), matero("termo", "termos"), matero("vaso", "vasos-termicos"), matero("matera", "materas"), matero("lata", "latas-de-yerba")];
