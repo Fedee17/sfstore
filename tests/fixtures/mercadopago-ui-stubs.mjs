@@ -2,7 +2,7 @@
 // receipt never renders the payment component. Rendering the choice while disabled is a test failure.
 export const mercadoPagoUiStubs = {
   '@/components/checkout-payment-choice': {
-    useMercadoPagoAvailable: () => false,
+    useMercadoPagoAvailable: () => ({ enabled: false, installments: false }),
     CheckoutPaymentChoice: () => { throw Error('Mercado Pago choice rendered while disabled'); },
     checkoutRequestPayment: p => p === 'transfer' ? { paymentMethod: 'transfer' } : { paymentMethod: 'mercadopago', priceMode: p === 'mp-cuotas' ? 'financiado' : 'contado' },
   },

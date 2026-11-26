@@ -32,12 +32,12 @@ test('without an explicit profit the calculator keeps the 50% rule for existing 
   assert.equal(r.financedCents, B(1770000));
 });
 
-test('approved example: cost $40.000 and profit $15.000 → lista $64.500 (3 × $21.500), contado $56.100', () => {
+test('approved example with the 15% budget for 3 installments: cost $40.000 and profit $15.000 → lista $64.800 (3 × $21.600), contado $56.100', () => {
   const costs = model.readCosts({ purchase: '40000', acquisition: '', selling: '' });
   const target = model.profitTarget(costs.total, { unit: 'money', value: '15000' });
   assert.equal(target.counterpart, '37,5');
   const preview = model.makePricePreview({ transferRate: '', overrides: {} }, costs, target.cents);
-  assert.equal(preview.list.price, B(6450000));
+  assert.equal(preview.list.price, B(6480000));
   assert.equal(preview.cash.price, B(5610000));
   for (const method of [...preview.list.results, ...preview.cash.results]) assert.ok(method.profitCents >= B(1500000), method.id);
   assert.equal(model.profitTarget(costs.total, { unit: 'percent', value: '37,5' }).cents, B(1500000));
@@ -49,7 +49,7 @@ test('manual adjustments replace the suggestion; invalid or zero amounts leave n
   const target = model.profitTarget(costs.total, { unit: 'money', value: '15000' }).cents;
   const preview = model.makePricePreview({ transferRate: '', overrides: { list: '65000' } }, costs, target);
   assert.equal(preview.list.price, B(6500000));
-  assert.equal(preview.list.suggestion, B(6630000));
+  assert.equal(preview.list.suggestion, B(6660000));
   assert.equal(preview.cash.price, B(5760000));
   for (const list of ['0', 'abc']) assert.equal(model.makePricePreview({ transferRate: '', overrides: { list } }, costs, target).list.price, null);
   assert.throws(() => model.readCosts({ purchase: '-1', acquisition: '', selling: '' }));
@@ -58,8 +58,22 @@ test('manual adjustments replace the suggestion; invalid or zero amounts leave n
 test('the approved screen renders the suggested prices with both disclosures closed', () => {
   const html = renderToStaticMarkup(React.createElement(PriceCalculatorPreview, { purchase: '40000', onPurchaseChange() {}, onApply() {}, onKeep() {} }));
   const t = text(html);
-  for (const expected of ['Calculadora de precios', '¿Cuánto te costó?', '¿Cuánto querés ganar?', 'Precios sugeridos', 'Precio de lista', '$ 64.500', '3 de $ 21.500', 'Precio de contado', '$ 56.100', 'Ahorrás $ 8.400 (13,02%)', 'Aplicar precios', 'Opciones avanzadas', 'Ver detalles del cálculo']) {
+  for (const expected of ['Calculadora de precios', '¿Cuánto te costó?', '¿Cuánto querés ganar?', 'Precios sugeridos', 'Precio de lista', '$ 64.800', '3 de $ 21.600', 'Precio de contado', '$ 56.100', 'Ahorrás $ 8.700 (13,43%)', 'Aplicar precios', 'Opciones avanzadas', 'Ver detalles del cálculo']) {
     assert.ok(t.includes(expected), expected);
   }
   assert.doesNotMatch(html, /<details[^>]*open/);
+});
+
+test('the 15% budget sets the list price while the real Mercado Pago costs stay separate; a higher real cost prevails', () => {
+  const table = pricing.SFSTORE_PAYMENT_COSTS;
+  assert.equal(table.financedBudgetPpm, B(150000));
+  assert.deepEqual(table.financed.map(pricing.effectiveRatePpm), [B(113135), B(145805)]); // real rates, IVA included
+  const r = pricing.calculateCommercialPrices({ cost: '40000', fixedCost: '0', sellingCostPpm: B(0), desiredProfitCents: B(1500000) });
+  assert.equal(r.financedRatePpm, B(150000));
+  assert.equal(r.financedCents, B(6480000));
+  // Records keep the real fee: 3 installments on $64.800 cost $9.448,16, not the budgeted $9.720.
+  assert.equal(r.modalities.find(m => m.id === 'mercadopago-3').feeCents, B(944816));
+  const pricier = { ...table, financed: [{ ...table.financed[1], commissionPpm: B(150000) }] }; // 18,15% real
+  assert.equal(pricing.calculateCommercialPrices({ cost: '40000', fixedCost: '0', sellingCostPpm: B(0), desiredProfitCents: B(1500000) }, pricier).financedRatePpm, B(181500));
+  for (const financedBudgetPpm of [B(-1), B(1000000)]) assert.throws(() => pricing.calculateCommercialPrices({ cost: '1', fixedCost: '0', sellingCostPpm: B(0) }, { ...table, financedBudgetPpm }));
 });

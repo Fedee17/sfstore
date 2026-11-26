@@ -1,11 +1,11 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { MAX_INSTALLMENTS } from "../products/commercial-pricing.ts";
-import { assertPaymentMatchesOrder, fromMercadoPagoPayment, type PayableOrder } from "./payment-eligibility.ts";
+import { assertPaymentMatchesOrder, fromMercadoPagoOrder, fromMercadoPagoPayment, type PayableOrder, type ReceivedPayment } from "./payment-eligibility.ts";
 
 // Mercado Pago for web orders (owner decision 25/11/2026): Checkout Pro charges the contado total in one payment;
-// Checkout API (card token from the Card Payment Brick) charges the financiado total in 2 or 3 installments.
-// Amounts, installments and the order reference always come from the stored order, never from the browser.
-// Nothing here is reachable until MERCADOPAGO_PAYMENTS_ENABLED is set (see isMercadoPagoEnabled).
+// Checkout API (card token from the Card Payment Brick, Orders API /v1/orders since 26/11/2026) charges the financiado
+// total in 2 or 3 installments. Amounts, installments and the order reference always come from the stored order,
+// never from the browser. Nothing here is reachable until MERCADOPAGO_PAYMENTS_ENABLED is set (see isMercadoPagoEnabled).
 
 export type MercadoPagoOrder = PayableOrder & {
   expiresAt: string; // Reservation expiry (ISO 8601): the payment window never outlives the stock hold.
@@ -19,6 +19,11 @@ export function isMercadoPagoEnabled(env: Record<string, string | undefined>) {
 const pesos = (cents: bigint) => {
   if (cents <= BigInt(0)) throw new Error("Importe inválido.");
   return Number(cents) / 100;
+};
+
+const amountText = (cents: bigint) => {
+  if (cents <= BigInt(0)) throw new Error("Importe inválido.");
+  return `${cents / BigInt(100)}.${String(cents % BigInt(100)).padStart(2, "0")}`;
 };
 
 /** Checkout Pro preference for a contado order: one installment, no voucher/ATM methods, approve-or-reject only. */
@@ -47,24 +52,27 @@ export function contadoPreference(order: MercadoPagoOrder, siteUrl: string, orde
   };
 }
 
-/** Checkout API payment for a financiado order. The browser only supplies the card token and the chosen installments. */
-export function financedPayment(order: MercadoPagoOrder, card: { token: string; installments: number; paymentMethodId: string; issuerId?: string; payerEmail: string }) {
+/** Closes a Checkout Pro link once its order is paid, so the same link cannot charge the order a second time. */
+export const expiredPreference = (nowIso: string) => ({ expires: true, expiration_date_to: nowIso });
+
+/**
+ * Checkout API order (POST /v1/orders) for a financiado order. The browser only supplies the card token, the card
+ * brand and the chosen installments; amount, reference and description come from the stored order.
+ */
+export function financedOrder(order: MercadoPagoOrder, card: { token: string; installments: number; paymentMethodId: string; payerEmail: string }) {
   if (order.mode !== "financiado") throw new Error("Las cuotas solo cobran el precio de lista.");
   if (!Number.isInteger(card.installments) || card.installments < 2 || card.installments > MAX_INSTALLMENTS) throw new Error("Cantidad de cuotas no habilitada.");
   if (!/^[A-Za-z0-9_-]{8,200}$/.test(card.token) || !/^[a-z_]{2,40}$/.test(card.paymentMethodId)) throw new Error("Datos de tarjeta inválidos.");
-  if (card.issuerId !== undefined && !/^\d{1,12}$/.test(card.issuerId)) throw new Error("Emisor inválido.");
+  const amount = amountText(order.totalCents);
   return {
     body: {
-      transaction_amount: pesos(order.totalCents),
-      installments: card.installments,
-      token: card.token,
-      payment_method_id: card.paymentMethodId,
-      ...(card.issuerId ? { issuer_id: Number(card.issuerId) } : {}),
-      payer: { email: card.payerEmail },
+      type: "online",
+      processing_mode: "automatic",
+      total_amount: amount,
       external_reference: order.reference,
       description: order.description,
-      binary_mode: true,
-      statement_descriptor: "SFSTORE",
+      payer: { email: card.payerEmail },
+      transactions: { payments: [{ amount, payment_method: { id: card.paymentMethodId, type: "credit_card", token: card.token, installments: card.installments, statement_descriptor: "SFSTORE" } }] },
     },
     // One charge per card token (tokens are single-use): a retried or double-submitted request cannot charge twice,
     // while a new attempt after a rejection (new token) is still possible. The database accepts one approval per order.
@@ -72,18 +80,22 @@ export function financedPayment(order: MercadoPagoOrder, card: { token: string; 
   };
 }
 
+/** Checkout Pro payment id (digits) or Orders API order id (ORD…, ORDTST… in test). */
+export const isMercadoPagoChargeId = (id: string) => /^([0-9]{1,20}|ORD[A-Z0-9]{8,60})$/.test(id);
+
 /**
  * Webhook authenticity (Mercado Pago «x-signature»): HMAC-SHA256 of `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
- * with the account's webhook secret. Old timestamps are rejected to limit replays.
+ * with the account's webhook secret; an alphanumeric data.id (Orders API) enters the manifest in lower case.
+ * Old timestamps are rejected to limit replays.
  */
 export function verifyWebhookSignature(input: { signature: string | null; requestId: string | null; dataId: string; secret: string; nowMs: number; toleranceMs?: number }) {
-  if (!input.signature || !input.requestId || !/^\d{1,20}$/.test(input.dataId)) return false;
+  if (!input.signature || !input.requestId || !isMercadoPagoChargeId(input.dataId)) return false;
   const parts = Object.fromEntries(input.signature.split(",").map(part => part.trim().split("=", 2) as [string, string]));
   const ts = parts.ts, v1 = parts.v1;
   if (!ts || !v1 || !/^\d{10,13}$/.test(ts) || !/^[0-9a-f]{64}$/.test(v1)) return false;
   const tsMs = ts.length === 10 ? Number(ts) * 1000 : Number(ts);
   if (Math.abs(input.nowMs - tsMs) > (input.toleranceMs ?? 5 * 60 * 1000)) return false;
-  const expected = createHmac("sha256", input.secret).update(`id:${input.dataId};request-id:${input.requestId};ts:${ts};`).digest();
+  const expected = createHmac("sha256", input.secret).update(`id:${input.dataId.toLowerCase()};request-id:${input.requestId};ts:${ts};`).digest();
   return timingSafeEqual(expected, Buffer.from(v1, "hex"));
 }
 
@@ -97,35 +109,71 @@ export type MercadoPagoPaymentRecord = {
   external_reference: string;
 };
 
-export type SettlementDeps = {
-  fetchPayment: (paymentId: string) => Promise<MercadoPagoPaymentRecord>; // GET /v1/payments/{id}: the only source of truth.
-  loadOrder: (reference: string) => Promise<MercadoPagoOrder | null>;
-  approve: (input: { reference: string; providerPaymentId: string; amountCents: bigint; installments: number; method: string }) => Promise<void>;
-  review: (input: { reference: string | null; providerPaymentId: string; reason: string }) => Promise<void>;
+/** GET /v1/orders/{id} (Orders API). Amounts are decimal strings; paid_amount includes any interest Mercado Pago adds. */
+export type MercadoPagoOrderRecord = {
+  id: string;
+  status: string;
+  status_detail: string;
+  external_reference: string;
+  total_amount: string;
+  currency: string;
+  transactions?: { payments?: { id: string; amount: string; paid_amount?: string; status: string; status_detail: string;
+    payment_method: { id: string; type: string; installments: number } }[] };
 };
 
+export type SettlementOutcome = "approved" | "review" | "pending" | "rejected";
+export type SettlementDeps = {
+  loadOrder: (reference: string) => Promise<MercadoPagoOrder | null>;
+  // The database decides: "approved", or "review" when the order can no longer take it (already paid, expired…).
+  approve: (input: { reference: string; providerPaymentId: string; amountCents: bigint; installments: number; method: string }) => Promise<"approved" | "review">;
+  // amountCents: what Mercado Pago charged, when readable, so the administrator knows what a refund would return.
+  review: (input: { reference: string | null; providerPaymentId: string; reason: string; amountCents: bigint | null }) => Promise<void>;
+};
+type Charge = { status: "approved" | "pending" | "rejected"; reference: string; received: () => ReceivedPayment };
+
 /**
- * Settles a notified payment. The order is confirmed only when Mercado Pago reports it approved and the method,
- * installments, currency, reference and amount match the stored order exactly; anything else goes to manual review
- * (and, when charged, to a refund decision) without confirming.
+ * Settles a charge read back from Mercado Pago (the only source of truth). The order is confirmed only when Mercado Pago
+ * reports it approved and the method, installments, currency, reference and amount match the stored order exactly;
+ * anything else goes to manual review (and, when charged, to a refund decision) without confirming. Infrastructure
+ * failures propagate (the webhook answers non-2xx and Mercado Pago retries); only real mismatches become reviews.
  */
-export async function settleMercadoPagoPayment(paymentId: string, deps: SettlementDeps): Promise<"approved" | "review" | "ignored"> {
-  if (!/^\d{1,20}$/.test(paymentId)) throw new Error("Pago inválido.");
-  const payment = await deps.fetchPayment(paymentId);
-  if (String(payment.id) !== paymentId) throw new Error("Respuesta de Mercado Pago inconsistente.");
-  if (payment.status !== "approved") return "ignored"; // binary_mode: rejected payments leave the reservation to expire.
-  const order = payment.external_reference ? await deps.loadOrder(payment.external_reference) : null;
+async function settleCharge(providerId: string, charge: Charge, deps: SettlementDeps): Promise<SettlementOutcome> {
+  if (charge.status !== "approved") return charge.status; // Not charged: the reservation simply runs its course.
+  let received: ReceivedPayment | null = null;
+  let mismatch: unknown = null;
+  try { received = charge.received(); } catch (error) { mismatch = error; }
+  const amountCents = received?.amountCents ?? null;
+  const order = charge.reference ? await deps.loadOrder(charge.reference) : null;
   if (!order) {
-    await deps.review({ reference: null, providerPaymentId: paymentId, reason: "Pago aprobado sin pedido asociado." });
+    await deps.review({ reference: null, providerPaymentId: providerId, reason: "Pago aprobado sin pedido asociado.", amountCents });
     return "review";
   }
   try {
-    const received = fromMercadoPagoPayment(payment);
+    if (!received) throw mismatch;
     assertPaymentMatchesOrder(order, received);
-    await deps.approve({ reference: order.reference, providerPaymentId: paymentId, amountCents: received.amountCents, installments: received.installments, method: received.method });
-    return "approved";
   } catch (error) {
-    await deps.review({ reference: order.reference, providerPaymentId: paymentId, reason: error instanceof Error ? error.message : "Pago no coincidente." });
+    await deps.review({ reference: order.reference, providerPaymentId: providerId, reason: error instanceof Error ? error.message : "Pago no coincidente.", amountCents });
     return "review";
   }
+  return deps.approve({ reference: order.reference, providerPaymentId: providerId, amountCents: received.amountCents, installments: received.installments, method: received.method });
+}
+
+const REJECTED_PAYMENT = new Set(["rejected", "cancelled", "refunded", "charged_back"]);
+/** Checkout Pro payment (GET /v1/payments/{id}). */
+export async function settleMercadoPagoPayment(paymentId: string, deps: SettlementDeps & { fetchPayment: (id: string) => Promise<MercadoPagoPaymentRecord> }) {
+  if (!/^\d{1,20}$/.test(paymentId)) throw new Error("Pago inválido.");
+  const payment = await deps.fetchPayment(paymentId);
+  if (String(payment.id) !== paymentId) throw new Error("Respuesta de Mercado Pago inconsistente.");
+  const status = payment.status === "approved" ? "approved" : REJECTED_PAYMENT.has(payment.status) ? "rejected" : "pending";
+  return settleCharge(paymentId, { status, reference: payment.external_reference, received: () => fromMercadoPagoPayment(payment) }, deps);
+}
+
+const REJECTED_ORDER = new Set(["failed", "canceled", "expired", "refunded"]);
+/** Checkout API order (GET /v1/orders/{id}). Approved means processed/accredited; failed, canceled or expired means not charged. */
+export async function settleMercadoPagoOrder(orderId: string, deps: SettlementDeps & { fetchOrder: (id: string) => Promise<MercadoPagoOrderRecord> }) {
+  if (!/^ORD[A-Z0-9]{8,60}$/.test(orderId)) throw new Error("Orden inválida.");
+  const order = await deps.fetchOrder(orderId);
+  if (order.id !== orderId) throw new Error("Respuesta de Mercado Pago inconsistente.");
+  const status = order.status === "processed" && order.status_detail === "accredited" ? "approved" : REJECTED_ORDER.has(order.status) ? "rejected" : "pending";
+  return settleCharge(orderId, { status, reference: order.external_reference, received: () => fromMercadoPagoOrder(order) }, deps);
 }

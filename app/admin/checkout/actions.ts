@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { confirmManualCheckoutPayment, releaseExpiredCheckoutReservations, rejectReportedCheckoutPayment, authorizeBuyerException, approveShippingQuotation } from "@/services/checkout-manual-admin";
+import { confirmManualCheckoutPayment, releaseExpiredCheckoutReservations, rejectReportedCheckoutPayment, authorizeBuyerException, approveShippingQuotation, resolveMercadoPagoReview } from "@/services/checkout-manual-admin";
 export type CheckoutAdminActionState = { message: string; ok: boolean };
 export async function confirmPayment(_previous: CheckoutAdminActionState, form: FormData): Promise<CheckoutAdminActionState> {
   try {
@@ -34,4 +34,9 @@ export async function approveShipping(_previous:CheckoutAdminActionState,form:Fo
   const result=await approveShippingQuotation(String(form.get("quoteId")??""),Number(raw));revalidatePath("/admin/checkout");
   return{ok:true,message:"Cotización registrada. Envío: $"+result.shippingFee.toFixed(2)+". Total con descuento: $"+result.total.toFixed(2)+". El comprador debe consultar y aceptar el total; todavía no hay pedido ni reserva."};
  }catch{return{ok:false,message:"No se registró la cotización. Revisá autorización, importe y solicitud."};}
+}
+
+export async function resolveMercadoPagoCharge(_previous:CheckoutAdminActionState,form:FormData):Promise<CheckoutAdminActionState> {
+ try{await resolveMercadoPagoReview(String(form.get("paymentId")??""),String(form.get("resolution")??""));revalidatePath("/admin/checkout");return{ok:true,message:"Resolución registrada. No se movió dinero, stock ni pedidos desde la tienda."};}
+ catch{return{ok:false,message:"No se registró la resolución. Revisá autorización y el detalle (3 a 300 caracteres)."};}
 }

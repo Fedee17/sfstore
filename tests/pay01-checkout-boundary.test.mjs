@@ -16,7 +16,7 @@ function load(file,modules={},globals={}){
  new Function('require','exports',...Object.keys(globals),source)(name=>{assert.ok(Object.hasOwn(modules,name),`Unexpected dependency ${name}`);return modules[name];},exports,...Object.values(globals));return exports;
 }
 // Mercado Pago (26/11/2026): unavailable unless the server enables it. Checkout renders the transfer-only UI.
-const mercadoPagoUiStubs={'@/components/checkout-payment-choice':{useMercadoPagoAvailable:()=>false,CheckoutPaymentChoice:()=>{throw Error('Mercado Pago choice rendered while disabled');},checkoutRequestPayment:p=>p==='transfer'?{paymentMethod:'transfer'}:{paymentMethod:'mercadopago',priceMode:p==='mp-cuotas'?'financiado':'contado'}},'@/components/mercadopago-payment':{MercadoPagoPayment:()=>null}};
+const mercadoPagoUiStubs={'@/components/checkout-payment-choice':{useMercadoPagoAvailable:()=>({enabled:false,installments:false}),CheckoutPaymentChoice:()=>{throw Error('Mercado Pago choice rendered while disabled');},checkoutRequestPayment:p=>p==='transfer'?{paymentMethod:'transfer'}:{paymentMethod:'mercadopago',priceMode:p==='mp-cuotas'?'financiado':'contado'}},'@/components/mercadopago-payment':{MercadoPagoPayment:()=>null}};
 const contract=load('lib/checkout/contract.ts');
 const {handleCheckout}=load('lib/checkout/http.ts',{'./contract':contract});
 const buyer=randomUUID(),product=randomUUID(),operationKey=randomUUID();

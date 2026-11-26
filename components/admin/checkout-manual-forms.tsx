@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, type InputHTMLAttributes, type ReactNode } from "react";
-import { confirmPayment, releaseExpired, rejectPayment, setBuyerException, approveShipping, type CheckoutAdminActionState } from "@/app/admin/checkout/actions";
+import { confirmPayment, releaseExpired, rejectPayment, setBuyerException, approveShipping, resolveMercadoPagoCharge, type CheckoutAdminActionState } from "@/app/admin/checkout/actions";
 import type { AdminCheckoutRow } from "@/services/checkout-manual-admin";
 import { checkoutMoney } from "@/lib/admin/checkout-presentation";
 import styles from "./checkout/checkout-admin.module.css";
@@ -86,6 +86,19 @@ export function ShippingQuotationForm({ quoteId }: { quoteId: string }) {
     <ActionField label="Costo de envío aprobado" name="shippingFee" inputMode="decimal" placeholder="Importe verificado con el transporte" required disabled={pending || state.ok} />
     <p className={styles.muted}>El comprador deberá consultar y aceptar el total en su checkout. Guardar la cotización no crea un pedido ni reserva stock, y no envía un mensaje.</p>
     <button className={styles.button} disabled={pending || state.ok}>{pending ? "Guardando..." : state.ok ? "Cotización guardada" : "Guardar cotización"}</button>
+    <ActionStatus state={state} />
+  </form>;
+}
+
+// Records what the administrator did in Mercado Pago with a reviewed charge (refund or other decision). It never refunds.
+export function MercadoPagoReviewResolutionForm({ paymentId, refund }: { paymentId: string; refund: boolean }) {
+  const [state, action, pending] = useActionState(resolveMercadoPagoCharge, initial);
+  return <form action={action} className={styles.form}>
+    <input type="hidden" name="paymentId" value={paymentId} />
+    <ActionField label={refund ? "Detalle de la devolución hecha en Mercado Pago" : "Decisión tomada"} name="resolution" minLength={3} maxLength={300} required disabled={pending || state.ok}
+      placeholder={refund ? "Ej.: devuelto completo desde Mercado Pago el 26/11" : "Ej.: devuelto y se pidió un nuevo pedido"} />
+    <ConsentField disabled={pending || state.ok}>{refund ? "Confirmo que la devolución ya se hizo en Mercado Pago. Registrarla acá no devuelve dinero." : "Confirmo que revisé este pago en Mercado Pago. Registrarlo acá no mueve dinero, stock ni pedidos."}</ConsentField>
+    <button className={styles.button} disabled={pending || state.ok}>{pending ? "Guardando..." : state.ok ? "Resolución registrada" : "Marcar como resuelto"}</button>
     <ActionStatus state={state} />
   </form>;
 }

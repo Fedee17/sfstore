@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MAX_INSTALLMENTS } from "@/lib/products/commercial-pricing";
 import styles from "@/app/checkout/checkout.module.css";
@@ -35,20 +35,40 @@ async function post(path: string, body: unknown) {
   return data;
 }
 
+// Server outcome of a card payment (lib/payments/mercadopago.ts SettlementOutcome) as the buyer reads it.
+const outcomeText: Record<string, string> = {
+  approved: "Pago aprobado. Actualizando tu pedido…",
+  pending: "Tu pago está en proceso. Te confirmamos el pedido cuando Mercado Pago lo acredite; no vuelvas a pagar.",
+  rejected: "El pago no fue aprobado. Podés intentar con otra tarjeta.",
+  review: "Recibimos el pago y lo estamos revisando. Escribinos si tenés dudas; no vuelvas a pagar.",
+};
+// Refusals the buyer must read as such (the order changed since the page loaded); the receipt is re-read to show it.
+const refusalText: Record<string, string> = {
+  CHECKOUT_ALREADY_PAID: "Este pedido ya está pagado. No hace falta volver a pagar.",
+  CHECKOUT_EXPIRED: "La reserva de este pedido venció y no se cobró nada. Volvé a armar el pedido desde el carrito.",
+};
+
 export function MercadoPagoPayment({ orderId, mode, total }: Props) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const brick = useRef<BrickController | null>(null);
+  const refuse = useCallback((failure: unknown) => {
+    const refusal = failure instanceof Error ? refusalText[failure.message] : undefined;
+    setError(refusal ?? errorText);
+    if (refusal) router.refresh();
+  }, [router]);
 
-  // Returning from Checkout Pro: the webhook may arrive a few seconds later. Re-read the stored status for 2 minutes.
+  // Returning from Checkout Pro, or a card payment still in process: the confirmation may arrive later by webhook.
+  // Re-read the stored status for 2 minutes.
+  const awaiting = mode === "contado" || status === outcomeText.pending;
   useEffect(() => {
-    if (mode !== "contado") return;
+    if (!awaiting) return;
     let left = 24;
     const timer = setInterval(() => { if (left-- <= 0) clearInterval(timer); else router.refresh(); }, 5000);
     return () => clearInterval(timer);
-  }, [mode, router]);
+  }, [awaiting, router]);
 
   useEffect(() => {
     if (mode !== "financiado") return;
@@ -68,26 +88,32 @@ export function MercadoPagoPayment({ orderId, mode, total }: Props) {
           callbacks: {
             onReady: () => {},
             onError: () => setError(errorText),
-            onSubmit: async (form: { token: string; installments: number; payment_method_id: string; issuer_id?: string; payer: { email: string } }) => {
+            onSubmit: async (form: { token: string; installments: number; payment_method_id: string; payer: { email: string } }) => {
               setError(""); setStatus("Procesando el pago…");
               try {
                 const result = await post("/api/mercadopago/card-payment", { orderId, token: form.token, installments: Number(form.installments),
-                  paymentMethodId: form.payment_method_id, ...(form.issuer_id ? { issuerId: String(form.issuer_id) } : {}), payerEmail: form.payer.email });
-                setStatus(result.status === "approved" ? "Pago aprobado. Actualizando tu pedido…" : "El pago no fue aprobado. Podés intentar con otra tarjeta.");
+                  paymentMethodId: form.payment_method_id, payerEmail: form.payer.email });
+                setStatus(outcomeText[result.status] ?? outcomeText.review);
                 router.refresh();
-              } catch { setStatus(""); setError(errorText); }
+              } catch (failure) {
+                setStatus("");
+                refuse(failure);
+              }
             },
           },
         });
       } catch { if (!cancelled) setError(errorText); }
     })();
     return () => { cancelled = true; brick.current?.unmount(); brick.current = null; };
-  }, [mode, orderId, total, router]);
+  }, [mode, orderId, total, router, refuse]);
 
   async function payContado() {
     setBusy(true); setError("");
     try { window.location.assign((await post("/api/mercadopago/create-preference", { orderId })).url); }
-    catch { setError(errorText); setBusy(false); }
+    catch (failure) {
+      setBusy(false);
+      refuse(failure);
+    }
   }
 
   return (

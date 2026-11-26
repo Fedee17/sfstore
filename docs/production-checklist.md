@@ -50,7 +50,10 @@ Este documento conserva la referencia histórica de deploy y registra correccion
 | `NEXT_PUBLIC_SUPABASE_URL` | Si | Publica | clientes Supabase anon, auth server, service role server | `https://xxxx.supabase.co` | Si |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Si | Publica | cliente publico Supabase y Supabase Auth | `eyJ...` | Si |
 | `SUPABASE_SERVICE_ROLE_KEY` | Si | Privada | lecturas/admin server-side, ordenes, stock, Mercado Pago API routes | `eyJ...` | Si, solo server |
-| `MERCADO_PAGO_ACCESS_TOKEN` | Si para Mercado Pago | Privada | crear preferencia y consultar pagos en webhook | `APP_USR-...` o token test | Si, solo server |
+| `MERCADO_PAGO_ACCESS_TOKEN` | Si para Mercado Pago | Privada | preferencias, órdenes `/v1/orders` y consultas del webhook | `APP_USR-...` productivo | Si, solo server |
+| `NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY` | Si para cuotas | Publica | Card Payment Brick | `APP_USR-...` productivo | Si |
+| `MERCADO_PAGO_WEBHOOK_SECRET` | Si para Mercado Pago | Privada | firma `x-signature` de `/api/mercadopago/webhook` | clave secreta de Webhooks | Si, solo server |
+| `MERCADOPAGO_PAYMENTS_ENABLED` | No | Privada/config | interruptor del servidor; sin `1` las rutas responden 410 | `1` solo al activar | Si, al activar ([runbook](MERCADOPAGO-ACTIVACION.md)) |
 | `ADMIN_ALLOWED_EMAILS` | Si | Privada/config | restringe emails autorizados para `/admin` | `dueño@dominio.com,otro@dominio.com` | Si |
 | `ADMIN_EMAIL` | No | Privada/config | No utilizada por la autorización actual; no es fallback | No aplica | No requerida; usar `ADMIN_ALLOWED_EMAILS` |
 | `GOOGLE_SHEETS_SYNC_SECRET` | Si para sync automática | Privada | autentica `/api/integrations/google-sheets/product-sync` | cadena aleatoria extensa | Si, solo server |

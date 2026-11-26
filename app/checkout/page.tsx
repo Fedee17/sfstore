@@ -45,7 +45,7 @@ function CheckoutContent() {
   const requestedPayment = searchParams.get("payment");
   const unsupportedPayment = !!requestedPayment && requestedPayment !== "transfer";
   // Mercado Pago is offered only when the server enables it; manually quoted shipping stays transfer-only.
-  const mercadoPagoAvailable = useMercadoPagoAvailable();
+  const mercadoPago = useMercadoPagoAvailable();
   const [paymentChoice, setPaymentChoice] = useState<CheckoutPayment>("transfer");
   // Chosen in /checkout/entrega; without a valid value the form keeps both options (pickup preselected, as before).
   const chosenDelivery = parseDeliveryChoice(searchParams.get("entrega"));
@@ -90,7 +90,7 @@ function CheckoutContent() {
   }, [submitError,errors]);
 
   const shippingRequired = form.deliveryMethod === "shipping";
-  const payment: CheckoutPayment = mercadoPagoAvailable && approvedTotal === null ? paymentChoice : "transfer";
+  const payment: CheckoutPayment = mercadoPago.enabled && approvedTotal === null && (paymentChoice !== "mp-cuotas" || mercadoPago.installments) ? paymentChoice : "transfer";
   const paymentMethod = payment === "transfer" ? "transfer" : "mercadopago";
   const checkoutLabel = payment === "transfer" ? "Preparar pedido por transferencia" : "Continuar al pago con Mercado Pago";
   const paymentLabel = payment === "transfer" ? "Transferencia bancaria" : payment === "mp-cuotas" ? "Mercado Pago · hasta 3 cuotas" : "Mercado Pago · 1 pago";
@@ -360,8 +360,8 @@ function CheckoutContent() {
                   ) : null}
                 </section>
 
-                {mercadoPagoAvailable && approvedTotal === null && !(shippingRequired && !selectedQuoteKey) ? (
-                  <CheckoutPaymentChoice value={payment} onChange={setPaymentChoice} cashTotal={getWebTransferSubtotal(items)} listTotal={subtotal} shipping={shippingFee} disabled={isSubmitting} />
+                {mercadoPago.enabled && approvedTotal === null && !(shippingRequired && !selectedQuoteKey) ? (
+                  <CheckoutPaymentChoice value={payment} onChange={setPaymentChoice} cashTotal={getWebTransferSubtotal(items)} listTotal={subtotal} shipping={shippingFee} installments={mercadoPago.installments} disabled={isSubmitting} />
                 ) : null}
 
                 {paymentMethod === "mercadopago" ? (

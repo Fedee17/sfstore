@@ -30,3 +30,19 @@ export function fromMercadoPagoPayment(payment: { payment_type_id: string; insta
   if (!method) throw new Error("Medio de Mercado Pago no habilitado: " + payment.payment_type_id + ".");
   return { method, installments: payment.installments, amountCents: parseAdminMoneyCents(String(payment.transaction_amount)), currency: payment.currency_id, approved: payment.status === "approved", externalReference: payment.external_reference };
 }
+
+// Mercado Pago Orders API order (GET /v1/orders/{id}) → received payment. Exactly one transaction whose amount is the
+// order total; the amount compared is the store's (paid_amount may add Mercado Pago's own interest on top).
+type OrdersApiOrder = { status: string; status_detail: string; external_reference: string; total_amount: string; currency: string;
+  transactions?: { payments?: { amount: string; status: string; status_detail: string; payment_method: { type: string; installments: number } }[] } };
+export function fromMercadoPagoOrder(order: OrdersApiOrder): ReceivedPayment {
+  const payments = order.transactions?.payments ?? [];
+  if (payments.length !== 1) throw new Error("La orden de Mercado Pago debe tener una sola transacción.");
+  const [payment] = payments;
+  const method = MP_TYPES[payment.payment_method?.type];
+  if (!method) throw new Error("Medio de Mercado Pago no habilitado: " + payment.payment_method?.type + ".");
+  const amountCents = parseAdminMoneyCents(payment.amount);
+  if (amountCents !== parseAdminMoneyCents(order.total_amount)) throw new Error("El importe de la transacción no coincide con la orden.");
+  const approved = order.status === "processed" && order.status_detail === "accredited" && payment.status === "processed" && payment.status_detail === "accredited";
+  return { method, installments: payment.payment_method.installments, amountCents, currency: order.currency, approved, externalReference: order.external_reference };
+}

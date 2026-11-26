@@ -20,13 +20,17 @@ export type CollectionCost = {
 
 export type PaymentCostTable = {
   cash: CollectionCost[]; // Every enabled one-payment method; the most expensive one sets the cash price.
-  financed: CollectionCost[]; // Every enabled installment count; the most expensive one sets the financed price.
+  financed: CollectionCost[]; // Real cost of every enabled installment count, kept for records and verification.
+  // Budgeted collection cost (IVA included) that sets the financed price; a higher real `financed` cost still prevails.
+  financedBudgetPpm: bigint;
 };
 
 // Mercado Pago, money released at 35 days, Córdoba (/ayuda/33399, from 06/03/2026): 1,56% + IVA = 1,8876%,
 // matching the ≈1,89% the owner's account simulator shows. Seller-paid installments add 7,79% (2) or 10,49% (3)
 // + IVA (/developers/es/support/cuotas-sin-interes_3299, from 10/02/2026); the account value is still unconfirmed.
 // Automated transfer is excluded until a provider is approved: add its row to `cash` when it is.
+// Owner decision 26/11/2026: the list price budgets a 15% collection cost for 3 installments (above the real
+// 14,58% = (1,56% + 10,49%) × 1,21); the real rows stay unchanged for records and checks.
 export const SFSTORE_PAYMENT_COSTS: PaymentCostTable = {
   cash: [
     { id: "cash", label: "Efectivo al retirar", commissionPpm: ZERO, ivaOnCommission: false, confirmed: true, source: "Sin proveedor" },
@@ -36,6 +40,7 @@ export const SFSTORE_PAYMENT_COSTS: PaymentCostTable = {
     { id: "mercadopago-2", label: "Crédito en 2 cuotas", commissionPpm: BigInt(15600 + 77900), ivaOnCommission: true, confirmed: false, source: "1,56% a 35 días + 7,79% por 2 cuotas (cuotas-sin-interes_3299)" },
     { id: "mercadopago-3", label: "Crédito en 3 cuotas", commissionPpm: BigInt(15600 + 104900), ivaOnCommission: true, confirmed: false, source: "1,56% a 35 días + 10,49% por 3 cuotas (cuotas-sin-interes_3299)" },
   ],
+  financedBudgetPpm: BigInt(150000),
 };
 
 const CASH_STEP = BigInt(10000); // D8: round up to $100.
@@ -110,7 +115,9 @@ export function calculateCommercialPrices(
   if (profit !== undefined && profit < ZERO) throw new Error("Ingresá una ganancia no negativa.");
   const doubledTarget = twice * (costCents + fixedCents) + (profit === undefined ? costCents : twice * profit);
   const cashRatePpm = maxRate(table.cash);
-  const financedRatePpm = maxRate(table.financed);
+  if (table.financedBudgetPpm < ZERO || table.financedBudgetPpm >= PPM) throw new Error("El costo presupuestado en cuotas es inválido.");
+  const realFinancedPpm = maxRate(table.financed);
+  const financedRatePpm = realFinancedPpm > table.financedBudgetPpm ? realFinancedPpm : table.financedBudgetPpm;
   const cashCents = priceFor(doubledTarget, input.sellingCostPpm, cashRatePpm, CASH_STEP);
   const financedRaw = priceFor(doubledTarget, input.sellingCostPpm, financedRatePpm, FINANCED_STEP);
   // The financed price can never be below the cash price (it would undercut the one-payment price).

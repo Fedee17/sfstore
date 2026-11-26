@@ -1,12 +1,16 @@
 import { isMercadoPagoEnabled } from "@/lib/payments/mercadopago";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
-// Whether the checkout may offer Mercado Pago: server credentials AND the database switch. Fails closed.
+// Whether the checkout may offer Mercado Pago (server credentials AND the database switch) and, separately, installments
+// (their own database switch, off until SFSTORE finances them). Fails closed.
 export async function GET() {
   const headers = { "Cache-Control": "no-store" };
-  if (!isMercadoPagoEnabled(process.env) || !process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY) return Response.json({ enabled: false }, { headers });
+  const off = { enabled: false, installments: false };
+  if (!isMercadoPagoEnabled(process.env) || !process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY) return Response.json(off, { headers });
   try {
-    const { data, error } = await getSupabaseAdminClient().rpc("mercadopago_payments_enabled");
-    return Response.json(data === true && !error ? { enabled: true, publicKey: process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY } : { enabled: false }, { headers });
-  } catch { return Response.json({ enabled: false }, { headers }); }
+    const client = getSupabaseAdminClient();
+    const [payments, installments] = await Promise.all([client.rpc("mercadopago_payments_enabled"), client.rpc("mercadopago_installments_enabled")]);
+    if (payments.error || payments.data !== true) return Response.json(off, { headers });
+    return Response.json({ enabled: true, installments: !installments.error && installments.data === true, publicKey: process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY }, { headers });
+  } catch { return Response.json(off, { headers }); }
 }

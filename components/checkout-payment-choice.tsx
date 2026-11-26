@@ -6,18 +6,21 @@ import { financedCftea, MAX_INSTALLMENTS } from "@/lib/products/commercial-prici
 import styles from "@/app/checkout/checkout.module.css";
 
 // Payment choice in the existing checkout (owner decision 26/11/2026). Transfer stays the default and the only option
-// until the server reports Mercado Pago enabled. Amounts shown here are previews; the server prices the order.
+// until the server reports Mercado Pago enabled; installments appear only with their own switch (off until SFSTORE
+// finances them). Amounts shown here are previews; the server prices the order.
 export type CheckoutPayment = "transfer" | "mp-contado" | "mp-cuotas";
+export type MercadoPagoAvailability = { enabled: boolean; installments: boolean };
 
-export function useMercadoPagoAvailable() {
-  const [enabled, setEnabled] = useState(false);
+export function useMercadoPagoAvailable(): MercadoPagoAvailability {
+  const [availability, setAvailability] = useState<MercadoPagoAvailability>({ enabled: false, installments: false });
   useEffect(() => {
     let active = true;
     fetch("/api/mercadopago/status", { cache: "no-store" }).then(r => r.ok ? r.json() : null)
-      .then(data => { if (active) setEnabled(data?.enabled === true); }).catch(() => { /* transfer only */ });
+      .then(data => { if (active) setAvailability({ enabled: data?.enabled === true, installments: data?.enabled === true && data?.installments === true }); })
+      .catch(() => { /* transfer only */ });
     return () => { active = false; };
   }, []);
-  return enabled;
+  return availability;
 }
 
 export function checkoutRequestPayment(payment: CheckoutPayment) {
@@ -37,9 +40,9 @@ export function installmentLines(cash: number, list: number) {
   }));
 }
 
-export function CheckoutPaymentChoice({ value, onChange, cashTotal, listTotal, shipping, disabled }: {
+export function CheckoutPaymentChoice({ value, onChange, cashTotal, listTotal, shipping, installments, disabled }: {
   value: CheckoutPayment; onChange: (value: CheckoutPayment) => void;
-  cashTotal: number; listTotal: number; shipping: number; disabled?: boolean;
+  cashTotal: number; listTotal: number; shipping: number; installments: boolean; disabled?: boolean;
 }) {
   const option = (id: CheckoutPayment, title: string, total: number, detail: React.ReactNode) => (
     <button key={id} type="button" className={styles.option} aria-pressed={value === id} data-selected={value === id || undefined}
@@ -58,8 +61,8 @@ export function CheckoutPaymentChoice({ value, onChange, cashTotal, listTotal, s
       <div className={styles.legacyOptions}>
         {option("transfer", "Transferencia bancaria", cashTotal, "Precio de contado. Los datos para transferir aparecen al crear el pedido.")}
         {option("mp-contado", "Mercado Pago · 1 pago", cashTotal, "Precio de contado. Dinero en cuenta, débito o crédito en un pago.")}
-        {option("mp-cuotas", `Mercado Pago · hasta ${MAX_INSTALLMENTS} cuotas`, listTotal,
-          <>Precio de lista con tarjeta de crédito. {plans.map(p => `${p.installments} cuotas de ${formatWebPrice(p.amount)} (CFTEA ${p.cftea})`).join(" · ")}. Precio de contado: {formatWebPrice(cashTotal + shipping)}.</>)}
+        {installments ? option("mp-cuotas", `Mercado Pago · hasta ${MAX_INSTALLMENTS} cuotas`, listTotal,
+          <>Precio de lista con tarjeta de crédito. {plans.map(p => `${p.installments} cuotas de ${formatWebPrice(p.amount)} (CFTEA ${p.cftea})`).join(" · ")}. Precio de contado: {formatWebPrice(cashTotal + shipping)}.</>) : null}
       </div>
     </section>
   );

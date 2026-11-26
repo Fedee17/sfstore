@@ -100,3 +100,33 @@ export async function approveShippingQuotation(quoteId:string,fee:number) {
  if(error||!data)throw new Error("No se pudo registrar la cotización.");
  return data as {total:number;shippingFee:number};
 }
+
+// Mercado Pago charges that did not confirm their order (second payment, expired reservation, mismatch). Open ones
+// first; refund or review is decided and done by an administrator in Mercado Pago, then recorded here.
+export type MercadoPagoReview = {
+  provider_payment_id: string; order_id: string | null; review_kind: "refund" | "review"; price_mode: string | null; method: string | null;
+  installments: number | null; amount: number | null; reason: string | null; created_at: string; resolved_at: string | null; resolution: string | null;
+  orders: { order_number: string; total: number; payment_status: string; customers: { full_name: string; phone: string } | null } | null;
+};
+export async function listMercadoPagoReviews(): Promise<MercadoPagoReview[]> {
+  await requireAdminActionSession();
+  const { data, error } = await getSupabaseAdminClient().from("checkout_mercadopago_payments")
+    .select("provider_payment_id,order_id,review_kind,price_mode,method,installments,amount,reason,created_at,resolved_at,resolution,orders(order_number,total,payment_status,customers(full_name,phone))")
+    .eq("status", "review").order("resolved_at", { ascending: false, nullsFirst: true }).order("created_at", { ascending: false }).limit(100);
+  if (error) throw new Error("No se pudieron leer los pagos de Mercado Pago a revisar.");
+  return (data ?? []) as unknown as MercadoPagoReview[];
+}
+export async function countOpenMercadoPagoReviews(): Promise<number> {
+  await requireAdminActionSession();
+  const { count, error } = await getSupabaseAdminClient().from("checkout_mercadopago_payments").select("provider_payment_id", { count: "exact", head: true })
+    .eq("status", "review").is("resolved_at", null);
+  if (error) throw new Error("No se pudieron contar los pagos de Mercado Pago a revisar.");
+  return count ?? 0;
+}
+export async function resolveMercadoPagoReview(paymentId: string, resolution: string) {
+  const admin = await requireAdminActionSession();
+  const note = resolution.trim();
+  if (!/^([0-9]{1,20}|ORD[A-Z0-9]{8,60})$/.test(paymentId) || note.length < 3 || note.length > 300) throw new Error("Resolución inválida.");
+  const { error } = await getSupabaseAdminClient().rpc("resolve_checkout_mercadopago_review", { p_provider_payment_id: paymentId, p_admin_id: admin.id, p_resolution: note });
+  if (error) throw new Error("No se pudo registrar la resolución.");
+}

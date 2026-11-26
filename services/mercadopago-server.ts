@@ -2,13 +2,13 @@ import "server-only";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { authorizeCheckoutBuyer } from "@/services/checkout-server";
 import type { MercadoPagoDeps } from "@/lib/payments/mercadopago-handlers";
-import type { MercadoPagoPaymentRecord } from "@/lib/payments/mercadopago";
+import type { MercadoPagoOrderRecord, MercadoPagoPaymentRecord } from "@/lib/payments/mercadopago";
 
 // Production adapters for lib/payments/mercadopago-handlers.ts: Mercado Pago REST API with the server access token
 // (never sent to the browser) and Supabase service-role RPCs. Requests time out instead of hanging the checkout.
 const API = "https://api.mercadopago.com";
 
-async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string } = {}): Promise<T> {
+async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string; accept?: (status: number, body: unknown) => T | undefined } = {}): Promise<T> {
   const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
   if (!token) throw new Error("MERCADOPAGO_NOT_CONFIGURED");
   const response = await fetch(API + path, {
@@ -21,9 +21,17 @@ async function mp<T>(path: string, init: RequestInit & { idempotencyKey?: string
     cache: "no-store",
     signal: AbortSignal.timeout(15000),
   });
-  if (!response.ok) throw new Error(`MERCADOPAGO_HTTP_${response.status}`);
-  return response.json() as Promise<T>;
+  if (response.ok) return response.json() as Promise<T>;
+  const accepted = init.accept?.(response.status, await response.json().catch(() => null));
+  if (accepted !== undefined) return accepted;
+  throw new Error(`MERCADOPAGO_HTTP_${response.status}`);
 }
+
+// POST /v1/orders answers 402 when the card charge failed; the created (failed) order comes in `data`.
+const failedOrder = (status: number, body: unknown) => {
+  const data = (body as { data?: MercadoPagoOrderRecord } | null)?.data;
+  return status === 402 && typeof data?.id === "string" ? data : undefined;
+};
 
 export function mercadoPagoDeps(): MercadoPagoDeps {
   return {
@@ -36,7 +44,9 @@ export function mercadoPagoDeps(): MercadoPagoDeps {
       return data;
     },
     createPreference: body => mp("/checkout/preferences", { method: "POST", body: JSON.stringify(body) }),
-    createPayment: request => mp<MercadoPagoPaymentRecord>("/v1/payments", { method: "POST", body: JSON.stringify(request.body), idempotencyKey: request.idempotencyKey }),
+    expirePreference: async (id, body) => { await mp(`/checkout/preferences/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(body) }); },
+    createOrder: request => mp<MercadoPagoOrderRecord>("/v1/orders", { method: "POST", body: JSON.stringify(request.body), idempotencyKey: request.idempotencyKey, accept: failedOrder }),
+    getOrder: id => mp<MercadoPagoOrderRecord>(`/v1/orders/${encodeURIComponent(id)}`),
     getPayment: id => mp<MercadoPagoPaymentRecord>(`/v1/payments/${encodeURIComponent(id)}`),
   };
 }
