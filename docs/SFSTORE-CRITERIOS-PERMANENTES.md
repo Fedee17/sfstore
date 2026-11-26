@@ -7,6 +7,17 @@
 ## Prioridad
 **«La tecnología tiene que ayudarnos a vender más, no convertirse en un proyecto que nos impida terminar la tienda».** Priorizar conversión, confianza, claridad de compra y operación cotidiana. No abrir proyectos técnicos accesorios si retrasan mejoras comerciales relevantes.
 
+## Principio prioritario: agilidad, simplicidad y eficiencia
+
+**Regla fundamental: ahorrar tiempo, reducir fricción y obtener el dato o resultado importante de inmediato.** Todo trabajo —tienda, administrador, atención, Codex, Claude y ChatGPT— debe minimizar pasos, clics, campos y mensajes sin comprometer precisión, seguridad, legalidad ni calidad.
+
+- **Primero lo esencial:** costo → ganancia → precios, o el recorrido mínimo equivalente para cada tarea; controles avanzados disponibles pero ocultos por defecto.
+- **Continuar sin fricción:** una aprobación expresa cierra esa decisión. Si el usuario solicita avanzar, entregar la acción o el prompt ejecutable de inmediato; no responder solamente que quedó aprobado ni pedir confirmaciones reiteradas.
+- **No repetir:** consultar el estado vigente, reutilizar código, diseños, pruebas y decisiones aprobadas; no volver a investigar, proponer o rehacer lo resuelto.
+- **Autonomía con límites:** decidir internamente detalles técnicos menores que estén autorizados; reservar consultas para decisiones comerciales/visuales pendientes, credenciales y autorizaciones exigidas para Production, pagos o datos reales.
+- **Comunicación breve y útil:** respuesta directa al pedido, sin preámbulos, recapitulaciones, ofrecimientos o pasos genéricos; mostrar únicamente resultado, bloqueos reales y siguiente acción necesaria. Si se pide un prompt, darlo listo para usar en el mismo mensaje.
+- **Fidelidad visual y control:** los mockups aprobados son especificaciones, no sugerencias; la rapidez no habilita alterar diseños, fórmulas, precios ni omitir verificaciones.
+
 ## Identidad y negocio
 SFSTORE Importados: tienda pequeña en Argentina de perfumes importados y árabes, decants, mates, termos, yerbas, accesorios materos, electrónica pequeña y regalos. Público predominante: 18–35 años. Venta guiada y cercana: recomendar según gustos, uso, destinatario y presupuesto; nunca inventar atributos ni prometer condiciones no verificadas.
 
