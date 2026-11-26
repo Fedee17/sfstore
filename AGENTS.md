@@ -18,6 +18,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Resolver internamente decisiones técnicas menores y verificables dentro del alcance autorizado. Pedir intervención del propietario solo para una decisión comercial o visual no resuelta, autenticación imprescindible o una autorización de seguridad/Production que falte.
 - En cierres: resultado comprobado, bloqueo real si existe y siguiente acción concreta en pocas líneas. **No agregar próximos pasos genéricos, ofrecimientos ni informes extensos por defecto**. La brevedad nunca elimina pruebas, permisos, controles o límites de publicación.
 
+## Skills del repositorio (carga por necesidad)
+
+Las skills reutilizables de SFSTORE viven en `.agents/skills/<nombre>/SKILL.md`. Elegí solo las relevantes para el pedido; no leas todas ni las ejecutes como etapas obligatorias en cada conversación. Son procedimientos subordinados a las autorizaciones y límites de este archivo.
+
+- `sfstore-task-execution`: implementación, corrección y continuación de tareas de punta a punta.
+- `sfstore-context-manager`: retomar estado, distinguir aprobación/local/main/Production, actualizar continuidad única.
+- `sfstore-design-implementation`: integrar prototipos de UI explícitamente aprobados con fidelidad móvil/escritorio.
+- `sfstore-quality-gate`: validar código, seguridad y experiencia antes de entregar o integrar.
+- `sfstore-release`: PR, merge y despliegue **solo** con autorización expresa.
+- `sfstore-test-driven-development`: TDD para bugs, lógica y cambios de comportamiento; no para documentación estática.
+
+**Skills oficiales de Codex:** en versiones compatibles, `skill-creator` y `skill-installer` están disponibles como skills de sistema del catálogo oficial `openai/skills` (`skills/.system`); no duplicar ni versionar sus implementaciones dentro de SFSTORE. Usar `skill-creator` para crear o revisar skills y `skill-installer` solo cuando se pida instalar una skill adicional. Si la versión instalada no las ofrece, declarar el límite y consultar documentación oficial antes de elegir un método compatible; no afirmar que se ejecutaron. Para cambios de lógica usar la skill `test-driven-development` oficial cuando esté disponible junto con la adaptación SFSTORE.
+
+En ChatGPT las skills del repositorio **no se instalan ni sincronizan automáticamente** por existir en GitHub; un entorno con acceso a esos archivos puede seguirlas explícitamente. No prometer activación global sin confirmación del sistema correspondiente.
+
 ## Inicio de cada tarea
 
 1. Leer [PROJECT_CONTEXT](docs/PROJECT_CONTEXT.md): único estado de continuidad (última evidencia de Production/main, tarea, bloqueos y próximo paso). Confirmar cwd, rama, status y worktrees; no cambiar checkouts ni pisar cambios ajenos.
