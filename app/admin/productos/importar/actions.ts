@@ -36,6 +36,7 @@ import type {
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { getYaraRosaCanonicalId } from "@/lib/products/yara-rosa-consolidation";
 import { applyConfirmedProductImportRows } from "@/services/product-import";
+import { revalidateProductPaths } from "@/lib/catalog/public-catalog-revalidation";
 
 const MAX_GOOGLE_RESPONSE_SIZE = 2 * 1024 * 1024;
 const GOOGLE_SHEETS_TIMEOUT_MS = 12000;
@@ -299,7 +300,18 @@ export async function confirmProductImport(
     return await runProductImportConfirmation(
       formData.get("previewPayload"),
       mode,
-      applyConfirmedProductImportRows,
+      async (rows) => {
+        // Same revalidation as a product save, even if the batch stops halfway: rows before the failure are written.
+        try {
+          return await applyConfirmedProductImportRows(rows);
+        } finally {
+          try {
+            for (const row of rows) revalidateProductPaths({ slug: row.slug, categorySlugs: [row.categorySlug] });
+          } catch {
+            console.warn("[product-import] Importación procesada; no se pudo actualizar la cache");
+          }
+        }
+      },
     );
   } catch (error) {
     return {

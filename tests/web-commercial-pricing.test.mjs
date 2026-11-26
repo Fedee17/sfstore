@@ -15,7 +15,7 @@ const service = await import(url(source("services/products.ts").replace("@/lib/c
   .replace("@/lib/products/public-families", url(source("lib/products/public-families.ts")))
   .replace("@/lib/web-transfer-pricing", url(source("lib/web-transfer-pricing.ts")))
   .replace("@/data/products", url(source("data/products.ts")))
-  .replace("@/lib/catalog/public-product-visibility", url(source("lib/catalog/public-product-visibility.ts")))
+  .replace("@/lib/catalog/public-product-visibility", url(source("lib/catalog/public-product-visibility.ts").replace("./matero-taxonomy.ts",new URL('../lib/catalog/matero-taxonomy.ts',import.meta.url).href)))
   .replace("@/lib/products/yara-rosa-consolidation", url(source("lib/products/yara-rosa-consolidation.ts")))
   .replace("@/lib/supabase/client", url("export const getSupabaseClient = () => globalThis.__commercialCatalogClient;"))));
 function client(rows,error=null,cash={}) {

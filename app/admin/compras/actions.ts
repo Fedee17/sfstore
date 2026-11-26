@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicCatalogCaches } from "@/lib/catalog/public-catalog-revalidation";
 import { redirect } from "next/navigation";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
@@ -141,6 +142,8 @@ export async function confirmPurchaseAction(
 
     const result = await confirmPurchase(purchaseId, user.id);
 
+    // Confirming a purchase adds stock: the cart's cached stock check must not wait for its TTL.
+    revalidatePublicCatalogCaches();
     revalidatePath("/admin/compras");
     revalidatePath(`/admin/compras/${purchaseId}`);
     revalidatePath("/admin/productos");

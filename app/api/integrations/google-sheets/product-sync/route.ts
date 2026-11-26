@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { isSupportedProductSheet } from "@/lib/product-import/core";
 import type { ProductSyncInputRow } from "@/lib/product-import/types";
 import { syncImportedProductRows } from "@/services/product-import";
+import { revalidateProductPaths } from "@/lib/catalog/public-catalog-revalidation";
 
 export const runtime = "nodejs";
 
@@ -89,6 +90,14 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[Google Sheets sync] Batch failed", error instanceof Error ? error.message : "unknown");
     return json({ ok: false, error: "No se pudo procesar la sincronización." }, 500);
+  }
+  // The sync does not report categories, so every public section is refreshed for each written product.
+  try {
+    for (const row of result.results) {
+      if ((row.status === "created" || row.status === "updated") && row.slug) revalidateProductPaths({ slug: row.slug });
+    }
+  } catch {
+    console.warn("[Google Sheets sync] Sincronización procesada; no se pudo actualizar la cache");
   }
   const successful = result.created + result.updated + result.unchanged;
   const responseStatus = successful === 0 && result.errors > 0

@@ -137,6 +137,9 @@ test("quick purchase creation produces a private draft", () => {
 });
 
 test("product edits revalidate old and new public surfaces precisely", () => {
+  // CAT-03: the revalidation lives in one shared module, reused by product saves and imports.
+  assert.match(productActions, /from "@\/lib\/catalog\/public-catalog-revalidation"/);
+  const revalidation = source("lib", "catalog", "public-catalog-revalidation.ts");
   for (const path of [
     '"/admin/productos"',
     '"/admin/consulta"',
@@ -145,9 +148,9 @@ test("product edits revalidate old and new public surfaces precisely", () => {
     '"/perfumes"',
     '"/mates"',
   ]) {
-    assert.match(productActions, new RegExp(path.replaceAll("/", "\\/")));
+    assert.match(revalidation, new RegExp(path.replaceAll("/", "\\/")));
   }
-  assert.match(productActions, /previousSlug && previousSlug !== slug/);
-  assert.match(productActions, /paths\.add\(`\/producto\/\$\{previousSlug\}`\)/);
-  assert.match(productActions, /`\/admin\/productos\/\$\{productId\}\/editar`/);
+  assert.match(revalidation, /previousSlug && previousSlug !== slug/);
+  assert.match(revalidation, /paths\.add\(`\/producto\/\$\{previousSlug\}`\)/);
+  assert.match(revalidation, /`\/admin\/productos\/\$\{productId\}\/editar`/);
 });

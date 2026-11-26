@@ -3,23 +3,18 @@ import { publicationAvailable } from "../products/public-families.ts";
 import { availableFirst } from "./availability-order.ts";
 import { CATALOG_ATTRIBUTE_KEYS, getCatalogAttributeValues } from "./attribute-config.ts";
 import { isDecantProduct, recommendPerfumes } from "./perfume-recommendation.ts";
+import { MATERO_KIND_ORDER, materoKind, materoKindSubcategories, type MateroKind } from "./matero-taxonomy.ts";
 
 type RelatedCandidate = Product & { categorySlug?: string };
 
 const RELATED_LIMIT = 4;
 
-// Matero cross-sell: kinds of product (one or more subcategories each, in preference order) in order of usefulness
-// next to the one on screen.
-const materoKinds: Record<string, string[]> = {
-  mates: ["mates"], bombillas: ["bombillas", "bombillones"], termos: ["termos", "vasos-termicos"], materas: ["materas"],
-  yerba: ["yerbas", "latas-de-yerba", "dispenser-de-yerba"], otros: ["porta-mate", "accesorios-materos", "despolvilladores", "accesorios"],
-  regalos: ["combos-materos", "box-regalos-materos"],
-};
-const materoOrder = ["mates", "bombillas", "termos", "materas", "yerba", "otros", "regalos"];
-const materoKind = (slug: string | undefined) => Object.keys(materoKinds).find(kind => slug && materoKinds[kind].includes(slug));
 // In the real catalog porta mates, dispenser and despolvillador sit in the public «Accesorios» section under the
 // generic «accesorios» subcategory; electronics and gift boxes there are not matero complements.
-const isMateroAccessory = (product: RelatedCandidate) => product.category === "accesorios" && product.categorySlug === "accesorios";
+const MATERO_ACCESSORY_SUBCATEGORY = "accesorios";
+const isMateroAccessory = (product: RelatedCandidate) => product.category === "accesorios" && product.categorySlug === MATERO_ACCESSORY_SUBCATEGORY;
+// Subcategories of each cross-sell kind, in preference order; the generic accessories close the «otros» kind.
+const kindSubcategories = (kind: MateroKind) => [...materoKindSubcategories(kind), ...(kind === "otros" ? [MATERO_ACCESSORY_SUBCATEGORY] : [])];
 
 const gender = (product: RelatedCandidate) => getCatalogAttributeValues(product.attributes, CATALOG_ATTRIBUTE_KEYS.gender)[0];
 const opposite: Record<string, string> = { masculino: "femenino", femenino: "masculino" };
@@ -44,8 +39,8 @@ function perfumeCandidates(current: RelatedCandidate, candidates: RelatedCandida
 /** Mates and termos: one product per complementary kind in turn, then more of the same kind. */
 function materoCandidates(current: RelatedCandidate, candidates: RelatedCandidate[]) {
   const own = materoKind(current.categorySlug);
-  const groups = materoOrder.filter(kind => kind !== own)
-    .map(kind => materoKinds[kind].flatMap(slug => availableFirst(candidates.filter(product => product.categorySlug === slug))));
+  const groups = MATERO_KIND_ORDER.filter(kind => kind !== own)
+    .map(kind => kindSubcategories(kind).flatMap(slug => availableFirst(candidates.filter(product => product.categorySlug === slug))));
   const ranked: RelatedCandidate[] = [];
   for (let round = 0; groups.some(group => group.length > round); round++)
     for (const group of groups) if (group[round]) ranked.push(group[round]);

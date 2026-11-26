@@ -24,22 +24,6 @@ export const MATE_PRODUCT_TYPES = [
   "Box/regalos materos",
 ] as const;
 
-export const MATE_PUBLIC_CATEGORY_SLUGS = [
-  "mates",
-  "termos",
-  "bombillas",
-  "bombillones",
-  "materas",
-  "yerbas",
-  "latas-de-yerba",
-  "dispenser-de-yerba",
-  "despolvilladores",
-  "porta-mate",
-  "combos-materos",
-  "box-regalos-materos",
-  "accesorios",
-] as const;
-
 export const PRODUCT_ATTRIBUTE_NAMES = {
   brand: "Marca",
   type: "Tipo",

@@ -36,7 +36,7 @@ test('service sends the validated date through the new RPC and does not invoke R
 
 test('authorized action validates before creating the sale and forwards the date without changing the operation key',async()=>{
   const requests=[];
-  const actions=load('app/admin/ventas/actions.ts',{'next/cache':{revalidatePath:()=>{}},'@/lib/admin-session':{requireAdminActionSession:async()=>({id:'actor'})},'@/lib/store-sale-date':{validateStoreSaleDate},'@/lib/store-sales':pricing,'@/services/store-sales':{createStoreSale:async request=>{requests.push(request);return{order_id:'synthetic',payment_status:'paid',remaining_amount:0};}}});
+  const actions=load('app/admin/ventas/actions.ts',{'next/cache':{revalidatePath:()=>{}},'@/lib/catalog/public-catalog-revalidation':{PUBLIC_CATALOG_CACHE_TAG:'public-catalog',revalidatePublicCatalogCaches:()=>{}},'@/lib/admin-session':{requireAdminActionSession:async()=>({id:'actor'})},'@/lib/store-sale-date':{validateStoreSaleDate},'@/lib/store-sales':pricing,'@/services/store-sales':{createStoreSale:async request=>{requests.push(request);return{order_id:'synthetic',payment_status:'paid',remaining_amount:0};}}});
   const form=new FormData();for(const[name,value]of Object.entries({idempotencyKey:'original-key',productId:'product',quantity:'1',unitPrice:'75',paymentMethod:'cash',paymentAmount:'75',saleDate:'2025-09-12'}))form.set(name,value);
   assert.equal((await actions.createStoreSaleAction({},form)).status,'success');assert.equal(requests[0].saleDate,'2025-09-12');assert.equal(requests[0].idempotencyKey,'original-key');
   form.set('saleDate','2026-02-30');assert.equal((await actions.createStoreSaleAction({},form)).status,'error');assert.equal(requests.length,1);

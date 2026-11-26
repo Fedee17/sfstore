@@ -16,7 +16,7 @@ function route() {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   const exports = {};
-  const modules = { "next/cache": { unstable_cache: fn => fn }, "@/lib/catalog/search": search, "@/services/products": { getCatalogPublications: async () => catalog } };
+  const modules = { "next/cache": { unstable_cache: fn => fn }, '@/lib/catalog/public-catalog-revalidation':{PUBLIC_CATALOG_CACHE_TAG:'public-catalog',revalidatePublicCatalogCaches:()=>{}}, "@/lib/catalog/search": search, "@/services/products": { getCatalogPublications: async () => catalog } };
   new Function("require", "exports", code)(name => Object.hasOwn(modules, name) ? modules[name] : require(name), exports);
   return exports;
 }

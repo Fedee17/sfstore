@@ -3,6 +3,7 @@
 import { assertPerfumePricePolicy, supportsPerfumePricePolicy } from "@/lib/products/perfume-price-policy";
 import { assertUploadFormData } from "@/lib/uploads/limits";
 import { revalidatePath } from "next/cache";
+import { revalidateProductPaths, revalidatePublicCatalogCaches } from "@/lib/catalog/public-catalog-revalidation";
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
@@ -199,44 +200,6 @@ function buildProductAttributes(
     values.forEach((value, index) => rows.push({ name: field.key, value, sort_order: 100 + fieldIndex * 10 + index }));
   }
   return rows;
-}
-
-function revalidateProductPaths({
-  productId,
-  slug,
-  previousSlug,
-  categorySlugs,
-}: {
-  productId: string;
-  slug: string;
-  previousSlug?: string;
-  categorySlugs: Array<string | null | undefined>;
-}) {
-  const paths = new Set([
-    "/admin/productos",
-    `/admin/productos/${productId}/editar`,
-    "/admin/consulta",
-    "/",
-    "/sitemap.xml",
-    `/producto/${slug}`,
-  ]);
-
-  if (previousSlug && previousSlug !== slug) {
-    paths.add(`/producto/${previousSlug}`);
-  }
-
-  for (const categorySlug of categorySlugs) {
-    if (!categorySlug) {
-      continue;
-    }
-
-    paths.add("/accesorios");
-    paths.add(categorySlug === "perfumes" ? "/perfumes" : "/mates");
-  }
-
-  for (const path of paths) {
-    revalidatePath(path);
-  }
 }
 
 function getProductImageFiles(formData: FormData) {
@@ -475,6 +438,7 @@ export async function updateComponentGallery(_state: ProductFormActionState, for
 
 function revalidateComponentGallery(productId: string) {
   for (const path of ["/", "/accesorios", "/buscar", "/carrito", `/admin/productos/${productId}/editar`, ...(["cc","lightning"] as const).map(c => `/producto/combo-${productId}-${c}`)]) revalidatePath(path);
+  revalidatePublicCatalogCaches();
 }
 
 async function editComponentImage(form: FormData, action: "primary" | "previous" | "next" | "delete") {

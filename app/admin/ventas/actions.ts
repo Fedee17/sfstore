@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicCatalogCaches } from "@/lib/catalog/public-catalog-revalidation";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
 import { validateStoreSaleDate } from "@/lib/store-sale-date";
@@ -93,6 +94,8 @@ function revalidateStoreSale(orderId: string) {
   revalidatePath("/admin/productos");
   revalidatePath("/admin/inventario");
   revalidatePath("/admin/consulta");
+  // A store sale lowers stock read by the cart.
+  revalidatePublicCatalogCaches();
 }
 
 export async function createStoreSaleAction(

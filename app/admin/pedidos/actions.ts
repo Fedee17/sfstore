@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicCatalogCaches } from "@/lib/catalog/public-catalog-revalidation";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
@@ -45,6 +46,8 @@ function readItems(formData: FormData) {
 function revalidateCustomerOrder(orderId?: string) {
   revalidatePath("/admin/pedidos");
   if (orderId) revalidatePath(`/admin/pedidos/${orderId}`);
+  // Order transitions and deliveries can change stock read by the cart.
+  revalidatePublicCatalogCaches();
 }
 
 export async function saveCustomerOrderAction(
