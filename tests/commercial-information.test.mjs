@@ -9,6 +9,7 @@ import React from 'react';
 import * as jsx from 'react/jsx-runtime';
 import {renderToStaticMarkup} from 'react-dom/server';
 import * as prices from '../lib/web-transfer-pricing.ts';
+import { selectRelatedProducts } from '../lib/catalog/related-products.ts';
 const require=createRequire(import.meta.url);
 function load(file,modules={}){modules={...analyticsRenderStubs,...modules};const exports={};new Function('require','exports',ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(name=>Object.hasOwn(modules,name)?modules[name]:require(name),exports);return exports;}
 const config=load('lib/catalog/attribute-config.ts');
@@ -101,11 +102,26 @@ test('family shows only chosen SKU information, never implicit representative or
  const grey=renderFamily({Color:'Gris'});assert.match(grey,/Dato exclusivo Gris|1 L/);assert.doesNotMatch(grey,/Dato exclusivo Negro|2 L/);assert.match(grey,/data-cart-id="grey"/);
  const black=renderFamily({Color:'Negro'});assert.match(black,/Dato exclusivo Negro/);assert.doesNotMatch(black,/Dato exclusivo Gris/);assert.match(black,/data-cart-id="black"/);
 });
-test('product page shows whole-peso prices and retains purchase actions; same-category exploration does not assert compatibility',async()=>{
+// The page renders whatever the real recommender selects, so its exclusions are checked on the rendered page.
+const loadProductPage=(product,catalog)=>{
  const taxonomy=load('lib/product-taxonomy.ts',{'@/lib/catalog/attribute-config':config});
- const Page=load('app/producto/[slug]/page.tsx',{...ui,'react':React,'react/jsx-runtime':jsx,'next/link':{default:({children,prefetch,...props})=>React.createElement('a',props,children)},'next/navigation':{notFound:()=>{throw Error('not found')}},'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{perfumes:'Perfumes'},publicCategoryPaths:{perfumes:'/perfumes'}},'@/lib/product-taxonomy':taxonomy,'@/lib/products/commercial-information':info,'@/lib/web-transfer-pricing':prices,'@/components/product-purchase-summary':purchaseSummary,'@/components/product-grid':{ProductCard:({product})=>React.createElement('a',{href:'/producto/'+product.slug},product.name)},'@/lib/catalog/perfume-recommendation':{isDecantProduct:()=>false},'@/services/products':{getProductBySlug:async()=>base,getRelatedProducts:async()=>[{...base,id:'other',name:'Otro perfume'},{...base,id:'wrong',category:'mates',name:'MATE INCOMPATIBLE'},base]},'@/components/site-header':{SiteHeader:()=>null},'@/components/product-family-detail':{},'@/components/product-image-gallery':{ProductImageGallery:()=>null},'@/components/product-information':{ProductInformation},'@/components/component-offers':{ComponentOffers:()=>null},'@/components/storefront-surface.module.css':{default:{canvas:'canvas',botanicalCorner:'botanicalCorner'}},'@/lib/payments/installments':{getPublicInstallments:()=>null},'./product-actions':{ProductActions:({product,installments})=>React.createElement('button',{'data-price':product.price,'data-installments':String(installments)},'Comprar')}}).default;
- const html=renderToStaticMarkup(await Page({params:Promise.resolve({slug:'synthetic'})}));assert.match(html,/data-price="100"/);assert.match(html,/data-installments="null"/);assert.match(html,/Más en Perfumes/);assert.match(html,/Otro perfume/);assert.doesNotMatch(html,/MATE INCOMPATIBLE|También te puede gustar|compatibles|En stock|Categoría:/);
+ const Page=load('app/producto/[slug]/page.tsx',{...ui,'react':React,'react/jsx-runtime':jsx,'next/link':{default:({children,prefetch,...props})=>React.createElement('a',props,children)},'next/navigation':{notFound:()=>{throw Error('not found')}},'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{perfumes:'Perfumes',mates:'Mates y termos',accesorios:'Accesorios'},publicCategoryPaths:{perfumes:'/perfumes',mates:'/mates',accesorios:'/accesorios'}},'@/lib/product-taxonomy':taxonomy,'@/lib/products/commercial-information':info,'@/lib/web-transfer-pricing':prices,'@/components/product-purchase-summary':purchaseSummary,'@/components/product-grid':{ProductCard:({product})=>React.createElement('a',{href:'/producto/'+product.slug,'data-related':product.slug},product.name)},'@/lib/catalog/perfume-recommendation':{isDecantProduct:()=>false},'@/services/products':{getProductBySlug:async()=>product,getRelatedProducts:async current=>selectRelatedProducts(current,catalog)},'@/components/site-header':{SiteHeader:()=>null},'@/components/product-family-detail':{},'@/components/product-image-gallery':{ProductImageGallery:()=>null},'@/components/product-information':{ProductInformation},'@/components/component-offers':{ComponentOffers:()=>null},'@/components/storefront-surface.module.css':{default:{canvas:'canvas',botanicalCorner:'botanicalCorner'}},'@/lib/payments/installments':{getPublicInstallments:()=>null},'./product-actions':{ProductActions:({product,installments})=>React.createElement('button',{'data-price':product.price,'data-installments':String(installments)},'Comprar')}}).default;
+ return async()=>renderToStaticMarkup(await Page({params:Promise.resolve({slug:product.slug})}));
+};
+test('product page shows whole-peso prices and retains purchase actions; same-category exploration does not assert compatibility',async()=>{
+ const html=await loadProductPage(base,[{...base,id:'other',slug:'other',name:'Otro perfume'},{...base,id:'wrong',slug:'wrong',category:'mates',name:'MATE INCOMPATIBLE'},base])();assert.match(html,/data-price="100"/);assert.match(html,/data-installments="null"/);assert.match(html,/Más en Perfumes/);assert.match(html,/Otro perfume/);assert.doesNotMatch(html,/MATE INCOMPATIBLE|También te puede gustar|compatibles|En stock|Categoría:/);
  assert.match(html,/Envíos y retiro/);assert.match(html,/Garantía y devoluciones/);assert.match(html,/data-product-detail/);
+});
+// CONV-01 (26/11, real catalog): a mate page renders matero accessories from the Accesorios section, while
+// electronics, unidentified gift boxes, other sections, products without a photo and the product itself never render.
+test('mate page renders the recommended bombilla, termo and matero accessory, never incompatible products',async()=>{
+ const item=(slug,category,categorySlug,extra={})=>({...base,id:'id-'+slug,slug,name:'NOMBRE '+slug,category,categorySlug,primaryImageUrl:'/'+slug+'.webp',...extra});
+ const mate=item('mate-camionero','mates','mates');
+ const catalog=[mate,item('bombilla-pico','mates','bombillas'),item('termo-goat','mates','termos'),item('porta-mate-cuero','accesorios','accesorios'),
+  item('cargador-usb','accesorios','electronica'),item('box-argentina','accesorios','regalos'),item('perfume-x','perfumes','perfumes'),item('bombilla-sin-foto','mates','bombillas',{primaryImageUrl:null})];
+ const html=await loadProductPage(mate,catalog)();
+ assert.deepEqual([...html.matchAll(/data-related="([^"]+)"/g)].map(match=>match[1]),['bombilla-pico','termo-goat','porta-mate-cuero']);
+ assert.match(html,/Más en Mates y termos/);
 });
 
 test('perfume accordion illustrates only documented stages and preserves partial coverage', () => {

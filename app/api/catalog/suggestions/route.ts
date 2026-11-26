@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { searchProducts, normalizeSearch } from "@/lib/catalog/search";
+import { searchProductsWithRecovery, normalizeSearch } from "@/lib/catalog/search";
 import { getCatalogPublications } from "@/services/products";
 
 const readSuggestionCatalog = unstable_cache(async () => {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   if (query.length < 2 || query.length > 80) return Response.json([]);
 
   try {
-    const products = searchProducts(await readSuggestionCatalog(), query);
+    const { products } = searchProductsWithRecovery(await readSuggestionCatalog(), query);
     const term = normalizeSearch(query);
     const direct = products.filter((product) => normalizeSearch(product.name).includes(term));
     const related = products.filter((product) => !normalizeSearch(product.name).includes(term));

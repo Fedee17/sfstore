@@ -10,3 +10,8 @@ export function availableFirst<T extends Product>(products: readonly T[]): T[] {
     a.id.localeCompare(b.id),
   );
 }
+
+/** Available publications with a photo, featured first: what can be offered when nothing else matched. */
+export function availableWithPhoto<T extends Product>(products: readonly T[], limit: number): T[] {
+  return availableFirst(products).filter(product => publicationAvailable(product) && product.primaryImageUrl?.trim()).slice(0, limit);
+}
