@@ -113,30 +113,30 @@ async function auditPublicPages(page,width) {
             }
             const action=page.locator('button').filter({hasText:'Agregar al carrito'}).first();
             if(!await action.isVisible().catch(()=>false) || await action.isDisabled()){rejected.push({slug:item.slug,reason:'no-enabled-buy-button',title:heading,buttonPresent:await action.count(),disabled:await action.count()?await action.isDisabled():null,disabledAttribute:await action.count()?await action.getAttribute('disabled'):null,stockText:(await page.locator('main').innerText()).match(/(?:Stock disponible|Disponible:|Sin stock)[^\n]*/ig)?.slice(0,3),buttons:await page.getByRole('button').allTextContents(),url:page.url()});continue;}
-            const family=await page.locator('[data-testid="variant-list-price"]').count()>0;
-            const detail=family?'':await page.locator('main article').first().innerText();
-            const listMatch=detail.match(/Precio lista\s*\n\s*(\$\s*[\d.,]+)/i);
-            const transferMatch=detail.match(/Precio por transferencia\s*\n\s*(\$\s*[\d.,]+)/i);
-            const list=family?money(await page.locator('[data-testid="variant-list-price"]').innerText()):money(listMatch?.[1]);
-            const transfer=family?money(await page.locator('[data-testid="variant-transfer-price"]').innerText()):money(transferMatch?.[1]);
-            note('precio ficha '+item.slug,within(transfer,list*0.75)?'PASS':'FAIL',JSON.stringify({product:heading,list,transfer,expected:list===null?null:list*.75}), 'high');
+            // Stored cash prices (26/11): the cash price is the one saved in the admin (75% of list until then).
+            // The ficha must show a cash price no higher than list; cart and checkout must charge that same amount.
+            const list=money(await page.locator('[data-testid="variant-list-price"]').first().innerText());
+            const transfer=money(await page.locator('[data-testid="variant-transfer-price"]').first().innerText());
+            note('precio ficha '+item.slug,transfer!==null&&list!==null&&transfer>0&&transfer<=list?'PASS':'FAIL',JSON.stringify({product:heading,list,transfer}), 'high');
             await screenshot(page,'product-mobile');
             await action.click({timeout:10000});
             await goto(page,'/carrito');
             const summary=page.getByRole('complementary',{name:'Resumen de compra'});
             await summary.waitFor({timeout:12000});
-            await summary.getByText('Ver detalle de precios',{exact:true}).click();
             const subtotal=await rowPrice(summary,'Subtotal de lista');
-            const total=money(await summary.getByText('Total de productos').first().locator('..').innerText({timeout:7000}));
-            const expected=subtotal===null?null:subtotal*.75;
-            note('carrito 25% '+item.slug,within(total,expected)&&within(subtotal,list)?'PASS':'FAIL',JSON.stringify({product:heading,subtotal,total,expected}), 'critical');
+            const total=money(await summary.locator('strong').last().innerText({timeout:7000}));
+            note('carrito contado '+item.slug,within(total,transfer)&&within(subtotal,list)?'PASS':'FAIL',JSON.stringify({product:heading,subtotal,total,expected:transfer}), 'critical');
             await screenshot(page,'cart-mobile');
-            const continueLink=page.getByRole('link',{name:'Continuar con transferencia'});
+            // Cart → delivery step (20/11) → pickup link → checkout. Links only; nothing is submitted.
+            const continueLink=page.getByRole('link',{name:'Continuar',exact:true});
             if(!await continueLink.isVisible()) throw Error('No se encontró CTA de checkout');
             await continueLink.click();
+            const pickup=page.getByRole('link').filter({hasText:'Retiro en el local'}).first();
+            await pickup.waitFor({timeout:12000});
+            await pickup.click();
             await page.getByRole('heading',{name:'Prepará tu pedido'}).waitFor({timeout:12000});
             const checkout=page.locator('aside').first();
-            const checkoutPrice=await rowPrice(checkout,'Productos con 25% de descuento');
+            const checkoutPrice=await rowPrice(checkout,'Productos a precio de contado');
             note('checkout sin confirmar '+item.slug,within(checkoutPrice,total)?'PASS':'FAIL',JSON.stringify({product:heading,cartTotal:total,checkoutProducts:checkoutPrice}), 'critical');
             await screenshot(page,'checkout-mobile');
             // STOP before any form submit: never prepare an order, quote delivery or pay.
