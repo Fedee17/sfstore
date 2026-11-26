@@ -93,7 +93,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const categoryLabel = categoryLabels[product.category];
   const categoryPath = categoryPaths[product.category];
   const relatedLabel = "Más en " + categoryLabel;
-  const relatedProducts = (await getRelatedProducts(product.categoryId, product.id))
+  const relatedProducts = (await getRelatedProducts(product))
     .filter(related => related.category === product.category && related.id !== product.id && related.primaryImageUrl?.trim());
   const showShippingPreview = process.env.NODE_ENV === "development" && product.stock > 0
     && product.category === "perfumes" && product.kind !== "combo"

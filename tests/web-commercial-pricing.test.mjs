@@ -9,7 +9,7 @@ const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "u
 function url(code) {
   return `data:text/javascript;base64,${Buffer.from(ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText).toString("base64")}`;
 }
-const service = await import(url(source("services/products.ts").replace("@/lib/catalog/product-presentation", new URL("../lib/catalog/product-presentation.ts", import.meta.url).href)
+const service = await import(url(source("services/products.ts").replace("@/lib/catalog/product-presentation", new URL("../lib/catalog/product-presentation.ts", import.meta.url).href).replace("@/lib/catalog/related-products", new URL("../lib/catalog/related-products.ts", import.meta.url).href)
   .replace("@/lib/products/component-publications", new URL("../lib/products/component-publications.ts", import.meta.url).href)
   .replace("@/lib/products/component-combos", new URL("../lib/products/component-combos.ts", import.meta.url).href)
   .replace("@/lib/products/public-families", url(source("lib/products/public-families.ts")))
@@ -62,7 +62,7 @@ test("production never replaces an empty or failed catalog with demo products", 
       globalThis.__commercialCatalogClient = client([], error);
       assert.deepEqual(await service.getProductsByCategorySlug("perfumes"), []);
       assert.equal(await service.getProductBySlug("lattafa-asad"), null);
-      assert.deepEqual(await service.getRelatedProducts(undefined, "lattafa-asad"), []);
+      assert.deepEqual(await service.getRelatedProducts(undefined), []);
     }
   } finally { if (old === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = old; }
 });
