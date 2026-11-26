@@ -16,6 +16,7 @@ import { AnalyticsView } from "@/components/analytics-view";
 import { analyticsItem, trackCreatedOrder } from "@/lib/analytics/client";
 import { CatalogFrame } from "@/components/catalog/catalog-frame";
 import styles from "./checkout.module.css";
+import { CheckoutPaymentChoice, checkoutRequestPayment, useMercadoPagoAvailable, type CheckoutPayment } from "@/components/checkout-payment-choice";
 import { carriers, clearShippingDraft, deliveryStepHref, parseDeliveryChoice, useShippingDraft, validateShippingAddress, type Carrier, type DeliveryMethod } from "@/lib/checkout/delivery-choice";
 
 type CheckoutForm = {
@@ -43,7 +44,9 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const requestedPayment = searchParams.get("payment");
   const unsupportedPayment = !!requestedPayment && requestedPayment !== "transfer";
-  const paymentMethod = "transfer";
+  // Mercado Pago is offered only when the server enables it; manually quoted shipping stays transfer-only.
+  const mercadoPagoAvailable = useMercadoPagoAvailable();
+  const [paymentChoice, setPaymentChoice] = useState<CheckoutPayment>("transfer");
   // Chosen in /checkout/entrega; without a valid value the form keeps both options (pickup preselected, as before).
   const chosenDelivery = parseDeliveryChoice(searchParams.get("entrega"));
 
@@ -86,9 +89,13 @@ function CheckoutContent() {
     }
   }, [submitError,errors]);
 
-  const checkoutLabel = "Preparar pedido por transferencia";
-  const paymentLabel = "Transferencia bancaria";
   const shippingRequired = form.deliveryMethod === "shipping";
+  const payment: CheckoutPayment = mercadoPagoAvailable && approvedTotal === null ? paymentChoice : "transfer";
+  const paymentMethod = payment === "transfer" ? "transfer" : "mercadopago";
+  const checkoutLabel = payment === "transfer" ? "Preparar pedido por transferencia" : "Continuar al pago con Mercado Pago";
+  const paymentLabel = payment === "transfer" ? "Transferencia bancaria" : payment === "mp-cuotas" ? "Mercado Pago · hasta 3 cuotas" : "Mercado Pago · 1 pago";
+  const productsTotal = payment === "mp-cuotas" ? subtotal : getWebTransferSubtotal(items);
+  const shippingFee = shippingQuote?.rates.find(rate => rate.quoteKey === selectedQuoteKey)?.fee ?? 0;
 
 
   const updateField = <Field extends keyof CheckoutForm>(
@@ -161,7 +168,7 @@ function CheckoutContent() {
           carrier: shippingRequired ? shippingQuote?.rates.find(rate=>rate.quoteKey===selectedQuoteKey)?.carrier : undefined,
           quoteKey: shippingRequired ? selectedQuoteKey : undefined,
         },
-        paymentMethod,
+        ...checkoutRequestPayment(payment),
         items,
       });
 
@@ -353,6 +360,17 @@ function CheckoutContent() {
                   ) : null}
                 </section>
 
+                {mercadoPagoAvailable && approvedTotal === null && !(shippingRequired && !selectedQuoteKey) ? (
+                  <CheckoutPaymentChoice value={payment} onChange={setPaymentChoice} cashTotal={getWebTransferSubtotal(items)} listTotal={subtotal} shipping={shippingFee} disabled={isSubmitting} />
+                ) : null}
+
+                {paymentMethod === "mercadopago" ? (
+                  <section className={styles.panel}>
+                    <h2>Cómo sigue tu compra</h2>
+                    <ol className={styles.steps}><li>1. Preparás el pedido: verificamos precios y disponibilidad y reservamos el stock.</li><li>2. Pagás en Mercado Pago{payment === "mp-cuotas" ? " con tarjeta de crédito en 2 o 3 cuotas" : " en un pago"}.</li><li>3. El pedido se confirma cuando Mercado Pago acredita el pago.</li></ol>
+                  </section>
+                ) : null}
+
                 {paymentMethod === "transfer" ? (
                   <section className={styles.panel}>
                     <h2>Cómo sigue tu compra</h2>
@@ -364,7 +382,7 @@ function CheckoutContent() {
               <aside className={styles.panel} aria-label="Resumen del pedido">
                 <div>
                   <h2>Resumen</h2>
-                  <p className={`${styles.muted} mt-1`}>Transferencia bancaria completa: precio de contado de los productos.</p>
+                  <p className={`${styles.muted} mt-1`}>{payment === "mp-cuotas" ? "Mercado Pago en cuotas: precio de lista de los productos." : payment === "mp-contado" ? "Mercado Pago en un pago: precio de contado de los productos." : "Transferencia bancaria completa: precio de contado de los productos."}</p>
                 </div>
                 <div className="grid gap-3.5">
                   {items.map((item) => (
@@ -373,7 +391,7 @@ function CheckoutContent() {
                         <CartItemIdentity item={item} />
                         <p className={`${styles.lineMeta} mt-1`}>{categoryLabels[item.category]} · {item.quantity} {item.quantity === 1 ? "unidad" : "unidades"}</p>
                       </div>
-                      <p className={styles.linePrice}>{formatWebPrice(getWebTransferSubtotal([item]))}</p>
+                      <p className={styles.linePrice}>{formatWebPrice(payment === "mp-cuotas" ? item.price * item.quantity : getWebTransferSubtotal([item]))}</p>
                     </div>
                   ))}
                 </div>
@@ -381,11 +399,11 @@ function CheckoutContent() {
                 <div className={styles.rows}>
                   <div><span>Productos</span><span>{totalItems}</span></div>
                   <div><span>Subtotal de lista</span><span>{formatWebPrice(subtotal)}</span></div>
-                  <div><span>Productos a precio de contado</span><span>{formatWebPrice(getWebTransferSubtotal(items))}</span></div>
-                  {getWebRoundingDiscount(items) > 0 ? <div><span>Descuento por redondeo</span><span>−{currencyFormatter.format(getWebRoundingDiscount(items))}</span></div> : null}
+                  {payment === "mp-cuotas" ? null : <div><span>Productos a precio de contado</span><span>{formatWebPrice(getWebTransferSubtotal(items))}</span></div>}
+                  {payment !== "mp-cuotas" && getWebRoundingDiscount(items) > 0 ? <div><span>Descuento por redondeo</span><span>−{currencyFormatter.format(getWebRoundingDiscount(items))}</span></div> : null}
                   <div className={styles.totalRow}>
                     <span>{shippingRequired ? "Total con envío" : "Total con retiro en el local"}</span>
-                    <span data-pending={(shippingRequired && !selectedQuoteKey) || undefined}>{shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : currencyFormatter.format(Math.round((getWebTransferSubtotal(items) + (shippingQuote?.rates.find(rate => rate.quoteKey === selectedQuoteKey)?.fee ?? 0))*100)/100)}</span>
+                    <span data-pending={(shippingRequired && !selectedQuoteKey) || undefined}>{shippingRequired && !selectedQuoteKey ? "Pendiente de cotización; no transfieras" : approvedTotal !== null ? currencyFormatter.format(approvedTotal) : currencyFormatter.format(Math.round((productsTotal + shippingFee)*100)/100)}</span>
                   </div>
                   <div><span>Pago</span><span>{paymentLabel}</span></div>
                 </div>

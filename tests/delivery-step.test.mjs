@@ -12,6 +12,7 @@ import * as delivery from '../lib/checkout/delivery-choice.ts';
 import * as categories from '../lib/catalog/public-product-visibility.ts';
 import {brand} from '../lib/brand.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { mercadoPagoUiStubs } from './fixtures/mercadopago-ui-stubs.mjs';
 const require=createRequire(import.meta.url);
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 function load(f,modules){const out={};new Function('require','exports',ts.transpileModule(read(f),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText)(n=>Object.hasOwn(modules,n)?modules[n]:(n.endsWith('.module.css')?{default:new Proxy({}, {get:(_,key)=>key})}:require(n)),out);return out;}
@@ -67,7 +68,7 @@ test('shipping address uses one rule set and only a complete, well-formed draft 
 });
 
 test('checkout preselects the chosen method, shows only its fields and links back to change it',()=>{
- const render=query=>{const Page=load('app/checkout/page.tsx',{...withCart(items),'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams(query)},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:['Córdoba']},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;return renderToStaticMarkup(React.createElement(Page));};
+ const render=query=>{const Page=load('app/checkout/page.tsx',{...mercadoPagoUiStubs,...withCart(items),'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams(query)},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:['Córdoba']},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;return renderToStaticMarkup(React.createElement(Page));};
  const shipping=render('payment=transfer&entrega=envio');
  assert.match(shipping,/Envío a domicilio/);assert.match(shipping,/href="\/checkout\/entrega"[^>]*>Cambiar/);assert.match(shipping,/aria-label="Provincia"/);
  const pickup=render('payment=transfer&entrega=retiro');
@@ -75,7 +76,7 @@ test('checkout preselects the chosen method, shows only its fields and links bac
  assert.match(pickup,/Esperá la confirmación del local antes de retirar/);
  // With a complete address saved by the step: summary line instead of the address fields.
  const draft={province:'Córdoba',city:'San Francisco',address:'Calle 1',postalCode:'2400',carrier:'Andreani'};
- const Page=load('app/checkout/page.tsx',{...withCart(items),'@/lib/checkout/delivery-choice':{...delivery,useShippingDraft:()=>draft},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams('payment=transfer&entrega=envio')},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:['Córdoba']},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;
+ const Page=load('app/checkout/page.tsx',{...mercadoPagoUiStubs,...withCart(items),'@/lib/checkout/delivery-choice':{...delivery,useShippingDraft:()=>draft},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams('payment=transfer&entrega=envio')},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:['Córdoba']},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;
  const fromStep=renderToStaticMarkup(React.createElement(Page));
  assert.match(fromStep,/Calle 1, San Francisco, Córdoba \(2400\)\. Transporte: Andreani\./);
  assert.doesNotMatch(fromStep,/aria-label="Provincia"|id="checkout-city"/);assert.match(fromStep,/Calcular envío/);

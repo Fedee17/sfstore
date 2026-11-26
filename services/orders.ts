@@ -2,7 +2,7 @@ import type { CartItem } from "@/store/cart-store";
 import type { CheckoutResult } from "@/lib/checkout/contract";
 import {checkoutErrorMessage,checkoutConnectionError} from '@/lib/checkout/feedback';
 
-export type PaymentMethod = "transfer";
+export type PaymentMethod = "transfer" | "mercadopago";
 export type ShippingMethod = "pickup" | "shipping";
 
 export type CheckoutCustomer = {
@@ -25,6 +25,7 @@ export type CreateOrderFromCheckoutPayload = {
   customer: CheckoutCustomer;
   shipping: CheckoutShipping;
   paymentMethod: PaymentMethod;
+  priceMode?: "contado" | "financiado"; // Mercado Pago only; the server prices each mode.
   items: CartItem[];
 };
 
@@ -35,6 +36,7 @@ export async function createOrderFromCheckout(payload: CreateOrderFromCheckoutPa
     customer: payload.customer,
     shipping: payload.shipping.method === "pickup" ? { method: "pickup" } : payload.shipping,
     paymentMethod: payload.paymentMethod,
+    ...(payload.paymentMethod === "mercadopago" && payload.priceMode ? { priceMode: payload.priceMode } : {}),
     items: payload.items.map(item => ({ productId: item.productId, quantity: item.quantity, ...(item.comboConnector ? { comboConnector: item.comboConnector } : {}) }))
       .sort((a,b) => a.productId.localeCompare(b.productId) || (a.comboConnector ?? "").localeCompare(b.comboConnector ?? "")),
   };

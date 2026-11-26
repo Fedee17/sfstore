@@ -3,6 +3,8 @@ import { CheckoutError, isUuid, parseCheckoutRequest, type CheckoutRequest, type
 export type CheckoutDependencies = {
   authorize: () => Promise<string | null>;
   create: (buyerId: string, request: CheckoutRequest) => Promise<CheckoutResult>;
+  // Set by the route from lib/payments/mercadopago.ts isMercadoPagoEnabled; absent means transfer only.
+  mercadopagoEnabled?: boolean;
 };
 // NextURL normalizes loopback hostnames; Host retains the browser's authority.
 // Compare the exact origin, never forwarded headers or equivalent host aliases.
@@ -45,7 +47,7 @@ export async function handleCheckout(request: Request, dependencies: CheckoutDep
     if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") throw new CheckoutError("CHECKOUT_INVALID_REQUEST",415);
     const buyer = await dependencies.authorize();
     if (!isUuid(buyer)) throw new CheckoutError("CHECKOUT_UNAUTHORIZED",401);
-    const input = parseCheckoutRequest(await readCheckoutBody(request));
+    const input = parseCheckoutRequest(await readCheckoutBody(request), { mercadopago: dependencies.mercadopagoEnabled === true });
     const result = await dependencies.create(buyer,input);
     return Response.json(result,{ headers });
   } catch (error) {

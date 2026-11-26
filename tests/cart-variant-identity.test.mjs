@@ -1,5 +1,6 @@
 import * as deliveryChoice from '../lib/checkout/delivery-choice.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { mercadoPagoUiStubs } from './fixtures/mercadopago-ui-stubs.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -59,7 +60,7 @@ test('cart and checkout retain the SKU, round displayed prices up and show the e
  useCartStore.getState().clearCart();useCartStore.getState().addItem({...sku('Gris'),price:100.01,transferPrice:75.01});
  const state=useCartStore.getState(),modules={'@/lib/checkout/delivery-choice':deliveryChoice,'@/components/catalog/catalog-frame':{CatalogFrame:({children})=>React.createElement('main',null,children)},'./checkout.module.css':{default:{}},'../checkout.module.css':{default:{}},'react':React,'react/jsx-runtime':jsx,'@/components/cart-item-identity':{CartItemIdentity},'@/components/site-header':{SiteHeader:()=>null},'@/store/cart-store':{useCartHydrated:()=>true,useCartStore:()=>state,cartItemKey},'@/lib/web-transfer-pricing':prices,'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{mates:'Mates'},publicCategoryPaths:{mates:'/mates'}},'@/lib/whatsapp':{buildWhatsAppUrl:()=>'/synthetic'},'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/components/transfer-alias':{TransferAlias:()=>null},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':argentina,'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}};
  const Cart=load('components/cart-content.tsx',modules).default;
- const Checkout=load('app/checkout/page.tsx',modules,{},'\nexport { CheckoutContent };').CheckoutContent;
+ const Checkout=load('app/checkout/page.tsx',{...mercadoPagoUiStubs,...mercadoPagoUiStubs,...modules},{},'\nexport { CheckoutContent };').CheckoutContent;
  for(const Component of [Cart,Checkout]){
   const html=renderToStaticMarkup(React.createElement(Component));assert.match(html,/src="\/sku-Gris.svg"/);assert.match(html,/Color: Gris/);assert.match(html,/SKU-Gris/);assert.match(html,/Termo de prueba/);assert.doesNotMatch(html,/detail-Gris.svg/);assert.match(html,/>\$\s*76</);assert.match(html,/\$\s*101</);
  }

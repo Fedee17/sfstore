@@ -9,6 +9,7 @@ import * as jsx from 'react/jsx-runtime';
 import {renderToStaticMarkup} from 'react-dom/server';
 import * as prices from '../lib/web-transfer-pricing.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { mercadoPagoUiStubs } from './fixtures/mercadopago-ui-stubs.mjs';
 import * as categories from '../lib/catalog/public-product-visibility.ts';
 import { rotationStub } from './fixtures/carousel-rotation-stub.mjs';
 const require=createRequire(import.meta.url);
@@ -29,7 +30,7 @@ test('cart labels list, discount and transfer subtotal without applying the disc
  assert.match(html,/Quitar una unidad/);assert.match(html,/Agregar una unidad/);
 });
 test('checkout line totals and pickup summary use the same unit-rounded transfer contract',()=>{
- const Page=load('app/checkout/page.tsx',{...modules,'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:[]},'@/components/transfer-alias':{TransferAlias:()=>null},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;
+ const Page=load('app/checkout/page.tsx',{...mercadoPagoUiStubs,...modules,'next/navigation':{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()},'@/lib/checkout/guest-client':{},'@/lib/checkout/argentina':{ARGENTINA_PROVINCES:[]},'@/components/transfer-alias':{TransferAlias:()=>null},'@/components/checkout-captcha':{CheckoutCaptcha:()=>null},'@/services/orders':{}}).default;
  const html=renderToStaticMarkup(React.createElement(Page));
  assert.match(html,/Total con retiro en el local/);assert.match(html,/46\.000,00/);
  assert.match(html,/Productos a precio de contado/);assert.doesNotMatch(html,/unidad\(es\)|25% OFF/);

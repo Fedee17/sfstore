@@ -193,8 +193,10 @@ test("the existing atomic sale inventory RPC remains independent", () => {
   assert.match(inventoryService, /"apply_sale_inventory"/i);
 });
 
-test("web checkout supports transfer only through the gated server contract", () => {
-  assert.match(checkoutService, /export type PaymentMethod = "transfer";/i);
+test("web checkout supports transfer and gated Mercado Pago only through the server contract", () => {
+  // Mercado Pago (26/11/2026): the browser may request it, but the server and the database decide (both off by default).
+  assert.match(checkoutService, /export type PaymentMethod = "transfer" | "mercadopago";/i);
+  assert.ok(checkoutService.includes('...(payload.paymentMethod === "mercadopago" && payload.priceMode ? { priceMode: payload.priceMode } : {})'));
   assert.match(checkoutService, /paymentMethod: payload\.paymentMethod/i);
   assert.match(checkoutService, /fetch\("\/api\/checkout"/i);
   assert.doesNotMatch(checkoutService, /\.from\("orders"\)|\.insert\(/i);

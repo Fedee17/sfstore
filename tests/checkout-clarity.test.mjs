@@ -1,5 +1,6 @@
 import * as deliveryChoice from '../lib/checkout/delivery-choice.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { mercadoPagoUiStubs } from './fixtures/mercadopago-ui-stubs.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -22,7 +23,7 @@ const modules={'@/lib/checkout/delivery-choice':deliveryChoice,'@/components/cat
 test('before order creation cart and checkout never render transfer destination; retain total and essential conditions',()=>{
  const Cart=load('components/cart-content.tsx',modules).default;
  assert.match(render(Cart),/>Consultar carrito por WhatsApp<\/a>/);
- const Checkout=load('app/checkout/page.tsx',modules,'\nexport {CheckoutContent};').CheckoutContent;
+ const Checkout=load('app/checkout/page.tsx',{...mercadoPagoUiStubs,...mercadoPagoUiStubs,...modules},'\nexport {CheckoutContent};').CheckoutContent;
  for(const Component of [Cart,Checkout]){
   const html=render(Component);assert.doesNotMatch(html,/Alias:|Copiar alias|Datos para transferir|Mercado Pago/);assert.match(html,/\$\s*150</);
  }
@@ -35,11 +36,11 @@ test('before order creation cart and checkout never render transfer destination;
 const receipt={id:'synthetic-order',payment_method:'transfer',payment_status:'pending',state:'pending',expired:false,order_number:'SYNTHETIC-1',total:150,expiresAt:'2030-01-01T12:00:00Z',lines:[]};
 test('shipping without an accepted quote withholds transfer details and prevents creating an order',()=>{
  const hooks={...React,useState:initial=>React.useState(initial?.deliveryMethod?{...initial,deliveryMethod:'shipping'}:initial)};
- const Checkout=load('app/checkout/page.tsx',{...modules,react:hooks},'\nexport {CheckoutContent};').CheckoutContent;
+ const Checkout=load('app/checkout/page.tsx',{...mercadoPagoUiStubs,...modules,react:hooks},'\nexport {CheckoutContent};').CheckoutContent;
  const html=render(Checkout);assert.match(html,/Pendiente de cotización; no transfieras/);assert.match(html,/Primero conocé y aceptá el total definitivo/);assert.doesNotMatch(html,/Alias:|Copiar alias/);assert.match(html,/<button[^>]*disabled=""[^>]*>Preparar pedido por transferencia/);
 });
 async function renderReceipt(order){
- let requested;const Page=load('app/checkout/exito/page.tsx',{'react/jsx-runtime':jsx,'@/lib/whatsapp':{buildWhatsAppUrl:message=>'/synthetic-whatsapp?text='+encodeURIComponent(message)},'@/components/catalog/catalog-frame':{CatalogFrame:({children})=>React.createElement('main',null,children)},'./checkout.module.css':{default:{}},'../checkout.module.css':{default:{}},'next/link':{default:({children,...props})=>React.createElement('a',props,children)},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async id=>{requested=id;return order;}},'@/components/transfer-alias':{TransferAlias:()=>React.createElement('div',{'data-testid':'transfer-details'},'SYNTHETIC-ALIAS')},'@/components/checkout-payment-report-form':{CheckoutPaymentReportForm:()=>null}}).default;
+ let requested;const Page=load('app/checkout/exito/page.tsx',{...mercadoPagoUiStubs,'react/jsx-runtime':jsx,'@/lib/whatsapp':{buildWhatsAppUrl:message=>'/synthetic-whatsapp?text='+encodeURIComponent(message)},'@/components/catalog/catalog-frame':{CatalogFrame:({children})=>React.createElement('main',null,children)},'./checkout.module.css':{default:{}},'../checkout.module.css':{default:{}},'next/link':{default:({children,...props})=>React.createElement('a',props,children)},'@/services/checkout-buyer-receipt':{getBuyerCheckoutReceipt:async id=>{requested=id;return order;}},'@/components/transfer-alias':{TransferAlias:()=>React.createElement('div',{'data-testid':'transfer-details'},'SYNTHETIC-ALIAS')},'@/components/checkout-payment-report-form':{CheckoutPaymentReportForm:()=>null}}).default;
  const html=renderToStaticMarkup(await Page({searchParams:Promise.resolve({order:'synthetic-order',number:'FORGED',total:'0.01'})}));assert.equal(requested,'synthetic-order');return html;
 }
 test('authorized created order alone supplies definitive total and transfer destination, ignoring query amounts',async()=>{

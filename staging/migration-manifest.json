@@ -279,6 +279,12 @@
       "stagingFile": "staging/supabase/migrations/202611260002_stored_cash_explicit_grants.sql",
       "sourceSha256": "aa32ecc2c0806b407f628d499840dd5b191294f210410a9db2b41dd42e90abad",
       "stagingSha256": "aa32ecc2c0806b407f628d499840dd5b191294f210410a9db2b41dd42e90abad"
+    },
+    {
+      "source": "supabase/migrations/202611270001_mercadopago_checkout.sql",
+      "stagingFile": "staging/supabase/migrations/202611270001_mercadopago_checkout.sql",
+      "sourceSha256": "eebd5de36c9c6602c5931278413c1d12475ac04202d83f325df1c5af51e90b63",
+      "stagingSha256": "eebd5de36c9c6602c5931278413c1d12475ac04202d83f325df1c5af51e90b63"
     }
   ]
 }

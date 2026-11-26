@@ -1,5 +1,6 @@
 import * as deliveryChoice from '../lib/checkout/delivery-choice.ts';
 import assert from 'node:assert/strict';
+import * as crypto from 'node:crypto';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -10,9 +11,12 @@ import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import { renderToStaticMarkup } from 'react-dom/server';
 function load(file,modules={},globals={}){
  if(file==='services/orders.ts')modules={...modules,'@/lib/checkout/feedback':load('lib/checkout/feedback.ts')};
+ if(file==='app/checkout/page.tsx'||file==='app/checkout/exito/page.tsx')modules={...mercadoPagoUiStubs,...modules};
  const exports={};const source=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
  new Function('require','exports',...Object.keys(globals),source)(name=>{assert.ok(Object.hasOwn(modules,name),`Unexpected dependency ${name}`);return modules[name];},exports,...Object.values(globals));return exports;
 }
+// Mercado Pago (26/11/2026): unavailable unless the server enables it. Checkout renders the transfer-only UI.
+const mercadoPagoUiStubs={'@/components/checkout-payment-choice':{useMercadoPagoAvailable:()=>false,CheckoutPaymentChoice:()=>{throw Error('Mercado Pago choice rendered while disabled');},checkoutRequestPayment:p=>p==='transfer'?{paymentMethod:'transfer'}:{paymentMethod:'mercadopago',priceMode:p==='mp-cuotas'?'financiado':'contado'}},'@/components/mercadopago-payment':{MercadoPagoPayment:()=>null}};
 const contract=load('lib/checkout/contract.ts');
 const {handleCheckout}=load('lib/checkout/http.ts',{'./contract':contract});
 const buyer=randomUUID(),product=randomUUID(),operationKey=randomUUID();
@@ -66,18 +70,26 @@ test('unauthorized buyer never constructs service client or reads receipt; stora
 });
 test('actual Next route delegates to verified authorization and atomic server adapter',async()=>{
  const calls=[];let enabled;const route=load('app/api/checkout/route.ts',{'@/lib/payments/mercadopago':{isMercadoPagoEnabled:env=>{enabled=env.MERCADOPAGO_PAYMENTS_ENABLED==='1'&&!!env.MERCADO_PAGO_ACCESS_TOKEN&&!!env.MERCADO_PAGO_WEBHOOK_SECRET;return enabled;}},'@/lib/checkout/http':{handleCheckout},'@/services/checkout-server':{authorizeCheckoutBuyer:async()=>{calls.push('authorize');return buyer;},createCheckoutOrder:async(who,input)=>{calls.push([who,input]);return result;}}});
- const response=await route.POST(request());assert.equal(response.status,200);assert.deepEqual(calls,["authorize",[buyer,payload]]);assert.equal(enabled,undefined);
+ const response=await route.POST(request());assert.equal(response.status,200);assert.deepEqual(calls,["authorize",[buyer,payload]]);assert.equal(enabled,false); // Mercado Pago switch off by default
 });
-test('PAY-01 orders cannot enter the legacy Mercado Pago preference or mutate through its webhook',async()=>{
- let preferences=0,ledger=0,inventory=0;
- const order={id:result.id,order_number:'FIXTURE',payment_method:'transfer',channel:'web',status:'pending',payment_status:'pending',total:100,metadata:{checkout_version:1}};
- const query={select:()=>query,order:()=>query,then:(resolve)=>resolve({data:[],error:null}),eq:()=>query,maybeSingle:async()=>({data:order,error:null})};
- const modules={'mercadopago':{MercadoPagoConfig:class{},Preference:class{create(){preferences++;throw Error('Forbidden real payment');}},Payment:class{async get(){return{external_reference:result.id,status:'approved',transaction_amount:100,id:'synthetic-payment'};}}},'next/server':{NextResponse:{json:Response.json.bind(Response)}},'@/lib/supabase/server':{getSupabaseAdminClient:()=>({from:()=>query})},'@/services/inventory':{decreaseStockForOrder:()=>{inventory++;}},'@/services/order-payments':{addOrderPayment:()=>{ledger++;}}};
- const globals={process:{env:{MERCADO_PAGO_ACCESS_TOKEN:'synthetic-placeholder-not-a-credential'}}};
- const preference=load('app/api/mercadopago/create-preference/route.ts',modules,globals);
- assert.equal((await preference.POST(request({orderId:result.id}))).status,410);assert.equal(preferences,0);
- const webhook=load('app/api/mercadopago/webhook/route.ts',modules,globals);
- assert.equal((await webhook.POST(request({type:'payment',data:{id:'synthetic-payment'}}))).status,410);assert.equal(ledger,0);assert.equal(inventory,0);
+const mpFiles=['app/api/mercadopago/create-preference/route.ts','app/api/mercadopago/card-payment/route.ts','app/api/mercadopago/webhook/route.ts'];
+function mercadoPagoRoutes(env){
+ const web=load('lib/web-transfer-pricing.ts'),admin=load('lib/products/admin-price-calculation.ts',{'../web-transfer-pricing.ts':web});
+ const pricing=load('lib/products/commercial-pricing.ts',{'./admin-price-calculation.ts':admin});
+ const eligibility=load('lib/payments/payment-eligibility.ts',{'../products/admin-price-calculation.ts':admin,'../products/commercial-pricing.ts':pricing});
+ const mp=load('lib/payments/mercadopago.ts',{'node:crypto':crypto,'../products/commercial-pricing.ts':pricing,'./payment-eligibility.ts':eligibility});
+ const handlers=load('lib/payments/mercadopago-handlers.ts',{'../checkout/contract.ts':contract,'../products/commercial-pricing.ts':pricing,'./mercadopago.ts':mp});
+ const calls=[];const forbidden=name=>async()=>{calls.push(name);throw Error('Forbidden while disabled: '+name);};
+ const deps={env,nowMs:()=>Date.now(),authorizeBuyer:forbidden('authorize'),rpc:forbidden('rpc'),createPreference:forbidden('preference'),createPayment:forbidden('payment'),getPayment:forbidden('getPayment')};
+ return {calls,routes:mpFiles.map(file=>load(file,{'@/lib/payments/mercadopago-handlers':handlers,'@/services/mercadopago-server':{mercadoPagoDeps:()=>deps}}))};
+}
+test('PAY-01 orders cannot enter Mercado Pago: switched off, no route reaches Mercado Pago, the database or the legacy code',async()=>{
+ for(const env of [{},{MERCADO_PAGO_ACCESS_TOKEN:'synthetic-placeholder-not-a-credential'},{MERCADOPAGO_PAYMENTS_ENABLED:'1',MERCADO_PAGO_ACCESS_TOKEN:'synthetic-placeholder-not-a-credential'}]){
+  const {calls,routes}=mercadoPagoRoutes(env);
+  for(const route of routes)assert.equal((await route.POST(request({orderId:result.id,type:'payment',data:{id:'123'}}))).status,410);
+  assert.deepEqual(calls,[]);
+ }
+ for(const file of mpFiles)assert.doesNotMatch(readFileSync(new URL('../'+file,import.meta.url),'utf8'),/legacy-mercadopago|from "mercadopago"|MercadoPagoConfig/);
 });
 
 test('actual admin getUser plus allowlist prevents manual accreditation and expiry before service access',async()=>{
@@ -100,11 +112,11 @@ test('cash is denied including pickup; payment status fields and automatic metho
   assert.throws(()=>contract.parseCheckoutRequest({...payload,paymentMethod:'cash'}));
   for(const input of [{...payload,paymentMethod:'cash',shipping:{method:'shipping',carrier:'Andreani',province:'Synthetic',city:'Synthetic',address:'Synthetic',postalCode:'FIXTURE'}},{...payload,paid:true},{...payload,paymentStatus:'paid'},{...payload,paymentMethod:'card'}])assert.throws(()=>contract.parseCheckoutRequest(input));
 });
-test('automatic payment endpoints return 410 for every legacy/new/forged order without importing SDK or clients',async()=>{
-  for(const file of ['app/api/mercadopago/create-preference/route.ts','app/api/mercadopago/webhook/route.ts']){
-    const route=load(file,{});for(const body of [{},{orderId:'legacy-order'},{orderId:result.id},'{malformed']){assert.equal((await route.POST(request(body))).status,410);assert.equal((await route.GET(request(body))).status,410);}
-    assert.doesNotMatch(readFileSync(new URL('../'+file,import.meta.url),'utf8'),/import|fetch\(|getSupabase|MercadoPagoConfig|request\.json/);
-  }
+test('automatic payment endpoints return 410 for every legacy/new/forged order while disabled and only delegate to the gated handlers',async()=>{
+  const {calls,routes}=mercadoPagoRoutes({});
+  for(const route of routes){assert.equal(route.GET,undefined);for(const body of [{},{orderId:'legacy-order'},{orderId:result.id},'{malformed'])assert.equal((await route.POST(request(body))).status,410);}
+  assert.deepEqual(calls,[]);
+  for(const file of mpFiles)assert.doesNotMatch(readFileSync(new URL('../'+file,import.meta.url),'utf8').replace(/^import .*$/gm,''),/import|fetch\(|getSupabase|MercadoPagoConfig|request\.json/);
 });
 test('actual public cart and checkout render transfer only; forged legacy payment URL cannot start checkout',()=>{
   const pricing=load('lib/pricing.ts');const item={productId:product,name:'Synthetic',slug:'synthetic',category:'perfumes',quantity:1,stock:3,price:100,transferPrice:80};

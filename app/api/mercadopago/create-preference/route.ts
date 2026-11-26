@@ -1,6 +1,7 @@
-// Permanently closed in the manual-payment checkout. No SDK, body parsing or DB access.
-function disabled() {
-  return Response.json({ code: "AUTOMATIC_PAYMENTS_DISABLED", error: "Los pagos automáticos no están habilitados." }, { status: 410, headers: { "Cache-Control": "no-store" } });
+import { handleCreatePreference } from "@/lib/payments/mercadopago-handlers";
+import { mercadoPagoDeps } from "@/services/mercadopago-server";
+
+// Checkout Pro (contado, one payment). Answers 410 while Mercado Pago is not enabled (lib/payments/mercadopago.ts).
+export async function POST(request: Request) {
+  return handleCreatePreference(request, mercadoPagoDeps());
 }
-export function GET() { return disabled(); }
-export function POST() { return disabled(); }

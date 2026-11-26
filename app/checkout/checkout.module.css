@@ -99,3 +99,6 @@
 @media (width >= 1024px) {
   .layout { grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; }
 }
+
+/* Payment choice (Mercado Pago, 26/11/2026): the total of each option, always visible. */
+.paymentTotal { display: block; margin-top: 6px; font-weight: 700; color: var(--boutique-ink, #102033); }

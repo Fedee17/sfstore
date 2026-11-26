@@ -17,6 +17,7 @@ const messages:Record<string,string>={
   CHECKOUT_UNITS_LIMIT:'Superaste las unidades que podemos reservar en una compra web. Bajá cantidades en el carrito o consultanos por WhatsApp para una compra mayor; tu carrito se conserva.',
   CHECKOUT_PRODUCT_LIMIT:'Superaste las unidades que podemos reservar de un mismo producto. Bajá esa cantidad en el carrito o consultanos por WhatsApp; tu carrito se conserva.',
   CHECKOUT_REVIEW_REQUIRED:'Necesitamos revisar este pedido antes de reservarlo. Tu carrito se conserva; escribinos por WhatsApp y lo resolvemos.',
+  CHECKOUT_PAYMENT_METHOD_DISABLED:'Ese medio de pago no está disponible en este momento. Elegí transferencia bancaria; tu carrito se conserva.',
 };
 export const checkoutConnectionError='No pudimos conectar con la tienda. Revisá tu conexión y reintentá sin cambiar los datos. Tu carrito se conserva.';
 export function checkoutErrorMessage(code:unknown):string {

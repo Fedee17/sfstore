@@ -2,11 +2,13 @@ export type CheckoutRequest = {
   operationKey: string;
   customer: { fullName: string; phone: string; email?: string };
   shipping: { method: "pickup" | "shipping"; province?: string; city?: string; address?: string; postalCode?: string; carrier?: "Correo Argentino" | "Andreani" | "Via Cargo"; quoteKey?: string };
-  paymentMethod: "transfer";
+  paymentMethod: "transfer" | "mercadopago";
+  // contado (default): one payment at the cash price. financiado: list price in 2-3 card installments (Mercado Pago only).
+  priceMode?: "contado" | "financiado";
   items: { productId: string; quantity: number; comboConnector?: "cc" | "lightning" }[];
 };
 export type CheckoutResult = {
-  id: string; orderNumber: string; subtotal: number; discount: number; shippingCost: number; total: number;
+  id: string; priceMode?: "contado" | "financiado"; orderNumber: string; subtotal: number; discount: number; shippingCost: number; total: number;
   state: "pending" | "confirmed" | "cancelled" | "expired"; expiresAt: string;
 };
 export class CheckoutError extends Error {
@@ -19,11 +21,15 @@ function keys(value: Record<string, unknown>, allowed: string[]) {
   if (Object.keys(value).some(key => !allowed.includes(key))) throw new CheckoutError("CHECKOUT_INVALID_REQUEST", 400);
 }
 function text(value: unknown, max: number) { return typeof value === "string" && value.trim().length > 0 && value.length <= max; }
-export function parseCheckoutRequest(value: unknown): CheckoutRequest {
+// Mercado Pago is accepted only when the server enabled it (lib/payments/mercadopago.ts isMercadoPagoEnabled);
+// the database refuses it too while commercial_pricing_settings.mercadopago_enabled is false.
+export function parseCheckoutRequest(value: unknown, options: { mercadopago?: boolean } = {}): CheckoutRequest {
   const bad = () => { throw new CheckoutError("CHECKOUT_INVALID_REQUEST", 400); };
   if (!record(value)) return bad();
-  keys(value, ["operationKey", "customer", "shipping", "paymentMethod", "items"]);
-  if (!isUuid(value.operationKey) || value.paymentMethod !== "transfer" || !record(value.customer) || !record(value.shipping)) return bad();
+  keys(value, ["operationKey", "customer", "shipping", "paymentMethod", "priceMode", "items"]);
+  const method = value.paymentMethod === "transfer" || (value.paymentMethod === "mercadopago" && options.mercadopago === true);
+  const mode = value.priceMode === undefined || value.priceMode === "contado" || (value.priceMode === "financiado" && value.paymentMethod === "mercadopago");
+  if (!isUuid(value.operationKey) || !method || !mode || !record(value.customer) || !record(value.shipping)) return bad();
   keys(value.customer, ["fullName", "phone", "email"]);
   if (!text(value.customer.fullName,200) || !text(value.customer.phone,80) || (value.customer.email !== undefined && (!text(value.customer.email,254) || !/^\S+@\S+\.\S+$/.test(value.customer.email as string)))) return bad();
   keys(value.shipping, ["method", "province", "city", "address", "postalCode", "carrier", "quoteKey"]);
