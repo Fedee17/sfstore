@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { shareImage } from "@/lib/seo/share-image";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MobileCatalogFilters } from "@/components/catalog/mobile-catalog-filters";
 import { CatalogSidebar } from "@/components/catalog/catalog-sidebar";
 import { ProductGrid } from "@/components/product-grid";
-import { SiteHeader } from "@/components/site-header";
+import { CatalogBackLink, CatalogEmptyState, CatalogFrame, catalogStyles } from "@/components/catalog/catalog-frame";
 import {
   PERFUME_CATALOG_CATEGORIES,
   PERFUME_FILTERS_BY_CATEGORY,
@@ -102,26 +101,23 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
     : products;
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
-      <SiteHeader />
+    <CatalogFrame>
       <section className="storefront-catalog mx-auto max-w-6xl px-5 py-6 sm:px-8 lg:py-8">
-        <header className="min-w-0 border-b border-[#DCE3EA] pb-4 lg:pb-5">
-          <h1 className="catalog-title break-words">{isArabicCatalog ? "Perfumes Árabes" : "Perfumes importados"}</h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-[#41566B] sm:text-base">
+        <header className={`${catalogStyles.divider} min-w-0 pb-4 lg:pb-5`}>
+          <h1 className={`${catalogStyles.title} catalog-title break-words`}>{isArabicCatalog ? "Perfumes Árabes" : "Perfumes importados"}</h1>
+          <p className={`${catalogStyles.lead} mt-2 max-w-xl text-sm leading-6 sm:text-base`}>
             Encontrá tu próxima fragancia por estilo, intensidad u ocasión.
           </p>
         </header>
 
         {selectedCategoryItem ? (
-          <Link href="/perfumes" className="mt-4 inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-[#DCE3EA] bg-white px-4 text-sm font-semibold text-[#003B73] hover:bg-[#E8F3FF] focus-visible:outline-2 focus-visible:outline-[#0072CE]">
-            <span aria-hidden="true">←</span> Volver a categorías
-          </Link>
+          <CatalogBackLink href="/perfumes" />
         ) : null}
 
         <MobileCatalogFilters basePath="/perfumes" categories={PERFUME_CATALOG_CATEGORIES} filtersByCategory={PERFUME_FILTERS_BY_CATEGORY} selectedCategory={selectedCategory} />
 
         <div className="mt-4 grid min-w-0 gap-5 lg:mt-5 lg:grid-cols-[210px_minmax(0,1fr)] lg:items-start">
-          <aside className="hidden min-w-0 rounded-2xl border border-[#DCE3EA] bg-white p-3 lg:block">
+          <aside className={`${catalogStyles.panel} hidden min-w-0 rounded-2xl p-3 lg:block`}>
             <CatalogSidebar
               ariaLabel="Categorías comerciales de perfumes"
               basePath="/perfumes"
@@ -133,8 +129,8 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
           </aside>
 
           <div className="min-w-0">
-            {!isArabicCatalog ? <div className="min-w-0 border-b border-[#DCE3EA] pb-2">
-              <h2 className="break-words text-2xl font-bold leading-tight text-[#003B73] lg:text-[1.75rem]">
+            {!isArabicCatalog ? <div className={`${catalogStyles.divider} min-w-0 pb-2`}>
+              <h2 className={`${catalogStyles.subtitle} break-words text-2xl leading-tight lg:text-[1.75rem]`}>
                 {selectedCategoryItem ? selectedCategoryItem.label : "Todos los perfumes"}
               </h2>
             </div> : null}
@@ -142,24 +138,11 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
             {filteredProducts.length > 0 ? (
               <ProductGrid products={availableFirst(filteredProducts)} label="Perfume" presentation="catalog" />
             ) : (
-              <div className="mt-8 rounded-2xl border border-[#DCE3EA] bg-white p-8 text-center shadow-sm">
-                <h3 className="text-xl font-semibold text-[#102033]">
-                  No encontramos productos con esa combinación.
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-[#102033]/65">
-                  Probá sacando algún filtro o volvé a ver toda la categoría.
-                </p>
-                <Link
-                  href="/perfumes"
-                  className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#0072CE] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#003B73]"
-                >
-                  Limpiar filtros
-                </Link>
-              </div>
+              <CatalogEmptyState title="No encontramos productos con esa combinación." text="Probá sacando algún filtro o volvé a ver toda la categoría." href="/perfumes" action="Limpiar filtros" titleAs={isArabicCatalog ? "h2" : "h3"} />
             )}
           </div>
         </div>
       </section>
-    </main>
+    </CatalogFrame>
   );
 }

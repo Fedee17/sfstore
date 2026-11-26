@@ -136,7 +136,7 @@ async function auditPublicPages(page,width) {
             await continueLink.click();
             await page.getByRole('heading',{name:'Prepará tu pedido'}).waitFor({timeout:12000});
             const checkout=page.locator('aside').first();
-            const checkoutPrice=await rowPrice(checkout,'Productos por transferencia (25% OFF)');
+            const checkoutPrice=await rowPrice(checkout,'Productos con 25% de descuento');
             note('checkout sin confirmar '+item.slug,within(checkoutPrice,total)?'PASS':'FAIL',JSON.stringify({product:heading,cartTotal:total,checkoutProducts:checkoutPrice}), 'critical');
             await screenshot(page,'checkout-mobile');
             // STOP before any form submit: never prepare an order, quote delivery or pay.

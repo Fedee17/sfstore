@@ -2,6 +2,10 @@
 
 import { useState, type CSSProperties } from "react";
 import styles from "./home-hero-slider.module.css";
+import { useCarouselRotation } from "./use-carousel-rotation";
+
+// Long enough to read the title and description before the banner changes.
+const bannerRotationInterval = 5000;
 
 export type HomeHeroSlide = {
   composition?: "continuous";
@@ -25,6 +29,13 @@ type HomeHeroSliderProps = {
 
 export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [hovering, setHovering] = useState(false);
+  const [stopped, setStopped] = useState(false);
+  // Pauses on hover; stops for good once the visitor focuses or picks a banner (WCAG 2.2.2).
+  const rotating = useCarouselRotation(slides.length > 1 && !hovering && !stopped, () => setActiveIndex((index) => (index + 1) % slides.length), bannerRotationInterval);
+
+  // Touch on iOS does not always focus a button, so a tap also stops the rotation.
+  const stop = () => setStopped(true);
 
   const activeSlide = slides[activeIndex] ?? slides[0];
 
@@ -32,22 +43,20 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
     return null;
   }
 
-
-
   const continuous = activeSlide.composition === "continuous";
   const hasImage = Boolean(activeSlide.imageSrc && activeSlide.imageAlt);
 
   return (
-    <section aria-label="Selección de perfumes árabes" aria-roledescription="carrusel" className="mx-auto max-w-6xl px-5 pb-3 pt-5 sm:px-8 lg:pb-4 lg:pt-8">
+    <section aria-label="Selección de perfumes árabes" aria-roledescription="carrusel" className="mx-auto max-w-6xl px-5 pb-3 pt-5 sm:px-8 lg:pb-4 lg:pt-8" onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)} onFocusCapture={stop} onPointerDown={stop}>
       <div className="min-w-0">
         <div
-          className="block min-w-0 overflow-hidden rounded-[2rem] border border-[#DCE3EA] bg-white shadow-2xl shadow-[#102033]/10 "
+          className={`${styles.frame} block min-w-0 overflow-hidden rounded-[2rem] border`}
         >
           <div className={continuous ? styles.scene : hasImage ? "relative grid h-[520px] bg-[#102033] sm:h-auto sm:grid-cols-[0.85fr_1.65fr] sm:bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)]" : "grid bg-[linear-gradient(115deg,#F7F9FC_0%,#EEF2F6_100%)]"}>
-            <div aria-live="polite" aria-atomic="true" className={continuous ? styles.copy : `flex flex-col justify-center sm:p-8 ${hasImage ? "absolute inset-x-0 top-0 z-20 gap-2 p-4 sm:static sm:z-auto sm:gap-3" : "gap-3 p-5"}`}>
+            <div aria-live={rotating ? "off" : "polite"} aria-atomic="true" className={continuous ? styles.copy : `flex flex-col justify-center sm:p-8 ${hasImage ? "absolute inset-x-0 top-0 z-20 gap-2 p-4 sm:static sm:z-auto sm:gap-3" : "gap-3 p-5"}`}>
               <h2 className={continuous ? styles.title : `max-w-2xl font-semibold sm:text-3xl lg:text-4xl ${hasImage ? "text-[1.375rem] leading-tight text-white sm:leading-9 sm:text-[#102033] lg:leading-10" : "text-2xl text-[#102033]"}`}>{activeSlide.title}</h2>
               <p className={continuous ? styles.description : `max-w-xl sm:text-base ${hasImage ? "text-sm leading-5 text-white sm:text-[#102033]/75 sm:leading-normal" : "text-base text-[#102033]/75"}`}>{activeSlide.subtitle}</p>
-              <a href={activeSlide.primaryCtaHref} className="inline-flex min-h-11 w-fit items-center rounded-full bg-[#0072CE] px-5 py-3 text-sm font-semibold text-white sm:text-base focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0072CE]">{activeSlide.primaryCtaLabel}</a>
+              <a href={activeSlide.primaryCtaHref} className={`${styles.cta} inline-flex min-h-11 w-fit items-center rounded-full px-5 py-3 text-sm font-semibold sm:text-base`}>{activeSlide.primaryCtaLabel}</a>
             </div>
             {hasImage ? (
               <picture className={continuous ? styles.picture : "absolute inset-0 block min-w-0 pt-14 sm:static sm:pt-0"}>
@@ -68,13 +77,9 @@ export function HomeHeroSlider({ slides }: HomeHeroSliderProps) {
                 aria-label={`Ver banner ${index + 1}: ${slide.title}`}
                 aria-current={index === activeIndex ? "true" : undefined}
                 onClick={() => setActiveIndex(index)}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-[#0072CE]"
+                className={`${styles.dot} flex min-h-11 min-w-11 items-center justify-center rounded-full`}
               >
-                <span aria-hidden="true" className={`h-2.5 rounded-full transition-all ${
-                  index === activeIndex
-                    ? "w-8 bg-[#0072CE]"
-                    : "w-2.5 bg-[#DCE3EA] hover:bg-[#0072CE]/45"
-                }`} />
+                <span aria-hidden="true" className={`h-2.5 rounded-full transition-all ${index === activeIndex ? "w-8" : "w-2.5"}`} />
               </button>
             ))}
           </div>

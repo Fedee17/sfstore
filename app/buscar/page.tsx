@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/product-grid";
-import { SiteHeader } from "@/components/site-header";
+import { CatalogFrame, catalogStyles } from "@/components/catalog/catalog-frame";
 import { searchProducts } from "@/lib/catalog/search";
 import { getCatalogPublications } from "@/services/products";
 import { AnalyticsView } from "@/components/analytics-view";
@@ -17,22 +17,21 @@ export default async function SearchPage({ searchParams }: {
   const products = searchProducts(catalog, query);
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] text-[#102033]">
-      <SiteHeader searchQuery={query} />
+    <CatalogFrame searchQuery={query}>
       <section className="storefront-catalog mx-auto max-w-6xl px-5 py-10 sm:px-8">
         {query ? <AnalyticsView event="catalog_search" identity="search-results" params={{ result_count: products.length }} /> : null}
-        <h1 className="catalog-title break-words">
+        <h1 className={`${catalogStyles.title} catalog-title break-words`}>
           {query ? `Resultados para “${query}”` : "Todos los productos"}
         </h1>
-        <p className="mt-3 text-sm text-[#526479]">{products.length} {products.length === 1 ? "producto encontrado" : "productos encontrados"}</p>
+        <p className={`${catalogStyles.count} mt-3 text-sm`}>{products.length} {products.length === 1 ? "producto encontrado" : "productos encontrados"}</p>
         {products.length ? <ProductGrid products={availableFirst(products)} label="Producto" presentation="catalog" /> : (
-          <div className="mt-8 rounded-2xl border border-[#DCE3EA] bg-white p-6">
-            <h2 className="catalog-subtitle">No encontramos productos con esa búsqueda.</h2>
-            <p className="mt-3">Probá con el nombre, la marca o una palabra más corta.</p>
-            <Link href="/buscar" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#0072CE] px-5 text-sm font-semibold text-white">Ver todos los productos</Link>
+          <div className={`${catalogStyles.panel} mt-8 rounded-2xl p-6`}>
+            <h2 className={`${catalogStyles.heading} catalog-subtitle`}>No encontramos productos con esa búsqueda.</h2>
+            <p className={`${catalogStyles.emptyText} mt-3`}>Probá con el nombre, la marca o una palabra más corta.</p>
+            <Link href="/buscar" className={`${catalogStyles.primary} mt-5 inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold`}>Ver todos los productos</Link>
           </div>
         )}
       </section>
-    </main>
+    </CatalogFrame>
   );
 }

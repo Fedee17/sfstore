@@ -140,8 +140,8 @@ test('variant admin: actual UI, admin Auth, PostgREST and isolated PostgreSQL17.
    await shop.goto(base+'/mates');await ready(shop);assert.equal(await shop.getByRole('link',{name:'Ver producto '+family.name,exact:true}).count(),1);
    await shop.getByRole('link',{name:'Ver producto '+family.name,exact:true}).click();await ready(shop);assert.equal(await shop.getByRole('button',{name:'Seleccioná una variante',exact:true}).isDisabled(),true);
    await shop.getByLabel('Color',{exact:true}).selectOption('Negro');assert.match(await shop.getByTestId('variant-transfer-price').textContent(),/75/);assert.match(await shop.getByTestId('variant-stock').textContent(),/3/);assert.ok(await shop.locator('img[src$="black.svg"]').count());
-   await shop.getByRole('button',{name:/Agregar .* al carrito/}).click();
-   await shop.getByLabel('Color',{exact:true}).selectOption('Verde');assert.match(await shop.getByTestId('variant-transfer-price').textContent(),/93,75/);assert.ok(await shop.locator('img[src$="green.svg"]').count());await shop.getByRole('button',{name:/Agregar .* al carrito/}).click();
+   await shop.getByRole('button',{name:/^Agregar al carrito/}).click();
+   await shop.getByLabel('Color',{exact:true}).selectOption('Verde');assert.match(await shop.getByTestId('variant-transfer-price').textContent(),/93,75/);assert.ok(await shop.locator('img[src$="green.svg"]').count());await shop.getByRole('button',{name:/^Agregar al carrito/}).click();
    const ids=await shop.evaluate(()=>JSON.parse(localStorage.getItem('sfstore-cart')).state.items.map(p=>p.productId));assert.deepEqual(new Set(ids),new Set([black.id,green.id]));assert.ok(!ids.includes(family.id));
    for(const [width,height] of [[1366,900],[390,844]]){await shop.setViewportSize({width,height});await shop.getByLabel('Color',{exact:true}).selectOption('Negro');await shop.getByLabel('Color',{exact:true}).selectOption('Verde');assert.equal(await shop.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await shop.screenshot({path:join(work,`public-family-${width}.png`),fullPage:true});}
   });

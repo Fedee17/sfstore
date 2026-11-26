@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import ts from 'typescript';
 import React from 'react';
 import * as jsx from 'react/jsx-runtime';
+import { rotationStub } from './fixtures/carousel-rotation-stub.mjs';
 import { renderToStaticMarkup, renderToPipeableStream } from 'react-dom/server';
 import { PassThrough } from 'node:stream';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
@@ -23,7 +24,7 @@ function load(file, modules = {}) {
   const out = {};
   const source = readFileSync(new URL('../' + file, import.meta.url), 'utf8');
   const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
-  new Function('require', 'exports', js)(id => modules[id] ?? (id === './home-featured-carousel' ? carouselModule() : id.endsWith('.module.css') ? { default: new Proxy({}, { get: (_, key) => key }) } : require(id)), out);
+  new Function('require', 'exports', js)(id => modules[id] ?? (id === './home-featured-carousel' ? carouselModule() : id.endsWith('use-carousel-rotation') ? rotationStub : id.endsWith('.module.css') ? { default: new Proxy({}, { get: (_, key) => key }) } : require(id)), out);
   return out;
 }
 const selection = load('lib/catalog/home-selection.ts', { '../products/public-families': availability, '../web-transfer-pricing': prices, './perfume-recommendation': recommendations });
@@ -42,7 +43,7 @@ test('Ritual uses photo/stock/price eligibility without requiring the featured f
  const html=await renderHome(input);
  const ritual=html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
  assert.match(ritual,/mate-visible/);assert.doesNotMatch(ritual,/mate-no-photo|mate-empty|Imagen no disponible/);
- assert.match(ritual,/Agregar al carrito/);assert.match(ritual,/25% OFF · (?:<[^>]+>)*Transferencia/);
+ assert.match(ritual,/Agregar al carrito/);assert.match(ritual,/25% OFF · Efectivo \/ Transferencia/);
  // Only Mates has publications: no tablist, no empty Termos/Bombillas/Yerbas panels.
  assert.doesNotMatch(ritual,/role="tablist"|role="tabpanel"|Termos|Yerbas/);
 });
@@ -51,6 +52,34 @@ test('Ritual tabs list only matero groups that have publications',async()=>{
  const html=await renderHome([product('mate-a',{category:'mates',categorySlug:'mates',featured:false}),product('termo-a',{category:'mates',categorySlug:'termos',featured:false})]);
  const ritual=html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
  assert.deepEqual([...ritual.matchAll(/role="tab"[^>]*>([^<]+)</g)].map(match=>match[1]),['Mates','Termos']);
+});
+
+// Owner decision 20/11: Ritual shows only Mates, Termos and Yerbas; other matero categories get no tab.
+test('Ritual shows only the Mates, Termos and Yerbas tabs',async()=>{
+ const matero=(slug,categorySlug)=>product(slug,{category:'mates',categorySlug,featured:false});
+ const html=await renderHome([matero('mate-a','mates'),matero('termo-a','termos'),matero('quencher-a','vasos-termicos'),matero('bombilla-a','bombillas'),matero('yerba-a','yerbas'),matero('matera-a','materas')]);
+ const ritual=html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
+ assert.deepEqual([...ritual.matchAll(/role="tab"[^>]*>([^<]+)</g)].map(match=>match[1]),['Mates','Termos','Yerbas']);
+ assert.doesNotMatch(ritual,/quencher-a|bombilla-a|matera-a/);
+ // Owner request 20/11: Ritual cards show the title only, without the description.
+ assert.doesNotMatch(ritual,/>Prueba</);
+});
+
+test('Ritual starts the first four photos early without preloading the other cards', async () => {
+  const mates = Array.from({ length: 5 }, (_, index) => product(`mate-${index}`, {
+    category: 'mates', categorySlug: 'mates', featured: false, primaryImageUrl: `/mate-${index}.webp`,
+  }));
+  const html = await renderHome([product('perfume'), ...mates]);
+  const ritual = html.match(/<section id="ritual-matero"[\s\S]*?<\/section>/)[0];
+  const photos = [...ritual.matchAll(/<img[^>]*>/g)].map(([image]) => image);
+  assert.equal(photos.length, 5);
+  for (const photo of photos.slice(0, 4)) {
+    assert.match(photo, /loading="eager"/);
+    assert.match(photo, /fetchPriority="low"/i);
+  }
+  assert.match(photos[4], /loading="lazy"/);
+  assert.match(html, /<img[^>]*src="\/test\.webp"[^>]*loading="lazy"/);
+  assert.doesNotMatch(html, /<link[^>]*rel="preload"[^>]*href="\/mate-\d\.webp"/);
 });
 
 test('featured family requires choosing an option; photographed single SKU has one add action',async()=>{
@@ -100,7 +129,7 @@ test('home uses derived combo availability and approved prices without changing 
   assert.deepEqual(selection.getHomeFeaturedProducts([{...combo,stock:0}]),[]);
 });
 
-async function renderHome(products = [], featuredSelection = selection, hero) {
+async function renderHome(products = [], featuredSelection = selection, hero, isolatedPhotos = products.filter(item => item.primaryImageUrl).map(item => ({ source: item.primaryImageUrl, asset: item.primaryImageUrl }))) {
   const modules = {
     react: React, 'react/jsx-runtime': jsx,
     'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
@@ -119,7 +148,9 @@ async function renderHome(products = [], featuredSelection = selection, hero) {
     '@/lib/whatsapp': { getProductWhatsAppLink: () => 'https://wa.me/000' },
   });
   const cards = load('app/home-product-card.tsx', { ...modules,
-    '@/components/product-grid': grid, '@/lib/catalog/public-product-visibility': visibility });
+    '@/components/product-grid': grid,
+    '@/components/product-price-panel': load('components/product-price-panel.tsx', { ...modules, '@/lib/pricing': savings, '@/lib/products/payment-prices': load('lib/products/payment-prices.ts', modules) }),
+    '@/lib/catalog/home-isolated-photos.json': { default: isolatedPhotos }, '@/lib/catalog/public-product-visibility': visibility });
   modules['./home-product-card'] = cards;
   modules['./ritual-matero'] = load('app/ritual-matero.tsx', modules);
   modules['@/lib/catalog/availability-order'] = ordering;
@@ -137,6 +168,16 @@ async function renderHome(products = [], featuredSelection = selection, hero) {
     });
   });
 }
+
+// Owner decision 20/11: without a verified cutout the Home card shows the normal product photo instead of a placeholder.
+test('a Home card keeps its product action and falls back to the normal photo without a verified cutout', async () => {
+  const item = product('sin-recorte', { primaryImageUrl: '/foto-ambientada.webp' });
+  const html = await renderHome([item], selection, undefined, []);
+  assert.match(html, /src="\/foto-ambientada\.webp"/);
+  assert.doesNotMatch(html, /Imagen no disponible de sin-recorte/);
+  assert.match(html, /href="\/producto\/sin-recorte"/);
+  assert.match(html, /Agregar al carrito/);
+});
 
 test('discovery precedes featured and gifts/advice remain after featured without the paused decant promotion', async () => {
   const html = await renderHome([product('valid')]);
@@ -222,6 +263,20 @@ test('Arabic category preserves the supplied original bytes and dimensions', () 
   assert.equal(original.readUInt32BE(16), 1670);
   assert.equal(original.readUInt32BE(20), 942);
   assert.equal(createHash('sha256').update(original).digest('hex'), '93a7c348156b625416bbd9b431559a1cb8556d56adb007163f5639b2c9d2c56b');
+});
+
+test('banner rotates with the shared hook: pauses on hover, stops on focus and stays silent while rotating', () => {
+  const hero = readFileSync(new URL('../components/home-hero-slider.tsx', import.meta.url), 'utf8');
+  const hook = readFileSync(new URL('../components/use-carousel-rotation.ts', import.meta.url), 'utf8');
+  const featured = readFileSync(new URL('../app/home-featured-carousel.tsx', import.meta.url), 'utf8');
+  for (const wiring of ['useCarouselRotation(slides.length > 1 && !hovering && !stopped,', 'onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)} onFocusCapture={stop} onPointerDown={stop}', 'aria-live={rotating ? "off" : "polite"}']) assert.ok(hero.includes(wiring), wiring);
+  // Owner 23/11: no visible pause button; a tap or focus stops the rotation for good.
+  assert.doesNotMatch(hero + featured, /CarouselRotationToggle/);
+  assert.ok(featured.includes('onPointerDown={() => setStopped(true)}'));
+  assert.ok(hook.includes('(prefers-reduced-motion: reduce)'));
+  assert.ok(hook.includes('if (document.hidden) return;'));
+  assert.ok(featured.includes('from "@/components/use-carousel-rotation"'));
+  assert.doesNotMatch(featured, /setTimeout|visibilitychange/);
 });
 
 test('existing hero renders only explicitly supplied photographs with alternative text', () => {
@@ -365,11 +420,11 @@ test('featured render preserves exhausted state and links and only strikes a gen
   const html=await renderHome([input],{getHomeFeaturedProducts:()=>[input]});
   const section=html.match(/<section id="productos"[\s\S]*?<\/section>/)[0];
   assert.match(section,/data-available="false">Agotado/); assert.match(section,/10% OFF/);
-  assert.match(section,/<s>[^<]*100/); assert.match(section,/Transferencia/);
+  assert.match(section,/data-testid="variant-list-price"[^>]*>[^<]*100/); assert.match(section,/Ahorrás<strong[^>]*>[^<]*10/); assert.match(section,/Transferencia/);
   assert.doesNotMatch(section,/Agregar al carrito/);
   assert.equal((section.match(/href="\/producto\/sold"/g)||[]).length,1);
   const equal=await renderHome([product('equal',{transferPrice:100})]);
-  assert.doesNotMatch(equal.match(/<section id="productos"[\s\S]*?<\/section>/)[0],/<s>|% OFF/);
+  assert.doesNotMatch(equal.match(/<section id="productos"[\s\S]*?<\/section>/)[0],/data-testid="variant-list-price"|% OFF|Ahorrás/);
 });
 
 test('home featured carousel displays the selected products by descending displayed price', async () => {
@@ -378,6 +433,6 @@ test('home featured carousel displays the selected products by descending displa
     product('b', { price: 150, transferPrice: 120 }),
     product('c', { price: 100, transferPrice: 100 }),
   ]);
-  assert.ok(html.includes("<strong>LOS MÁS ELEGIDOS</strong> DE SF STORE"));
+  assert.ok(html.includes(">LOS MÁS ELEGIDOS DE SF STORE</h2>"));
   assert.deepEqual([...html.matchAll(/data-product-slug="([^"]+)"/g)].map(match => match[1]), ['b', 'c', 'a']);
 });

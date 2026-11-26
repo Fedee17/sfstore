@@ -55,7 +55,7 @@ export async function reportCheckoutPayment(request: Request,orderId: string) {
     if(submitted.error) rpcError(submitted.error.message);
     return Response.json(submitted.data,{headers});
   } catch(error) {
-    return Response.json({code:error instanceof CheckoutError?error.code:"CHECKOUT_REPORT_UNAVAILABLE",error:error instanceof CheckoutError && error.code==="CHECKOUT_PROOF_TOO_LARGE"?"El comprobante supera el límite de 3 MiB. Reducí su tamaño y reintentá.":"No se pudo informar el pago. Revisá el plazo, el comprobante y tu sesión; conservá esta ventana para reintentar o contactá al local."},{status:error instanceof CheckoutError?error.status:503,headers});
+    return Response.json({code:error instanceof CheckoutError?error.code:"CHECKOUT_REPORT_UNAVAILABLE",error:error instanceof CheckoutError && error.code==="CHECKOUT_PROOF_TOO_LARGE"?"El comprobante supera el límite de 3 MB. Reducí su tamaño y reintentá.":error instanceof CheckoutError && error.code==="CHECKOUT_IDEMPOTENCY_CONFLICT"?"Ya empezaste a informar el pago con otro archivo. Adjuntá ese mismo comprobante o consultanos para revisarlo.":"No se pudo informar el pago. Revisá el plazo, el comprobante y tu sesión; conservá esta ventana para reintentar o contactá al local."},{status:error instanceof CheckoutError?error.status:503,headers});
   }
 }
 export async function downloadCheckoutProof(orderId: string) {

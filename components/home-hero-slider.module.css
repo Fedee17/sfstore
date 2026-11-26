@@ -1,10 +1,25 @@
+/* Owner request 20/11: banner chrome in boutique tokens (frame, CTA and carousel dots). */
+.frame { border-color: var(--boutique-border, #dce3ea); background: var(--boutique-surface, #fff); box-shadow: var(--boutique-shadow, 0 25px 50px -12px #1020331a); }
+.cta {
+  border: 1px solid var(--boutique-contact-border, transparent);
+  background: var(--boutique-contact-background, #0072ce);
+  color: var(--boutique-olive, #fff);
+  box-shadow: var(--boutique-contact-shadow, none);
+}
+.cta:hover { background: var(--boutique-contact-hover, #003b73); }
+.cta:focus-visible, .dot:focus-visible { outline: 2px solid var(--boutique-focus, #0072ce); outline-offset: 4px; }
+.dot > span { background: var(--boutique-border, #dce3ea); }
+.dot:hover > span { background: var(--boutique-contact-border, #0072ce73); }
+.dot[aria-current="true"] > span { background: var(--boutique-action, #0072ce); }
+
 .scene {
   position: relative;
   isolation: isolate;
   min-height: 480px;
   /* Follow the art-directed source ratios (768x1152 mobile, 1600x616 desktop) to avoid cropping the focal point. */
   aspect-ratio: 2 / 3;
-  background: #102033;
+  /* Only visible while the photo loads. */
+  background: var(--boutique-action-hover, #102033);
 }
 .picture { position: absolute; inset: 0; }
 .photo { width: 100%; height: 100%; object-fit: cover; object-position: center; }
@@ -31,6 +46,18 @@
   .scene { min-height: 500px; }
   .copy { padding: 20px; }
   .title { font-size: 26px; line-height: 30px; }
+}
+/* Owner request 20/11 (mobile only): square photo so the banner fits the screen, and the copy on the
+   olive panel of the approved «¿Qué estás buscando?» cards instead of floating over the photo. */
+@media (width < 640px) {
+  .scene { display: flex; flex-direction: column; min-height: 0; aspect-ratio: auto; background: var(--boutique-buy-background, #102033); }
+  .picture { position: relative; inset: auto; display: block; order: 1; aspect-ratio: 1; overflow: hidden; }
+  .photo { object-position: center 62%; }
+  .copy { order: 2; gap: 8px; padding: 16px 18px 18px; color: var(--boutique-surface, #fff); }
+  /* Two reserved lines keep both slides the same height, so the page does not jump on rotation. */
+  .title { min-block-size: 52px; font-size: 22px; line-height: 26px; font-weight: 750; letter-spacing: -.02em; }
+  .description { font-size: 14px; line-height: 20px; }
+  .shade { display: none; }
 }
 @media (min-width: 640px) {
   .scene { min-height: 260px; aspect-ratio: 1600 / 616; display: flex; align-items: center; }

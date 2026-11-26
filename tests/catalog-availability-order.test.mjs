@@ -10,6 +10,7 @@ import * as ordering from '../lib/catalog/availability-order.ts';
 import { publicationAvailable } from '../lib/products/public-families.ts';
 import * as attributes from '../lib/catalog/attribute-config.ts';
 import * as search from '../lib/catalog/search.ts';
+import { catalogFrameStubs } from './fixtures/catalog-frame-stubs.mjs';
 
 const require = createRequire(import.meta.url);
 function loadFilters(file, modules) {
@@ -78,6 +79,7 @@ function loadPage(file, products) {
     'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
     'next/server': { connection: async () => {} },
     '@/components/site-header': { SiteHeader: () => null },
+    ...catalogFrameStubs,
     '@/components/catalog/mobile-catalog-filters': { MobileCatalogFilters: () => null },
     '@/components/catalog/catalog-sidebar': { CatalogSidebar: () => null },
     '@/components/analytics-view': { AnalyticsView: () => null },

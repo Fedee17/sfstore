@@ -1,4 +1,5 @@
 import * as productPresentation from '../lib/catalog/product-presentation.ts';
+import { loadProductDetailUi } from './fixtures/product-detail-render.mjs';
 import * as checkoutFeedback from '../lib/checkout/feedback.ts';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
@@ -95,10 +96,13 @@ test('legacy selector and standalone carts merge safely without another head or 
 });
 test('catalog and detail add controls recognize the same logical combo already in the cart',()=>{
  const p=pubs()[0],items=[{productId:id,comboConnector:'cc',quantity:2,stock:2}];
- const hooks={...React,useState:()=>['',()=>{}]};const store={cartItemKey,useCartStore:Object.assign(fn=>fn({items,addItem:()=>{}}),{getState:()=>({items,addItem:()=>{}})})};
- for(const [f,name] of [['components/add-to-cart-button.tsx','AddToCartButton'],['app/producto/[slug]/product-actions.tsx','ProductActions']]){
-  const m=load(f,{'react':hooks,'react/jsx-runtime':jsx,'@/store/cart-store':store,'@/lib/whatsapp':{getProductWhatsAppLink:()=>'/synthetic'}});
-  const html=renderToStaticMarkup(React.createElement(m[name],{product:p}));assert.match(html,/disabled=""/);assert.match(html,/Stock máximo en carrito/);
+ const store={cartItemKey,useCartStore:Object.assign(fn=>fn({items,addItem:()=>{}}),{getState:()=>({items,addItem:()=>{}})})};
+ const whatsapp={getProductWhatsAppLink:()=>'/synthetic'};
+ const ui={...loadProductDetailUi(load,{'@/lib/whatsapp':whatsapp}),'react':React,'react/jsx-runtime':jsx,'@/store/cart-store':store};
+ const shared=load('components/add-to-cart-button.tsx',ui);
+ const {ProductActions}=load('app/producto/[slug]/product-actions.tsx',{...ui,'@/components/add-to-cart-button':shared});
+ for(const Button of [shared.AddToCartButton,ProductActions]){
+  const html=renderToStaticMarkup(React.createElement(Button,{product:p}));assert.match(html,/disabled=""/);assert.match(html,/Stock máximo en carrito/);
  }
 });
 

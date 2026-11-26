@@ -1,0 +1,40 @@
+.buy:not(:disabled, [aria-disabled="true"]) {
+  background-image: var(--boutique-buy-background, none);
+  box-shadow: var(--boutique-buy-shadow, none);
+}
+
+.buy:not(:disabled, [aria-disabled="true"]):hover {
+  background-image: var(--boutique-buy-hover, none);
+}
+
+.contact {
+  border-color: var(--boutique-contact-border, #003b73);
+  background-image: var(--boutique-contact-background, none);
+  box-shadow: var(--boutique-contact-shadow, none);
+}
+
+.contact:hover {
+  background-image: var(--boutique-contact-hover, none);
+}
+
+.note {
+  background: var(--boutique-note-surface, #fdf8ee);
+  box-shadow: var(--boutique-note-shadow, 0 2px 4px #61432620);
+}
+
+.support,
+.reviews {
+  border-color: var(--boutique-border, #dce3ea);
+  background: var(--boutique-support-background, white);
+  box-shadow: var(--boutique-shadow, none);
+}
+
+.support > summary {
+  color: var(--boutique-olive, #102747);
+  outline-color: var(--boutique-focus, #003b73);
+  font-weight: var(--boutique-support-weight, 600);
+}
+
+.support[open] > summary {
+  background: var(--boutique-soft, color-mix(in oklab, #e8f3ff 50%, transparent));
+}

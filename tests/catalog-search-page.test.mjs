@@ -16,6 +16,7 @@ import * as visibility from '../lib/catalog/public-product-visibility.ts';
 import * as yara from '../lib/products/yara-rosa-consolidation.ts';
 import * as availability from '../lib/catalog/availability-order.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { catalogFrameStubs } from './fixtures/catalog-frame-stubs.mjs';
 import { publicRows, publicOffers, invalidRows, filterFixtureRows, fixtureCashPrice } from './fixtures/search-public-catalog.mjs';
 
 const require = createRequire(import.meta.url);
@@ -53,6 +54,7 @@ function harness({ rows = publicRows, offers = publicOffers, fail = false } = {}
   let result;
   const Page = load('app/buscar/page.tsx', {
     ...analyticsRenderStubs,
+    ...catalogFrameStubs,
     'react/jsx-runtime': jsx, 'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
     '@/components/site-header': { SiteHeader: () => null }, '@/lib/catalog/search': search, '@/services/products': service,
     '@/lib/catalog/availability-order': availability,

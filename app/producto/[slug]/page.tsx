@@ -5,9 +5,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductImageGallery } from "@/components/product-image-gallery";
 import { SiteHeader } from "@/components/site-header";
-import { HomeProductCarousel } from "@/app/home-product-card";
-import { ProductPricePanel, ProductPurchaseConditions } from "@/components/product-purchase-summary";
-import { getPerfumeCommercialCategory } from "@/lib/product-taxonomy";
+import { ProductCard } from "@/components/product-grid";
+import { ProductDetailLayout, ProductDetailSummary } from "@/components/product-detail-layout";
+import { ProductSupportSections } from "@/components/product-purchase-summary";
+import { getPublicInstallments } from "@/lib/payments/installments";
+import { APPROVED_MOCKUP_PRICES } from "@/lib/products/payment-prices";
 import { getProductBySlug, getRelatedProducts } from "@/services/products";
 import { ProductActions } from "./product-actions";
 import { Suspense } from "react";
@@ -16,11 +18,15 @@ import { getProductCommercialInformation } from "@/lib/products/commercial-infor
 import { ProductInformation } from "@/components/product-information";
 import { AnalyticsView } from "@/components/analytics-view";
 import { analyticsItem } from "@/lib/analytics/client";
+import { isDecantProduct } from "@/lib/catalog/perfume-recommendation";
+
+import surface from "@/components/storefront-surface.module.css";
 
 type ProductPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{ vistaPreviaCuotas?: string | string[]; vistaPreviaPrecios?: string | string[] }>;
 };
 
 function createMetadataDescription(
@@ -29,7 +35,7 @@ function createMetadataDescription(
   const information = getProductCommercialInformation(product);
   const source = information.shortDescription || information.description || product.name;
 
-  return source.length > 155 ? `${source.slice(0, 152).trim()}...` : source;
+  return source.length > 155 ? `${source.slice(0, 152).trim()}…` : source;
 }
 
 export async function generateMetadata({
@@ -74,154 +80,63 @@ export async function generateMetadata({
   };
 }
 
-type ProductGalleryImageData = {
-  url: string;
-  alt: string | null;
-  sort_order: number;
-  is_primary: boolean;
-};
-
-type ProductWithGalleryImages = {
-  images?: ProductGalleryImageData[];
-};
-
-function getProductGalleryImages(product: unknown) {
-  if (typeof product !== "object" || product === null || !("images" in product)) {
-    return undefined;
-  }
-
-  return (product as ProductWithGalleryImages).images;
-}
-
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
+  if (!product) notFound();
+  // Installments stay hidden until that payment method is enabled; a local development server can preview them.
+  const preview = process.env.NODE_ENV === "development" ? await searchParams : undefined;
+  // Visual comparison with the approved mockup (development only): reference amounts and installments, no purchase.
+  const reference = preview?.vistaPreviaPrecios === "1" ? APPROVED_MOCKUP_PRICES : undefined;
+  const installments = getPublicInstallments(!!reference || preview?.vistaPreviaCuotas === "1");
 
-  if (!product) {
-    notFound();
-  }
-
-  if (product.kind === "family") return <ProductFamilyDetail product={product}/>;
-  const information = getProductCommercialInformation(product);
-  const isAvailable = product.stock > 0;
-  const productAttributes =
-    "attributes" in product && Array.isArray(product.attributes)
-      ? product.attributes
-      : undefined;
-  const commercialCategory =
-    product.category === "perfumes"
-      ? getPerfumeCommercialCategory(productAttributes)
-      : "";
-  const relatedProducts = (await getRelatedProducts(
-    product.categoryId,
-    product.id,
-  )).filter(related => related.category === product.category && related.id !== product.id);
+  const categoryLabel = categoryLabels[product.category];
+  const categoryPath = categoryPaths[product.category];
+  const relatedLabel = "Más en " + categoryLabel;
+  const relatedProducts = (await getRelatedProducts(product.categoryId, product.id))
+    .filter(related => related.category === product.category && related.id !== product.id && related.primaryImageUrl?.trim());
+  const showShippingPreview = process.env.NODE_ENV === "development" && product.stock > 0
+    && product.category === "perfumes" && product.kind !== "combo"
+    && isDecantProduct({ id: product.id, name: product.name, slug: product.slug, attributes: product.attributes });
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] font-sans text-[#102033]">
+    <main data-storefront-theme="boutique" className="min-h-screen bg-[#F7F9FC] font-sans text-[#102033]">
       <AnalyticsView event="view_item" identity={product.id} params={{ items: [analyticsItem(product)].filter(Boolean) }} />
       <SiteHeader />
-      <section className="mx-auto max-w-6xl px-5 py-5 sm:px-8 sm:py-8 lg:py-12">
-        <a
-          href={categoryPaths[product.category]}
-          className="mb-3 inline-flex max-w-full items-center rounded-full border border-[#003B73]/25 bg-white/60 px-4 py-2 text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] hover:text-[#0072CE] sm:mb-5"
-        >
-          &larr; Volver a {categoryLabels[product.category].toLowerCase()}
-        </a>
+      <div className={`${surface.canvas} ${surface.botanicalCorner}`}>
+        <div className="mx-auto max-w-6xl px-3 pb-10 pt-3 sm:px-6 md:px-20 md:pt-6 min-[1312px]:px-8">
+          <nav aria-label="Ruta del producto" className="mb-1 flex min-w-0 flex-wrap items-center gap-2 text-xs font-medium text-[var(--boutique-olive,#003B73)] md:mb-3 md:text-sm">
+            <Link href="/" prefetch={false} className="hidden min-h-11 items-center hover:underline md:inline-flex">Inicio</Link>
+            <span aria-hidden="true" className="hidden md:inline">/</span>
+            <Link href={categoryPath} prefetch={false} className="inline-flex min-h-11 items-center hover:underline">
+              <span aria-hidden="true" className="md:hidden">← </span>{categoryLabel}
+            </Link>
+            <span aria-hidden="true" className="hidden md:inline">/</span>
+            <span aria-current="page" className="hidden break-words font-normal text-[var(--boutique-muted,#45576A)] md:inline">{product.name}</span>
+          </nav>
 
-        <nav aria-label="Ruta del producto" className="hidden min-w-0 flex-wrap items-center gap-2 text-sm text-[#102033]/60 sm:flex">
-          <Link
-            className="font-medium text-[#003B73] transition hover:text-[#0072CE]"
-            href="/"
-            prefetch={false}
-          >
-            Inicio
-          </Link>
-          <span>/</span>
-          <a
-            className="font-medium text-[#003B73] transition hover:text-[#0072CE]"
-            href={categoryPaths[product.category]}
-          >
-            {categoryLabels[product.category]}
-          </a>
-          <span>/</span>
-          <span className="min-w-0 break-words text-[#102033]">
-            {product.name}
-          </span>
-        </nav>
+          {product.kind === "family" ? <ProductFamilyDetail product={product} installments={installments} /> : (
+            <ProductDetailLayout
+              gallery={<ProductImageGallery images={product.images} placeholder={product.imagePlaceholder} productName={product.name} />}
+              details={<>
+                <ProductInformation product={product} standalone />
+                <ProductSupportSections attributes={product.attributes} productName={product.name} showShippingPreview={showShippingPreview} />
+              </>}
+            >
+              <ProductDetailSummary product={product} />
+              <ProductActions product={product} installments={installments} reference={reference} />
+              {product.kind !== "combo" ? <Suspense fallback={null}><ComponentOffers headId={product.id} /></Suspense> : null}
+            </ProductDetailLayout>
+          )}
 
-        <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-10">
-          <div className="min-w-0 overflow-hidden rounded-3xl border border-[#DCE3EA] bg-white">
-            <ProductImageGallery
-              images={getProductGalleryImages(product)}
-              placeholder={product.imagePlaceholder}
-              productName={product.name}
-            />
-          </div>
-
-          <article className="min-w-0 space-y-6 rounded-3xl bg-[#FFFDFA] p-5 sm:p-7">
-            <div className="flex min-w-0 flex-wrap items-center gap-3">
-              <span className="max-w-full break-words rounded-full bg-[#0072CE]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#003B73]">
-                {categoryLabels[product.category]}
-              </span>
-              <span
-                className={`max-w-full break-words rounded-full px-3 py-1 text-xs font-semibold ${
-                  isAvailable
-                    ? "bg-[#EEF2F6] text-[#003B73]"
-                    : "bg-[#E52620]/10 text-[#E52620]"
-                }`}
-              >
-                {isAvailable ? "En stock" : "Agotado"}
-              </span>
-              {commercialCategory ? (
-                <span className="max-w-full break-words rounded-full bg-[#EEF2F6] px-3 py-1 text-xs font-semibold text-[#003B73]">
-                  Categoría: {commercialCategory}
-                </span>
-              ) : null}
+          {relatedProducts.length ? <section aria-labelledby="related-products" className="mt-6 md:mt-9">
+            <h2 id="related-products" className="mb-3 break-words text-xl font-bold tracking-tight text-[var(--boutique-heading,#102747)] sm:text-2xl">{relatedLabel}</h2>
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {relatedProducts.map(related => <ProductCard key={related.id} product={related} label={relatedLabel} directPurchase={false} presentation="related" hideLabel />)}
             </div>
-
-            <h1 className="break-words text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-              {product.name}
-            </h1>
-            {information.shortDescription ? <p className="mt-2 whitespace-pre-line break-words text-sm leading-6">{information.shortDescription}</p> : null}
-            <ProductPricePanel price={product.price} cash={product.transferPrice} />
-            <ProductActions product={product} />
-            <ProductPurchaseConditions attributes={productAttributes} />
-            <div className="space-y-5"><ProductInformation product={product} /></div>
-            {product.kind !== "combo" ? <Suspense fallback={null}><ComponentOffers headId={product.id}/></Suspense> : null}
-          </article>
+          </section> : null}
         </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-5 pb-16 pt-6 sm:px-8 lg:pb-24">
-        <div className="flex min-w-0 flex-col justify-between gap-4 border-t border-[#003B73]/15 pt-10 sm:flex-row sm:items-end">
-          <div className="min-w-0">
-            <p className="break-words text-sm font-semibold uppercase tracking-[0.16em] text-[#003B73]">
-              Seguí explorando
-            </p>
-            <h2 className="mt-3 break-words text-3xl font-semibold">
-              Más en {categoryLabels[product.category]}
-            </h2>
-          </div>
-        </div>
-
-        {relatedProducts.length === 0 ? (
-          <div className="mt-8 rounded-[2rem] border border-[#003B73]/15 bg-white/65 p-6 text-sm leading-6 text-[#102033]/65">
-            Podés seguir explorando el catálogo.
-          </div>
-        ) : (
-          <div className="mt-8">
-            <HomeProductCarousel products={relatedProducts} label={`Más en ${categoryLabels[product.category]}`} hideLabel />
-          </div>
-        )}
-      </section>
+      </div>
     </main>
   );
 }
-
-
-
-
-
-
-

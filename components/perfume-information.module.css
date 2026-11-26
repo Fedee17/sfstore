@@ -1,0 +1,375 @@
+.panel {
+  color: var(--sf-perfume-ink);
+  background: var(--sf-perfume-paper);
+  border-color: var(--sf-perfume-line);
+  box-shadow: 0 6px 18px #4b372113;
+}
+
+.panel > .summary {
+  min-height: 3.5rem;
+  padding: .78rem 1.15rem;
+  color: #fffdf4;
+  background: var(--sf-perfume-olive-dark);
+  background-image: linear-gradient(90deg, var(--sf-perfume-olive-dark) 55%, #34401e90), var(--sf-botanical-band);
+  background-position: right center;
+  background-size: auto, 42% auto;
+  background-repeat: no-repeat;
+  font-size: clamp(1.12rem, 2.3vw, 1.6rem);
+}
+
+.panel > .summary > svg {
+  width: clamp(1.2rem, 2.1vw, 1.65rem);
+  height: clamp(1.2rem, 2.1vw, 1.65rem);
+}
+
+.panel > .summary:focus-visible {
+  outline-color: #fffdf4;
+}
+
+.content {
+  display: grid;
+  gap: clamp(1.15rem, 3vw, 1.75rem);
+  padding: clamp(1rem, 3vw, 2rem);
+  overflow-wrap: anywhere;
+}
+
+.intro {
+  display: grid;
+  gap: 1rem;
+}
+
+.copy {
+  align-self: center;
+}
+
+.brand {
+  color: var(--sf-perfume-olive);
+  font-size: clamp(1.03rem, 2vw, 1.35rem);
+  font-weight: 650;
+}
+
+.copy h2 {
+  font-size: clamp(1.75rem, 5vw, 3.15rem);
+  line-height: 1.07;
+  font-weight: 780;
+  letter-spacing: -.045em;
+}
+
+.copy h2::after {
+  display: block;
+  width: 2.65rem;
+  height: .22rem;
+  margin: .6rem 0 .75rem;
+  border-radius: 1rem;
+  background: #68753a;
+  content: "";
+}
+
+.description {
+  color: #49382d;
+  font-size: clamp(.94rem, 1.6vw, 1.08rem);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.art {
+  display: flex;
+  max-inline-size: 100%;
+  min-width: 0;
+  min-height: 10rem;
+  max-height: 19rem;
+  aspect-ratio: 1.8;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 8% 92%, transparent), linear-gradient(0deg, transparent, #000 12% 90%, transparent);
+  mask-composite: intersect;
+}
+
+.art > img {
+  min-width: 0;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 60%;
+}
+.highlights,
+.extra {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: .7rem;
+}
+
+.highlights > div {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .8rem 1.05rem;
+  border-radius: 1rem;
+  background: #ececde;
+}
+
+.highlights > .occasions {
+  background: var(--sf-perfume-sand);
+}
+
+.highlights dt,
+.extra dt {
+  color: var(--sf-perfume-olive);
+  font-weight: 700;
+}
+
+.highlights dd {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 650;
+}
+
+.perfumeIcon {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  color: var(--sf-perfume-olive);
+}
+
+.sectionTitle .perfumeIcon {
+  padding: .4rem;
+  border-radius: .65rem;
+  color: #fffdf4;
+  background: var(--sf-perfume-olive);
+}
+
+.intensity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .4rem;
+  margin-top: .2rem;
+}
+
+.intensity dt,
+.intensity dd {
+  font-size: .875rem;
+  font-weight: 550;
+}
+
+.recommendation {
+  margin-top: .4rem;
+  color: var(--sf-perfume-olive-dark);
+  font-size: .94rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.notes {
+  display: grid;
+  gap: .9rem;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+  font-weight: 740;
+}
+
+.selection {
+  color: #574638;
+  font-size: .875rem;
+}
+
+.sectionTitle::after {
+  height: 1px;
+  flex: 1;
+  background: #8b9465;
+  content: "";
+}
+
+.levelRow {
+  display: grid;
+  grid-template-columns: minmax(0, 22%) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(.5rem, 2vw, 1.75rem);
+}
+
+.pyramidTier > div {
+  margin-inline: auto;
+  overflow: hidden;
+  background: #a2a67a;
+}
+
+.clipDefinition { position: absolute; }
+
+.pyramidTier img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.top {
+  width: 48%;
+  height: clamp(2.6rem, 5vw, 3.9rem);
+}
+
+.heart {
+  width: 74%;
+  height: clamp(2.3rem, 4vw, 3rem);
+}
+
+.base {
+  height: clamp(2.4rem, 4vw, 3rem);
+}
+
+.notesList {
+  display: grid;
+  gap: .5rem;
+}
+
+.noteRow {
+  display: grid;
+  grid-template-columns: minmax(4.8rem, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: .65rem;
+  border-radius: .85rem;
+  background: var(--sf-perfume-sand);
+}
+
+.noteRow > span:first-child {
+  padding: .44rem .48rem;
+  border-radius: .75rem;
+  background: var(--sf-perfume-olive);
+  color: #fffdf4;
+  text-align: center;
+  font-weight: 670;
+}
+
+.noteRow > span:last-child {
+  padding: .42rem .65rem .42rem 0;
+}
+
+.extra {
+  padding: .75rem 1rem;
+  border: 1px solid var(--sf-perfume-line);
+  border-radius: .85rem;
+}
+
+.accordsSection {
+  display: grid;
+  gap: .65rem;
+}
+
+.accords {
+  display: grid;
+  gap: 1rem;
+  padding: 1.15rem;
+  border-radius: 1.5rem;
+  background: repeating-linear-gradient(0deg, #ad753305 0 3px, transparent 3px 12px), linear-gradient(105deg, #fae6ce, #fbefdf 48%, #fae4ca);
+}
+
+.accordsHeading {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.9rem);
+  line-height: 1.12;
+  font-weight: 750;
+  color: #302115;
+}
+
+.accordsIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  color: #fff8e9;
+  background: linear-gradient(120deg, #77491f, #a86b32);
+  box-shadow: inset 0 0 0 1px #6e431f50;
+}
+
+.accordsIcon svg { width: 70%; height: 70%; }
+
+.accordsList { display: grid; gap: .4rem; }
+
+.accordsList li {
+  display: grid;
+  grid-template-columns: minmax(0, 7.7rem) minmax(0, 1fr);
+  align-items: center;
+  gap: .65rem;
+  font-weight: 650;
+  font-size: clamp(.91rem, 1.9vw, 1.15rem);
+  line-height: 1.25;
+}
+
+.accordTrack {
+  height: 1rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #b398772e;
+  box-shadow: inset 0 1px 2px #7a512b0a;
+}
+
+.accordTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #596321, #747c31);
+  box-shadow: inset 0 0 0 1px #36411920;
+}
+
+.accordsList li:nth-child(n+3) .accordTrack > span { background: linear-gradient(90deg, #8a914a, #a2a361); }
+
+.accordsLabels { display: flex; flex-wrap: wrap; gap: .5rem; align-content: center; }
+.accordsLabels li { padding: .35rem .7rem; border-radius: 999px; background: #fff8edb0; font-weight: 650; }
+.accordsSource { font-size: .75rem; line-height: 1.5; color: #63513d; }
+.accordsSource a { text-decoration: underline; text-underline-offset: .2em; }
+
+@media (min-width: 48rem) {
+  .accords {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr);
+    align-items: center;
+    gap: 1.6rem;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .accordsHeading {
+    align-self: stretch;
+    padding-right: 1.5rem;
+    border-right: 1px solid #aa895a;
+  }
+
+  .accordsIcon { width: 3.5rem; height: 3.5rem; }
+  .accordTrack { height: 1.25rem; }
+  .intro:has(.art) {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 2.25rem);
+  }
+
+  .levelRow {
+    grid-template-columns: minmax(0, 26%) minmax(0, 1fr);
+  }
+
+  .noteRow {
+    grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 47.999rem) {
+  .content { gap: .9rem; }
+  .intro, .notes, .highlights { gap: .55rem; }
+  .highlights > div { padding: .55rem .75rem; }
+  .highlights .perfumeIcon { width: 1.85rem; height: 1.85rem; }
+  .description { line-height: 1.5; }
+  .levelRow .noteRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: .35rem .55rem;
+    font-size: .875rem;
+  }
+  .levelRow .noteRow > span:first-child {
+    justify-self: start;
+    padding: .12rem .45rem;
+    font-size: .8rem;
+  }
+  .levelRow .noteRow > span:last-child { padding: .2rem 0 0; }
+}

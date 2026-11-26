@@ -44,16 +44,25 @@ test('P06 real browser: consent, private payloads, views, SKU actions, order ret
       });
       const page = await context.newPage(); page.on('pageerror', error => errors.push(error.message));
       const consent = page.getByRole('region', { name: 'Preferencias de medición' });
-      await page.goto(base + '/accesorios'); await consent.getByRole('button', { name: 'Rechazar medición' }).waitFor();
+      await page.goto(base + '/accesorios'); await consent.getByRole('button', { name: 'Rechazar', exact: true }).waitFor();
+      await consent.getByRole('button', { name: 'Cerrar aviso sin cambiar mi decisión', exact: true }).click();
+      assert.equal(await page.evaluate(() => localStorage.getItem('sfstore-analytics-consent-v1')), null);
+      assert.equal(google.length, 0); assert.equal(events.length, 0);
+      assert.equal(await consent.getByRole('button', { name: 'Gestionar preferencias', exact: true }).evaluate(button => button === document.activeElement), true);
+      await page.reload();
+      await consent.getByRole('button', { name: 'Aceptar', exact: true }).press('Escape');
+      assert.equal(google.length, 0); assert.equal(events.length, 0);
+      await consent.getByRole('button', { name: 'Gestionar preferencias', exact: true }).press('Enter');
+      await consent.getByText(/Google Analytics utiliza cookies e identificadores/).waitFor();
       await consent.scrollIntoViewIfNeeded();
       await page.screenshot({ path: `staging/runtime/p06-local/consent-prompt-${viewport.width}.png`, fullPage: false });
-      await consent.getByRole('button', { name: 'Rechazar medición' }).click();
+      await consent.getByRole('button', { name: 'Rechazar', exact: true }).click();
       assert.equal(google.length, 0); assert.equal(events.length, 0);
-      await page.reload(); await consent.getByRole('button', { name: /Preferencias de medición/ }).waitFor();
+      await page.reload(); await consent.getByRole('button', { name: 'Gestionar preferencias', exact: true }).waitFor();
       assert.equal(google.length, 0);
-      await consent.getByRole('button', { name: /Preferencias de medición/ }).click();
+      await consent.getByRole('button', { name: 'Gestionar preferencias', exact: true }).click();
       const firstEvent = page.waitForResponse(response => response.url().includes('/g/collect'));
-      await consent.getByRole('button', { name: 'Aceptar medición' }).click();
+      await consent.getByRole('button', { name: 'Aceptar', exact: true }).click();
       await page.waitForFunction(() => document.querySelector('#sfstore-ga4'));
       await firstEvent;
       assert.equal(google.length, 1);
@@ -70,7 +79,9 @@ test('P06 real browser: consent, private payloads, views, SKU actions, order ret
       await page.waitForFunction(() => window.dataLayer?.some(a => a[0] === 'event' && a[1] === 'catalog_search'));
       assert.doesNotMatch(JSON.stringify(events), /private-person|buscar=|search_term/);
       await page.goto(base + '/producto/termo-familiar-prueba');
+      const variantEvent = page.waitForRequest(request => request.url().includes('/g/collect') && request.postData()?.includes('select_item_variant'));
       await page.getByRole('button', { name: 'Negro', exact: true }).click();
+      await variantEvent;
       await page.getByRole('button', { name: 'Negro', exact: true }).click();
       const add = page.getByRole('button', { name: /^Agregar .* al carrito$/ });
       await add.click(); await add.click(); assert.equal(await add.isDisabled(), true);
@@ -95,8 +106,8 @@ test('P06 real browser: consent, private payloads, views, SKU actions, order ret
       assert.ok(!events.some(e => e[1] === 'purchase'));
       assert.doesNotMatch(JSON.stringify(events), /SINTETICO|synthetic@example|1198765432|000000009999|operationKey|private=|not-analytics/);
       await page.goto(base + '/ayuda');
-      await consent.getByRole('button', { name: /Preferencias de medición/ }).click();
-      await consent.getByRole('button', { name: 'Rechazar medición' }).click();
+      await consent.getByRole('button', { name: 'Gestionar preferencias', exact: true }).click();
+      await consent.getByRole('button', { name: 'Rechazar', exact: true }).click();
       await page.waitForFunction(() => window['ga-disable-G-SYNTHETIC'] === true);
       const count = events.length;
       await page.goto(base + '/accesorios');
@@ -105,6 +116,96 @@ test('P06 real browser: consent, private payloads, views, SKU actions, order ret
       assert.deepEqual(errors, []);
       await page.screenshot({ path: `staging/runtime/p06-local/consent-${viewport.width}.png`, fullPage: true });
       console.log(JSON.stringify({ viewport: viewport.width, mockGoogleLoads: google.length, sanitizedEvents: events.length, syntheticOrders: orders.length, productionRequests: 0 }));
+      await context.close();
+    }
+  } finally { await browser.close(); }
+});
+
+test('UTM in Chrome: immediate/delayed consent, navigation, reload, rejection, revocation and privacy', { skip: !base || !modulePath, timeout: 180000 }, async () => {
+  assert.equal(new URL(base).hostname, '127.0.0.1');
+  const { chromium } = createRequire(import.meta.url)(modulePath);
+  const browser = await chromium.launch({ headless: true, channel: 'chrome' });
+  const campaignKey = 'sfstore-analytics-campaign-v1';
+  const query = '?utm_source=instagram&utm_medium=organic_social&utm_campaign=sfstore_catalogo&utm_content=historia&utm_term=private@example.invalid&email=private@example.invalid';
+  const fakeTag = `
+    let config = {};
+    const capture = command => {
+      const args = Array.from(command);
+      if (args[0] === 'config') config = args[2];
+      if (args[0] === 'event') navigator.sendBeacon('https://www.google-analytics.com/g/collect', JSON.stringify({args, config}));
+    };
+    const original = window.dataLayer.push.bind(window.dataLayer);
+    window.dataLayer.forEach(capture);
+    window.dataLayer.push = command => { capture(command); return original(command); };
+  `;
+  try {
+    for (const scenario of ['immediate', 'delayed', 'rejected', 'invalid', 'pending-reload']) {
+      const context = await browser.newContext({ viewport: { width: scenario === 'delayed' ? 390 : 1366, height: 900 } });
+      const records = [], loads = [], errors = [];
+      await context.route('**/*', route => {
+        const request = route.request(), url = new URL(request.url());
+        if (url.hostname === 'www.googletagmanager.com') { loads.push(url.href); return route.fulfill({ contentType: 'application/javascript', body: fakeTag }); }
+        if (url.hostname === 'www.google-analytics.com') { records.push(JSON.parse(request.postData())); return route.fulfill({ status: 204, body: '' }); }
+        if (url.origin !== base || !['GET','HEAD'].includes(request.method())) return route.abort();
+        return route.continue();
+      });
+      const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
+      const consent = page.getByRole('region', { name: 'Preferencias de medición' });
+      const choose = async name => {
+        const manage = consent.getByRole('button', { name: 'Gestionar preferencias', exact: true });
+        if (await manage.isVisible()) await manage.click();
+        await consent.getByRole('button', { name, exact: true }).click();
+      };
+      await page.goto(base + '/' + (scenario === 'invalid' ? query.replace('sfstore_catalogo', 'private@example.invalid') : query));
+      await consent.getByRole('button', { name: 'Aceptar', exact: true }).waitFor();
+      assert.equal(loads.length, 0); assert.equal(records.length, 0);
+      assert.equal(await page.evaluate(key => sessionStorage.getItem(key), campaignKey), null);
+      if (scenario === 'delayed') {
+        await page.getByRole('navigation', { name: 'Navegación principal', exact: true }).getByRole('link', { name: 'Perfumes', exact: true }).click();
+        await page.waitForURL(base + '/perfumes');
+      }
+      if (scenario === 'pending-reload') await page.goto(base + '/perfumes');
+      if (scenario === 'rejected') {
+        await choose('Rechazar'); await page.reload();
+        await consent.getByRole('button', { name: 'Gestionar preferencias', exact: true }).waitFor();
+        assert.equal(loads.length, 0); assert.equal(records.length, 0);
+        assert.equal(await page.evaluate(key => sessionStorage.getItem(key), campaignKey), null);
+      }
+      const firstCampaignEvent = page.waitForResponse(r => r.url().includes('/g/collect'));
+      await choose('Aceptar');
+      await page.waitForFunction(() => window.dataLayer?.some(c => c[0] === 'event'));
+      await firstCampaignEvent;
+      const attributed = ['immediate', 'delayed'].includes(scenario);
+      const config = await page.evaluate(() => Array.from(window.dataLayer.find(c => c[0] === 'config'))[2]);
+      assert.equal(config.campaign_source, attributed ? 'instagram' : undefined);
+      assert.equal(config.campaign_content, attributed ? 'historia' : undefined);
+      if (scenario === 'immediate') {
+        await page.goto(base + '/producto/termo-familiar-prueba');
+        await page.getByRole('button', { name: 'Negro', exact: true }).click();
+        await page.getByRole('button', { name: /^Agregar .* al carrito$/ }).click();
+        await page.waitForFunction(() => window.dataLayer?.some(c => c[0] === 'event' && c[1] === 'add_to_cart'));
+        await page.goto(base + '/checkout');
+        await page.waitForFunction(() => window.dataLayer?.some(c => c[0] === 'event' && c[1] === 'begin_checkout'));
+        await page.reload();
+        await page.waitForFunction(() => window.dataLayer?.some(c => c[0] === 'event' && c[1] === 'begin_checkout'));
+        for (const name of ['view_item','add_to_cart','begin_checkout']) {
+          assert.ok(records.some(r => r.args[1] === name));
+          assert.ok(records.filter(r => r.args[1] === name).every(r => r.config.campaign_source === 'instagram' && r.config.campaign_content === 'historia'));
+        }
+        assert.ok(await page.evaluate(key => sessionStorage.getItem(key), campaignKey));
+      }
+      assert.doesNotMatch(JSON.stringify(records), /private@example|utm_term|email=|utm_source=|search_term/);
+      await choose('Rechazar');
+      assert.equal(await page.evaluate(key => sessionStorage.getItem(key), campaignKey), null);
+      const count = records.length;
+      await page.goto(base + '/perfumes');
+      await consent.getByRole('button', { name: 'Gestionar preferencias', exact: true }).waitFor();
+      assert.equal(records.length, count);
+      await choose('Aceptar');
+      await page.waitForFunction(() => window.dataLayer?.some(c => c[0] === 'config'));
+      assert.equal(await page.evaluate(() => window.dataLayer.find(c => c[0] === 'config')[2].campaign_source), undefined);
+      assert.deepEqual(errors, []);
+      console.log(JSON.stringify({ scenario, campaignRestored: attributed, interceptedGoogleLoads: loads.length, interceptedEvents: records.length, productionRequests: 0 }));
       await context.close();
     }
   } finally { await browser.close(); }

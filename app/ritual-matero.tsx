@@ -7,6 +7,7 @@ import featuredStyles from "./home-featured.module.css";
 import styles from "./ritual-matero.module.css";
 
 type Group = { label: string; products: PublicProduct[] };
+const firstRowImageCount = 4;
 
 export function RitualMatero({ groups }: { groups: Group[] }) {
   const [active, setActive] = useState(0);
@@ -41,10 +42,10 @@ export function RitualMatero({ groups }: { groups: Group[] }) {
         {groups.map(({ label, products }, index) => (
           <div key={label} role="tabpanel" id={`ritual-panel-${index}`}
             aria-labelledby={`ritual-tab-${index}`} hidden={index !== active}>
-            {index === active ? <HomeProductCarousel products={products} label={label} directPurchase /> : null}
+            {index === active ? <HomeProductCarousel products={products} label={label} directPurchase layout="ritual" hideLabel eagerImageCount={firstRowImageCount} /> : null}
           </div>
         ))}
-      </> : <HomeProductCarousel products={groups[0].products} label={groups[0].label} directPurchase />}
+      </> : <HomeProductCarousel products={groups[0].products} label={groups[0].label} directPurchase layout="ritual" hideLabel eagerImageCount={firstRowImageCount} />}
     </section>
   );
 }

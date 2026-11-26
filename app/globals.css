@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./storefront-theme.css";
 
 :root {
   --background: #ffffff;

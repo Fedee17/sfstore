@@ -6,6 +6,8 @@ import ts from 'typescript';
 import React from 'react';
 import * as jsx from 'react/jsx-runtime';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { rotationStub } from './fixtures/carousel-rotation-stub.mjs';
+import { catalogFrameStubs } from './fixtures/catalog-frame-stubs.mjs';
 import * as ordering from '../lib/catalog/availability-order.ts';
 import * as brandConfig from '../lib/brand.ts';
 
@@ -23,6 +25,8 @@ const modules = {
   'next/server': { connection: async () => {} },
   '@/components/site-header': { SiteHeader: () => null },
   '@/components/home-hero-slider': { HomeHeroSlider: () => null },
+  '@/components/use-carousel-rotation': rotationStub,
+  ...catalogFrameStubs,
   '@/lib/whatsapp': { buildWhatsAppUrl: message => `https://wa.me/5490000000000?text=${encodeURIComponent(message)}` },
   '@/lib/web-transfer-pricing': { getWebTransferPrice: () => { throw Error('No prices needed for this content test'); } },
   '@/services/products': { getCatalogPublications: async () => [] },
@@ -52,7 +56,7 @@ test('help separates payment reporting, bank verification and pickup authorizati
   assert.match(faq(html, '¿Dónde adjunto el comprobante?'), /WhatsApp no reemplaza este paso/);
   assert.match(faq(html, '¿El comprobante confirma el pago?'), /pendiente de verificación.*local revisa la acreditación/);
   const pickup = faq(html, '¿Cuándo puedo retirar mi compra?');
-  assert.match(pickup, /lunes a sábados, de 17:30 a 20:30 hs/);
+  assert.match(pickup, /lunes a sábado, de 17:30 a 20:30 hs/);
   assert.match(pickup, /pago confirmado no es una autorización para retirarlo/);
   assert.match(pickup, /Esperá que el local.*lista.*No se garantiza disponibilidad inmediata/);
   assert.doesNotMatch(html, /confirmación automática|pago se confirma automáticamente|enviá el comprobante por WhatsApp/i);

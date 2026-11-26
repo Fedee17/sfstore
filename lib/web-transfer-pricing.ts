@@ -41,3 +41,10 @@ const wholePesoFormatter = new Intl.NumberFormat("es-AR", {
 export function formatWebPrice(price: number): string {
   return wholePesoFormatter.format(Math.ceil(Math.round(price * 100) / 100));
 }
+
+// Owner decision 20/11: the buyer pays the exact amount, a few cents below the rounded-up one shown in the cart;
+// checkout names that gap «Descuento por redondeo». Same rounding as formatWebPrice.
+export function getWebRoundingDiscount(items: { transferPrice?: number | null; quantity: number }[]): number {
+  const cents = Math.round(getWebTransferSubtotal(items) * 100);
+  return (Math.ceil(cents / 100) * 100 - cents) / 100;
+}

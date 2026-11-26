@@ -32,14 +32,14 @@ export const MATE_CATALOG_CATEGORIES: CatalogCategoryOption[] = [
     hrefValue: "despolvilladores",
     matchValue: "despolvilladores",
   },
-  { label: "Porta mate", hrefValue: "porta-mate", matchValue: "porta-mate" },
+  { label: "Portamate", hrefValue: "porta-mate", matchValue: "porta-mate" },
   {
     label: "Combos materos",
     hrefValue: "combos-materos",
     matchValue: "combos-materos",
   },
   {
-    label: "Box/regalos materos",
+    label: "Regalos materos",
     hrefValue: "box-regalos-materos",
     matchValue: "box-regalos-materos",
   },

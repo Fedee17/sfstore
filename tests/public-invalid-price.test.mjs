@@ -1,3 +1,4 @@
+import * as deliveryChoice from '../lib/checkout/delivery-choice.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
@@ -9,6 +10,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as web from '../lib/web-transfer-pricing.ts';
 import * as combos from '../lib/products/component-combos.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { loadProductDetailUi } from './fixtures/product-detail-render.mjs';
 
 const require = createRequire(import.meta.url);
 const source = file => readFileSync(new URL('../'+file,import.meta.url),'utf8');
@@ -24,14 +26,14 @@ function load(file, overrides={}, globals={}, append='') {
 const whatsapp=load('lib/whatsapp.ts',{'@/lib/pricing':require('../lib/pricing.ts')});
 const storage=new Map();
 const {useCartStore,cartItemKey}=load('store/cart-store.ts',{}, {localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)}});
-// Catalog products carry the database cash price (75% of list until approved), or none when the list is invalid.
+// Catalog products carry the cash price of the database policy in force (list × 0,75), or none when the list is invalid.
 const product=(price,extra={})=>({id:'test',name:'Producto sintético',slug:'synthetic',kind:'simple',category:'perfumes',price,transferPrice:web.hasValidWebPrice(price)?web.getWebTransferPrice(price):null,stock:3,featured:false,imagePlaceholder:'SY',shortDescription:'Prueba',...extra});
 const invalid=[null,undefined,0,-1,NaN,Infinity,-Infinity,'100',Number.MAX_VALUE,0.001];
 const storeModule={useCartStore,cartItemKey};
-const purchaseSummary=load('components/product-purchase-summary.tsx',{'@/lib/pricing':require('../lib/pricing.ts')});
-const ui={'@/store/cart-store':storeModule,'@/lib/whatsapp':whatsapp,'@/components/product-purchase-summary':purchaseSummary};
-const {AddToCartButton}=load('components/add-to-cart-button.tsx',ui);
-const {ProductActions}=load('app/producto/[slug]/product-actions.tsx',ui);
+const ui={...loadProductDetailUi(load,{'@/lib/whatsapp':whatsapp}),'@/store/cart-store':storeModule};
+const addToCartUi=load('components/add-to-cart-button.tsx',ui);
+const {AddToCartButton}=addToCartUi;
+const {ProductActions}=load('app/producto/[slug]/product-actions.tsx',{...ui,'@/components/add-to-cart-button':addToCartUi});
 const {ProductGrid,ProductCard}=load('components/product-grid.tsx',{...ui,'@/lib/pricing':require('../lib/pricing.ts'),'@/lib/products/public-families':require('../lib/products/public-families.ts'),'@/components/add-to-cart-button':{AddToCartButton}});
 const render=(Component,props)=>renderToStaticMarkup(React.createElement(Component,props));
 
@@ -51,7 +53,7 @@ test('the two confirmed cases use Consultar precio, retain availability and neve
       assert.match(html,/wa.me/);assert.doesNotMatch(decodeURIComponent(html),/precio lista de|transferencia de \$/);
     }
     for(const priceMode of ['full','compact']){
-      const html=render(ProductGrid,{products:[p],label:'Sintético',priceMode});assert.match(html,/En stock/);assert.match(html,/Precio a confirmar/);assert.match(html,/Consultar precio/);assert.doesNotMatch(html,/Agregar al carrito|NaN|Infinity|\$\s*0/);
+      const html=render(ProductGrid,{products:[p],label:'Sintético',priceMode});assert.match(html,/Precio a confirmar/);assert.match(html,/Consultar precio/);assert.doesNotMatch(html,/En stock|Agotado|Agregar al carrito|NaN|Infinity|\$\s*0/);
     }
     assert.deepEqual(p,before);
   }
@@ -88,7 +90,7 @@ test('current and legacy storage remove invalid prices, rebuild forged totals an
 
 test('cart defensively withholds checkout and totals for mixed invalid runtime lines; hydration removal is explained',()=>{
   const rows=[{...product(100),productId:'valid',quantity:1},{...product(null),productId:'bad',quantity:1}];
-  const Cart=load('components/cart-content.tsx',{'@/lib/whatsapp':whatsapp,'@/components/site-header':{SiteHeader:()=>null},'@/components/cart-item-identity':{CartItemIdentity:()=>null},'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{perfumes:'Perfumes'},publicCategoryPaths:{perfumes:'/perfumes'}},'@/store/cart-store':{cartItemKey,useCartStore:()=>({items:rows,totalItems:2,subtotal:NaN,invalidPriceNotice:true})}}).default;
+  const Cart=load('components/cart-content.tsx',{'@/lib/checkout/delivery-choice':deliveryChoice,'@/lib/whatsapp':whatsapp,'@/components/site-header':{SiteHeader:()=>null},'@/components/cart-item-identity':{CartItemIdentity:()=>null},'@/lib/catalog/public-product-visibility':{publicCategoryLabels:{perfumes:'Perfumes'},publicCategoryPaths:{perfumes:'/perfumes'}},'@/store/cart-store':{useCartHydrated:()=>true,cartItemKey,useCartStore:()=>({items:rows,totalItems:2,subtotal:NaN,invalidPriceNotice:true})}}).default;
   const html=render(Cart);assert.match(html,/Consultar precio/);assert.match(html,/Quitamos del carrito/);assert.match(html,/eliminá los productos sin precio válido/);assert.doesNotMatch(html,/href="\/checkout|NaN|Transferencia por unidad:.*0,00/);
 });
 
@@ -123,4 +125,26 @@ test('an explicitly selected unpriced variant consults its own price and never b
   const html=render(Family,{product:product(100,{id:'family',kind:'family',variants:[variant]})});
   assert.match(html,/Color: Gris/);assert.match(html,/Precio a confirmar/);assert.match(html,/Consultar precio/);
   assert.doesNotMatch(html,/Agregar al carrito<\/button>|\$.*0,00|NaN/);
+});
+
+test('cards show the brand and only flag unavailable products',()=>{
+  for(const props of [{featured:true,hideLabel:true},{presentation:'catalog'},{presentation:'related',hideLabel:true},{}]){
+    const branded=product(100,{attributes:[{name:'Marca',value:'Marca de prueba'}]});
+    const available=render(ProductCard,{...props,product:branded,label:'Perfumes'});
+    assert.match(available,/>Marca de prueba<\/span>/);
+    assert.doesNotMatch(available,/En stock|Agotado/);
+    const soldOut=render(ProductCard,{...props,product:{...branded,stock:0},label:'Perfumes'});
+    assert.match(soldOut,/>Marca de prueba<\/span>/);
+    assert.match(soldOut,/>Agotado<\/span>/);
+  }
+  const html=render(ProductCard,{product:product(100),label:'Perfumes',presentation:'catalog'});
+  assert.doesNotMatch(html,/<div[^>]*><\/div><h2/);
+});
+
+test('related cards link to each product detail regardless of price or stock',()=>{
+  for(const [price,stock] of [[100,2],[100,0],[null,2]]){
+    const html=render(ProductCard,{product:product(price,{stock}),label:'Perfumes',presentation:'related'});
+    assert.match(html,/href="\/producto\/synthetic"[^>]*>Ver producto<\/a>/);
+    assert.doesNotMatch(html,/Agregar al carrito|wa.me/);
+  }
 });

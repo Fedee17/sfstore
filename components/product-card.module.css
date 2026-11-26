@@ -14,15 +14,15 @@
   height: 100%;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #dfe6ef;
+  border: 1px solid var(--boutique-border, #dfe6ef);
   border-radius: 20px;
-  background: #fff;
-  color: #102033;
+  background: var(--boutique-surface, #fff);
+  color: var(--boutique-heading, #102033);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  box-shadow: 0 2px 5px #10203314;
+  box-shadow: var(--boutique-shadow, 0 2px 5px #10203314);
 }
 .imageLink { display: block; }
-.imageLink:focus-visible { outline: 3px solid #0072ce; outline-offset: -4px; z-index: 1; }
+.imageLink:focus-visible { outline: 3px solid var(--boutique-focus, #0072ce); outline-offset: -4px; z-index: 1; }
 .photo, .cartPhoto {
   display: grid;
   position: relative;
@@ -44,28 +44,30 @@
 /* Zoomed-out framings (lib/catalog/card-photo-framing.ts) fill the sides with the same photo, blurred. */
 .photo .backdrop { filter: blur(14px); transform: scale(1.15); }
 .placeholder { padding: 4px; color: #526479; font-size: .75rem; text-align: center; }
+.empty { border: 1px solid var(--boutique-border, #003b7326); background: var(--boutique-surface, #fff); color: var(--boutique-ink, #102033); }
+.emptyText { color: var(--boutique-muted, #102033a6); }
 .cartPhoto .placeholder { font-size: .625rem; }
 .body { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 6px; padding: 10px; }
 .meta, .badges { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.category, .availability { padding: 2px 7px; border-radius: 20px; background: #e6f2ff; color: #004a88; font-size: .6875rem; font-weight: 700; }
-.availability { background: #f3edf0; color: #74324d; }
-.availability[data-available="true"] { background: #eef3f8; color: #3c5269; }
-.brand { color: #41566b; font-size: .6875rem; font-weight: 650; overflow-wrap: anywhere; }
+.category, .availability { padding: 2px 7px; border-radius: 20px; background: var(--boutique-badge, #e6f2ff); color: var(--boutique-olive, #004a88); font-size: .6875rem; font-weight: 700; }
+/* Owner decision 20/11: sold-out badge in boutique tokens (5.68:1); the text keeps the state readable without color. */
+.availability { background: var(--boutique-soft, #f3edf0); color: var(--boutique-muted, #74324d); }
+.brand { color: var(--boutique-muted, #41566b); font-size: .6875rem; font-weight: 650; overflow-wrap: anywhere; }
 .name { font-size: clamp(.9375rem, 1.5vw, 1.25rem); font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
 .nameLink:hover { text-decoration: underline; }
-.nameLink:focus-visible { outline: 2px solid #0072ce; outline-offset: 2px; }
+.nameLink:focus-visible { outline: 2px solid var(--boutique-focus, #0072ce); outline-offset: 2px; }
 .description {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  color: #41566b;
+  color: var(--boutique-muted, #41566b);
   font-size: .8125rem;
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
 .bottom { display: flex; flex-direction: column; gap: 6px; margin-block-start: auto; padding-block-start: 3px; }
-.list { color: #526479; font-size: .75rem; overflow-wrap: anywhere; }
+.list { color: var(--boutique-muted, #526479); font-size: .75rem; overflow-wrap: anywhere; }
 .priceRow { display: grid; min-width: 0; gap: 5px; }
 .card[data-presentation="catalog"] .priceRow {
   display: flex;
@@ -73,11 +75,11 @@
   align-items: center;
   gap: 5px 12px;
 }
-.special { min-width: 0; color: #006ab5; font-size: clamp(1.125rem, 2.35vw, 1.875rem); line-height: 1.13; font-weight: 750; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.special { min-width: 0; color: var(--boutique-price, #006ab5); font-size: clamp(1.125rem, 2.35vw, 1.875rem); line-height: 1.13; font-weight: 750; letter-spacing: -.035em; overflow-wrap: anywhere; }
 .special small { display: block; font-size: .7rem; letter-spacing: normal; }
 .discount, .payment { display: inline-block; max-width: 100%; border-radius: 6px; padding: 3px 6px; font-size: .6875rem; line-height: 1.25; font-weight: 700; overflow-wrap: anywhere; }
 .discount { background: #006ab5; color: #fff; white-space: nowrap; }
-.payment { background: #e8f3ff; color: #004a88; }
+.payment { background: var(--boutique-badge, #e8f3ff); color: var(--boutique-olive, #004a88); }
 /* Owner decision 11/11/2026: one-line badge on narrow cards; full word from 640px. */
 .payment { white-space: nowrap; }
 @media (width < 380px) { .payment { white-space: normal; } }
@@ -95,15 +97,15 @@
   justify-content: center;
   border-radius: 22px;
   padding: 6px 8px;
-  background: #102747;
+  background: var(--boutique-action, #102747);
   color: #fff;
   font-size: .875rem;
   font-weight: 700;
   text-align: center;
 }
-.button:hover { background: #003b73; }
-.secondary { border: 1px solid #b9cee2; background: #fff; color: #003b73; }
-.button:focus-visible, .secondary:focus-visible { outline: 3px solid #0072ce; outline-offset: -3px; }
+.button:hover { background: var(--boutique-action-hover, #003b73); }
+.secondary { border: 1px solid var(--boutique-contact-border, #b9cee2); background: var(--boutique-contact-background, #fff); color: var(--boutique-olive, #003b73); }
+.button:focus-visible, .secondary:focus-visible { outline: 3px solid var(--boutique-focus, #0072ce); outline-offset: -3px; }
 
 @media (width >= 640px) {
   .body { padding: 12px; }
@@ -139,3 +141,65 @@
   .card[data-featured] .body { padding: 8px; gap: 3px; }
   .card[data-featured] .bottom { gap: 3px; }
 }
+.card[data-home-layout] { font-family: inherit; }
+/* Home and catalog cards share the boutique finishes of their themed container. */
+.card:is([data-home-layout], [data-presentation="catalog"]) .photo { background: var(--boutique-canvas); }
+.card:is([data-home-layout], [data-presentation="catalog"]) .placeholder { color: var(--boutique-muted); }
+.card[data-home-layout] .photo[data-isolated] { background: transparent; }
+.card[data-home-layout] .photo[data-isolated] img { inset: 8%; width: 84%; height: 84%; object-fit: contain; }
+.card[data-home-layout] .body { align-self: stretch; gap: .25rem; }
+.card[data-home-layout] .name { font-weight: 750; }
+.card:is([data-home-layout], [data-presentation="catalog"]) .brand { color: var(--boutique-olive); }
+.card:is([data-home-layout], [data-presentation="catalog"]) .button, .homeBuy {
+  background: var(--boutique-buy-background);
+  box-shadow: var(--boutique-buy-shadow);
+}
+.card:is([data-home-layout], [data-presentation="catalog"]) .button:hover, .homeBuy:not(:disabled, [aria-disabled="true"]):hover { background: var(--boutique-buy-hover); }
+.card:is([data-home-layout], [data-presentation="catalog"]) .secondary {
+  border-color: var(--boutique-contact-border);
+  background: var(--boutique-contact-background);
+  color: var(--boutique-olive);
+  box-shadow: var(--boutique-contact-shadow);
+}
+.homeBuy {
+  display: flex;
+  width: 100%;
+  min-block-size: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  padding: 6px 8px;
+  color: white;
+  text-align: center;
+  font-size: .875rem;
+  font-weight: 700;
+}
+.homeBuy:disabled { background: var(--boutique-disabled); cursor: not-allowed; }
+.homeBuy[aria-disabled="true"] { background-image: none; }
+.homeBuy:focus-visible { outline: 3px solid var(--boutique-focus); outline-offset: -3px; }
+/* Ritual Matero (owner request 20/11): horizontal rectangular card at every width, photo edge to edge on the left
+   and title, price and button on the right. One card per slide on phones, two from 768px. */
+.card[data-home-layout="ritual"] { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 1fr); align-items: stretch; }
+.card[data-home-layout="ritual"] .photo { aspect-ratio: auto; block-size: 100%; min-block-size: 8rem; }
+/* Without description the content is centred next to the photo instead of leaving a gap under the title. */
+.card[data-home-layout="ritual"] .body { justify-content: center; }
+.card[data-home-layout="ritual"] .bottom { margin-block-start: 0; }
+/* Owner request 20/11: the product title leads the card. */
+.card[data-home-layout="ritual"] .name {
+  margin-block-end: .25rem;
+  color: var(--boutique-heading);
+  font-size: clamp(1.1875rem, 1rem + 1vw, 1.625rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -.02em;
+}
+@media (width >= 768px) {
+  .card[data-home-layout="ritual"] { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); }
+  .card[data-home-layout="ritual"] .photo { min-block-size: 12rem; }
+}
+@media (640px <= width < 1024px) {
+  .card[data-home-layout="featured"] .photo { max-block-size: 13rem; }
+}
+
+/* Review 21/11: related cards in the 3-column product grid (768–1199px) are too narrow for the one-line badge. */
+.card[data-presentation="related"] .payment { white-space: normal; }

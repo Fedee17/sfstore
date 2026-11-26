@@ -22,7 +22,7 @@ const rows=colors.map((color,i)=>({...publicRows[2],id:color==='Gris'?'475f74c8-
 }));
 const perfume=commercialPreview ? {...publicRows[0],short_description:'Descripción sintética para revisar la presentación.',description:'Primer párrafo de prueba.\n\nSegundo párrafo: información registrada, sin promesas de duración.',product_attributes:[{name:'Marca',value:'Marca sintética'},{name:'olfactory_family',value:'citrico'},{name:'olfactory_family',value:'floral'},{name:'intensity',value:'media'},{name:'occasion',value:'diario'},{name:'Proveedor',value:'NO MOSTRAR'},{name:'Notas',value:'NO CERTIFICADAS'}]} : publicRows[0];
 const journeyRows=journeyPreview?[
- ...['CDN MALEKA','9AM POUR FEMME','Dubai Night','Liquid Brun'].map((name,i)=>({...perfume,id:fixtureId(500+i),slug:`journey-perfume-${i}`,name,featured:true,price:10000+i*1000,stock:2,product_images:[{url:syntheticImage(name),alt:name,is_primary:true,sort_order:0}]})),
+ ...['CDN MALEKA','9AM POUR FEMME','Dubai Night','Liquid Brun','Éclaire'].map((name,i)=>({...perfume,id:fixtureId(500+i),slug:`journey-perfume-${i}`,name,featured:true,price:10000+i*1000,stock:2,product_images:[{url:syntheticImage(name),alt:name,is_primary:true,sort_order:0}]})),
  ...['Mate BOCA JUNIORS','Mate RIVER PLATE','Mate de algarrobo','Mate imperial','Mate sin foto','Mate foto fallida'].map((name,i)=>({...publicRows[1],id:fixtureId(510+i),slug:`journey-mate-${i}`,name,featured:false,price:10001,stock:2,product_images:i===4?[]:[{url:i===5?'/synthetic-photo-missing.webp':syntheticImage(name),alt:name,is_primary:true,sort_order:0}]})),
 ]:[];
 const fixture=await startPublicFixtureServer({rows:[...rows,perfume,...journeyRows],offers:[]});

@@ -1,77 +1,62 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
 import { useCartStore, cartItemKey } from "@/store/cart-store";
 import type { Product } from "@/types/product";
+import { CartConfirmationLabel, cartConfirmationClass, useCartAddConfirmation } from "@/components/add-to-cart-button";
+import { ProductDetailCartIcon, ProductDetailContact, productDetailBuyClass } from "@/components/product-detail-layout";
+import { initialPaymentOption, PaymentChoiceNotice, ProductPriceOptions, type PaymentOption } from "@/components/product-price-options";
+import { getPublishedPaymentPrices, type PaymentPrices } from "@/lib/products/payment-prices";
 
 type ProductActionsProps = {
   product: Product;
+  installments: number | null;
+  /** Local visual comparison: the mockup amounts and its initial state; nothing is added to the cart. */
+  reference?: PaymentPrices;
 };
 
-export function ProductActions({ product }: ProductActionsProps) {
+/** Price options and purchase actions of a simple product or combo page. */
+export function ProductActions({ product, installments, reference }: ProductActionsProps) {
   const key = product.combo ? `${product.combo.presentationId}:${product.combo.connector}` : product.id;
-  const addItem = useCartStore((state) => state.addItem);
+  const [payment, setPayment] = useState<PaymentOption | null>(() => reference ? null : initialPaymentOption(installments));
+  const { addToCart, confirmed, feedback, announcement } = useCartAddConfirmation(product, key);
   const cartItem = useCartStore((state) => state.items.find((item) => cartItemKey(item) === key));
   const currentQuantity = cartItem?.quantity ?? 0;
-  const [feedback, setFeedback] = useState("");
-  const validPrice = hasValidWebPrice(product.price);
+  // List and cash price must both be valid: checkout charges the cash price.
+  const validPrice = getPublishedPaymentPrices(product) !== null;
   const isAvailable = product.stock > 0 && validPrice;
   const reachedCartLimit = cartItem ? cartItem.quantity >= cartItem.stock : false;
   const isAtMaxStock = isAvailable && (reachedCartLimit || currentQuantity >= product.stock);
-
-  function handleAddToCart() {
-    if (!isAvailable) {
-      return;
-    }
-
-    if (isAtMaxStock) {
-      setFeedback("Ya agregaste el stock disponible.");
-      return;
-    }
-
-    const before = useCartStore.getState().items.find((item) => cartItemKey(item) === key)?.quantity ?? 0;
-    addItem(product);
-    const after = useCartStore.getState().items.find((item) => cartItemKey(item) === key)?.quantity ?? 0;
-    setFeedback(after > before ? "Producto agregado al carrito." : "Ya agregaste el stock disponible.");
-  }
+  // The cart and checkout charge the cash (transfer) price only.
+  const cashChosen = payment === "cash";
 
   return (
-    <div className="mt-4 min-w-0">
-      <div className="grid min-w-0 gap-3">
+    <section aria-label="Precio y compra" className="@container min-w-0 space-y-3">
+      <ProductPriceOptions prices={reference ?? getPublishedPaymentPrices(product)} installments={installments} payment={payment} onPaymentChange={setPayment} showCftea={!reference} />
+      <div className="grid min-w-0 gap-2">
         {isAvailable ? (
           <button
             type="button"
-            onClick={handleAddToCart}
-            disabled={isAtMaxStock}
-            className="min-h-12 min-w-0 rounded-full bg-[#102033] px-6 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-[#003B73] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#003B73] disabled:cursor-not-allowed disabled:bg-[#45576A]"
+            onClick={() => { if (cashChosen && !reference) addToCart(); }}
+            disabled={!confirmed && (isAtMaxStock || !cashChosen)}
+            aria-disabled={confirmed || undefined}
+            className={confirmed ? `${productDetailBuyClass} ${cartConfirmationClass}` : `${productDetailBuyClass} disabled:opacity-60 motion-reduce:transition-none`}
           >
-            {isAtMaxStock ? "Stock máximo en carrito" : "Agregar al carrito"}
+            {confirmed ? <CartConfirmationLabel /> : <><ProductDetailCartIcon />{isAtMaxStock ? "Stock máximo en carrito" : "Agregar al carrito"}</>}
           </button>
         ) : (
-          <a
-            href={getProductWhatsAppLink(product)}
-            target="_blank"
-            rel="noreferrer"
-            className="min-h-12 min-w-0 rounded-full border border-[#0072CE]/35 px-6 py-3.5 text-center text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] hover:bg-[#F7F9FC]"
-          >
+          <ProductDetailContact href={getProductWhatsAppLink(product)}>
             {validPrice ? "Consultar disponibilidad" : "Consultar precio"}
-          </a>
+          </ProductDetailContact>
         )}
-        {isAvailable ? <a
-          href={getProductWhatsAppLink(product)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-full border border-[#DCE3EA] px-5 py-2.5 text-center text-sm font-semibold text-[#003B73] transition hover:border-[#0072CE] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#003B73]"
-        >
-          Consultar por WhatsApp
-        </a> : null}
-      </div>
-        <p role="status" aria-atomic="true" className={feedback ? "mt-3 break-words text-sm font-semibold text-[#003B73]" : "sr-only"}>
-          {feedback}
+        {isAvailable ? <ProductDetailContact href={getProductWhatsAppLink(product)} /> : null}
+        {/* Status messages stay inside the actions grid, as in the approved design, so they add no spacing. */}
+        {isAvailable ? <PaymentChoiceNotice payment={payment} /> : null}
+        <p role="status" aria-atomic="true" className={feedback ? "break-words text-sm font-semibold text-[var(--boutique-olive,#003B73)]" : "sr-only"}>
+          {announcement}
         </p>
-    </div>
+      </div>
+    </section>
   );
 }
-

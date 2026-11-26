@@ -1,4 +1,5 @@
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { loadProductDetailUi } from './fixtures/product-detail-render.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -37,30 +38,35 @@ test('approved Stanley reference resolves only its published image, independent 
  assert.equal(getFamilyRepresentativeImage({...f,variants:[...f.variants].reverse()})?.label,'Gris');
 });
 
-function render(choices={},product=family){
- const require=createRequire(import.meta.url),exports={};
- const source=readFileSync(new URL('../components/product-family-detail.tsx',import.meta.url),'utf8');
- const modules={...analyticsRenderStubs,
-  'react':{...React,useState:()=>[choices,()=>{}]},'react/jsx-runtime':jsx,
+function render(choices={},product=family,payment='cash'){
+ const require=createRequire(import.meta.url);
+ const load=(file,modules={})=>{
+  const exports={};
+  const source=readFileSync(new URL('../'+file,import.meta.url),'utf8');
+  new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n]??require(n),exports);
+  return exports;
+ };
+ const modules={...analyticsRenderStubs,...loadProductDetailUi(load,{
+  '@/lib/whatsapp':{getProductWhatsAppLink:p=>'/synthetic?sku='+encodeURIComponent(p.sku??''),buildWhatsAppUrl:message=>'/synthetic?text='+encodeURIComponent(message)},
+ }),
+  'react':{...React,useState:(()=>{let call=0;return()=>[call++%2?payment:choices,()=>{}];})()},'react/jsx-runtime':jsx,
   'next/link':{default:({children,...props})=>React.createElement('a',props,children)},
   '@/lib/catalog/public-product-visibility':{publicCategoryPaths:{mates:'/mates'}},
   '@/lib/products/family-presentation':{getFamilyRepresentativeImage:p=>getFamilyRepresentativeImage(p,approvals)},
   '@/lib/web-transfer-pricing':prices,'@/components/site-header':{SiteHeader:()=>null},
-  '@/lib/whatsapp':{getProductWhatsAppLink:p=>'/synthetic?sku='+encodeURIComponent(p.sku??'')},
+  '@/lib/whatsapp':{getProductWhatsAppLink:p=>'/synthetic?sku='+encodeURIComponent(p.sku??''),buildWhatsAppUrl:message=>'/synthetic?text='+encodeURIComponent(message)},
   '@/components/product-information':{ProductInformation:()=>null},
   '@/components/product-image-gallery':{ProductImageGallery:({images=[],showThumbnails=true})=>React.createElement('div',{'data-gallery':JSON.stringify(images.map(i=>i.url)),'data-thumbnails':showThumbnails})},
   '@/components/add-to-cart-button':{AddToCartButton:({product:p})=>React.createElement('button',{disabled:p.stock<=0,'data-cart-product':p.id,'data-cart-price':p.price},'Agregar al carrito')},
  };
- const purchase={};new Function('require','exports',ts.transpileModule(readFileSync(new URL('../components/product-purchase-summary.tsx',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>n==='@/lib/pricing'?require('../lib/pricing.ts'):modules[n]??require(n),purchase);
- modules['@/components/product-purchase-summary']=purchase;
- new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n]??require(n),exports);
- return renderToStaticMarkup(React.createElement(exports.ProductFamilyDetail,{product}));
+ const exports=load('components/product-family-detail.tsx',modules);
+ return renderToStaticMarkup(React.createElement(exports.ProductFamilyDetail,{product,installments:null}));
 }
 test('initial family renders the representative cover without any selected option or purchasable SKU',()=>{
  const html=render();
  assert.match(html,/Imagen representativa: Gris/);assert.match(html,/synthetic-grey.svg/);
  assert.doesNotMatch(html,/aria-pressed="true"|data-cart-product/);
- assert.match(html,/<button[^>]*disabled[^>]*>Agregar al carrito/);
+ assert.match(html,/<button[^>]*disabled[^>]*>[\s\S]*?Agregar al carrito<\/button>/);
  assert.equal(html.split('Elegí tu color').length-1,1);
  assert.doesNotMatch(html,/Todavía no|Elegí un color para continuar|Elegí tu variante|Elegí un color para agregar/);
  assert.match(html,/Desde .*75/);assert.match(html,/Verde · Agotado/);
@@ -94,10 +100,11 @@ function renderGallery(props){
  new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText)(require,exports);
  return renderToStaticMarkup(React.createElement(exports.ProductImageGallery,{images:[image],productName:'Prueba',placeholder:'PR',...props}));
 }
-test('gallery displays the original image at full width and natural aspect ratio',()=>{
+test('gallery fits the full original image within the visible frame',()=>{
  const html=renderGallery({});
- assert.match(html,/<img[^>]*class="block h-auto w-full"/);
+ assert.match(html,/<img[^>]*object-contain/);
  assert.doesNotMatch(html,/aspect-square|object-cover|background-image/);
+ assert.doesNotMatch(html,/<button/);
 });
 test('a missing image remains an honest placeholder',()=>{
  const html=renderGallery({images:[]});
@@ -109,11 +116,15 @@ test('family thumbnails can be omitted without removing stored photos or changin
  const props={images:grey.images};
  const before=JSON.stringify(props);
  const normal=renderGallery(props),hidden=renderGallery({...props,showThumbnails:false});
+ for(const html of [normal,hidden]){
+  assert.match(html,/aria-label="Foto anterior"/);
+  assert.match(html,/aria-label="Foto siguiente"/);
+ }
  assert.match(normal,/aria-label="Ver imagen 1 de Prueba" aria-pressed="true"/);
  assert.match(normal,/aria-label="Ver imagen 2 de Prueba" aria-pressed="false"/);
  assert.match(normal,/synthetic-grey-detail.svg/);
  assert.match(hidden,/synthetic-grey.svg/);
- assert.doesNotMatch(hidden,/<button|grid-cols-4|synthetic-grey-detail.svg/);
+ assert.doesNotMatch(hidden,/aria-pressed|synthetic-grey-detail.svg/);
  assert.equal(JSON.stringify(props),before);
  assert.equal((hidden.match(/<img/g)??[]).length,1);
 });
@@ -122,6 +133,6 @@ test('the detail rounds displayed prices while keeping the selected SKU price ex
  const variant={...black,price:129333.67,transferPrice:97000.25};
  const html=render({Color:'Negro'},{...family,variants:[variant,grey,green]});
  assert.match(html,/data-testid="variant-list-price"[^>]*>[^<]*129\.334<\/span>/);
- assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.001<\/p>/);
+ assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.001<\/span>/);
  assert.match(html,/data-cart-price="129333\.67"/);
 });

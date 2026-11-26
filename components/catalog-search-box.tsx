@@ -63,19 +63,19 @@ export function CatalogSearchBox({ initialQuery, icon }: { initialQuery: string;
         }
       }}>
       <label className="sr-only" htmlFor="site-search">Buscar productos</label>
-      <div className="flex min-w-0 items-center rounded-full bg-white px-2 text-[#102033] ring-1 ring-white/40 focus-within:ring-2 focus-within:ring-[#B3DAFF]">
+      <div className={`${styles.searchField} flex min-w-0 items-center rounded-full ps-3 pe-2 sm:ps-5`}>
         <input id="site-search" name="buscar" type="search" role="combobox" autoComplete="off"
           aria-autocomplete="list" aria-expanded={expanded} aria-controls={listId}
           aria-activedescendant={expanded && items[active] ? `${listId}-${active}` : undefined}
           value={query} placeholder="Buscá productos"
-          className={`${styles.searchInput} min-w-0 flex-1 bg-transparent font-semibold outline-none placeholder:text-[#526479]`}
+          className={`${styles.searchInput} min-w-0 flex-1 bg-transparent font-medium outline-none`}
           onFocus={() => setOpen(true)} onKeyDown={handleKey}
           onChange={(event) => {
             setQuery(event.target.value);
             setActive(-1);
             setOpen(true);
           }} />
-        <button type="submit" aria-label="Buscar" className="ml-1 flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#0072CE] hover:bg-[#EEF2F6] focus-visible:outline-2">
+        <button type="submit" aria-label="Buscar" className={`${styles.searchButton} ml-1 flex min-h-11 min-w-11 items-center justify-center rounded-full`}>
           {icon}
         </button>
       </div>
@@ -90,7 +90,7 @@ export function CatalogSearchBox({ initialQuery, icon }: { initialQuery: string;
         <p role="status" className={items.length ? "sr-only" : styles.searchEmpty}>
           {result?.query !== term ? "Buscando en todo el catálogo…"
             : result.unavailable ? "Las sugerencias no están disponibles en este momento."
-            : items.length ? `${items.length} productos sugeridos`
+            : items.length ? `${items.length} ${items.length === 1 ? "producto sugerido" : "productos sugeridos"}`
             : "No encontramos productos para esta búsqueda."}
         </p>
         <button type="submit" className={styles.searchAll}>Ver todos los resultados</button>
