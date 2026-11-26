@@ -85,7 +85,7 @@ export const isMercadoPagoChargeId = (id: string) => /^(?:[0-9]{1,20}|ORD[A-Z0-9
 
 /**
  * Webhook authenticity (Mercado Pago «x-signature»): HMAC-SHA256 of `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
- * with the account's webhook secret; an alphanumeric data.id (Orders API) enters the manifest in lower case.
+ * with the account's webhook secret. The manifest preserves the case of the received data.id.
  * Old timestamps are rejected to limit replays.
  */
 export function verifyWebhookSignature(input: { signature: string | null; requestId: string | null; dataId: string; secret: string; nowMs: number; toleranceMs?: number }) {
@@ -95,7 +95,7 @@ export function verifyWebhookSignature(input: { signature: string | null; reques
   if (!ts || !v1 || !/^\d{10,13}$/.test(ts) || !/^[0-9a-f]{64}$/.test(v1)) return false;
   const tsMs = ts.length === 10 ? Number(ts) * 1000 : Number(ts);
   if (Math.abs(input.nowMs - tsMs) > (input.toleranceMs ?? 5 * 60 * 1000)) return false;
-  const expected = createHmac("sha256", input.secret).update(`id:${input.dataId.toLowerCase()};request-id:${input.requestId};ts:${ts};`).digest();
+  const expected = createHmac("sha256", input.secret).update(`id:${input.dataId};request-id:${input.requestId};ts:${ts};`).digest();
   return timingSafeEqual(expected, Buffer.from(v1, "hex"));
 }
 

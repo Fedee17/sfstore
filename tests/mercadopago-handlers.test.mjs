@@ -72,23 +72,39 @@ test('payments off with the webhook secret loaded: signature checked, nothing re
   const valid = await handlers.handleWebhook(post({ type: 'payment', data: { id: '777' } }, sign('777')), off);
   assert.equal(valid.status, 503);
   assert.equal((await valid.json()).code, 'AUTOMATIC_PAYMENTS_DISABLED');
-  assert.equal((await handlers.handleWebhook(post({ type: 'order', data: { id: mpOrderId } }, sign(mpOrderId.toLowerCase())), off)).status, 503);
+  assert.equal((await handlers.handleWebhook(post({ type: 'order', data: { id: mpOrderId } }, sign(mpOrderId)), off)).status, 503);
   for (const handle of [handlers.handleCreatePreference, handlers.handleCardPayment]) assert.equal((await handle(post({ orderId }), off)).status, 410);
   assert.deepEqual(touched, []);
   assert.equal(off.calls.rpc.length + off.calls.preference.length + off.calls.order.length + off.calls.expired.length, 0);
 });
 
-test('signed Order URLs use the lowercase ID in the manifest and the uppercase resource ID for lookup', async () => {
-  const id = 'ORD01M28P44G5FG8RJPM579EH56FV';
-  const signedId = id.toLowerCase();
+test('Order with payments disabled requires the signature to match the case of the URL ID', async () => {
+  const id = 'ORD01H00000000000000000000000';
+  const off = deps('contado', {}, { env: { MERCADO_PAGO_WEBHOOK_SECRET: env.MERCADO_PAGO_WEBHOOK_SECRET } });
   const body = { type: 'order', data: { id } };
-  const headers = sign(signedId);
+  for (const urlId of [id, id.toLowerCase(), `Ord${id.slice(3)}`]) {
+    const query = `?data.id=${urlId}&type=order`;
+    const valid = await handlers.handleWebhook(post(body, sign(urlId), query), off);
+    assert.equal(valid.status, 503, urlId);
+    assert.equal((await valid.json()).code, 'AUTOMATIC_PAYMENTS_DISABLED');
+
+    const otherCase = urlId === id ? id.toLowerCase() : id;
+    const invalid = await handlers.handleWebhook(post(body, sign(otherCase), query), off);
+    assert.equal(invalid.status, 401, urlId);
+    assert.equal((await invalid.json()).code, 'WEBHOOK_SIGNATURE_INVALID');
+  }
+  assert.deepEqual(off.calls.rpc, []);
+});
+
+test('signed Order URLs preserve the received ID for verification and use the uppercase resource ID for lookup', async () => {
+  const id = 'ORD01M28P44G5FG8RJPM579EH56FV';
+  const body = { type: 'order', data: { id } };
   const order = deps('financiado', {}, { getOrder: async receivedId => {
     assert.equal(receivedId, id);
     return mpOrder({ id });
   } });
-  for (const urlId of [id, signedId, `Ord${id.slice(3)}`]) {
-    const response = await handlers.handleWebhook(post(body, headers, `?data.id=${urlId}&type=order`), order);
+  for (const urlId of [id, id.toLowerCase(), `Ord${id.slice(3)}`]) {
+    const response = await handlers.handleWebhook(post(body, sign(urlId), `?data.id=${urlId}&type=order`), order);
     assert.equal(response.status, 200, urlId);
   }
   assert.equal(order.calls.rpc.filter(([name]) => name === 'confirm_checkout_mercadopago_payment').length, 3);
@@ -193,17 +209,17 @@ test('webhook: signature required, charge re-read from Mercado Pago for both top
   assert.equal((await handlers.handleWebhook(post(body, sign('777')), ok)).status, 200);
   assert.ok(rpcNames(ok).includes('confirm_checkout_mercadopago_payment'));
   const order = deps('financiado');
-  assert.equal((await handlers.handleWebhook(post({ type: 'order', action: 'order.processed', data: { id: mpOrderId } }, sign(mpOrderId.toLowerCase())), order)).status, 200);
+  assert.equal((await handlers.handleWebhook(post({ type: 'order', action: 'order.processed', data: { id: mpOrderId } }, sign(mpOrderId)), order)).status, 200);
   assert.equal(order.calls.rpc.find(([name]) => name === 'confirm_checkout_mercadopago_payment')[1].p_provider_payment_id, mpOrderId);
   const forged = deps('financiado');
   assert.equal((await handlers.handleWebhook(post(body, sign('778')), forged)).status, 401);
   assert.equal((await handlers.handleWebhook(post(body), forged)).status, 401);
-  assert.equal((await handlers.handleWebhook(post({ type: 'order', data: { id: mpOrderId } }, sign('ordtst01m8bz0sjdrk3f6ah3085gvrgw')), forged)).status, 401);
+  assert.equal((await handlers.handleWebhook(post({ type: 'order', data: { id: mpOrderId } }, sign('ORDTST01M8BZ0SJDRK3F6AH3085GVRGW')), forged)).status, 401);
   assert.equal(forged.calls.rpc.length, 0);
   assert.equal((await handlers.handleWebhook(post({ type: 'merchant_order', data: { id: '777' } }, sign('777')), deps('financiado'))).status, 204);
   const outage = deps('financiado', {}, { getPayment: async () => { throw new Error('timeout'); }, getOrder: async () => { throw new Error('timeout'); } });
   assert.equal((await handlers.handleWebhook(post(body, sign('777')), outage)).status, 503);
-  assert.equal((await handlers.handleWebhook(post({ type: 'order', data: { id: mpOrderId } }, sign(mpOrderId.toLowerCase())), outage)).status, 503);
+  assert.equal((await handlers.handleWebhook(post({ type: 'order', data: { id: mpOrderId } }, sign(mpOrderId)), outage)).status, 503);
 });
 
 test('checkout contract: Mercado Pago and installments only when enabled, installments only with Mercado Pago', () => {
