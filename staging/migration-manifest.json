@@ -303,6 +303,12 @@
       "stagingFile": "staging/supabase/migrations/202611290002_search_demand.sql",
       "sourceSha256": "6b2df475b39f37b9b4f30eacad8de290e79c4b8a92259f50ae4a46ab6a1cc4d5",
       "stagingSha256": "6b2df475b39f37b9b4f30eacad8de290e79c4b8a92259f50ae4a46ab6a1cc4d5"
+    },
+    {
+      "source": "supabase/migrations/202611290003_bulk_price_adjustment.sql",
+      "stagingFile": "staging/supabase/migrations/202611290003_bulk_price_adjustment.sql",
+      "sourceSha256": "247a414495039dc1fd38e4e1e25014397663b6aa61f57a233a0baadbf678a477",
+      "stagingSha256": "247a414495039dc1fd38e4e1e25014397663b6aa61f57a233a0baadbf678a477"
     }
   ]
 }
