@@ -1,11 +1,11 @@
 "use client";
 import { useActionState } from "react";
+import { adminMoney } from "@/lib/admin/money";
 import Link from "next/link";
 import { saveFamily,addOption,addValue,saveVariant } from "@/app/admin/productos/familias/actions";
 import { initialVariantState,variantAvailability,type Family,type FamilyOption,type Variant } from "@/lib/products/variants";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { stockAdjustmentHref } from "@/lib/admin/catalog-review";
-import { checkoutMoney } from "@/lib/admin/checkout-presentation";
 import { productStatusLabel } from "@/lib/products/product-availability";
 const input="w-full rounded-xl border border-[#8B5E3C]/25 bg-white p-3 text-sm";
 const box="grid gap-4 rounded-3xl border border-[#8B5E3C]/20 bg-white/70 p-5";
@@ -37,7 +37,7 @@ export function VariantForm({family,options,variant,id,candidate=false}:{family:
  const [state,action]=useActionState(saveVariant,initialVariantState);
  return <form key={variant?.version??id} action={action} className={box}><h2 className="text-xl font-semibold">{candidate?`Asociar ${variant?.name}`:variant?variant.name:"Agregar SKU"}</h2>
  <input type="hidden" name="familyId" value={family.id}/><input type="hidden" name="productId" value={id}/><input type="hidden" name="version" value={variant?.version??""}/><input type="hidden" name="new" value={variant?"no":"yes"}/>
- {variant?<><p>SKU: {variant.sku} · Estado: {productStatusLabel(variant.status)} · Stock: {variant.stock} · Precio lista: {checkoutMoney(Number(variant.price))} · Costo: {variant.cost===null?"Costo no disponible":checkoutMoney(Number(variant.cost))}</p>
+ {variant?<><p>SKU: {variant.sku} · Estado: {productStatusLabel(variant.status)} · Stock: {variant.stock} · Precio lista: {adminMoney(Number(variant.price))} · Costo: {variant.cost===null?"Costo no disponible":adminMoney(Number(variant.cost))}</p>
  <p className="text-sm">{variantAvailability(variant.web_visible,variant.commercial_blocked)}</p>
  <Link className="font-semibold underline" href={`/admin/productos/${id}/editar`}>Editar fotografías y datos del SKU</Link>
  {candidate?null:<p className="flex flex-wrap gap-4"><Link className="font-semibold underline" href={stockAdjustmentHref(variant)}>Ajustar stock</Link><Link className="font-semibold underline" href={`/admin/inventario?view=movements&product=${encodeURIComponent(id)}`}>Ver movimientos</Link></p>}</>:<>
@@ -45,7 +45,7 @@ export function VariantForm({family,options,variant,id,candidate=false}:{family:
  <label>SKU único<input className={input} name="sku" required maxLength={100}/></label><label>Slug<input className={input} name="slug" maxLength={160}/></label>
  <p className="text-sm">Se crea como borrador, sin stock y sin costo asignado. Las imágenes se administran en el editor existente.</p></>}
  {options.map(o=><label key={o.id}>{o.name}<select aria-label={o.name} className={input} name={variant&&!candidate?undefined:`option:${o.id}`} disabled={!!variant&&!candidate} defaultValue={variant?.variant_choices[o.id]??""} required><option value="" disabled>Elegí un valor</option>{o.values.map(v=><option key={v.id} value={v.id}>{v.label}</option>)}</select>{variant&&!candidate?<input type="hidden" name={`option:${o.id}`} value={variant.variant_choices[o.id]}/>:null}</label>)}
- <label><input type="checkbox" name="inherit" disabled={candidate} defaultChecked={!candidate&&(!variant||variant.list_price_override===null)}/> Heredar precio base ({checkoutMoney(Number(family.base_price))})</label>
+ <label><input type="checkbox" name="inherit" disabled={candidate} defaultChecked={!candidate&&(!variant||variant.list_price_override===null)}/> Heredar precio base ({adminMoney(Number(family.base_price))})</label>
  <label>Excepción de precio lista (se usa sólo si no hereda)<input className={input} type="number" name="override" min="0" step="0.01" readOnly={candidate} defaultValue={candidate?variant?.price:variant?.list_price_override??""}/></label>
  <label><input type="checkbox" name="webVisible" defaultChecked={variant?.web_visible??false}/> Visible en web cuando esté activo</label>
  <label><input type="checkbox" name="blocked" defaultChecked={variant?.commercial_blocked??false}/> Bloqueado para nuevas ventas en todos los canales</label>

@@ -1,5 +1,6 @@
 "use client";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { adminMoney } from "@/lib/admin/money";
 
 import { MAX_UPLOAD_FILE_BYTES, assertUploadFormData, UploadLimitError } from "@/lib/uploads/limits";
 import imageCompression from "browser-image-compression";
@@ -489,7 +490,6 @@ export function ProductForm({
     try { if (specialInput.trim()) proposedList = calculateListFromSpecial(specialInput); }
     catch (error) { calculationError = error instanceof Error ? error.message : "Revisá el precio especial."; }
   }
-  const displayMoney = (value: number | string) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 }).format(Number(value));
 
   const formRef = useRef<HTMLFormElement>(null);
   const requestRef = useRef<FormData | null>(null);
@@ -843,7 +843,7 @@ export function ProductForm({
               <input type="hidden" name="perfumePricePolicy" value={perfumePriceApplied ? "applied" : "manual"} />
               <input type="hidden" name="listPriceCalculation" value={listPriceApplied ? "applied" : "manual"} />
               <input type="hidden" name="cashPriceApproval" value="calculator" />
-              {proposedList ? <p className="text-sm">Especial ingresado: <strong>{displayMoney(proposedList.special)}</strong> · Lista calculada: <strong>{displayMoney(proposedList.list)}</strong>.</p> : <p className="text-sm">Ingresá un precio especial para calcular la lista.</p>}
+              {proposedList ? <p className="text-sm">Especial ingresado: <strong>{adminMoney(proposedList.special)}</strong> · Lista calculada: <strong>{adminMoney(proposedList.list)}</strong>.</p> : <p className="text-sm">Ingresá un precio especial para calcular la lista.</p>}
               {calculationError ? <p role="alert" className="text-sm font-semibold">{calculationError}</p> : null}
               {perfumePolicyEligible ? <>
                 <button type="button" disabled={!perfumeSuggestion || isSubmitting} onClick={() => {

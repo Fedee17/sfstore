@@ -1,14 +1,10 @@
 import Link from "next/link";
+import { adminMoney } from "@/lib/admin/money";
 
 import { AdminNav } from "@/components/admin/admin-nav";
 import { requireAdminSession } from "@/lib/admin-session";
 import { listSuppliers } from "@/services/suppliers";
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 2,
-});
 const dateFormatter = new Intl.DateTimeFormat("es-AR", { timeZone: "UTC" });
 
 type SuppliersPageProps = {
@@ -74,7 +70,7 @@ export default async function SuppliersPage({ searchParams }: SuppliersPageProps
                   {supplier.contact_name || supplier.whatsapp || supplier.phone ? (
                     <p className="mt-1 text-sm text-[#1F1F1F]/60">{[supplier.contact_name, supplier.whatsapp ? `WhatsApp ${supplier.whatsapp}` : supplier.phone].filter(Boolean).join(" · ")}</p>
                   ) : null}
-                  <p className="mt-2 text-sm text-[#1F1F1F]/60">{supplier.purchaseCount} compras registradas · {supplier.confirmedPurchaseCount} confirmadas · Total confirmado {currencyFormatter.format(supplier.totalPurchased)}</p>
+                  <p className="mt-2 text-sm text-[#1F1F1F]/60">{supplier.purchaseCount} compras registradas · {supplier.confirmedPurchaseCount} confirmadas · Total confirmado {adminMoney(supplier.totalPurchased)}</p>
                 </div>
                 <Link href={`/admin/proveedores/${supplier.id}`} className="rounded-full border border-[#8B5E3C]/30 px-5 py-3 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#556B2F] hover:text-[#556B2F]">Ver detalle</Link>
               </article>

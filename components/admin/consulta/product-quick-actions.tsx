@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { adminMoney } from "@/lib/admin/money";
 import {useState} from "react";
 
-const money=(value:number)=>new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",minimumFractionDigits:2}).format(value);
 export function ProductQuickActions({id,name,price,special,available}:{id:string;name:string;price:number;special:number|null;available:boolean}) {
   const [message,setMessage]=useState("");
   const valid=Number.isFinite(price)&&price>0&&special!==null&&Number.isFinite(special)&&special>0;
   async function copy() {
     try {
-      await navigator.clipboard.writeText(`${name}\nEfectivo / transferencia: ${money(special!)}\nOtros medios: ${money(price)}${available?"":"\nSin stock disponible"}`);
+      await navigator.clipboard.writeText(`${name}\nEfectivo / transferencia: ${adminMoney(special!)}\nOtros medios: ${adminMoney(price)}${available?"":"\nSin stock disponible"}`);
       setMessage("Precio copiado.");
     } catch {setMessage("No se pudo copiar. Podés seleccionar el precio que aparece en la ficha.");}
   }

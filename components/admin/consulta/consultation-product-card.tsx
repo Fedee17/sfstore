@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { adminMoney } from "@/lib/admin/money";
 import { ProductQuickActions } from "./product-quick-actions";
 
 import {
@@ -19,11 +20,6 @@ type ConsultationProductCardProps = {
   tone?: RecommendationTone;
 };
 
-const moneyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 2,
-});
 
 const statusLabels: Record<string, string> = {
   active: "Activo",
@@ -58,7 +54,7 @@ function getStockLabel(stock: number) {
 }
 
 function formatMoney(value: number | null) {
-  return value === null ? "No definido" : moneyFormatter.format(value);
+  return value === null ? "No definido" : adminMoney(value);
 }
 
 function getDisplayValues(

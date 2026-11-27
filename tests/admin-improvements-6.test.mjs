@@ -15,8 +15,8 @@ test("product status reads in Spanish with one shared label", () => {
 test("family pages show Spanish status and formatted amounts", () => {
   const form = source("components/admin/products/family-forms.tsx");
   assert.match(form, /Estado: \{productStatusLabel\(variant\.status\)\}/);
-  assert.match(form, /Precio lista: \{checkoutMoney\(Number\(variant\.price\)\)\}/);
-  assert.match(form, /Heredar precio base \(\{checkoutMoney\(Number\(family\.base_price\)\)\}\)/);
+  assert.match(form, /Precio lista: \{adminMoney\(Number\(variant\.price\)\)\}/);
+  assert.match(form, /Heredar precio base \(\{adminMoney\(Number\(family\.base_price\)\)\}\)/);
   for (const file of ["components/admin/products/family-forms.tsx", "app/admin/productos/familias/page.tsx", "app/admin/productos/familias/[id]/page.tsx"]) {
     const text = source(file);
     assert.doesNotMatch(text, /\$\$\{Number\([^)]*\)\.toFixed\(2\)\}|\(\$\{Number\([^)]*\)\.toFixed\(2\)\}\)/, file);
