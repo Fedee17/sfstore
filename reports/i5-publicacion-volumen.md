@@ -118,3 +118,14 @@ Autorizada expresamente por el propietario para los 9 valores confirmados o de c
 - **Producción**: el filtro «Contenido» ofrece 90, 100 y 105 ml. `?contenido=100-ml` devuelve Rome Pour Femme, Hawas For Him, 9 PM Elixir, Hawas Fire, Asad y Eclaire; `105-ml` devuelve Club de Nuit Sillage; `90-ml` devuelve Qaed Al Fursan y Untamed. En la ficha de Sillage, «105 ml» aparece bajo el título y en «Contenido».
 
 Para retirar solo estos valores (es una eliminación de datos y requiere autorización): `delete from public.product_attributes where name = 'contenido' and sort_order = 150 and product_id in (…9 ids…)`.
+
+## Segunda carga: 12 volúmenes informados por el propietario (27/11/2026)
+
+El propietario informó: «La presentación estándar de todos estos perfumes es de 100 ml, excepto Club de Nuit Intense Man, cuyo frasco base viene en 105 ml». Ese dato reemplaza la foto de la etiqueta pedida en `reports/i5-volumen-perfumes-20261128.md`.
+
+- **Antes** (solo lectura): los 12 existen, el prefijo de ID coincide, son perfumes activos (Yara Tous con stock 2 y el resto con 1) y ninguno tenía volumen de ningún tipo.
+- **Escritura**: el mismo procedimiento con controles que la primera carga; exige exactamente 12 filas nuevas con `sort_order=150`.
+  - **100 ml**: lattafa-yara-rosa, perfume-lattafa-yara-tous, lattafa-yara-moi, lattafa-mayar-natural-intense, odyssey-aqua, odyssey-artisto, odyssey-go-mango, odyssey-limoni, odyssey-wild-one, sceptre-malachite-maison-alhambra y vulcan-feu-french-avenue.
+  - **105 ml**: club-de-nuit-intense-man.
+- **Después**: 21 filas `contenido` (17 × 100 ml, 2 × 105 ml, 2 × 90 ml). Precio y stock sin cambios.
+- **Producción**: `?contenido=100-ml` devuelve 17 productos, `105-ml` devuelve Intense Man y Sillage, y `90-ml` devuelve 2. Las fichas de Intense Man, Yara Rosa, Yara Tous y Wild One muestran «Contenido» con su volumen.
