@@ -471,13 +471,21 @@ export async function archiveProduct(formData: FormData) {
   });
 
   const supabase = getSupabaseAdminClient();
-  const { error } = await supabase
+  // The write repeats the historical guard: an identity that became historical after the check is never archived.
+  const { data: archived, error } = await supabase
     .from("products")
     .update({ status: "archived" })
-    .eq("id", productId);
+    .eq("id", productId)
+    .eq("historical_identity", false)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (!archived) {
+    throw new Error("El producto no se archivó: ya no es una identidad operativa.");
   }
 
   await revalidateOperationalProductPaths(existingProduct);

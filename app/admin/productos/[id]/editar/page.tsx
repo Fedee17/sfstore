@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { ProductForm } from "@/components/admin/products/product-form";
+import { ProductAvailabilitySummary } from "@/components/admin/products/product-availability-summary";
+import { adminProductAvailability } from "@/lib/products/product-availability";
 import { requireAdminSession } from "@/lib/admin-session";
 import { getAdminCategories, getAdminProductById } from "@/services/admin";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
@@ -54,6 +56,7 @@ export default async function EditProductPage({
           </div>
         ) : null}
         {connector ? <p className="mt-4 text-xl font-semibold">{product?.name}</p> : null}
+        {product && !connector ? <ProductAvailabilitySummary availability={adminProductAvailability(product)} className="mt-5 rounded-xl border border-[#8B5E3C]/20 bg-white/70 p-4 text-sm" /> : null}
         {product?.family_id ? <p className="mt-5 rounded-xl border border-[#8B5E3C]/20 p-4">El precio y la combinación se administran en <Link className="underline" href={`/admin/productos/familias/${product.family_id}`}>la familia del SKU</Link>. El precio y SKU no se editan aquí; podés administrar sus fotografías y otros datos.</p> : null}
         {product ? (
           <ProductForm

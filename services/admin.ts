@@ -67,9 +67,13 @@ export type AdminProduct = {
   stock: number;
   sku?: string | null;
   featured: boolean;
+  web_visible?: boolean;
+  commercial_blocked?: boolean;
+  historical_identity?: boolean;
   categories: {
     name: string;
     slug: string;
+    is_active?: boolean;
   } | null;
   product_attributes?: {
     id: string;
@@ -96,6 +100,8 @@ export type AdminCategory = {
 
 export type AdminProductFilters = {
   requireComplete?: boolean;
+  /** Historical identities only (read-only records); otherwise they are excluded. */
+  historical?: boolean;
   search?: string;
   category?: string;
   status?: string;
@@ -155,6 +161,7 @@ type AdminOrderRow = Omit<AdminOrder, "customers"> & {
 type AdminProductCategory = {
   name: string;
   slug: string;
+  is_active?: boolean;
 };
 
 type AdminProductAttribute = NonNullable<AdminProduct["product_attributes"]>[number];
@@ -284,9 +291,13 @@ export async function getAdminProducts(
         stock,
         sku,
         featured,
+        web_visible,
+        commercial_blocked,
+        historical_identity,
         categories (
           name,
-          slug
+          slug,
+          is_active
         ),
         product_images (
           id,
@@ -297,7 +308,7 @@ export async function getAdminProducts(
         )
       `, filters.requireComplete ? { count: "exact" } : undefined,
       )
-      .eq("historical_identity", false)
+      .eq("historical_identity", filters.historical === true)
       .neq("id", YARA_ROSA.archivedId)
       .order("created_at", { ascending: false });
 
@@ -351,13 +362,15 @@ export async function getAdminProductPublications(filters:AdminProductFilters={}
   return safeRead(async()=>{
     const products=await getAdminProducts(filters);
     if(products.error)throw Error(products.error);
+    // Component offers are current publications: never mixed into the historical records.
+    if (filters.historical) return products.data??[];
     const db=getSupabaseAdminClient();
     const {data:offers,error,count}=await db.from("public_component_offers")
       .select("presentation_product,connector,head_product,available,combo_list_price,combo_transfer_price,image_id,image_url,image_alt",filters.requireComplete?{count:"exact"}:undefined)
       .order("id").order("connector").limit(101);
     if(error||(offers?.length??0)>100||(filters.requireComplete&&count!==offers?.length))throw Error("No se pudo recuperar el listado completo de cargadores.");
     if(!offers?.length)return products.data??[];
-    const {data:heads,error:headError}=await db.from("products").select("id,category_id,categories(name,slug)").in("id",[...new Set(offers.map(o=>o.head_product))]);
+    const {data:heads,error:headError}=await db.from("products").select("id,category_id,categories(name,slug,is_active)").in("id",[...new Set(offers.map(o=>o.head_product))]);
     if(headError)throw Error("No se pudo verificar la categoría de los cargadores.");
     return mergeAdminProductPublications(products.data??[],offers as AdminComponentOffer[],heads as unknown as AdminProduct[],filters);
   });
@@ -412,9 +425,12 @@ export async function getAdminProductById(
             stock,
             sku,
             featured,
+            web_visible,
+            commercial_blocked,
             categories (
               name,
-              slug
+              slug,
+              is_active
             ),
             product_attributes (
               id,
