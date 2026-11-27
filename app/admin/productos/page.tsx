@@ -1,7 +1,7 @@
 ﻿import { AdminNav } from "@/components/admin/admin-nav";
 import { getEffectiveCashPrice } from "@/lib/web-transfer-pricing";
 import Link from "next/link";
-import { catalogIssues, LOW_STOCK_LIMIT } from "@/lib/admin/catalog-review";
+import { catalogIssues, listingQuality, LOW_STOCK_LIMIT } from "@/lib/admin/catalog-review";
 
 import {
   GetNavigationForm,
@@ -70,6 +70,7 @@ function buildProductsUrl(params: {
   availability?: string;
   view?: string;
   review?: string;
+  quality?: string;
   page?: string;
 }) {
   const query = new URLSearchParams();
@@ -127,6 +128,12 @@ function formatMargin(
   const marginPercentage = (margin / price) * 100;
 
   return `${currencyFormatter.format(margin)} (${marginPercentage.toFixed(0)}%)`;
+}
+
+function ListingQualityNote({ product }: { product: Parameters<typeof listingQuality>[0] }) {
+  const quality = listingQuality(product);
+  if (!quality || quality.score === 100) return null;
+  return <p className="mt-1 text-xs text-black/60">Ficha {quality.score} % · falta: {quality.missing.join(", ")}</p>;
 }
 
 function hasActiveFilters(filters: AdminProductFilters) {
@@ -229,6 +236,7 @@ export default async function AdminProductsPage({
     availability: (AVAILABILITY_FILTERS.find(([value]) => value === getParam(params, "availability"))?.[0] ?? "") as AvailabilityFilter | "",
     view: getParam(params,"view")==="details"?"details":"",
     review: getParam(params,"review")==="incomplete"?"incomplete":"",
+    quality: getParam(params,"quality")==="low"?"low":"",
   };
   const productsFilters: AdminProductFilters = {
     requireComplete: true,
@@ -253,14 +261,16 @@ export default async function AdminProductsPage({
     getAdminProductPublications(productsFilters),
     getAdminCategories(),
   ]);
-  const products = (productsResult.data ?? []).filter(product=>(!selectedFilters.review || catalogIssues(product).length>0) && matchesAvailability(product, selectedFilters.availability));
+  const filteredProducts = (productsResult.data ?? []).filter(product=>(!selectedFilters.review || catalogIssues(product).length>0) && (!selectedFilters.quality || (listingQuality(product)?.score ?? 100)<100) && matchesAvailability(product, selectedFilters.availability));
+  // Listing review: weakest listings first so the owner completes the worst ones before the rest.
+  const products = selectedFilters.quality ? [...filteredProducts].sort((a,b)=>(listingQuality(a)?.score??100)-(listingQuality(b)?.score??100)) : filteredProducts;
   const rawPage=Number(getParam(params,"page")||1);
   const page=Number.isSafeInteger(rawPage)&&rawPage>0&&rawPage<=1000000?rawPage:1;
   const pageProducts=products.slice((page-1)*40,page*40);
   // Featured/archive return to this page and scroll back to the product (owner review 27/11).
   const productsPath = buildProductsUrl({ ...selectedFilters, page: page > 1 ? String(page) : "" });
   const categories = categoriesResult.data ?? [];
-  const isFiltered = hasActiveFilters(productsFilters) || Boolean(selectedFilters.review || selectedFilters.availability);
+  const isFiltered = hasActiveFilters(productsFilters) || Boolean(selectedFilters.review || selectedFilters.quality || selectedFilters.availability);
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -422,6 +432,7 @@ export default async function AdminProductsPage({
             </label>
           </div>
           <label className="mt-4 flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" name="review" value="incomplete" defaultChecked={Boolean(selectedFilters.review)}/> Sólo productos con foto, precio o costo pendientes</label>
+          <label className="flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" name="quality" value="low" defaultChecked={Boolean(selectedFilters.quality)}/> Sólo fichas con presentación por completar (foto, texto alternativo, descripción o atributos)</label>
         </GetNavigationForm>
 
         <nav aria-label="Presentación del catálogo" className="mt-5 flex flex-wrap gap-4 text-sm font-semibold">{[["","Lista compacta"],["details","Detalle y ajustes"]].map(([view,label])=><Link key={view} aria-current={selectedFilters.view===view?"page":undefined} className="inline-flex min-h-11 items-center rounded-full border border-[#8B5E3C]/25 px-4" href={buildProductsUrl({...selectedFilters,view})}>{label}</Link>)}</nav>
@@ -456,7 +467,7 @@ export default async function AdminProductsPage({
             </p>
           </div>
         ) : selectedFilters.view!=="details" ? <div className="mt-6 grid gap-2">{pageProducts.map(product=>{const availability=product.component_offer?null:adminProductAvailability(product);const readOnly=availability?.historical===true;return <article key={product.id} className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
-          <div className="flex min-w-0 items-center gap-3"><ProductThumbnail product={product}/><div className="min-w-0"><h2 className="break-words font-semibold">{product.name}</h2><p className="break-words text-xs text-black/60">{product.sku||"Sin SKU"}{product.component_offer?" · Combo":""}</p>{availability?<ProductAvailabilitySummary availability={availability} className="mt-1"/>:null}{catalogIssues(product).length?<p className="mt-1 text-xs font-semibold text-[#8B5E3C]">{catalogIssues(product).join(" · ")}</p>:null}</div></div>
+          <div className="flex min-w-0 items-center gap-3"><ProductThumbnail product={product}/><div className="min-w-0"><h2 className="break-words font-semibold">{product.name}</h2><p className="break-words text-xs text-black/60">{product.sku||"Sin SKU"}{product.component_offer?" · Combo":""}</p>{availability?<ProductAvailabilitySummary availability={availability} className="mt-1"/>:null}{catalogIssues(product).length?<p className="mt-1 text-xs font-semibold text-[#8B5E3C]">{catalogIssues(product).join(" · ")}</p>:null}<ListingQualityNote product={product}/></div></div>
           <div className="text-sm"><p>Lista: <strong>{formatMoney(product.price)}</strong></p><p>{product.component_offer?"Disponible":"Stock"}: <strong>{product.stock}</strong></p></div>
           {readOnly?<span className="inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold text-[#1F1F1F]/60">Sólo lectura</span>:<Link href={`/admin/productos/${product.id}/editar`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#556B2F]/30 px-4 text-sm font-semibold text-[#465826]">Editar</Link>}
         </article>})}</div> : (

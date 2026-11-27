@@ -41,7 +41,7 @@ function renderPage(params) {
     "@/components/admin/admin-nav": { AdminNav: () => null },
     "@/lib/web-transfer-pricing": prices,
     "next/link": { __esModule: true, default: ({ href, children: content, ...rest }) => h("a", { href, ...rest }, content) },
-    "@/lib/admin/catalog-review": { catalogIssues: () => [], LOW_STOCK_LIMIT: 3 },
+    "@/lib/admin/catalog-review": { catalogIssues: () => [], listingQuality: () => null, LOW_STOCK_LIMIT: 3 },
     "@/components/admin/get-navigation-form": { GetNavigationForm: ({ children: content }) => h("form", null, content), GetNavigationSubmitButton: children },
     "@/components/admin/pending-submit-button": { PendingSubmitButton: ({ children: content }) => h("button", null, content) },
     "@/components/admin/products/inventory-adjustment-form": { InventoryAdjustmentForm: ({ productId }) => h("i", null, `AJUSTE:${productId}`) },

@@ -152,6 +152,12 @@ export async function getAdminProducts(
           slug,
           is_active
         ),
+        product_attributes (
+          id,
+          name,
+          value,
+          sort_order
+        ),
         product_images (
           id,
           url,
