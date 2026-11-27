@@ -289,8 +289,8 @@
     {
       "source": "supabase/migrations/202611280001_perfume_volume_attribute.sql",
       "stagingFile": "staging/supabase/migrations/202611280001_perfume_volume_attribute.sql",
-      "sourceSha256": "90a8486b86954e0b6bb6db091043d57c4d3c4466d9dc3013fa04a76bbaa6c9b0",
-      "stagingSha256": "90a8486b86954e0b6bb6db091043d57c4d3c4466d9dc3013fa04a76bbaa6c9b0"
+      "sourceSha256": "c4590dd289046328ea40d9df5e2ef991f61ec4663f3827f5e186bf0496ec2008",
+      "stagingSha256": "c4590dd289046328ea40d9df5e2ef991f61ec4663f3827f5e186bf0496ec2008"
     }
   ]
 }

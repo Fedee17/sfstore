@@ -264,6 +264,11 @@ export function getCatalogAttributeInputName(key: CatalogAttributeKey) {
   return `catalog_attribute_${key}`;
 }
 
+/** Sent by the editor next to a field it renders, so a save without the field (an older build) never clears it. */
+export function getCatalogAttributeFieldMarker(key: CatalogAttributeKey) {
+  return `catalog_attribute_${key}_field`;
+}
+
 export function normalizeCatalogAttributeValue(value: string) {
   return value
     // "100ml", "100 ML" and "100 ml" are one volume value.
@@ -287,10 +292,16 @@ export function getCatalogAttributeValues(
   const acceptedNames = new Set(
     getCatalogAttributeNameAliases(key).map(normalizeCatalogAttributeValue),
   );
-  const values = (attributes ?? [])
-    .filter((attribute) =>
-      acceptedNames.has(normalizeCatalogAttributeValue(attribute.name)),
-    )
+  let rows = (attributes ?? []).filter((attribute) =>
+    acceptedNames.has(normalizeCatalogAttributeValue(attribute.name)),
+  );
+  if (key === CATALOG_ATTRIBUTE_KEYS.volume) {
+    // The managed row is the source of truth; legacy rows only count without it, and only when they agree.
+    const managed = rows.filter((attribute) => attribute.name === key);
+    if (managed.length) rows = managed;
+    if (new Set(rows.map((attribute) => normalizeCatalogAttributeValue(attribute.value))).size > 1) return [];
+  }
+  const values = rows
     .map((attribute) => normalizeCatalogAttributeValue(attribute.value))
     .map((value) =>
       key === CATALOG_ATTRIBUTE_KEYS.commercialCategory

@@ -117,16 +117,79 @@ test("perfume imports read the volume column into the managed attribute", () => 
   assert.ok(unknown.warnings.some((warning) => warning.startsWith("Contenido")));
 });
 
-// Admin save: the atomic RPC is the only writer; it must accept the managed volume and nothing else.
+// Source of truth: the managed "contenido" row wins; contradictory legacy rows never produce a volume.
+test("a managed volume takes precedence over legacy rows, which never contradict it", () => {
+  const rows = [attr("contenido", "100-ml"), attr("Volumen", "50 ml"), attr("Capacidad", "100 ml + 20 ml")];
+  assert.deepEqual(config.getCatalogAttributeValues(rows, KEYS.volume), ["100-ml"]);
+  assert.deepEqual(contenido(perfume(rows)), { label: "Contenido", values: ["100 ml"] });
+  assert.equal(filters.publicationHasCatalogAttribute(sku("x", null, { attributes: rows }), KEYS.volume, "50-ml"), false);
+  assert.deepEqual(filters.perfumeFiltersByCategory([sku("x", null, { attributes: rows })]).arabe.find((g) => g.param === "contenido").options.map((o) => o.value), ["100-ml"]);
+});
+
+test("contradictory legacy volumes without a managed value show and filter nothing (fail-closed)", () => {
+  const rows = [attr("Volumen", "100 ml"), attr("Capacidad", "50ml")];
+  assert.deepEqual(config.getCatalogAttributeValues(rows, KEYS.volume), []);
+  assert.equal(contenido(perfume(rows)), undefined);
+  assert.equal(contenido(perfume([attr("Volumen", "100 ml + 20 ml"), attr("Contenido", "120 ml")])), undefined);
+  assert.equal(filters.publicationHasCatalogAttribute(sku("x", null, { attributes: rows }), KEYS.volume, "100-ml"), false);
+  assert.ok(!filters.perfumeFiltersByCategory([sku("x", null, { attributes: rows })]).arabe.some((g) => g.param === "contenido"));
+  // Same value written twice is not a contradiction.
+  assert.deepEqual(config.getCatalogAttributeValues([attr("Volumen", "100ML"), attr("Contenido", "100 ml")], KEYS.volume), ["100-ml"]);
+});
+
+test("variants with different volumes are filtered by their own SKU", () => {
+  const family = sku("family", null, { kind: "family", variants: [sku("v50", "50-ml"), sku("v100", null, { attributes: [attr("contenido", "100-ml"), attr("Volumen", "50 ml")] })] });
+  assert.equal(filters.publicationHasCatalogAttribute(family, KEYS.volume, "50-ml"), true);
+  assert.equal(filters.publicationHasCatalogAttribute(family, KEYS.volume, "100-ml"), true);
+  assert.equal(filters.publicationHasCatalogAttribute(family.variants[1], KEYS.volume, "50-ml"), false);
+});
+
+const perfumeImport = load("lib/product-import/perfume-import.ts");
+test("imports keep an existing volume unless the row brings a valid, different one", () => {
+  const existing = { id: "p", name: "Synthetic Perfume", slug: "synthetic-perfume", price: 1000, transfer_price: null, cost: null,
+    categories: { slug: "perfumes" }, product_attributes: [attr("contenido", "100-ml")] };
+  const row = (extra) => importCore.normalizeProductImportRow("Producto Perfumes", { Producto: "Synthetic Perfume", "Precio de venta": 2000, ...extra }, 2);
+  const volumeDiff = (r) => perfumeImport.buildPerfumeImportDecision(r, existing).diffs.find((diff) => diff.field === `attribute:${KEYS.volume}`);
+  // No volume column, or only a price change: the volume is not touched.
+  assert.equal(volumeDiff(row({})), undefined);
+  assert.equal(row({}).catalogAttributeUpdates.some((update) => update.key === KEYS.volume), false);
+  // An invalid value never replaces a valid one.
+  assert.equal(volumeDiff(row({ Contenido: "frasco grande" })), undefined);
+  // The same value written differently is unchanged; a valid different one is an explicit diff.
+  assert.equal(volumeDiff(row({ Contenido: "100ML" })), undefined);
+  assert.deepEqual(volumeDiff(row({ Volumen: "50 ml" })).nextValue, ["50-ml"]);
+});
+
+test("the import writer only replaces the attributes present in the row", () => {
+  const service = read("services/product-import.ts");
+  const writer = service.slice(service.indexOf("async function replaceCatalogAttributes"), service.indexOf("async function replaceNamedAttributes"));
+  assert.match(writer, /sanitizeAttributeUpdates\(categorySlug, updates\)\.entries\(\)/);
+  assert.match(writer, /\.in\("name", names\)/);
+  // Stock and price paths never delete attributes: only these two writers do, and only the save RPC in SQL.
+  assert.equal([...service.matchAll(/from\("product_attributes"\)\.delete\(\)/g)].length, 2);
+});
+
+// Admin save: the atomic RPC is the only admin writer. An older admin build (no volume field) must keep the volume.
+test("the editor declares the volume field it renders and the action forwards that declaration only", () => {
+  const form = read("components/admin/products/product-form.tsx");
+  assert.match(form, /name=\{getCatalogAttributeFieldMarker\(field\.key\)\}/);
+  const actions = read("app/admin/productos/actions.ts");
+  assert.match(actions, /formData\.has\(getCatalogAttributeFieldMarker\(CATALOG_ATTRIBUTE_KEYS\.volume\)\)/);
+  assert.match(actions, /volume_managed: true/);
+  assert.equal(config.getCatalogAttributeFieldMarker(KEYS.volume), "catalog_attribute_contenido_field");
+});
+
 const migrationFile = "supabase/migrations/202611280001_perfume_volume_attribute.sql";
+const rollbackFile = "reports/perfume-volume-attribute-rollback.sql";
 const runtimePath = process.env.SFSTORE_TEST_PGLITE_MODULE;
 
-test("the migration only patches the save allow-list and writes no product data", () => {
+test("the migration only patches the save function and writes no product data", () => {
   const sql = read(migrationFile);
-  assert.doesNotMatch(sql, /\b(insert into|update public\.|delete from)\b/i);
+  assert.doesNotMatch(sql, /^\s*(insert into|update public\.)/im);
   const values = config.getAttributeFieldsForCategory("perfumes").find((field) => field.key === KEYS.volume).options.map((option) => option.value);
   for (const value of values) assert.match(sql, new RegExp(`"${value}"`));
-  assert.match(sql, /'contenido'/);
+  // "contenido" is never an unconditional managed name: only a request that declares the field replaces it.
+  assert.doesNotMatch(sql, /'use_case', 'contenido'\]/);
   assert.doesNotMatch(sql, /'Volumen'|'Capacidad'|'Contenido'/);
 });
 
@@ -135,6 +198,8 @@ describe("perfume volume save / isolated PostgreSQL WASM", { skip: !runtimePath,
   const q = async (sql, args = []) => (await db.query(sql, args)).rows;
   const one = async (sql, args = []) => (await q(sql, args))[0];
   const perfumes = "11111111-1111-4111-8111-111111111111";
+  const saveDefinition = async () => (await one("select md5(pg_get_functiondef('public.save_product_atomic_internal(uuid,text,uuid,text,jsonb)'::regprocedure)) h")).h;
+  let previousDefinition;
   before(async () => {
     const runtime = createRequire(join(runtimePath, "package.json"));
     const { PGlite } = runtime("@electric-sql/pglite");
@@ -148,6 +213,7 @@ describe("perfume volume save / isolated PostgreSQL WASM", { skip: !runtimePath,
       try { await db.exec(read(entry.source)); } catch (error) { throw new Error(entry.source + ": " + error.message); }
     }
     await db.exec(read("staging/supabase/seed.sql"));
+    previousDefinition = await saveDefinition();
     await db.exec(read(migrationFile));
   });
   after(async () => { await db?.close(); });
@@ -157,15 +223,17 @@ describe("perfume volume save / isolated PostgreSQL WASM", { skip: !runtimePath,
     await q("insert into products(id,category_id,name,slug,short_description,price,stock,status) values($1::uuid,$2,'SYNTHETIC',$1::text,'Synthetic only',1000,1,'active')", [id, category]);
     return id;
   }
-  const save = async (id, attributes, category = perfumes) => {
+  // managed=true is what the current editor sends; an older admin build sends neither the declaration nor the row.
+  const payload = (id, category, extra = {}) => ({ category_id: category, name: "SYNTHETIC", slug: id, short_description: "Synthetic only", description: null,
+    price: 1000, transfer_price: null, compare_at_price: null, cost: null, sku: null, featured: false, status: "active", ...extra });
+  const save = async (id, attributes, { managed = true, category = perfumes } = {}) => {
     const version = (await one("select get_product_save_version($1) v", [id])).v;
-    const productPayload = { category_id: category, name: "SYNTHETIC", slug: id, short_description: "Synthetic only", description: null,
-      price: 1000, transfer_price: null, compare_at_price: null, cost: null, sku: null, featured: false, status: "active" };
+    const productPayload = payload(id, category, managed ? { volume_managed: true } : {});
     return one("select update_product_atomic($1,$2,$3,$4) result", [randomUUID(), id, version, JSON.stringify({ product: productPayload, attributes, images: [] })]);
   };
   const names = async (id) => (await q("select name,value from product_attributes where product_id=$1 order by name,value", [id])).map((row) => `${row.name}=${row.value}`);
 
-  test("the admin save stores a managed volume and replaces it on the next save", async () => {
+  test("the current editor stores, replaces and clears the managed volume", async () => {
     const id = await product();
     await save(id, [{ name: "contenido", value: "100-ml", sort_order: 150 }]);
     assert.deepEqual(await names(id), ["contenido=100-ml"]);
@@ -175,6 +243,21 @@ describe("perfume volume save / isolated PostgreSQL WASM", { skip: !runtimePath,
     assert.deepEqual(await names(id), []);
   });
 
+  test("an older admin build saving without the volume field keeps the existing volume", async () => {
+    const id = await product();
+    await save(id, [{ name: "contenido", value: "100-ml" }]);
+    await save(id, [{ name: "gender", value: "unisex" }], { managed: false });
+    assert.deepEqual(await names(id), ["contenido=100-ml", "gender=unisex"]);
+  });
+
+  test("a volume row needs the field declaration, and the declaration is only true", async () => {
+    const id = await product();
+    await assert.rejects(save(id, [{ name: "contenido", value: "100-ml" }], { managed: false }), /PRODUCT_INVALID_ATTRIBUTE/);
+    const version = (await one("select get_product_save_version($1) v", [id])).v;
+    const bad = payload(id, perfumes, { volume_managed: false });
+    await assert.rejects(one("select update_product_atomic($1,$2,$3,$4) r", [randomUUID(), id, version, JSON.stringify({ product: bad, attributes: [], images: [] })]), /PRODUCT_INVALID_FIELDS/);
+  });
+
   test("an unknown volume, two volumes or a volume outside perfumes are rejected", async () => {
     const id = await product();
     await assert.rejects(save(id, [{ name: "contenido", value: "un-frasco" }]), /PRODUCT_INVALID_ATTRIBUTE/);
@@ -182,13 +265,30 @@ describe("perfume volume save / isolated PostgreSQL WASM", { skip: !runtimePath,
     const mates = randomUUID();
     await q("insert into categories(id,name,slug) values($1,'Mates','mates')", [mates]);
     const mate = await product(mates);
-    await assert.rejects(save(mate, [{ name: "contenido", value: "100-ml" }], mates), /PRODUCT_INVALID_ATTRIBUTE/);
+    await assert.rejects(save(mate, [{ name: "contenido", value: "100-ml" }], { category: mates }), /PRODUCT_INVALID_ATTRIBUTE/);
   });
 
-  test("legacy free-text volume rows are kept by the admin save", async () => {
+  test("legacy free-text volume rows are kept by every save", async () => {
     const id = await product();
     await q("insert into product_attributes(product_id,name,value,sort_order) values($1,'Volumen','100 ml + 20 ml',300)", [id]);
     await save(id, [{ name: "contenido", value: "100-ml" }]);
+    await save(id, [], { managed: false });
     assert.deepEqual(await names(id), ["Volumen=100 ml + 20 ml", "contenido=100-ml"]);
+  });
+
+  test("the rollback restores the previous save function and keeps loaded volumes", async () => {
+    const id = await product();
+    await save(id, [{ name: "contenido", value: "105-ml" }]);
+    await db.exec(read(rollbackFile));
+    assert.equal(await saveDefinition(), previousDefinition);
+    // The previous editor keeps working and does not delete the loaded volume.
+    await save(id, [{ name: "gender", value: "unisex" }], { managed: false });
+    assert.deepEqual(await names(id), ["contenido=105-ml", "gender=unisex"]);
+    // The current editor must be rolled back first: the previous function rejects its declaration.
+    await assert.rejects(save(id, []), /PRODUCT_INVALID_FIELDS/);
+    // The migration can be applied again after a rollback.
+    await db.exec(read(migrationFile));
+    await save(id, [{ name: "contenido", value: "100-ml" }]);
+    assert.deepEqual(await names(id), ["contenido=100-ml"]);
   });
 });

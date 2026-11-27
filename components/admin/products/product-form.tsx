@@ -24,7 +24,9 @@ import {
 } from "@/app/admin/productos/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import {
+  CATALOG_ATTRIBUTE_KEYS,
   getAttributeFieldsForCategory,
+  getCatalogAttributeFieldMarker,
   getCatalogAttributeInputName,
   getCatalogAttributeValues,
   type CatalogAttributeField,
@@ -201,6 +203,7 @@ function CatalogAttributeControl({
         <span className="text-sm font-semibold text-[#1F1F1F]/75">
           {field.label}
         </span>
+        {field.key === CATALOG_ATTRIBUTE_KEYS.volume ? <input type="hidden" name={getCatalogAttributeFieldMarker(field.key)} value="1" /> : null}
         <select
           name={inputName}
           defaultValue={selectedValues[0] ?? ""}
