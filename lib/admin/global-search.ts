@@ -10,7 +10,7 @@ type Settled<T> = PromiseSettledResult<T>;
 type ProductHit = { id: string; name: string; sku?: string | null; stock: number; status: string };
 type OrderHit = { id: string; order_number: string; customer_name: string; displayName: string; status: string; remainingAmount: number };
 type SaleHit = { id: string; occurredOn: string; totalCents: number; original: { order_number?: string | null; channel: string; historical_import: boolean }; lines: { product_name: string }[] };
-type PurchaseHit = { id: string; occurredOn: string; original: { supplier_name_snapshot?: string | null; total_cost: string | number } };
+type PurchaseHit = { id: string; occurredOn: string; original: { supplier_name_snapshot?: string | null; total_cost: string | number }; lines?: { product_name_snapshot: string }[] };
 type SupplierHit = { id: string; name: string; phone?: string | null; is_active: boolean };
 
 export function normalizeSearchTerm(value: unknown): string | null {
@@ -18,6 +18,12 @@ export function normalizeSearchTerm(value: unknown): string | null {
   return term.length >= 2 && term.length <= 80 ? term : null;
 }
 const day = (value: string) => value.split("-").reverse().join("/");
+/** Historical purchases often lack a supplier; naming them by what was bought keeps them recognizable. */
+function purchaseTitle(lines: { product_name_snapshot: string }[]) {
+  const [first, ...rest] = lines;
+  if (!first) return "Compra sin detalle";
+  return rest.length ? `${first.product_name_snapshot} y ${rest.length} ${rest.length === 1 ? "producto" : "productos"} más` : first.product_name_snapshot;
+}
 
 /** One result list per module, each failing on its own. Detail links are the same ones each list already uses. */
 export function buildGlobalSearch(term: string, input: {
@@ -36,7 +42,7 @@ export function buildGlobalSearch(term: string, input: {
     groups.push({ key, label, allHref, items: result.value.slice(0, SEARCH_GROUP_LIMIT).map(map), more: Math.max(0, result.value.length - SEARCH_GROUP_LIMIT) });
   }
   add("products", "Productos", `/admin/productos?search=${q}`, input.products, p => ({ id: p.id, title: p.name, href: `/admin/productos/${p.id}/editar`,
-    detail: `${p.sku || "Sin SKU"} · ${productStatusLabel(p.status)} · ${p.stock > 0 ? `${p.stock} disponibles` : "Sin stock"}` }));
+    detail: `${p.sku || "Sin SKU"} · ${productStatusLabel(p.status)} · ${p.stock > 0 ? `${p.stock} ${p.stock === 1 ? "disponible" : "disponibles"}` : "Sin stock"}` }));
   add("orders", "Encargos", `/admin/pedidos?search=${q}`, input.orders, o => ({ id: o.id, title: `${o.customer_name} · ${o.displayName}`, href: `/admin/pedidos/${o.id}`,
     detail: `Encargo ${o.order_number} · ${CUSTOMER_ORDER_STATUS_LABELS[o.status as CustomerOrderStatus] ?? o.status} · Saldo ${adminMoney(o.remainingAmount)}` }));
   // Encargos already have their own group; the sales group keeps store, web and historical sales.
@@ -45,8 +51,8 @@ export function buildGlobalSearch(term: string, input: {
     href: s.original.historical_import || s.original.channel === "store" ? `/admin/ventas/${s.id}` : `/admin/pedidos/${s.id}`,
     detail: `${s.original.historical_import ? "Histórica" : s.original.channel === "store" ? "Local" : "Web"} · ${day(s.occurredOn)} · ${adminMoneyFromCents(s.totalCents)}${s.lines.length > 1 ? ` · ${s.lines.length} productos` : ""}` }),
     "Hay demasiadas ventas con ese texto. Probá con algo más específico.");
-  add("purchases", "Compras", `/admin/compras?search=${q}`, input.purchases, c => ({ id: c.id, title: c.original.supplier_name_snapshot || "Compra sin proveedor", href: `/admin/compras/${c.id}`,
-    detail: `${day(c.occurredOn)} · ${adminMoney(c.original.total_cost)}` }), "Hay demasiadas compras con ese texto. Probá con algo más específico.");
+  add("purchases", "Compras", `/admin/compras?search=${q}`, input.purchases, c => ({ id: c.id, title: c.original.supplier_name_snapshot || purchaseTitle(c.lines ?? []), href: `/admin/compras/${c.id}`,
+    detail: `${c.original.supplier_name_snapshot ? "" : "Sin proveedor · "}${day(c.occurredOn)} · ${adminMoney(c.original.total_cost)}` }), "Hay demasiadas compras con ese texto. Probá con algo más específico.");
   add("suppliers", "Proveedores", `/admin/proveedores?q=${q}`, input.suppliers, s => ({ id: s.id, title: s.name, href: `/admin/proveedores/${s.id}`,
     detail: `${s.is_active ? "Activo" : "Inactivo"}${s.phone ? ` · ${s.phone}` : ""}` }));
   return { term, groups, total: groups.reduce((sum, group) => sum + group.items.length + group.more, 0) };
