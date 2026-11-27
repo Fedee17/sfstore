@@ -129,7 +129,7 @@ function Dashboard({ data: a }: { data: CommercialAnalytics }) {
     </Panel>
 
     <h2 className="pt-2 text-xl font-semibold">Qué se vendió en {monthOnly(r.month)}</h2>
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid items-start gap-6 lg:grid-cols-2">
       <RankingPanel title="Productos más vendidos" rows={a.products} />
       <RankingPanel title="Categorías" rows={a.categories} />
       {families.length ? <RankingPanel title="Familias" rows={families} /> : null}
@@ -193,8 +193,9 @@ function Rotation({ data, error }: { data: CatalogAbc | null; error: string | nu
         <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${classTone[row.abcClass]}`}>{row.abcClass}</span></td>
         <th scope="row" className="p-3 font-normal"><Link className="font-semibold underline-offset-4 hover:underline" href={`/admin/productos/${row.id}/editar`}>{row.name}</Link>{row.variant_label ? <span className="block text-xs text-black/60">{row.variant_label}</span> : null}</th>
         <td className="p-3 tabular-nums">{row.units}</td><td className="p-3 tabular-nums">{adminMoneyFromCents(row.revenueCents)}</td><td className="p-3 tabular-nums">{percent(row.cumulativeShare)}</td>
-        <td className="p-3 tabular-nums">{row.marginCents === null ? <span className="text-black/60">Sin costo cargado</span> : adminMoneyFromCents(row.marginCents)}</td><td className="p-3 tabular-nums">{row.available}</td>
+        <td className="p-3 tabular-nums">{row.marginCents === null ? <span className="text-black/60">Sin costo guardado</span> : adminMoneyFromCents(row.marginCents)}</td><td className="p-3 tabular-nums">{row.available}</td>
       </tr>)}</tbody></table></div> : <p className="text-sm text-black/65">No hay ventas confirmadas con producto identificado en este período.</p>}
+    {data.rows.some(row => row.marginCents === null) ? <p className="text-sm text-black/65">«Sin costo guardado»: esas ventas no guardaron el costo del producto al momento de venderse, así que su margen no se puede calcular. Las ventas nuevas lo guardan si el producto tiene costo cargado.</p> : null}
     <div><h4 className="font-semibold">Clase C con stock y sin ventas en {ABC_WINDOW_DAYS} días</h4>
       <p className="mt-1 text-sm text-black/65">Candidatos a liquidar, armar un combo o dejar de reponer. Mercadería inmovilizada, a costo actual: {adminMoneyFromCents(data.idleRetainedCents)}{withoutCost ? ` (${plural(withoutCost, "producto sin costo cargado queda", "productos sin costo cargado quedan")} fuera del total)` : ""}.{data.recentExcluded ? ` No incluye ${plural(data.recentExcluded, "producto cargado", "productos cargados")} en los últimos ${ABC_WINDOW_DAYS} días.` : ""}</p>
       {data.idle.length ? <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-[#465826]">Ver los {data.idle.length} productos</summary><ul className="mt-3 grid gap-2">{data.idle.map(row => <li key={row.id}><Row label={`${row.name}${row.variant_label ? ` · ${row.variant_label}` : ""}`} value={`${plural(row.available, "unidad", "unidades")} · ${row.retainedCents === null ? "Sin costo" : adminMoneyFromCents(row.retainedCents)}`} /></li>)}</ul></details> : <p className="mt-3 text-sm text-black/65">Todos los productos con stock tuvieron ventas en el período.</p>}
