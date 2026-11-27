@@ -241,6 +241,8 @@ export async function getRelatedProducts(product:PublicProduct|null|undefined) {
  if(!product)return [];
  return selectRelatedProducts(product,await getCatalogPublications());
 }
+/** For the sitemap: a failed catalog read must not be cached as an empty list. */
+export const getCatalogPublicationsOrThrow = readCatalogPublications;
 export async function getCatalogPublications():Promise<PublicProduct[]> {
  try{return await readCatalogPublications();}catch{return [];}
 }

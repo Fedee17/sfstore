@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { PUBLIC_CATALOG_CACHE_TAG } from "@/lib/catalog/public-catalog-revalidation";
 import { getCatalogPublications } from "@/services/products";
 
 // Owner request 20/11: read-only current list price, cash price and stock of the public SKUs in a cart, so the cart can warn
@@ -11,7 +12,7 @@ const readCartCatalog = unstable_cache(async () => {
     if (product.kind !== "family" && product.kind !== "combo") rows[product.id] = { price: product.price, cashPrice: product.transferPrice ?? null, stock: product.stock };
   }
   return rows;
-}, ["public-cart-catalog-v2"], { revalidate: 60 });
+}, ["public-cart-catalog-v2"], { tags: [PUBLIC_CATALOG_CACHE_TAG], revalidate: 60 });
 
 const maxIds = 50;
 const idPattern = /^[A-Za-z0-9-]{1,64}$/;

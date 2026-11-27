@@ -10,6 +10,7 @@ import * as ordering from '../lib/catalog/availability-order.ts';
 import { publicationAvailable } from '../lib/products/public-families.ts';
 import * as attributes from '../lib/catalog/attribute-config.ts';
 import * as search from '../lib/catalog/search.ts';
+import * as materoTaxonomy from '../lib/catalog/matero-taxonomy.ts';
 import { catalogFrameStubs } from './fixtures/catalog-frame-stubs.mjs';
 
 const require = createRequire(import.meta.url);
@@ -22,7 +23,7 @@ function loadFilters(file, modules) {
   return exports;
 }
 const taxonomy = loadFilters('lib/product-taxonomy.ts', { '@/lib/catalog/attribute-config': attributes });
-const filterModules = { '@/lib/catalog/attribute-config': attributes, '@/lib/product-taxonomy': taxonomy };
+const filterModules = { '@/lib/catalog/attribute-config': attributes, '@/lib/product-taxonomy': taxonomy, '@/lib/catalog/matero-taxonomy': materoTaxonomy };
 const perfumes = loadFilters('lib/catalog/perfume-filters.ts', filterModules);
 const mates = loadFilters('lib/catalog/mate-filters.ts', filterModules);
 const item = (id, name, stock, extra = {}) => ({ id, name, stock, featured: false,

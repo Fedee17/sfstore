@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateAfterWrite } from "@/lib/catalog/public-catalog-revalidation";
 import { redirect } from "next/navigation";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
@@ -50,7 +50,7 @@ export async function createSupplierAction(formData: FormData) {
     notes: String(formData.get("notes") ?? ""),
   });
 
-  revalidatePath("/admin/compras/nueva");
+  revalidateAfterWrite("proveedor", ["/admin/compras/nueva"]);
   redirect(
     result.created
       ? "/admin/compras/nueva?supplierCreated=1"
@@ -69,13 +69,7 @@ export async function createPurchaseProductAction(input: {
   try {
     const result = await createPurchaseProduct(input);
 
-    revalidatePath("/admin/productos");
-    revalidatePath("/admin/consulta");
-    revalidatePath("/admin/compras/nueva");
-
-    if (input.purchaseId) {
-      revalidatePath(`/admin/compras/${input.purchaseId}/editar`);
-    }
+    revalidateAfterWrite("producto de compra", ["/admin/productos", "/admin/consulta", "/admin/compras/nueva", ...(input.purchaseId ? [`/admin/compras/${input.purchaseId}/editar`] : [])]);
 
     return {
       status: result.created ? "created" : "existing",
@@ -108,8 +102,7 @@ export async function savePurchaseDraftAction(formData: FormData) {
     lines: readPurchaseLines(formData),
   });
 
-  revalidatePath("/admin/compras");
-  revalidatePath(`/admin/compras/${savedId}`);
+  revalidateAfterWrite("compra", ["/admin/compras", `/admin/compras/${savedId}`]);
   redirect(`/admin/compras/${savedId}`);
 }
 
@@ -122,8 +115,7 @@ export async function cancelPurchaseDraftAction(formData: FormData) {
   }
 
   await cancelPurchaseDraft(purchaseId);
-  revalidatePath("/admin/compras");
-  revalidatePath(`/admin/compras/${purchaseId}`);
+  revalidateAfterWrite("compra", ["/admin/compras", `/admin/compras/${purchaseId}`]);
   redirect(`/admin/compras/${purchaseId}`);
 }
 
@@ -141,10 +133,8 @@ export async function confirmPurchaseAction(
 
     const result = await confirmPurchase(purchaseId, user.id);
 
-    revalidatePath("/admin/compras");
-    revalidatePath(`/admin/compras/${purchaseId}`);
-    revalidatePath("/admin/productos");
-    revalidatePath("/admin/consulta");
+    // Confirming a purchase adds stock: the cart's cached stock check must not wait for its TTL.
+    revalidateAfterWrite("confirmación de compra", ["/admin/compras", `/admin/compras/${purchaseId}`, "/admin/productos", "/admin/consulta"], { publicCatalog: true });
 
     return {
       status: "success",
