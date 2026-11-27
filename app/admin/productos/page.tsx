@@ -11,6 +11,7 @@ import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { InventoryAdjustmentForm } from "@/components/admin/products/inventory-adjustment-form";
 import { ProductAvailabilitySummary } from "@/components/admin/products/product-availability-summary";
 import { adminProductAvailability } from "@/lib/products/product-availability";
+import { internalInventoryHref } from "@/lib/admin/internal-inventory";
 import { requireAdminSession } from "@/lib/admin-session";
 import {
   getAdminCategories,
@@ -466,10 +467,10 @@ export default async function AdminProductsPage({
                 : "Todavía no hay productos disponibles en este listado."}
             </p>
           </div>
-        ) : selectedFilters.view!=="details" ? <div className="mt-6 grid gap-2">{pageProducts.map(product=>{const availability=product.component_offer?null:adminProductAvailability(product);const readOnly=availability?.historical===true;return <article key={product.id} className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+        ) : selectedFilters.view!=="details" ? <div className="mt-6 grid gap-2">{pageProducts.map(product=>{const availability=product.component_offer?null:adminProductAvailability(product);const readOnly=availability?.historical===true;const internalHref=internalInventoryHref(product);return <article key={product.id} className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
           <div className="flex min-w-0 items-center gap-3"><ProductThumbnail product={product}/><div className="min-w-0"><h2 className="break-words font-semibold">{product.name}</h2><p className="break-words text-xs text-black/60">{product.sku||"Sin SKU"}{product.component_offer?" · Combo":""}</p>{availability?<ProductAvailabilitySummary availability={availability} className="mt-1"/>:null}{catalogIssues(product).length?<p className="mt-1 text-xs font-semibold text-[#8B5E3C]">{catalogIssues(product).join(" · ")}</p>:null}<ListingQualityNote product={product}/></div></div>
           <div className="text-sm"><p>Lista: <strong>{formatMoney(product.price)}</strong></p><p>{product.component_offer?"Disponible":"Stock"}: <strong>{product.stock}</strong></p></div>
-          {readOnly?<span className="inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold text-[#1F1F1F]/60">Sólo lectura</span>:<Link href={`/admin/productos/${product.id}/editar`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#556B2F]/30 px-4 text-sm font-semibold text-[#465826]">Editar</Link>}
+          {internalHref ? <Link href={internalHref} className="inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold text-[#465826] underline">Inventario interno</Link> : readOnly?<span className="inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold text-[#1F1F1F]/60">Sólo lectura</span>:<Link href={`/admin/productos/${product.id}/editar`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#556B2F]/30 px-4 text-sm font-semibold text-[#465826]">Editar</Link>}
         </article>})}</div> : (
           <div className="mt-8 grid min-w-0 gap-4">
             {pageProducts.map((product) => {
@@ -478,6 +479,7 @@ export default async function AdminProductsPage({
               const marginBasePrice = chargedCash;
               const availability = product.component_offer ? null : adminProductAvailability(product);
               const readOnly = availability?.historical === true;
+              const internalHref = internalInventoryHref(product);
 
               return (
                 <article
@@ -567,6 +569,7 @@ export default async function AdminProductsPage({
                         </span>
                       </div>
 
+                      {internalHref ? <Link href={internalHref} className="inline-flex min-h-11 items-center font-semibold text-[#465826] underline">Inventario interno</Link> : null}
                       {readOnly ? <p className="break-words text-xs text-[#1F1F1F]/60">Identidad histórica: se conserva para pedidos, compras y movimientos; no admite edición, ajustes ni ventas nuevas.</p> : <div className="grid min-w-0 gap-2">
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8B5E3C]">
                           Acciones
