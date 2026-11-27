@@ -293,7 +293,7 @@ test("commercial history: actual Next admin guard + local Auth + PostgREST + Pos
       });
       await checked("22 monthly analytics responsive UI, filters, empty and explicit error states",async()=>{
         for(const[device,viewport]of[["notebook",{width:1366,height:900}],["mobile",{width:390,height:844}]]){
-          await page.setViewportSize(viewport);await page.goto(`${base}/admin/analytics?month=2026-10`);await page.getByRole("heading",{name:"Resumen comercial mensual",exact:true}).waitFor();await page.locator('[data-testid=commercial-analytics]').waitFor();
+          await page.setViewportSize(viewport);await page.goto(`${base}/admin/analytics?month=2026-10`);await page.getByRole("heading",{name:"Resumen del mes",exact:true}).waitFor();await page.locator('[data-testid=commercial-analytics]').waitFor();
           await page.getByRole("heading",{name:"Facturación comercial confirmada",exact:true}).waitFor();await page.getByText("Sin fecha de acreditación, atribuidos a ventas del mes",{exact:true}).waitFor();
           await page.waitForLoadState("networkidle");assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);await page.screenshot({path:join(work,`${device}-analytics.png`),fullPage:true});
         }

@@ -51,13 +51,27 @@ export function buildCommercialAnalytics(input: CommercialSnapshot, month: strin
     const selected = confirmed.filter(s => channel === "physical" ? s.origin.startsWith("physical_") : s.origin === channel);
     return { channel, orders: selected.length, amountCents: sumCents(selected.map(s => s.totalCents)) };
   });
-  const currentMonth = commercialDate(now.toISOString()).slice(0, 7);
+  const today = commercialDate(now.toISOString()), currentMonth = today.slice(0, 7);
+  // An open month is compared with the same days of the previous month, never with the whole previous month.
+  const throughDay = month === currentMonth ? Number(today.slice(8, 10)) : null;
+  const upTo = <T extends { occurredOn: string }>(rows: T[]) => throughDay === null ? rows : rows.filter(row => Number(row.occurredOn.slice(8, 10)) <= throughDay);
+  const previousSales = previous ? sumCents(upTo(previous.sales.filter(s => !s.excluded && s.confirmed)).map(s => s.totalCents)) : null;
+  const previousPurchases = previous ? sumCents(upTo(previous.purchases.filter(p => !p.excluded && p.recognized)).map(p => p.totalCents)) : null;
+  const monthSaleIds = new Set(report.sales.filter(s => !s.excluded).map(s => s.id));
+  const fromMonthSalesCents = sumCents(report.datedReceipts.filter(p => monthSaleIds.has(p.orderId)).map(p => p.amountCents));
+  const methods = new Map<string, { method: string; forSalesCents: number; receivedCents: number }>();
+  const method = (key: string) => methods.get(key) ?? methods.set(key, { method: key, forSalesCents: 0, receivedCents: 0 }).get(key)!;
+  for (const row of report.paymentMethodsForSales) method(row.method).forSalesCents = row.amountCents;
+  for (const row of report.paymentMethodsForDatedReceipts) method(row.method).receivedCents = row.amountCents;
   return {
     report,
+    cashIn: { totalCents: report.totals.datedReceiptsCents, fromMonthSalesCents, fromOtherSalesCents: report.totals.datedReceiptsCents - fromMonthSalesCents },
+    paymentMethods: [...methods.values()].sort((a, b) => b.receivedCents - a.receivedCents || b.forSalesCents - a.forSalesCents || a.method.localeCompare(b.method)),
     comparison: {
       previousMonth: previous?.month ?? null,
-      sales: change(report.totals.confirmedSalesCents, previous?.totals.confirmedSalesCents ?? null),
-      purchases: change(report.totals.purchasesCents, previous?.totals.purchasesCents ?? null),
+      throughDay,
+      sales: change(report.totals.confirmedSalesCents, previousSales),
+      purchases: change(report.totals.purchasesCents, previousPurchases),
       selectedMonthNotClosed: month >= currentMonth,
       previousMonthNotClosed: previous !== null && previous.month >= currentMonth,
     },

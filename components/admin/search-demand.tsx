@@ -2,7 +2,7 @@ import { SEARCH_DEMAND_WINDOW_DAYS, type SearchDemandItem } from "@/lib/catalog/
 import { getSearchDemand } from "@/services/search-demand";
 
 const panel = "mt-6 min-w-0 rounded-3xl border border-[#8B5E3C]/15 bg-white/80 p-5 shadow-sm sm:p-6";
-const title = <h2 className="text-xl font-semibold">Búsquedas sin resultado</h2>;
+const title = <h3 className="text-xl font-semibold">Búsquedas sin resultado</h3>;
 const times = (n: number) => `${n} ${n === 1 ? "vez" : "veces"}`;
 
 export function SearchDemandFallback() {
@@ -11,7 +11,7 @@ export function SearchDemandFallback() {
 
 function List({ heading, detail, items }: { heading: string; detail: string; items: SearchDemandItem[] }) {
   return <div className="min-w-0">
-    <h3 className="font-semibold">{heading}</h3>
+    <h4 className="font-semibold">{heading}</h4>
     <p className="text-xs text-black/60">{detail}</p>
     {items.length ? <ol className="mt-2 grid gap-1 text-sm">{items.map(item => <li key={item.term} className="flex flex-wrap justify-between gap-2 rounded-xl bg-[#F7F4ED] px-3 py-2">
       <span className="min-w-0 break-words font-semibold">«{item.term}»</span>

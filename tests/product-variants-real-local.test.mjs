@@ -174,7 +174,7 @@ test('variant admin: actual UI, admin Auth, PostgREST and isolated PostgreSQL17.
    const before=await q('select id,price,stock,cost from products where id=any($1::uuid[]) order by id',[[black.id,green.id]]);
    for(const name of ['SYNTHETIC Stanley Negro',family.name]){const r=await context.request.post(base+'/import-probe',{data:{name}});assert.equal(r.status(),200);const data=await r.json();assert.equal(data.review,1);assert.equal(data.updated,0);assert.equal(data.created,0);}
    assert.deepEqual(await q('select id,price,stock,cost from products where id=any($1::uuid[]) order by id',[[black.id,green.id]]),before);
-   await page.goto(base+'/admin/analytics?month=2026-10');await ready(page);await page.getByRole('heading',{name:'Familias documentadas',exact:true}).waitFor();assert.ok(await page.getByText(family.name,{exact:true}).count());
+   await page.goto(base+'/admin/analytics?month=2026-10');await ready(page);await page.getByRole('heading',{name:'Familias',exact:true}).waitFor();assert.ok(await page.getByText(family.name,{exact:true}).count());
   });
   await buyer.close();
  }finally{
