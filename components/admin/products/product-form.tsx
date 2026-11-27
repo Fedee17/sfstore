@@ -342,7 +342,7 @@ function ProductImageGalleryAdmin({ product, connector }: { product: AdminProduc
             Galeria del producto
           </p>
           <h2 className="mt-2 break-words text-2xl font-semibold text-[#1F1F1F]">
-            Imagenes actuales
+            Imágenes actuales
           </h2>
         </div>
         <p className="max-w-md break-words text-sm text-[#1F1F1F]/60">
@@ -352,7 +352,7 @@ function ProductImageGalleryAdmin({ product, connector }: { product: AdminProduc
 
       {images.length === 0 ? (
         <div className="mt-5 rounded-2xl border border-dashed border-[#8B5E3C]/25 bg-[#F7F4ED] p-6 text-sm text-[#1F1F1F]/60">
-          Este producto todavia no tiene imagenes cargadas.
+          Este producto todavía no tiene imágenes cargadas.
         </div>
       ) : (
         <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -674,7 +674,7 @@ export function ProductForm({
         `${nextImages.length} imagen${nextImages.length === 1 ? "" : "es"} seleccionada${nextImages.length === 1 ? "" : "s"}. Ultimo lote: ${formatFileSize(originalSize)} -> ${formatFileSize(optimizedSize)}.`,
       );
     } catch (error) {
-      console.warn("[product-image-compression] No se pudieron optimizar imagenes", {
+      console.warn("[product-image-compression] No se pudieron optimizar imágenes", {
         fileCount: files.length,
         error: error instanceof Error ? error.message : "unknown",
       });
@@ -685,7 +685,7 @@ export function ProductForm({
       setImageStatus(
         error instanceof Error
           ? error.message
-          : "No se pudieron preparar las imagenes. Volve a seleccionarlas.",
+          : "No se pudieron preparar las imágenes. Volvé a seleccionarlas.",
       );
     } finally {
       setIsOptimizingImage(false);
@@ -732,7 +732,7 @@ export function ProductForm({
         <fieldset disabled={isSubmitting || actionState.retryMode === "retry" || actionState.retryMode === "reload"} className="grid min-w-0 gap-5 md:grid-cols-2">
           {!connector ? <>
           <label className="grid gap-2">
-            <span className="text-sm font-semibold text-[#1F1F1F]/75">Categoria</span>
+            <span className="text-sm font-semibold text-[#1F1F1F]/75">Categoría</span>
             <select
               name="categoryId"
               required
@@ -740,7 +740,7 @@ export function ProductForm({
               onChange={(event) => { setSelectedCategoryId(event.target.value); setPerfumePriceApplied(false); }}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             >
-              <option value="">Seleccionar categoria</option>
+              <option value="">Seleccionar categoría</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -775,27 +775,27 @@ export function ProductForm({
             <input
               name="slug"
               defaultValue={product?.slug ?? ""}
-              placeholder="Se genera automatico si queda vacio"
+              placeholder="Se genera automáticamente si queda vacío"
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
           </label>
 
           <label className="grid gap-2 md:col-span-2">
-            <span className="text-sm font-semibold text-[#1F1F1F]/75">Descripcion corta</span>
+            <span className="text-sm font-semibold text-[#1F1F1F]/75">Descripción corta</span>
             <input
               name="shortDescription"
               defaultValue={product?.short_description ?? ""}
-              placeholder="Si queda vacia, se genera automaticamente"
+              placeholder="Si queda vacía, se genera automáticamente"
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
           </label>
 
           <label className="grid gap-2 md:col-span-2">
-            <span className="text-sm font-semibold text-[#1F1F1F]/75">Descripcion</span>
+            <span className="text-sm font-semibold text-[#1F1F1F]/75">Descripción</span>
             <textarea
               name="description"
               defaultValue={product?.description ?? ""}
-              placeholder="Si queda vacia, se genera una descripcion comercial editable"
+              placeholder="Si queda vacia, se genera una descripción comercial editable"
               rows={5}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
@@ -973,7 +973,7 @@ export function ProductForm({
 
           </> : null}
           <div className="grid min-w-0 gap-3 md:col-span-2">
-            <span className="text-sm font-semibold text-[#1F1F1F]/75">Agregar imagenes</span>
+            <span className="text-sm font-semibold text-[#1F1F1F]/75">Agregar imágenes</span>
             <input
               ref={imageInputRef}
               name="productImages"
@@ -995,7 +995,7 @@ export function ProductForm({
             {pendingImages.length > 0 ? (
               <section className="grid min-w-0 gap-3 rounded-2xl border border-[#556B2F]/20 bg-[#F7F4ED] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-[#1F1F1F]">Nuevas imagenes</h3>
+                  <h3 className="text-sm font-semibold text-[#1F1F1F]">Nuevas imágenes</h3>
                   <span className="text-xs font-semibold text-[#556B2F]">
                     {pendingImages.length} imagen{pendingImages.length === 1 ? "" : "es"} seleccionada{pendingImages.length === 1 ? "" : "s"}
                   </span>
@@ -1032,10 +1032,10 @@ export function ProductForm({
             className="rounded-full bg-[#556B2F] px-6 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isOptimizingImage
-              ? "Optimizando imagenes..."
+              ? "Optimizando imágenes..."
               : isSubmitting
                 ? pendingImages.length > 0
-                  ? "Subiendo imagenes..."
+                  ? "Subiendo imágenes..."
                   : "Guardando..."
                 : actionState.retryMode === "retry" ? "Reintentar guardado" : submitLabel}
           </button>

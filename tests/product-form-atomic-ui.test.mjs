@@ -90,10 +90,10 @@ test("real React form: HEIC success, lost-response retry, double submit, new ver
     await page.goto(`http://127.0.0.1:${server.address().port}`);
     await page.locator('input[name="name"]').fill("Producto editado");
     await page.locator('input[name="productImages"]').setInputFiles({ name: "iphone.heic", mimeType: "image/heic", buffer: Buffer.from("fixture") });
-    await page.getByText("Nuevas imagenes", { exact: true }).waitFor();
+    await page.getByText("Nuevas imágenes", { exact: true }).waitFor();
     await page.getByRole("button", { name: "Guardar", exact: true }).click();
     await page.waitForFunction(() => window.requests.length === 1);
-    assert.equal(await page.getByRole("button", { name: "Subiendo imagenes...", exact: true }).isDisabled(), true);
+    assert.equal(await page.getByRole("button", { name: "Subiendo imágenes...", exact: true }).isDisabled(), true);
     await page.evaluate(() => document.querySelector('form').requestSubmit());
     assert.equal(await page.evaluate(() => window.requests.length), 1);
     await page.evaluate(() => window.finish({status: 'error', retryMode: 'retry', message: 'Reintentar'}));
@@ -107,12 +107,12 @@ test("real React form: HEIC success, lost-response retry, double submit, new ver
     const requests = await page.evaluate(() => window.requests);
     assert.deepEqual(requests[0], requests[1]);
     assert.equal(await page.locator('input[name="productImages"]').evaluate((el) => el.files.length), 0);
-    assert.equal(await page.getByText("Nuevas imagenes", { exact: true }).count(), 0);
+    assert.equal(await page.getByText("Nuevas imágenes", { exact: true }).count(), 0);
     assert.equal(await page.getByRole("button", { name: "Guardar", exact: true }).isEnabled(), true);
     assert.equal(await page.evaluate(() => window.heicConversions), 1);
     await page.locator('input[name="name"]').fill("Otro cambio");
     await page.locator('input[name="productImages"]').setInputFiles({ name: "second.png", mimeType: "image/png", buffer: Buffer.from("fixture2") });
-    await page.getByText("Nuevas imagenes", { exact: true }).waitFor();
+    await page.getByText("Nuevas imágenes", { exact: true }).waitFor();
     assert.equal(await page.locator('input[name="name"]').inputValue(), "Otro cambio");
     await page.evaluate(() => { window.response = null; });
     await page.getByRole("button", { name: "Guardar", exact: true }).click();

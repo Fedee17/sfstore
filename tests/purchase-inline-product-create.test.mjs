@@ -31,9 +31,9 @@ test("quick product creation requires an admin action session", () => {
 
 test("quick product validation requires a name and active category", () => {
   assert.match(service, /if \(!name\)[\s\S]+Nombre es requerido/);
-  assert.match(service, /if \(!categoryId\)[\s\S]+Categoria es requerida/);
+  assert.match(service, /if \(!categoryId\)[\s\S]+Categoría es requerida/);
   assert.match(service, /\.from\("categories"\)[\s\S]+\.eq\("is_active", true\)/);
-  assert.match(service, /La categoria no existe o esta inactiva/);
+  assert.match(service, /La categoría no existe o está inactiva/);
 });
 
 test("new products use safe private purchase-flow defaults", () => {

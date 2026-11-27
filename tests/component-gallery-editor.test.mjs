@@ -5,7 +5,7 @@ import {galleryConnector,componentGalleryPath} from '../lib/products/component-g
 test('same product editor renders image upload only, without commercial form fields, for both connectors',()=>{
  for(const c of ['cc','lightning']){
   const html=renderGallery(c);
-  assert.match(html,/Imagenes actuales/);assert.match(html,/name="productImages"/);assert.match(html,/multiple=""/);assert.match(html,/Guardar fotografías/);
+  assert.match(html,/Imágenes actuales/);assert.match(html,/name="productImages"/);assert.match(html,/multiple=""/);assert.match(html,/Guardar fotografías/);
   assert.ok(html.includes(`name="connector" value="${c}"`));
   for(const field of ['price','transferPrice','cost','stock','name','categoryId','featured'])assert.ok(!html.includes(`name="${field}"`),field);
  }

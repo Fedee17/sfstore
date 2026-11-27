@@ -59,9 +59,9 @@ export default async function SupplierDetailPage({ params }: SupplierDetailPageP
         <section className="mt-8 grid gap-4 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm sm:grid-cols-2">
           <Info label="Contacto" value={supplier.contact_name} />
           <Info label="Email" value={supplier.email} />
-          <Info label="Telefono" value={supplier.phone} />
+          <Info label="Teléfono" value={supplier.phone} />
           <Info label="WhatsApp" value={supplier.whatsapp} />
-          <Info label="Direccion" value={supplier.address} />
+          <Info label="Dirección" value={supplier.address} />
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">Website</p>
             {supplier.website ? <Link href={supplier.website} target="_blank" rel="noreferrer" className="mt-1 block break-all font-medium text-[#556B2F] underline">{supplier.website}</Link> : <p className="mt-1 text-[#1F1F1F]/45">Sin datos</p>}

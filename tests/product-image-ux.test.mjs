@@ -24,7 +24,7 @@ test("the file input supports one or several images", () => {
 
 test("new images have immediate previews and can be removed before saving", () => {
   assert.match(form, /URL\.createObjectURL\(file\)/);
-  assert.match(form, /Nuevas imagenes/);
+  assert.match(form, /Nuevas imágenes/);
   assert.match(form, /imagen\{pendingImages\.length === 1 \? "" : "es"\} seleccionada/);
   assert.match(form, /removePendingImage\(image\.id\)/);
   assert.match(form, />\s*Quitar\s*</);
@@ -112,8 +112,8 @@ test("real HEIC, invalid content and correctly typed JPEG retain the original fi
 });
 
 test("stored and pending images are rendered in separate sections", () => {
-  assert.match(form, /Imagenes actuales/);
-  assert.match(form, /Nuevas imagenes/);
+  assert.match(form, /Imágenes actuales/);
+  assert.match(form, /Nuevas imágenes/);
   assert.match(form, /product \? <ProductImageGalleryAdmin/);
 });
 
@@ -133,7 +133,7 @@ test("pending submit prevents double save and communicates image upload", () => 
   assert.match(form, /useActionState\([\s\S]*submitProduct,[\s\S]*INITIAL_ACTION_STATE/);
   assert.match(form, /const \[actionState, formAction, isSubmitting\]/);
   assert.match(form, /disabled=\{isOptimizingImage \|\| isSubmitting/);
-  assert.match(form, /isSubmitting[\s\S]*"Subiendo imagenes\.\.\."/);
+  assert.match(form, /isSubmitting[\s\S]*"Subiendo imágenes\.\.\."/);
   assert.match(form, /action=\{formAction\}/);
 });
 
@@ -206,6 +206,6 @@ test("saved images support explicit primary, ordering and deletion", () => {
 });
 
 test("products without stored or pending images have explicit empty states", () => {
-  assert.match(form, /todavia no tiene imagenes cargadas/);
+  assert.match(form, /todavía no tiene imágenes cargadas/);
   assert.match(form, /pendingImages\.length > 0/);
 });

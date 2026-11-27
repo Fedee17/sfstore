@@ -84,7 +84,7 @@ export default async function StoreSaleDetailPage({ params, searchParams }: { pa
                 </div>
               ))}
             </div>
-          ) : <p className="mt-3 text-sm text-[#1F1F1F]/60">Todavia no hay pagos registrados.</p>}
+          ) : <p className="mt-3 text-sm text-[#1F1F1F]/60">Todavía no hay pagos registrados.</p>}
           {canAddPayment ? <StoreSalePaymentForm orderId={sale.id} remainingAmount={sale.remainingAmount} paymentSequence={sale.order_payments.length + 1} /> : <p className={`mt-4 text-sm font-semibold ${paidWithoutInventory ? "text-[#8B5E3C]" : "text-[#556B2F]"}`}>Venta pagada. Los pagos quedan en modo consulta.</p>}
         </section>
 

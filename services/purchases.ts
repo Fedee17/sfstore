@@ -181,11 +181,11 @@ export async function createPurchaseProduct(
   }
 
   if (!categoryId) {
-    throw new Error("Categoria es requerida.");
+    throw new Error("Categoría es requerida.");
   }
 
   if (!slug) {
-    throw new Error("El nombre no permite generar un slug valido.");
+    throw new Error("El nombre no permite generar un slug válido.");
   }
 
   if (input.purchaseId) {
@@ -211,7 +211,7 @@ export async function createPurchaseProduct(
   }
 
   if (!category) {
-    throw new Error("La categoria no existe o esta inactiva.");
+    throw new Error("La categoría no existe o está inactiva.");
   }
 
   const existingProduct =

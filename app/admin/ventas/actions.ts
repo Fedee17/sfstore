@@ -76,7 +76,7 @@ function readPayments(formData: FormData) {
     .map((method, index) => ({ method, amount: amounts[index] }))
     .map((payment) => {
       if (!allowedPaymentMethods.has(payment.method)) {
-        throw new Error("El medio de pago no es valido.");
+        throw new Error("El medio de pago no es válido.");
       }
 
       return payment as {
@@ -102,7 +102,7 @@ export async function createStoreSaleAction(
     const idempotencyKey = String(formData.get("idempotencyKey") ?? "").trim();
 
     if (!idempotencyKey) {
-      throw new Error("Falta la clave de seguridad de la operacion.");
+      throw new Error("Falta la clave de seguridad de la operación.");
     }
 
     const items = readItems(formData);
@@ -166,7 +166,7 @@ export async function addStoreSalePaymentAction(
     }
 
     if (!["cash", "transfer", "card", "other"].includes(method)) {
-      throw new Error("El medio de pago no es valido.");
+      throw new Error("El medio de pago no es válido.");
     }
 
     const payment = await addStoreSalePayment({
@@ -186,7 +186,7 @@ export async function addStoreSalePaymentAction(
       message:
         payment.payment_status === "paid"
           ? "Pago completado. El stock fue actualizado."
-          : "Pago parcial registrado. El stock todavia no fue descontado.",
+          : "Pago parcial registrado. El stock todavía no fue descontado.",
     };
   } catch (error) {
     if (orderId) {

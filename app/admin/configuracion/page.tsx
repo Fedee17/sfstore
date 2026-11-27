@@ -17,7 +17,7 @@ export default async function AdminConfigPage() {
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <ConfigCard label="WhatsApp" value={brand.whatsapp} />
           <ConfigCard label="Instagram" value={brand.instagram} />
-          <ConfigCard label="Direccion" value={brand.address} />
+          <ConfigCard label="Dirección" value={brand.address} />
           <ConfigCard label="Horario" value={brand.hours} />
         </div>
 

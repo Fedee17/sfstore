@@ -19,6 +19,7 @@ export function variantErrorMessage(error: unknown) {
   if (/STALE_VERSION/.test(code)) return "El registro cambió. Recargá la página antes de guardar.";
   if (/23505|unique|duplicate/.test(code)) return "Ya existe ese SKU, slug, opción o combinación de variantes.";
   if (/PRICE_MANAGED/.test(code)) return "El precio de este SKU se administra desde su familia.";
+  if (/PUBLIC_SLUG_COLLISION/.test(code)) return "Ese slug ya lo usa otro producto u otra familia. Elegí otro.";
   if (/LINK_MUST_PRESERVE_PRICE/.test(code)) return "La asociación debe conservar el precio actual como excepción.";
   if (/IMMUTABLE|IN_USE/.test(code)) return "No se puede cambiar la identidad de una variante u opción utilizada. Creá otra combinación.";
   if (/OPTIONS_|CATEGORY_/.test(code)) return "Completá una combinación válida de opciones de esta familia y su categoría.";
