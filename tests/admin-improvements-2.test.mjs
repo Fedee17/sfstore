@@ -10,7 +10,7 @@ test("stock adjustment is one tap away from the editor and from availability", (
     stockAdjustmentHref({ id: "p1", slug: "mate algarrobo" }),
     "/admin/productos?search=mate%20algarrobo&status=all&view=details#producto-p1",
   );
-  assert.match(source("components/admin/products/product-form.tsx"), /href=\{stockAdjustmentHref\(product\)\}[\s\S]{0,200}Ajustar stock/);
+  assert.match(source("app/admin/productos/[id]/editar/page.tsx"), /href=\{stockAdjustmentHref\(product\)\}[\s\S]{0,300}Ajustar stock/);
   assert.match(source("components/admin/inventory-availability.tsx"), /href=\{stockAdjustmentHref\(product\)\}>Ajustar stock/);
 });
 
