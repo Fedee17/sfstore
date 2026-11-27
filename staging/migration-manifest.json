@@ -287,6 +287,12 @@
       "stagingSha256": "e279da1b1fbd2f5806e509dfbd0717183e8da65d4fd8f9e7c3dc59e9c174c9c5"
     },
     {
+      "source": "supabase/migrations/202611270002_mercadopago_card_attempts.sql",
+      "stagingFile": "staging/supabase/migrations/202611270002_mercadopago_card_attempts.sql",
+      "sourceSha256": "7f1d9a8e9ad9ae78508f7f5d24c9355f83ee804323a4ac16f758107da5bea430",
+      "stagingSha256": "7f1d9a8e9ad9ae78508f7f5d24c9355f83ee804323a4ac16f758107da5bea430"
+    },
+    {
       "source": "supabase/migrations/202611280001_perfume_volume_attribute.sql",
       "stagingFile": "staging/supabase/migrations/202611280001_perfume_volume_attribute.sql",
       "sourceSha256": "c4590dd289046328ea40d9df5e2ef991f61ec4663f3827f5e186bf0496ec2008",

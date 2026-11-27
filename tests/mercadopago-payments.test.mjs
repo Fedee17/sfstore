@@ -14,6 +14,7 @@ test('payments stay off unless explicitly enabled with token and webhook secret'
   assert.equal(mp.isMercadoPagoEnabled({ MERCADOPAGO_PAYMENTS_ENABLED: '1', MERCADO_PAGO_ACCESS_TOKEN: 'x' }), false);
   assert.equal(mp.isMercadoPagoEnabled({ MERCADOPAGO_PAYMENTS_ENABLED: '0', MERCADO_PAGO_ACCESS_TOKEN: 'x', MERCADO_PAGO_WEBHOOK_SECRET: 'y' }), false);
   assert.equal(mp.isMercadoPagoEnabled({ MERCADOPAGO_PAYMENTS_ENABLED: '1', MERCADO_PAGO_ACCESS_TOKEN: 'x', MERCADO_PAGO_WEBHOOK_SECRET: 'y' }), true);
+  assert.equal(mp.isMercadoPagoEnabled({ VERCEL_ENV: 'preview', MERCADOPAGO_PAYMENTS_ENABLED: '1', MERCADO_PAGO_ACCESS_TOKEN: 'x', MERCADO_PAGO_WEBHOOK_SECRET: 'y' }), false);
 });
 
 test('Checkout Pro charges the stored contado total in exactly one installment', () => {
@@ -34,15 +35,13 @@ test('Checkout Pro charges the stored contado total in exactly one installment',
 
 test('Checkout API (Orders API) charges the stored financiado total in 2 or 3 installments only', () => {
   for (const installments of [2, 3]) {
-    const { body, idempotencyKey } = mp.financedOrder(financiado, { ...card, installments });
+    const { body } = mp.financedOrder(financiado, { ...card, installments });
     assert.equal(body.type, 'online');
-    assert.equal(body.processing_mode, 'automatic');
+    assert.equal(body.processing_mode, 'manual');
+    assert.equal(body.capture_mode, 'automatic');
     assert.equal(body.total_amount, '17700.00');
     assert.deepEqual(body.transactions.payments, [{ amount: '17700.00', payment_method: { id: 'visa', type: 'credit_card', token: card.token, installments, statement_descriptor: 'SFSTORE' } }]);
     assert.equal(body.external_reference, 'SF-000123');
-    assert.ok(idempotencyKey.length <= 128);
-    assert.match(idempotencyKey, new RegExp(`^SF-000123:${installments}:[0-9a-f]{24}$`));
-    assert.notEqual(idempotencyKey, mp.financedOrder(financiado, { ...card, token: card.token + 'x', installments }).idempotencyKey); // new token, new attempt
   }
   assert.equal(mp.financedOrder({ ...financiado, totalCents: B(1770005) }, card).body.total_amount, '17700.05');
   for (const installments of [1, 4, 6, 2.5, Number.NaN]) assert.throws(() => mp.financedOrder(financiado, { ...card, installments }), /cuotas/);
@@ -137,17 +136,26 @@ test('rejected or pending payments confirm nothing; malformed ids and mismatched
 const orderId = 'ORDTST01M8BZ0SJDRK3F6AH3085GVRGV';
 const mpOrder = (over = {}, payment = {}) => ({ id: orderId, status: 'processed', status_detail: 'accredited', external_reference: 'SF-000123',
   total_amount: '17700.00', currency: 'ARS', ...over,
-  transactions: { payments: [{ id: 'PAY01M8BZ0SJSVG219E2TWMZYH5CN', amount: '17700.00', paid_amount: '21189.00', status: 'processed', status_detail: 'accredited',
+  transactions: { payments: [{ id: 'PAY01M8BZ0SJSVG219E2TWMZYH5CN', amount: '17700.00', paid_amount: '17700.00', status: 'processed', status_detail: 'accredited',
     payment_method: { id: 'master', type: 'credit_card', installments: 3 }, ...payment }] } });
 function orderHarness(order, record) {
   const { deps, calls } = harness(order, {});
   return { calls, deps: { ...deps, fetchOrder: async () => record } };
 }
 
-test('an approved Orders API order confirms with the store amount, never the amount with Mercado Pago interest', async () => {
+test('an approved Orders API order confirms when the buyer paid exactly the store amount', async () => {
   const { deps, calls } = orderHarness(financiado, mpOrder());
   assert.equal(await mp.settleMercadoPagoOrder(orderId, deps), 'approved');
   assert.deepEqual(calls.approve, [{ reference: 'SF-000123', providerPaymentId: orderId, amountCents: B(1770000), installments: 3, method: 'credit_card' }]);
+});
+
+test('Orders API: a surcharge, short payment or missing paid amount never confirms the order', async () => {
+  for (const [paidAmount, reviewAmount] of [['21189.00', B(2118900)], ['17699.99', B(1769999)], [undefined, null]]) {
+    const { deps, calls } = orderHarness(financiado, mpOrder({}, { paid_amount: paidAmount }));
+    assert.equal(await mp.settleMercadoPagoOrder(orderId, deps), 'review');
+    assert.deepEqual(calls.approve, []);
+    assert.equal(calls.review[0].amountCents, reviewAmount);
+  }
 });
 
 test('Orders API: pending and failed orders confirm nothing; mismatches and odd shapes go to review', async () => {

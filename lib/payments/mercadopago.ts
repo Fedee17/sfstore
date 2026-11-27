@@ -1,4 +1,4 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { MAX_INSTALLMENTS } from "../products/commercial-pricing.ts";
 import { assertPaymentMatchesOrder, fromMercadoPagoOrder, fromMercadoPagoPayment, type PayableOrder, type ReceivedPayment } from "./payment-eligibility.ts";
 
@@ -13,7 +13,8 @@ export type MercadoPagoOrder = PayableOrder & {
 };
 
 export function isMercadoPagoEnabled(env: Record<string, string | undefined>) {
-  return env.MERCADOPAGO_PAYMENTS_ENABLED === "1" && !!env.MERCADO_PAGO_ACCESS_TOKEN && !!env.MERCADO_PAGO_WEBHOOK_SECRET;
+  return env.VERCEL_ENV !== "preview" && env.MERCADOPAGO_PAYMENTS_ENABLED === "1"
+    && !!env.MERCADO_PAGO_ACCESS_TOKEN && !!env.MERCADO_PAGO_WEBHOOK_SECRET;
 }
 
 const pesos = (cents: bigint) => {
@@ -67,16 +68,14 @@ export function financedOrder(order: MercadoPagoOrder, card: { token: string; in
   return {
     body: {
       type: "online",
-      processing_mode: "automatic",
+      processing_mode: "manual",
+      capture_mode: "automatic",
       total_amount: amount,
       external_reference: order.reference,
       description: order.description,
       payer: { email: card.payerEmail },
       transactions: { payments: [{ amount, payment_method: { id: card.paymentMethodId, type: "credit_card", token: card.token, installments: card.installments, statement_descriptor: "SFSTORE" } }] },
     },
-    // One charge per card token (tokens are single-use): a retried or double-submitted request cannot charge twice,
-    // while a new attempt after a rejection (new token) is still possible. The database accepts one approval per order.
-    idempotencyKey: `${order.reference}:${card.installments}:${createHash("sha256").update(card.token).digest("hex").slice(0, 24)}`,
   };
 }
 
@@ -112,11 +111,14 @@ export type MercadoPagoPaymentRecord = {
 /** GET /v1/orders/{id} (Orders API). Amounts are decimal strings; paid_amount includes any interest Mercado Pago adds. */
 export type MercadoPagoOrderRecord = {
   id: string;
+  processing_mode?: string;
+  total_paid_amount?: string;
+  created_date?: string;
   status: string;
   status_detail: string;
   external_reference: string;
   total_amount: string;
-  currency: string;
+  currency?: string;
   transactions?: { payments?: { id: string; amount: string; paid_amount?: string; status: string; status_detail: string;
     payment_method: { id: string; type: string; installments: number } }[] };
 };

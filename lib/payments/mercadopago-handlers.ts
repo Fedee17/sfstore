@@ -1,5 +1,6 @@
 import { CheckoutError, isUuid } from "../checkout/contract.ts";
 import { MAX_INSTALLMENTS } from "../products/commercial-pricing.ts";
+import { parseAdminMoneyCents } from "../products/admin-price-calculation.ts";
 import { contadoPreference, expiredPreference, financedOrder, isMercadoPagoEnabled, settleMercadoPagoOrder, settleMercadoPagoPayment,
   verifyWebhookSignature, type MercadoPagoOrder, type MercadoPagoOrderRecord, type MercadoPagoPaymentRecord, type SettlementDeps } from "./mercadopago.ts";
 
@@ -14,7 +15,8 @@ export type MercadoPagoDeps = {
   rpc: (name: string, args: Record<string, unknown>) => Promise<unknown>; // Supabase service role, throws Error(message) on error.
   createPreference: (body: ReturnType<typeof contadoPreference>) => Promise<{ id?: string; init_point?: string }>;
   expirePreference: (id: string, body: ReturnType<typeof expiredPreference>) => Promise<void>;
-  createOrder: (request: ReturnType<typeof financedOrder>) => Promise<MercadoPagoOrderRecord>; // A failed charge (HTTP 402) still returns its order.
+  createOrder: (request: ReturnType<typeof financedOrder> & { idempotencyKey: string }) => Promise<MercadoPagoOrderRecord>;
+  processOrder: (id: string, idempotencyKey: string) => Promise<void>;
   getOrder: (id: string) => Promise<MercadoPagoOrderRecord>;
   getPayment: (id: string) => Promise<MercadoPagoPaymentRecord>;
 };
@@ -40,26 +42,29 @@ async function readJson(request: Request, maxBytes = 4096): Promise<Record<strin
 }
 
 // Database refusals that the buyer must see as such (anything else stays a generic, retryable failure).
-const ORDER_REFUSALS: Record<string, number> = { CHECKOUT_ALREADY_PAID: 409, CHECKOUT_EXPIRED: 409, CHECKOUT_NOT_FOUND: 404, CHECKOUT_PAYMENT_METHOD_DISABLED: 410 };
+const ORDER_REFUSALS: Record<string, number> = { CHECKOUT_ALREADY_PAID: 409, CHECKOUT_EXPIRED: 409, CHECKOUT_NOT_FOUND: 404, CHECKOUT_PAYMENT_METHOD_DISABLED: 410, PAYMENT_MODE_MISMATCH: 409 };
 
-type PayableMercadoPagoOrder = MercadoPagoOrder & { preferenceUrl: string | null };
+type PayableMercadoPagoOrder = MercadoPagoOrder & { buyerId: string; orderId: string; preferenceUrl: string | null };
 
 /** The buyer's own pending, unpaid Mercado Pago order, as stored (amount, mode, reference and expiry never come from the browser). */
 async function loadBuyerOrder(deps: MercadoPagoDeps, orderId: unknown): Promise<PayableMercadoPagoOrder> {
   const buyer = await deps.authorizeBuyer();
   if (!isUuid(buyer)) throw new CheckoutError("CHECKOUT_UNAUTHORIZED", 401);
   if (!isUuid(orderId)) throw new CheckoutError("PAYMENT_INVALID_REQUEST", 400);
-  let row: unknown;
-  try { row = await deps.rpc("checkout_mercadopago_order", { p_buyer_id: buyer, p_order_id: orderId }); }
+  const row = await orderRpc(deps, "checkout_mercadopago_order", { p_buyer_id: buyer, p_order_id: orderId });
+  const order = toOrder(row);
+  if (!order) throw new CheckoutError("CHECKOUT_NOT_FOUND", 404);
+  const url = (row as { preferenceUrl?: unknown }).preferenceUrl;
+  return { ...order, buyerId: buyer, orderId, preferenceUrl: typeof url === "string" && url.startsWith("https://") ? url : null };
+}
+
+async function orderRpc(deps: MercadoPagoDeps, name: string, args: Record<string, unknown>) {
+  try { return await deps.rpc(name, args); }
   catch (error) {
     const code = error instanceof Error ? Object.keys(ORDER_REFUSALS).find(known => error.message.includes(known)) : undefined;
     if (code) throw new CheckoutError(code, ORDER_REFUSALS[code]);
     throw error;
   }
-  const order = toOrder(row);
-  if (!order) throw new CheckoutError("CHECKOUT_NOT_FOUND", 404);
-  const url = (row as { preferenceUrl?: unknown }).preferenceUrl;
-  return { ...order, preferenceUrl: typeof url === "string" && url.startsWith("https://") ? url : null };
 }
 
 function toOrder(value: unknown): MercadoPagoOrder | null {
@@ -100,11 +105,83 @@ export async function handleCardPayment(request: Request, deps: MercadoPagoDeps)
     try {
       orderRequest = financedOrder(order, { token: body.token, installments, paymentMethodId: body.paymentMethodId, payerEmail: email });
     } catch { throw new CheckoutError("PAYMENT_INVALID_REQUEST", 400); }
-    const created = await deps.createOrder(orderRequest);
-    // Confirm through the same path as the webhook: re-read the order and match it against the stored order.
-    const outcome = await settleMercadoPagoOrder(String(created.id), { ...settlementDeps(deps), fetchOrder: id => deps.getOrder(id) });
+    const outcome = await processCardAttempt(deps, order, orderRequest);
     return Response.json({ status: outcome }, { headers: noStore });
   } catch (error) { return failure(error); }
+}
+
+const CARD_ORDER_ID = /^ORD[A-Z0-9]{8,60}$/;
+const UNPAID_TERMINAL = new Set(["failed", "canceled", "expired"]);
+
+async function processCardAttempt(deps: MercadoPagoDeps, order: PayableMercadoPagoOrder, request: ReturnType<typeof financedOrder>) {
+  const checkout = { p_buyer_id: order.buyerId, p_order_id: order.orderId };
+  const attempt = await orderRpc(deps, "claim_checkout_mercadopago_card_attempt", checkout) as {
+    busy?: boolean; attemptId?: unknown; leaseId?: unknown; providerOrderId?: unknown;
+  } | null;
+  if (attempt?.busy === true) return "pending";
+  if (!attempt || !isUuid(attempt.attemptId) || !isUuid(attempt.leaseId)) throw new Error("MERCADOPAGO_ATTEMPT_UNAVAILABLE");
+
+  const bound = attempt.providerOrderId;
+  if (bound !== null && (typeof bound !== "string" || !CARD_ORDER_ID.test(bound))) throw new Error("MERCADOPAGO_ATTEMPT_UNAVAILABLE");
+  // Manual creation cannot charge. Only the provider order fenced by the current database lease can be processed.
+  let record = bound === null
+    ? await deps.createOrder({ ...request, idempotencyKey: `create-${attempt.attemptId}` })
+    : await deps.getOrder(bound).catch(() => null);
+  const id = bound ?? record?.id;
+  if (!record || typeof id !== "string" || !matchesCardOrder(record, id, order)) return "pending";
+
+  if (bound === null || record.status === "created") {
+    const boundByLease = await orderRpc(deps, "bind_checkout_mercadopago_card_attempt", {
+      ...checkout, p_lease_id: attempt.leaseId, p_provider_order_id: id,
+    });
+    if (boundByLease !== true) return "pending";
+  }
+  if (bound === null && !record.currency && record.status === "created") {
+    record = await deps.getOrder(id).catch(() => null);
+    if (!record || !matchesCardOrder(record, id, order)) return "pending";
+    if (record.status === "created" && await orderRpc(deps, "bind_checkout_mercadopago_card_attempt", {
+      ...checkout, p_lease_id: attempt.leaseId, p_provider_order_id: id,
+    }) !== true) return "pending";
+  }
+  if (record.status === "created") {
+    if (!canProcessCardOrder(record, order)) return "pending";
+    // Reprocessing always uses the same remote ID and key, even after a lost response.
+    await deps.processOrder(id, `process-${attempt.attemptId}`).catch(() => undefined);
+    record = await deps.getOrder(id).catch(() => null);
+    if (!record || !matchesCardOrder(record, id, order)) return "pending";
+  }
+
+  const providerOrder = record;
+  const outcome = await settleMercadoPagoOrder(id, { ...settlementDeps(deps), fetchOrder: async () => providerOrder });
+  if (outcome !== "rejected") return outcome;
+  const payments = providerOrder.transactions?.payments ?? [];
+  if (!(UNPAID_TERMINAL.has(providerOrder.status) && payments.length === 1
+    && !hasPaidAmount(providerOrder.total_paid_amount)
+    && payments.every(payment => UNPAID_TERMINAL.has(payment.status) && !hasPaidAmount(payment.paid_amount)))) return "review";
+  await deps.rpc("release_checkout_mercadopago_card_attempt", {
+    p_order_id: order.orderId, p_lease_id: attempt.leaseId, p_provider_order_id: id,
+  });
+  return outcome;
+}
+
+function matchesCardOrder(record: MercadoPagoOrderRecord, id: string, order: MercadoPagoOrder) {
+  return CARD_ORDER_ID.test(id) && record.id === id && record.external_reference === order.reference;
+}
+
+function canProcessCardOrder(record: MercadoPagoOrderRecord, order: MercadoPagoOrder) {
+  const transactions = record.transactions?.payments;
+  if (record.processing_mode !== "manual" || record.currency !== "ARS" || transactions?.length !== 1) return false;
+  const payment = transactions[0];
+  const installments = payment.payment_method?.installments;
+  if (payment.status !== "created" || payment.payment_method?.type !== "credit_card" || !Number.isInteger(installments)
+    || installments < 2 || installments > MAX_INSTALLMENTS || hasPaidAmount(record.total_paid_amount) || hasPaidAmount(payment.paid_amount)) return false;
+  try { return parseAdminMoneyCents(record.total_amount) === order.totalCents && parseAdminMoneyCents(payment.amount) === order.totalCents; }
+  catch { return false; }
+}
+
+function hasPaidAmount(amount: string | undefined) {
+  if (amount == null) return false;
+  try { return parseAdminMoneyCents(amount) !== BigInt(0); } catch { return true; }
 }
 
 function settlementDeps(deps: MercadoPagoDeps): SettlementDeps {
