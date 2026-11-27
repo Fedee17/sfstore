@@ -5,6 +5,7 @@ import { requireAdminSession } from "@/lib/admin-session";
 import { commercialDate } from "@/lib/commercial-reporting/periods";
 import type { CommercialAnalytics } from "@/lib/commercial-reporting/analytics";
 import { ABC_A_SHARE, ABC_B_SHARE, ABC_WINDOW_DAYS, type AbcClass, type CatalogAbc } from "@/lib/admin/catalog-abc";
+import { HEATMAP_WINDOW_DAYS, WEEKDAYS, type SalesHeatmap } from "@/lib/admin/sales-heatmap";
 import { getCommercialAnalytics } from "@/services/commercial-history";
 
 const monthLabel = (month: string) => new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${month}-01T12:00:00Z`));
@@ -41,6 +42,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       {error && <div role="alert" className="mt-8 rounded-2xl border border-red-300 bg-white p-5 text-red-900">{error}</div>}
       {analytics && <Dashboard data={analytics} />}
       {analytics && <Rotation data={analytics.rotation} error={analytics.rotationError} />}
+      {analytics && <Heatmap data={analytics.heatmap} />}
     </section>
   </main>;
 }
@@ -117,6 +119,24 @@ const classLabel: Record<AbcClass, string> = { A: "A · concentran la facturaci�
 const classTone: Record<AbcClass, string> = { A: "bg-[#556B2F] text-white", B: "bg-[#E6EBD9] text-[#465826]", C: "bg-amber-100 text-amber-900" };
 const percent = (share: number) => `${(share * 100).toLocaleString("es-AR", { maximumFractionDigits: 1 })}%`;
 const day = (value: string) => value.split("-").reverse().join("/");
+const hourLabel = (hour: number) => `${String(hour).padStart(2, "0")} h`;
+function Heatmap({ data }: { data: SalesHeatmap | null }) {
+  const title = <h2 className="text-xl font-semibold">Días y horarios de venta · últimos {HEATMAP_WINDOW_DAYS} días</h2>;
+  if (!data) return <section className={`${panel} mt-6`}>{title}<p role="alert" className="mt-4 text-sm text-amber-900">No pudimos armar el mapa de horarios. El resumen mensual no se ve afectado.</p></section>;
+  const active = data.cells.flatMap(row => row.flatMap((cell, hour) => cell.sales ? [hour] : []));
+  const hours = active.length ? Array.from({ length: Math.max(...active) - Math.min(...active) + 1 }, (_, i) => Math.min(...active) + i) : [];
+  const max = Math.max(1, ...data.cells.flat().map(cell => cell.sales));
+  return <section className={`${panel} mt-6 space-y-4`} aria-label="Días y horarios de venta">
+    <div>{title}<p className="mt-2 max-w-3xl text-sm leading-6 text-black/65">Ventas confirmadas del {day(data.from)} al {day(data.to)} por día y hora de Argentina. {data.peak ? `El momento con más ventas es el ${WEEKDAYS[data.peak.weekday].toLowerCase()} de ${hourLabel(data.peak.hour)} a ${hourLabel(data.peak.hour + 1)} (${data.peak.sales} ${data.peak.sales === 1 ? "venta" : "ventas"}).` : ""} Sirve para elegir horarios de atención y de publicación.</p></div>
+    {data.totalSales ? <div className="overflow-x-auto"><table className="border-separate border-spacing-1 text-center text-xs"><caption className="sr-only">Ventas confirmadas por día de la semana y hora, últimos {HEATMAP_WINDOW_DAYS} días</caption>
+      <thead><tr><th scope="col" className="p-1 text-left">Día</th>{hours.map(hour => <th key={hour} scope="col" className="p-1 font-normal text-black/60">{String(hour).padStart(2, "0")}</th>)}</tr></thead>
+      <tbody>{data.cells.map((row, weekday) => <tr key={weekday}><th scope="row" className="p-1 pr-2 text-left font-semibold">{WEEKDAYS[weekday]}</th>{hours.map(hour => {
+        const cell = row[hour], ratio = cell.sales / max;
+        return <td key={hour} title={`${WEEKDAYS[weekday]} ${hourLabel(hour)}: ${cell.sales} ventas · ${adminMoneyFromCents(cell.amountCents)}`} className={`size-8 min-w-8 rounded-md tabular-nums ${ratio > 0.5 ? "text-white" : "text-[#1F1F1F]"}`} style={{ backgroundColor: cell.sales ? `rgba(85,107,47,${(0.15 + 0.85 * ratio).toFixed(2)})` : "#F7F4ED" }}>{cell.sales || ""}</td>;
+      })}</tr>)}</tbody></table></div> : <p className="text-sm text-black/65">No hay ventas confirmadas con hora confiable en este período.</p>}
+    <p className="text-sm text-black/65">{data.totalSales} ventas con hora registrada.{data.skippedLateEntry ? ` ${data.skippedLateEntry} ventas cargadas otro día quedan fuera, porque su hora no es la de la venta.` : ""}{data.skippedHistorical ? ` ${data.skippedHistorical} ventas históricas importadas no tienen hora.` : ""}</p>
+  </section>;
+}
 function Rotation({ data, error }: { data: CatalogAbc | null; error: string | null }) {
   const title = <h2 className="text-xl font-semibold">Rotación del catálogo · últimos {ABC_WINDOW_DAYS} días</h2>;
   if (!data) return <section className={`${panel} mt-6`}>{title}<p role="alert" className="mt-4 text-sm text-amber-900">No pudimos calcular la rotación del catálogo. El resumen mensual no se ve afectado; recargá para reintentar.{error ? <span className="block text-xs">Código: {error}</span> : null}</p></section>;

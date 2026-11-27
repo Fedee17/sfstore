@@ -48,14 +48,18 @@ export async function getCommercialAnalytics(month: string) {
   const stockResult = await stockRead;
   const analytics = buildCommercialAnalytics(snapshot, month, COMMERCIAL_EVIDENCE);
   // Catalog rotation is advisory and independent of the month: its failure must not hide the monthly report.
+  const [{ buildCommercialFacts }, { buildCatalogAbc }, { buildSalesHeatmap }] = await Promise.all([
+    import("@/lib/commercial-reporting/model"), import("@/lib/admin/catalog-abc"), import("@/lib/admin/sales-heatmap")]);
+  const facts = buildCommercialFacts(snapshot, COMMERCIAL_EVIDENCE);
   let rotation = null, rotationError: string | null = stockResult.code;
   if (stockResult.stock) {
-    try {
-      const [{ buildCommercialFacts }, { buildCatalogAbc }] = await Promise.all([import("@/lib/commercial-reporting/model"), import("@/lib/admin/catalog-abc")]);
-      rotation = buildCatalogAbc(buildCommercialFacts(snapshot, COMMERCIAL_EVIDENCE).sales, stockResult.stock, COMMERCIAL_EVIDENCE);
-    } catch (cause) { rotation = null; rotationError = failureCode(cause); }
+    try { rotation = buildCatalogAbc(facts.sales, stockResult.stock, COMMERCIAL_EVIDENCE); }
+    catch (cause) { rotation = null; rotationError = failureCode(cause); }
   }
-  return { ...analytics, rotation, rotationError };
+  // Advisory too: a failure hides only the heatmap.
+  let heatmap = null;
+  try { heatmap = buildSalesHeatmap(facts.sales); } catch { heatmap = null; }
+  return { ...analytics, rotation, rotationError, heatmap };
 }
 
 /** Days of stock per SKU for the availability screen; same sales evidence and snapshot as the sales dashboard. */
