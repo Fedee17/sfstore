@@ -73,4 +73,6 @@ test('analytics shows the rotation section and isolates its failure',()=>{
   const service=source('services/commercial-history.ts').split('export async function getCommercialAnalytics')[1].split('export async function')[0];
   assert.match(service,/buildCatalogAbc\(/);
   assert.match(service,/rotation = null/);
+  assert.match(service,/rotationError = failureCode\(cause\)/);
+  assert.match(page,/Código: \{error\}/);
 });

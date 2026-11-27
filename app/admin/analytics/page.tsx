@@ -40,7 +40,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       </header>
       {error && <div role="alert" className="mt-8 rounded-2xl border border-red-300 bg-white p-5 text-red-900">{error}</div>}
       {analytics && <Dashboard data={analytics} />}
-      {analytics && <Rotation data={analytics.rotation} />}
+      {analytics && <Rotation data={analytics.rotation} error={analytics.rotationError} />}
     </section>
   </main>;
 }
@@ -117,9 +117,9 @@ const classLabel: Record<AbcClass, string> = { A: "A · concentran la facturaci�
 const classTone: Record<AbcClass, string> = { A: "bg-[#556B2F] text-white", B: "bg-[#E6EBD9] text-[#465826]", C: "bg-amber-100 text-amber-900" };
 const percent = (share: number) => `${(share * 100).toLocaleString("es-AR", { maximumFractionDigits: 1 })}%`;
 const day = (value: string) => value.split("-").reverse().join("/");
-function Rotation({ data }: { data: CatalogAbc | null }) {
+function Rotation({ data, error }: { data: CatalogAbc | null; error: string | null }) {
   const title = <h2 className="text-xl font-semibold">Rotación del catálogo · últimos {ABC_WINDOW_DAYS} días</h2>;
-  if (!data) return <section className={`${panel} mt-6`}>{title}<p role="alert" className="mt-4 text-sm text-amber-900">No pudimos calcular la rotación del catálogo. El resumen mensual no se ve afectado; recargá para reintentar.</p></section>;
+  if (!data) return <section className={`${panel} mt-6`}>{title}<p role="alert" className="mt-4 text-sm text-amber-900">No pudimos calcular la rotación del catálogo. El resumen mensual no se ve afectado; recargá para reintentar.{error ? <span className="block text-xs">Código: {error}</span> : null}</p></section>;
   return <section className={`${panel} mt-6 space-y-5`} aria-label="Rotación del catálogo">
     <div>{title}<p className="mt-2 max-w-3xl text-sm leading-6 text-black/65">Del {day(data.from)} al {day(data.to)}, independiente del mes elegido. Clasificación por facturación de líneas confirmadas, sin envío: A suma hasta el {percent(ABC_A_SHARE)} del total, B hasta el {percent(ABC_B_SHARE)} y C el resto.</p></div>
     <div className="flex flex-wrap gap-2">{(["A", "B", "C"] as const).map(k => <span key={k} className={`rounded-full px-3 py-1 text-sm font-semibold ${classTone[k]}`}>{data.counts[k]} {classLabel[k]}</span>)}<span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900">{data.idle.length} con stock y sin ventas</span></div>

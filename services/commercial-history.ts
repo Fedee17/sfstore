@@ -40,19 +40,22 @@ export async function getCommercialAnalytics(month: string) {
   analyticsMonths(month); // Validate before constructing a client or issuing queries.
   const { readCompleteSnapshot } = await import("@/lib/commercial-reporting/reader");
   const client = getSupabaseAdminClient();
-  const stockRead = import("@/lib/admin/stock-health-reader").then(({ readStockSnapshot }) => readStockSnapshot(client)).catch(() => null);
+  // Only our own uppercase error codes are shown to the admin; anything else is reported as UNKNOWN.
+  const failureCode = (cause: unknown) => cause instanceof Error && /^[A-Z][A-Z0-9_]{2,80}$/.test(cause.message) ? cause.message : "UNKNOWN";
+  const stockRead = import("@/lib/admin/stock-health-reader").then(({ readStockSnapshot }) => readStockSnapshot(client))
+    .then(stock => ({ stock, code: null }), cause => ({ stock: null, code: failureCode(cause) }));
   const snapshot = await readCompleteSnapshot(createCommercialPageReader(client));
-  const stockSnapshot = await stockRead;
+  const stockResult = await stockRead;
   const analytics = buildCommercialAnalytics(snapshot, month, COMMERCIAL_EVIDENCE);
   // Catalog rotation is advisory and independent of the month: its failure must not hide the monthly report.
-  let rotation = null;
-  if (stockSnapshot) {
+  let rotation = null, rotationError: string | null = stockResult.code;
+  if (stockResult.stock) {
     try {
       const [{ buildCommercialFacts }, { buildCatalogAbc }] = await Promise.all([import("@/lib/commercial-reporting/model"), import("@/lib/admin/catalog-abc")]);
-      rotation = buildCatalogAbc(buildCommercialFacts(snapshot, COMMERCIAL_EVIDENCE).sales, stockSnapshot, COMMERCIAL_EVIDENCE);
-    } catch { rotation = null; }
+      rotation = buildCatalogAbc(buildCommercialFacts(snapshot, COMMERCIAL_EVIDENCE).sales, stockResult.stock, COMMERCIAL_EVIDENCE);
+    } catch (cause) { rotation = null; rotationError = failureCode(cause); }
   }
-  return { ...analytics, rotation };
+  return { ...analytics, rotation, rotationError };
 }
 
 /** Days of stock per SKU for the availability screen; same sales evidence and snapshot as the sales dashboard. */
