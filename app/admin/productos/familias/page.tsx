@@ -10,7 +10,7 @@ export default async function FamiliesPage({searchParams}:{searchParams:Promise<
  await requireAdminSession(); const query=await searchParams;
  const [result,categories]=await Promise.all([getProductFamilies(Number(query.page??1)),getAdminCategories()]);
  return <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]"><AdminNav/><section className="mx-auto max-w-6xl space-y-6 px-5 py-10">
- <Link href="/admin/productos" className="underline">Volver a productos</Link><h1 className="text-3xl font-semibold">Familias y variantes</h1>
+ <Link href="/admin/productos" className="underline">Volver a productos</Link><h1 className="text-3xl font-semibold">Familias y variantes</h1><Link href="/admin/productos/familias/precios" className="inline-flex min-h-11 items-center rounded-full border border-[#8B5E3C]/30 px-5 text-sm font-semibold text-[#8B5E3C]">Ajustar precios de familias</Link>
  <p>Una publicación por familia. El inventario, costo e imágenes pertenecen a cada SKU. Los productos simples siguen funcionando.</p>
  <div className="grid gap-6 lg:grid-cols-2"><div className="space-y-4">{result.families.map(f=><Link key={f.id} href={`/admin/productos/familias/${f.id}`} className="block rounded-3xl border border-[#8B5E3C]/20 p-5 font-semibold">{f.name} · Lista {adminMoney(Number(f.base_price))}</Link>)}
  {!result.total?<p>No hay familias todavía.</p>:null}<nav aria-label="Páginas de familias" className="flex gap-4">{result.page>1?<Link href={`?page=${result.page-1}`}>Anterior</Link>:null}<span>Página {result.page} · {result.total} familias</span>{result.page*result.pageSize<result.total?<Link href={`?page=${result.page+1}`}>Siguiente</Link>:null}</nav></div>

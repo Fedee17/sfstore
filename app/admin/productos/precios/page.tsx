@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { requireAdminSession } from "@/lib/admin-session";
-import { BULK_PRICE_LIMIT, parsePercent, type BulkPricePlan, type PriceMove } from "@/lib/admin/bulk-price";
-import { adminMoneyFromCents } from "@/lib/admin/money";
+import { AutomaticCashLine, PriceMoveLine, roundingLabel } from "@/components/admin/price-move";
+import { BULK_PRICE_LIMIT, parsePercent, type BulkPricePlan } from "@/lib/admin/bulk-price";
 import { PRODUCT_STATUSES } from "@/lib/products/admin-product-policy";
 import { productStatusLabel } from "@/lib/products/product-availability";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
@@ -20,16 +20,6 @@ const ERRORS: Record<string, string> = {
   changed: "Algún precio cambió desde la vista previa. No se cambió ningún precio: revisá la lista de nuevo.",
   write: "No se pudo guardar el ajuste. No se cambió ningún precio.",
 };
-
-/** Rounding against the exact amount: negative is a discount for the customer. */
-function rounding(cents: number) {
-  if (cents === 0) return "sin redondeo";
-  return cents < 0 ? `descuento por redondeo ${adminMoneyFromCents(-cents)}` : `redondeo hacia arriba ${adminMoneyFromCents(cents)}`;
-}
-function Move({ label, move }: { label: string; move: PriceMove }) {
-  return <span className="block">{label}: {adminMoneyFromCents(move.fromCents)} → <strong>{adminMoneyFromCents(move.toCents)}</strong>{" "}
-    <span className="text-black/60">(exacto {adminMoneyFromCents(move.exactCents)} · {rounding(move.roundingCents)})</span></span>;
-}
 
 export default async function BulkPricePage({ searchParams }: { searchParams: Promise<Params> }) {
   await requireAdminSession();
@@ -59,7 +49,7 @@ export default async function BulkPricePage({ searchParams }: { searchParams: Pr
     <section className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
       <Link href="/admin/productos" className="text-sm font-semibold text-[#465826] underline">Volver a Productos</Link>
       <h1 className="mt-3 text-3xl font-semibold">Ajustar precios por porcentaje</h1>
-      <p className="mt-2 text-sm text-black/65">Sube o baja el precio lista y el precio especial aprobado con el mismo porcentaje, redondeados al $100 más cercano. Sin especial aprobado, el precio en un pago sigue siendo el 75% de la lista. Primero ves el resultado; nada cambia hasta que confirmes. Cada cambio queda en el historial de la ficha.</p>
+      <p className="mt-2 text-sm text-black/65">Sube o baja el precio lista y el precio especial aprobado con el mismo porcentaje, redondeados al $100 más cercano. Sin especial aprobado, el precio en un pago sigue siendo el 75% de la lista. Primero ves el resultado; nada cambia hasta que confirmes. Cada cambio queda en el historial de la ficha. Las variantes de familia se ajustan en <Link href="/admin/productos/familias/precios" className="font-semibold text-[#465826] underline">precios de familias</Link>.</p>
       {done && Number.isInteger(Number(done)) ? <p role="status" className="mt-4 rounded-xl bg-[#556B2F]/10 p-3 text-sm font-semibold text-[#465826]">{`Se ${done === "1" ? "ajustó 1 producto" : `ajustaron ${done} productos`}.`}</p> : null}
       {error ? <p role="alert" className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">{error}</p> : null}
 
@@ -78,7 +68,7 @@ export default async function BulkPricePage({ searchParams }: { searchParams: Pr
       {plan && bp !== null ? <>
         <section className={panel} aria-labelledby="price-change">
           <h2 id="price-change" className="text-lg font-semibold">Se van a ajustar ({percentText}%): {plan.change.length}</h2>
-          {plan.change.length && !plan.tooMany ? <p className="mt-1 text-sm">Redondeo sumando una unidad de cada producto: <strong>{rounding(total)}</strong>.</p> : null}
+          {plan.change.length && !plan.tooMany ? <p className="mt-1 text-sm">Redondeo sumando una unidad de cada producto: <strong>{roundingLabel(total)}</strong>.</p> : null}
           {plan.tooMany ? <p role="alert" className="mt-2 text-sm text-amber-900">{`Son más de ${BULK_PRICE_LIMIT}. Acotá la búsqueda o la categoría; no se ajusta una parte sola.`}</p>
             : plan.change.length ? <form action={applyBulkPrice} className="mt-3 grid gap-3">
               <input type="hidden" name="percent" value={percentText} /><input type="hidden" name="returnQuery" value={query} />
@@ -86,9 +76,8 @@ export default async function BulkPricePage({ searchParams }: { searchParams: Pr
                 <input type="checkbox" name="productId" value={row.id} defaultChecked className="mt-1 h-5 w-5" />
                 <input type="hidden" name={`seen-${row.id}`} value={priceFingerprint(row)} />
                 <span className="min-w-0 break-words"><strong>{row.name}</strong> <span className="text-black/60">· {row.sku || "Sin SKU"}</span>
-                  <Move label="Lista" move={list} />
-                  {special.approved ? <Move label="Especial aprobado" move={special} />
-                    : <span className="block">Un pago (75% automático): {adminMoneyFromCents(special.fromCents)} → <strong>{adminMoneyFromCents(special.toCents)}</strong></span>}
+                  <PriceMoveLine label="Lista" move={list} />
+                  {special.approved ? <PriceMoveLine label="Especial aprobado" move={special} /> : <AutomaticCashLine fromCents={special.fromCents} toCents={special.toCents} />}
                 </span></label></li>)}</ul>
               <p className="text-xs text-black/60">Destildá los que no quieras ajustar.</p>
               <button type="submit" className="min-h-11 justify-self-start rounded-xl bg-[#556B2F] px-5 font-semibold text-white">Confirmar ajuste de precios</button>
