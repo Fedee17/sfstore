@@ -8,6 +8,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as availabilityRule from "../lib/products/product-availability.ts";
 import * as prices from "../lib/web-transfer-pricing.ts";
+import * as internalInventory from "../lib/admin/internal-inventory.ts";
 
 const require = createRequire(import.meta.url);
 function load(file, modules = {}) {
@@ -47,6 +48,7 @@ function renderPage(params) {
     "@/components/admin/products/inventory-adjustment-form": { InventoryAdjustmentForm: ({ productId }) => h("i", null, `AJUSTE:${productId}`) },
     "@/components/admin/products/product-availability-summary": summary,
     "@/lib/products/product-availability": availabilityRule,
+    "@/lib/admin/internal-inventory": internalInventory,
     "@/lib/admin-session": { requireAdminSession: async () => ({}) },
     "@/services/admin": {
       getAdminProductPublications: async (filters) => { calls.push(filters); return { data: filters.historical ? historical : operational, error: null }; },
