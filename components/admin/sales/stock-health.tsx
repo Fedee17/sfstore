@@ -1,15 +1,14 @@
 import Link from 'next/link';
 import {displayCents} from '@/components/admin/commercial-history-ui';
-import {STOCK_PREVIEW_LIMIT,type StockHealth,type StockHealthRow} from '@/lib/admin/stock-health';
+import {coverageDaysLabel,STOCK_PREVIEW_LIMIT,type StockHealth,type StockHealthRow} from '@/lib/admin/stock-health';
 import styles from './sales-dashboard.module.css';
 
 const day=(value:string)=>value.split('-').reverse().join('/');
-const coverage=new Intl.NumberFormat('es-AR',{style:'unit',unit:'day',unitDisplay:'long',maximumFractionDigits:1,roundingMode:'floor'});
 
 function StockRow({row,risk}:{row:StockHealthRow;risk:boolean}) {
   return <li className={styles.stockRow}>
     <div className={styles.stockIdentity}><h4>{row.name}</h4>{row.variant_label||row.status!=='active'?<p className={styles.muted}>{row.variant_label}{row.status!=='active'?' · No publicado':''}</p>:null}</div>
-    <p className={styles.stockMetric}>{risk?(row.available===0?'Sin stock · Tuvo ventas en los últimos 30 días':`${row.available===1?'Queda 1':`Quedan ${row.available}`} · Alcanza para ${row.coverageDays!<0.1?'menos de 0,1 días':coverage.format(row.coverageDays!)}`):`${row.available} disponibles · ${row.retainedCents===null?'Costo sin cargar':`${displayCents(row.retainedCents)} en mercadería`}`}</p>
+    <p className={styles.stockMetric}>{risk?(row.available===0?'Sin stock · Tuvo ventas en los últimos 30 días':`${row.available===1?'Queda 1':`Quedan ${row.available}`} · Alcanza para ${coverageDaysLabel(row.coverageDays!)}`):`${row.available} disponibles · ${row.retainedCents===null?'Costo sin cargar':`${displayCents(row.retainedCents)} en mercadería`}`}</p>
     <Link className={risk?styles.stockAction:styles.stockLink} aria-label={`${risk?'Revisar stock':'Ver producto'}: ${row.name}${row.variant_label?` · ${row.variant_label}`:''}`} href={risk?`/admin/inventario?view=movements&product=${encodeURIComponent(row.id)}`:`/admin/productos/${row.id}/editar`}>{risk?'Revisar stock':'Ver producto'}</Link>
   </li>;
 }

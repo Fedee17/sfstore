@@ -43,6 +43,18 @@ export async function getCommercialAnalytics(month: string) {
   return buildCommercialAnalytics(snapshot, month, COMMERCIAL_EVIDENCE);
 }
 
+/** Days of stock per SKU for the availability screen; same sales evidence and snapshot as the sales dashboard. */
+export async function getStockCoverage() {
+  await requireAdminSession();
+  const { readCompleteSnapshot } = await import("@/lib/commercial-reporting/reader");
+  const { buildCommercialFacts } = await import("@/lib/commercial-reporting/model");
+  const { buildStockHealth, stockCoverageById } = await import("@/lib/admin/stock-health");
+  const { readStockSnapshot } = await import("@/lib/admin/stock-health-reader");
+  const client = getSupabaseAdminClient();
+  const [snapshot, stockSnapshot] = await Promise.all([readCompleteSnapshot(createCommercialPageReader(client)), readStockSnapshot(client)]);
+  return stockCoverageById(buildStockHealth(buildCommercialFacts(snapshot, COMMERCIAL_EVIDENCE).sales, stockSnapshot, COMMERCIAL_EVIDENCE));
+}
+
 /** One complete read for the sales dashboard and its filtered/paginated history. */
 export async function getSalesWorkspace(options: import("@/lib/commercial-reporting/list-reader").CommercialListOptions, month: string) {
   await requireAdminSession();

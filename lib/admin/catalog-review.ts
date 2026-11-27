@@ -1,4 +1,5 @@
 import type { AdminProduct } from "../../services/admin.ts";
+import type { StockCoverage } from "./stock-health.ts";
 
 export const LOW_STOCK_LIMIT = 3;
 
@@ -15,8 +16,11 @@ export function catalogIssues(product: AdminProduct): string[] {
   return issues;
 }
 
-export function availabilityRows(products: AdminProduct[], filter: string) {
+export function availabilityRows(products: AdminProduct[], filter: string, coverage?: ReadonlyMap<string, StockCoverage> | null) {
   const rows = products.filter(product => product.status !== "archived");
+  // "risk" fails closed: without sales coverage nothing is claimed to run out.
+  if (filter === "risk") return rows.filter(product => coverage?.get(product.id)?.risk)
+    .sort((a, b) => coverage!.get(a.id)!.coverageDays! - coverage!.get(b.id)!.coverageDays! || a.name.localeCompare(b.name, "es-AR"));
   return rows.filter(product => filter === "out" ? product.stock <= 0 : filter === "low" ? product.stock > 0 && product.stock <= LOW_STOCK_LIMIT : true)
     .sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name, "es-AR"));
 }
