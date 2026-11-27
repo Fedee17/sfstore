@@ -4,6 +4,7 @@ import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {logoutAdmin} from "@/app/admin/login/actions";
 import {PendingSubmitButton} from "@/components/admin/pending-submit-button";
+import {GlobalSearchShortcut} from "@/components/admin/global-search-shortcut";
 
 const groups=[
   {label:"Ventas y pedidos",links:[["/admin/ventas","Ventas"],["/admin/pedidos","Encargos y entregas"],["/admin/checkout","Pedidos de la web"]]},
@@ -24,6 +25,7 @@ export function AdminNav(){
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/admin" className="font-semibold text-[#1F1F1F]">SFSTORE Admin</Link>
         <div className="flex flex-wrap items-center gap-3">
+          <GlobalSearchShortcut/>
           <Link href="/admin/ventas/nueva" className="inline-flex min-h-11 items-center rounded-full bg-[#556B2F] px-4 text-sm font-semibold text-white hover:bg-[#465826]">Nueva venta</Link>
           <Link href="/admin/configuracion" className="text-sm font-semibold text-[#465826]">Datos de la tienda</Link>
           <form action={logoutAdmin}><PendingSubmitButton pendingLabel="Cerrando..." className="min-h-11 px-2 text-sm font-semibold text-black/65">Cerrar sesión</PendingSubmitButton></form>
