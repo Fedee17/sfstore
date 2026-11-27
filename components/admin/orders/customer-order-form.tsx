@@ -8,6 +8,7 @@ import {
   type CustomerOrderActionState,
 } from "@/app/admin/pedidos/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
+import { parseMoneyInputCents } from "@/lib/money-input";
 import type {
   CustomerOrder,
   CustomerOrderProduct,
@@ -31,7 +32,7 @@ function normalize(value: string) {
 }
 
 function parseMoney(value: string) {
-  return Number(value.replace(",", ".")) || 0;
+  return Number(parseMoneyInputCents(value) ?? BigInt(0)) / 100;
 }
 
 function defaultPrice(product: CustomerOrderProduct) {

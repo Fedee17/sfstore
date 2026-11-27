@@ -137,7 +137,7 @@ const mutationGuardUrl = moduleUrl('export async function assertCurrentCommercia
 const saleService = await import(moduleUrl(source("services/store-sales.ts").replace("@/lib/web-transfer-pricing", new URL("../lib/web-transfer-pricing.ts", import.meta.url).href).replace("@/lib/store-sale-date",new URL("../lib/store-sale-date.ts",import.meta.url).href)
   .replace("@/services/commercial-history-guards", mutationGuardUrl)
   .replace("@/lib/supabase/server", mockUrl)
-  .replace("@/lib/store-sales", moduleUrl(source("lib/store-sales.ts")))
+  .replace("@/lib/store-sales", new URL("../lib/store-sales.ts", import.meta.url).href)
   .replace("@/lib/products/yara-rosa-consolidation", identityUrl)));
 const orderService = await import(moduleUrl(source("services/customer-orders.ts")
   .replace("@/lib/supabase/server", mockUrl)

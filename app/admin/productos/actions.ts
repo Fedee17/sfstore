@@ -76,6 +76,12 @@ function productFormErrorState(error: unknown): ProductFormActionState {
   };
 }
 
+// Redirects after list/editor actions stay inside the products admin; anything else falls back to the list.
+function safeProductsReturn(value: FormDataEntryValue | null) {
+  const path = String(value ?? "");
+  return /^\/admin\/productos(?:[/?#]|$)/.test(path) && !path.includes("\\") ? path : "/admin/productos";
+}
+
 function parseMoney(value: FormDataEntryValue | null, fieldName: string) {
   try { return Number(parseAdminMoneyCents(String(value ?? "").trim() || "0")) / 100; }
   catch { throw new Error(fieldName + ": ingresá un importe no negativo con hasta dos decimales."); }
@@ -466,7 +472,7 @@ export async function archiveProduct(formData: FormData) {
   await requireAdminActionSession();
 
   const productId = String(formData.get("productId") ?? "");
-  const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
+  const returnTo = safeProductsReturn(formData.get("returnTo"));
 
   if (!productId) {
     throw new Error("Falta el ID del producto.");
@@ -506,7 +512,7 @@ export async function toggleProductFeatured(formData: FormData) {
 
   const productId = String(formData.get("productId") ?? "");
   const featured = String(formData.get("featured") ?? "") === "true";
-  const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
+  const returnTo = safeProductsReturn(formData.get("returnTo"));
 
   if (!productId) {
     throw new Error("Falta el ID del producto.");
@@ -597,7 +603,7 @@ export async function setPrimaryProductImage(formData: FormData) {
 
   const productId = String(formData.get("productId") ?? "");
   const imageId = String(formData.get("imageId") ?? "");
-  const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
+  const returnTo = safeProductsReturn(formData.get("returnTo"));
 
   if (!productId || !imageId) {
     throw new Error("Faltan datos para marcar la imagen principal.");
@@ -656,7 +662,7 @@ export async function moveProductImage(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   const imageId = String(formData.get("imageId") ?? "");
   const direction = String(formData.get("direction") ?? "");
-  const returnTo = String(formData.get("returnTo") ?? "/admin/productos");
+  const returnTo = safeProductsReturn(formData.get("returnTo"));
 
   if (!productId || !imageId || !["previous", "next"].includes(direction)) {
     throw new Error("Faltan datos para reordenar la imagen.");

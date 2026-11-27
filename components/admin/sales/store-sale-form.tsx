@@ -11,6 +11,7 @@ import {
   type StoreSaleActionState,
 } from "@/app/admin/ventas/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
+import { parseMoneyInputCents } from "@/lib/money-input";
 import {
   calculateEnteredPayments,
   calculateStoreSalePricing,
@@ -46,7 +47,11 @@ type PaymentLine = {
 };
 
 function parseAmount(value: string) {
-  return Number(value.replace(",", ".")) || 0;
+  return Number(parseMoneyInputCents(value) ?? BigInt(0)) / 100;
+}
+
+function moneyInputText(value: number) {
+  return value.toFixed(2).replace(".", ",");
 }
 
 function newPayment(): PaymentLine {
@@ -118,7 +123,14 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
   );
   const remaining = Math.max(Math.round((total - paid) * 100) / 100, 0);
   const overpayment = paid > total && total > 0;
+  const invalidPayment = payments.some((payment) => payment.amount.trim() !== "" && parseMoneyInputCents(payment.amount) === null);
   const completed = state.status === "success";
+
+  function fillRemaining(key: string) {
+    const payment = payments.find((item) => item.key === key);
+    if (!payment || remaining <= 0) return;
+    updatePayment(key, { amount: moneyInputText(parseAmount(payment.amount) + remaining) });
+  }
 
   function applyLines(next: SaleLine[]) {
     if (!fitsComponentInventory(next.map(line => ({ productId: line.product.id, stock: line.product.stock, quantity: line.quantity, components: line.components })))) {
@@ -329,6 +341,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                   <option value="other">Otro</option>
                 </select>
               </label>
+              <div className="grid gap-2">
               <label className="grid gap-2 text-sm font-semibold">
                 Importe
                 <input
@@ -342,6 +355,16 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                   className="h-12 rounded-2xl border border-[#8B5E3C]/20 bg-white px-4 outline-none focus:border-[#556B2F] disabled:opacity-60"
                 />
               </label>
+                {remaining > 0 && !completed ? (
+                  <button
+                    type="button"
+                    onClick={() => fillRemaining(payment.key)}
+                    className="min-h-11 justify-self-start rounded-full border border-[#556B2F]/30 px-4 text-xs font-semibold text-[#556B2F] transition hover:bg-[#556B2F]/10"
+                  >
+                    Completar con el saldo ({currencyFormatter.format(remaining)})
+                  </button>
+                ) : null}
+              </div>
               <button
                 type="button"
                 disabled={completed || payments.length === 1}
@@ -362,6 +385,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Pagado</span><strong className="mt-1 block text-xl">{currencyFormatter.format(paid)}</strong></div>
         <div><span className="text-xs uppercase text-[#1F1F1F]/55">Saldo</span><strong className="mt-1 block text-xl">{currencyFormatter.format(remaining)}</strong></div>
         {paid > 0 && remaining > 0 ? <p className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Falta completar el pago. No se registrará la venta ni se descontará stock.</p> : null}
+        {invalidPayment ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Escribí el importe como 15000 o 15.000,50.</p> : null}
         {priceError ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">{priceError}</p> : null}
         {overpayment ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">El importe cobrado supera el total. Ajustá el precio unitario del producto si lo vendiste a un precio mayor.</p> : null}
       </section>
@@ -377,7 +401,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
         {completed ? <button type="button" onClick={onNextSale} className="rounded-full bg-[#556B2F] px-7 py-3 font-semibold text-[#F7F4ED]">Registrar otra venta</button> : null}
         <PendingSubmitButton
           pendingLabel="Registrando..."
-          disabled={completed || Boolean(priceError) || lines.length === 0 || total <= 0 || overpayment || remaining > 0 || payments.some((payment) => parseAmount(payment.amount) <= 0)}
+          disabled={completed || invalidPayment || Boolean(priceError) || lines.length === 0 || total <= 0 || overpayment || remaining > 0 || payments.some((payment) => parseAmount(payment.amount) <= 0)}
           className="rounded-full bg-[#556B2F] px-7 py-3 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] disabled:cursor-not-allowed disabled:bg-[#1F1F1F]/20 disabled:text-[#1F1F1F]/60"
         >
           Registrar venta
