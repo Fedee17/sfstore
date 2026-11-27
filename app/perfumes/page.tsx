@@ -7,13 +7,13 @@ import { ProductGrid } from "@/components/product-grid";
 import { CatalogBackLink, CatalogEmptyState, CatalogFrame, catalogStyles } from "@/components/catalog/catalog-frame";
 import {
   PERFUME_CATALOG_CATEGORIES,
-  PERFUME_FILTERS_BY_CATEGORY,
   isRetiredPerfumeCategory,
   normalizePerfumeCategory,
+  perfumeFiltersByCategory,
+  publicationHasCatalogAttribute,
 } from "@/lib/catalog/perfume-filters";
 import {
   CATALOG_ATTRIBUTE_KEYS,
-  productHasCatalogAttribute,
   type CatalogAttributeKey,
 } from "@/lib/catalog/attribute-config";
 import { getProductsByCategorySlug } from "@/services/products";
@@ -44,6 +44,7 @@ type PerfumesSearchParams = {
   familia?: string;
   momento?: string;
   genero?: string;
+  contenido?: string;
   estilo?: string;
   para?: string;
   presupuesto?: string;
@@ -88,14 +89,16 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
     [CATALOG_ATTRIBUTE_KEYS.intensity, params.intensidad],
     [CATALOG_ATTRIBUTE_KEYS.occasion, params.momento],
     [CATALOG_ATTRIBUTE_KEYS.gender, params.genero],
+    [CATALOG_ATTRIBUTE_KEYS.volume, params.contenido],
   ];
   const activeAttributeFilters = candidateAttributeFilters.filter(
     (entry): entry is [CatalogAttributeKey, string] => Boolean(entry[1]),
   );
+  const filtersByCategory = perfumeFiltersByCategory(products);
   const filteredProducts = activeAttributeFilters.length > 0
     ? products.filter((product) =>
         activeAttributeFilters.every(([key, value]) =>
-          productHasCatalogAttribute(product.attributes, key, value),
+          publicationHasCatalogAttribute(product, key, value),
         ),
       )
     : products;
@@ -114,7 +117,7 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
           <CatalogBackLink href="/perfumes" />
         ) : null}
 
-        <MobileCatalogFilters basePath="/perfumes" categories={PERFUME_CATALOG_CATEGORIES} filtersByCategory={PERFUME_FILTERS_BY_CATEGORY} selectedCategory={selectedCategory} />
+        <MobileCatalogFilters basePath="/perfumes" categories={PERFUME_CATALOG_CATEGORIES} filtersByCategory={filtersByCategory} selectedCategory={selectedCategory} />
 
         <div className="mt-4 grid min-w-0 gap-5 lg:mt-5 lg:grid-cols-[210px_minmax(0,1fr)] lg:items-start">
           <aside className={`${catalogStyles.panel} hidden min-w-0 rounded-2xl p-3 lg:block`}>
@@ -122,7 +125,7 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
               ariaLabel="Categorías comerciales de perfumes"
               basePath="/perfumes"
               categories={PERFUME_CATALOG_CATEGORIES}
-              filtersByCategory={PERFUME_FILTERS_BY_CATEGORY}
+              filtersByCategory={filtersByCategory}
               selectedCategory={selectedCategory}
               compactFilters
             />

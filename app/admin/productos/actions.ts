@@ -6,8 +6,10 @@ import { revalidateAfterWrite, revalidateProducts } from "@/lib/catalog/public-c
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
+  CATALOG_ATTRIBUTE_KEYS,
   getAllowedValuesForField,
   getAttributeFieldsForCategory,
+  getCatalogAttributeFieldMarker,
   getCatalogAttributeInputName,
 } from "@/lib/catalog/attribute-config";
 import { PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
@@ -346,7 +348,13 @@ async function saveProductForm(formData: FormData, operationType: "create_produc
       const cash = described.transfer_price;
       if (cash === null || cash <= 0 || cash > described.price) throw new Error("Ingresá un precio de contado mayor que cero y no superior al de lista.");
     }
-    const product = cashApproved ? { ...described, cash_price_approved: true as const } : described;
+    // Only an editor that rendered the volume field replaces it; a save without the field keeps the stored volume.
+    const volumeManaged = formData.has(getCatalogAttributeFieldMarker(CATALOG_ATTRIBUTE_KEYS.volume));
+    const product = {
+      ...described,
+      ...(cashApproved ? { cash_price_approved: true as const } : {}),
+      ...(volumeManaged ? { volume_managed: true as const } : {}),
+    };
     const category = await getProductCategoryInfo(product.category_id);
     const previousCategory = existing && existing.category_id !== product.category_id
       ? await getProductCategoryInfo(existing.category_id) : null;

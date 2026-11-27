@@ -1,6 +1,7 @@
 import {
+  CATALOG_ATTRIBUTE_KEYS,
   MANAGED_CATALOG_ATTRIBUTE_KEYS,
-  PERFUME_ATTRIBUTE_FIELDS,
+  PERFUME_ATTRIBUTE_FIELDS as ALL_PERFUME_ATTRIBUTE_FIELDS,
   getAllowedValuesForField,
   getCatalogAttributeNameAliases,
   normalizeCatalogAttributeValue,
@@ -106,6 +107,9 @@ export type PerfumeBackfillDryRun = {
 
 type JsonRecord = Record<string, unknown>;
 
+// The approved backfill covers the five commercial attributes only; volume is loaded per product from its presentation.
+const PERFUME_ATTRIBUTE_FIELDS = ALL_PERFUME_ATTRIBUTE_FIELDS.filter((field) => field.key !== CATALOG_ATTRIBUTE_KEYS.volume);
+
 const COMMERCIAL_KEYS = PERFUME_ATTRIBUTE_FIELDS.map(
   (field) => field.key,
 ) as PerfumeCommercialKey[];
@@ -118,7 +122,7 @@ const PERFUME_ATTRIBUTE_NAMES = new Set(
 
 const NON_PERFUME_MANAGED_ATTRIBUTE_NAMES = new Set(
   MANAGED_CATALOG_ATTRIBUTE_KEYS.filter(
-    (key) => !COMMERCIAL_KEYS.includes(key as PerfumeCommercialKey),
+    (key) => key !== CATALOG_ATTRIBUTE_KEYS.volume && !COMMERCIAL_KEYS.includes(key as PerfumeCommercialKey),
   ).map(normalizeCatalogAttributeValue),
 );
 

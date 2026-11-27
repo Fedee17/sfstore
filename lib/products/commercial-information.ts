@@ -1,6 +1,7 @@
 import {
   CATALOG_ATTRIBUTE_KEYS,
   getCatalogAttributeField,
+  getCatalogAttributeNameAliases,
   getCatalogAttributeOptionLabel,
   getCatalogAttributeValues,
   type CatalogAttribute,
@@ -99,7 +100,15 @@ export function getProductCommercialInformation(product: InformationInput) {
     addManaged("Perfil olfativo", CATALOG_ATTRIBUTE_KEYS.olfactoryFamily);
     addManaged("Intensidad orientativa", CATALOG_ATTRIBUTE_KEYS.intensity);
     addManaged("Ocasiones sugeridas", CATALOG_ATTRIBUTE_KEYS.occasion);
-    addRegistered("Contenido", ["Contenido", "Volumen", "Capacidad"]);
+    // Managed volume first. A single legacy value outside the managed list is shown as written; contradictory
+    // legacy values (no managed row) show nothing.
+    const volumeFields = fields.length;
+    addManaged("Contenido", CATALOG_ATTRIBUTE_KEYS.volume);
+    if (fields.length === volumeFields && getCatalogAttributeValues(attributes, CATALOG_ATTRIBUTE_KEYS.volume).length === 1) {
+      const accepted = new Set(getCatalogAttributeNameAliases(CATALOG_ATTRIBUTE_KEYS.volume).map(name => name.toLocaleLowerCase("es-AR")));
+      const legacy = attributes.find(a => accepted.has(a.name.trim().toLocaleLowerCase("es-AR")) && a.value.trim());
+      if (legacy) fields.push({ label: "Contenido", values: [legacy.value.trim()] });
+    }
     addRegistered("Presentación", ["Presentación", "Presentacion", "Concentración", "Concentracion"]);
     if (editorial) {
       fields.push(...editorial.notes);

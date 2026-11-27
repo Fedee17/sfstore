@@ -47,7 +47,7 @@ function serverFixture(options={}){
     '@/lib/supabase/server':{getSupabaseAdminClient:()=>client},
     '@/lib/uploads/limits':{assertUploadFormData:()=>{}},
     '@/lib/products/slug':{slugifyProductValue:v=>v},
-    '@/lib/catalog/attribute-config':{getAttributeFieldsForCategory:()=>[]},
+    '@/lib/catalog/attribute-config':{getAttributeFieldsForCategory:()=>[],CATALOG_ATTRIBUTE_KEYS:{volume:'contenido'},getCatalogAttributeFieldMarker:key=>`catalog_attribute_${key}_field`},
     '@/lib/product-taxonomy':{PRODUCT_ATTRIBUTE_NAMES:{brand:'Marca',type:'Tipo'}},
     '@/lib/products/auto-descriptions':{getAutoDescriptions:()=>({}),applyAutoDescriptionFallbacks:p=>p},
     '@/lib/catalog/public-catalog-revalidation':{revalidateProducts:()=>{},revalidateAfterWrite:()=>{}},
