@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { analyticsItem, CONSENT_KEY, getAnalytics, publicRoute, track } from "@/lib/analytics/client";
 import { cartItemKey, useCartStore } from "@/store/cart-store";
+import { countFunnelStep } from "@/lib/catalog/purchase-funnel-client";
 import styles from "./analytics-consent.module.css";
 
 export function AnalyticsConsent() {
@@ -56,6 +57,7 @@ export function AnalyticsConsent() {
         const previous = before.items.find(item => cartItemKey(item) === cartItemKey(line));
         const delta = line.quantity - (previous?.quantity ?? 0);
         const item = analyticsItem({ ...line, quantity: delta });
+        if (delta > 0) countFunnelStep("cart"); // Own funnel: anonymous, once per tab, no consent needed.
         if (delta > 0 && item) track("add_to_cart", { items: [item] });
       }
     });
