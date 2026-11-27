@@ -245,6 +245,8 @@ export default async function AdminProductsPage({
         : undefined,
     featured: selectedFilters.featured === "true" ? true : undefined,
     historical: selectedFilters.availability === "historical" || undefined,
+    // Owner review 27/11: archived products are hidden by default ("Todos" shows them again).
+    excludeArchived: selectedFilters.status === "" || undefined,
   };
 
   const [productsResult, categoriesResult] = await Promise.all([
@@ -274,7 +276,7 @@ export default async function AdminProductsPage({
               Productos
             </h1>
             <p className="mt-2 break-words text-sm text-[#1F1F1F]/60">
-              Gestion del catalogo, ajustes auditables de stock y productos destacados.
+              Gestión del catálogo, ajustes auditables de stock y productos destacados.
             </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -337,7 +339,7 @@ export default async function AdminProductsPage({
           <div className="mt-4 grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-5">
             <label className="grid min-w-0 gap-2">
               <span className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
-                Categoria
+                Categoría
               </span>
               <select
                 name="category"
@@ -362,7 +364,8 @@ export default async function AdminProductsPage({
                 defaultValue={selectedFilters.status}
                 className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 text-sm outline-none transition focus:border-[#556B2F]"
               >
-                <option value="">Todos</option>
+                <option value="">Activos y borradores</option>
+                <option value="all">Todos (incluye archivados)</option>
                 {PRODUCT_STATUSES.map((status) => (
                   <option key={status} value={status}>
                     {STATUS_LABELS[status]}

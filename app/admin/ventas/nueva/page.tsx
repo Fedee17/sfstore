@@ -20,7 +20,7 @@ export default async function NewStoreSalePage({searchParams}:{searchParams?:Pro
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
         <Link href="/admin/ventas" className="text-sm font-semibold text-[#8B5E3C]">Volver a ventas</Link>
         <h1 className="mt-4 text-4xl font-semibold">Nueva venta local</h1>
-        <p className="mt-2 text-sm text-[#1F1F1F]/60">El stock se descuenta recien cuando el pago queda completo.</p>
+        <p className="mt-2 text-sm text-[#1F1F1F]/60">El stock se descuenta recién cuando el pago queda completo.</p>
         {requested && !initialProductId ? <p role="alert" className="mt-4 text-sm text-[#8B5E3C]">Ese producto no está disponible para vender. Revisá el catálogo actualizado.</p> : null}
         <StoreSaleForm products={products} recipes={recipes} initialProductId={initialProductId} initialSaleDate={commercialDate(new Date().toISOString())} />
       </section>

@@ -22,6 +22,7 @@ export type CustomerOrderProduct = {
   sku: string | null;
   price: number;
   transfer_price: number | null;
+  cash_price_approved_at: string | null;
   stock: number;
   status: string;
   categories: { name: string } | null;
@@ -131,7 +132,7 @@ function mapOrderError(message: string) {
 export async function listCustomerOrderProducts() {
   const { data, error } = await getSupabaseAdminClient()
     .from("products")
-    .select("id, name, slug, sku, price, transfer_price, stock, status, categories(name)")
+    .select("id, name, slug, sku, price, transfer_price, cash_price_approved_at, stock, status, categories(name)")
     .eq("historical_identity", false)
     .neq("id", YARA_ROSA.archivedId)
     .eq("status", "active")
