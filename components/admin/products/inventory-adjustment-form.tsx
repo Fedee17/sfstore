@@ -14,8 +14,8 @@ const INITIAL_STATE: InventoryAdjustmentActionState = {
 };
 
 const REASON_SUGGESTIONS = [
-  "Conteo fisico",
-  "Producto danado",
+  "Conteo físico",
+  "Producto dañado",
   "Error de carga",
   "Diferencia de inventario",
   "Otro",
@@ -94,7 +94,7 @@ export function InventoryAdjustmentForm({
             list={`inventory-reasons-${productId}`}
             required
             minLength={2}
-            placeholder="Ej: Conteo fisico"
+            placeholder="Ej: Conteo físico"
             className="h-11 w-full min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-white/80 px-4 text-sm font-medium outline-none transition focus:border-[#556B2F]"
           />
           <datalist id={`inventory-reasons-${productId}`}>

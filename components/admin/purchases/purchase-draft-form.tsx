@@ -416,7 +416,7 @@ export function PurchaseDraftForm({
                         onChange={(event) => setNewProductCategoryId(event.target.value)}
                         className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 outline-none focus:border-[#556B2F]"
                       >
-                        <option value="">Seleccionar categoria</option>
+                        <option value="">Seleccionar categoría</option>
                         {categories.map((category) => (
                           <option key={category.id} value={category.id}>
                             {category.name}

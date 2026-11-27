@@ -96,7 +96,7 @@ function parseStock(value: FormDataEntryValue | null) {
   const number = Number(normalized);
 
   if (!normalized || !Number.isInteger(number) || number < 0) {
-    throw new Error("Stock debe ser un numero entero mayor o igual a 0.");
+    throw new Error("Stock debe ser un número entero mayor o igual a 0.");
   }
 
   return number;
@@ -114,7 +114,7 @@ function readProductForm(formData: FormData) {
   const status = String(formData.get("status") ?? "draft");
 
   if (!categoryId) {
-    throw new Error("Categoria es requerida.");
+    throw new Error("Categoría es requerida.");
   }
 
   if (!name) {
@@ -126,7 +126,7 @@ function readProductForm(formData: FormData) {
   }
 
   if (!PRODUCT_STATUSES.includes(status as (typeof PRODUCT_STATUSES)[number])) {
-    throw new Error("Estado de producto invalido.");
+    throw new Error("Estado de producto inválido.");
   }
 
   return {
@@ -573,7 +573,7 @@ export async function updateProductStock(
     if (result.status === "no_change") {
       return {
         status: "no_change",
-        message: "El stock ya tenia ese valor. No se creo ningun movimiento.",
+        message: "El stock ya tenía ese valor. No se creó ningún movimiento.",
         newStock: result.new_stock,
       };
     }

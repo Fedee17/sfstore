@@ -485,10 +485,10 @@ export default async function AdminProductsPage({
                             </p>
                             <p
                               className="mt-1 break-words text-xs text-[#1F1F1F]/55"
-                              title={`${product.categories?.name ?? "Sin categoria"} - ${product.slug}`}
+                              title={`${product.categories?.name ?? "Sin categoría"} - ${product.slug}`}
                             >
                               <span className="break-words">
-                                {product.categories?.name ?? "Sin categoria"}
+                                {product.categories?.name ?? "Sin categoría"}
                               </span>{" "}
                               - <span className="break-all">{product.slug}</span>
                             </p>

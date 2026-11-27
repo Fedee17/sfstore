@@ -20,9 +20,9 @@ const movementLabels: Record<InventoryMovementType, string> = {
   purchase: "Compra",
   sale: "Venta",
   adjustment: "Ajuste",
-  return: "Devolucion",
+  return: "Devolución",
   reservation: "Reserva",
-  release: "Liberacion",
+  release: "Liberación",
 };
 
 const dateFormatter = new Intl.DateTimeFormat("es-AR", {

@@ -25,7 +25,7 @@ export type CustomerOrderActionState = {
 
 function amount(value: FormDataEntryValue | null) {
   const cents = parseMoneyInputCents(String(value ?? ""));
-  if (cents === null) throw new Error("El importe no es valido. Escribilo como 15000 o 15.000,50.");
+  if (cents === null) throw new Error("El importe no es válido. Escribilo como 15000 o 15.000,50.");
   return Number(cents) / 100;
 }
 
@@ -56,7 +56,7 @@ export async function saveCustomerOrderAction(
     const user = await requireAdminActionSession();
     const orderId = String(formData.get("orderId") ?? "").trim() || undefined;
     const idempotencyKey = String(formData.get("idempotencyKey") ?? "").trim() || undefined;
-    if (!orderId && !idempotencyKey) throw new Error("Falta la clave de seguridad de la operacion.");
+    if (!orderId && !idempotencyKey) throw new Error("Falta la clave de seguridad de la operación.");
     const result = await saveCustomerOrder({
       orderId,
       idempotencyKey,
@@ -88,7 +88,7 @@ export async function addCustomerOrderPaymentAction(
     const method = String(formData.get("paymentMethod") ?? "") as OrderPaymentMethod;
     const paymentKey = String(formData.get("paymentKey") ?? "").trim();
     if (!orderId || !paymentKey) throw new Error("Faltan datos para registrar el pago.");
-    if (!ORDER_PAYMENT_METHODS.includes(method)) throw new Error("El medio de pago no es valido.");
+    if (!ORDER_PAYMENT_METHODS.includes(method)) throw new Error("El medio de pago no es válido.");
     const result = await addCustomerOrderPayment({
       orderId,
       method,
@@ -117,7 +117,7 @@ export async function transitionCustomerOrderAction(
   try {
     const user = await requireAdminActionSession();
     const nextStatus = String(formData.get("nextStatus") ?? "") as CustomerOrderStatus;
-    if (!orderId || !CUSTOMER_ORDER_STATUSES.includes(nextStatus)) throw new Error("Estado invalido.");
+    if (!orderId || !CUSTOMER_ORDER_STATUSES.includes(nextStatus)) throw new Error("Estado inválido.");
     await transitionCustomerOrder(orderId, nextStatus, user.id);
     revalidateCustomerOrder(orderId);
     return { status: "success", orderId, message: nextStatus === "cancelled" ? "Pedido cancelado." : "Estado actualizado." };

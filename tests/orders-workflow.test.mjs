@@ -103,7 +103,7 @@ test("list exposes balances and operational filters", () => {
 
 test("search covers customer phone order number and products", () => {
   assert.match(service, /order\.customer_name[\s\S]+order\.customer_phone[\s\S]+order\.order_number[\s\S]+item\.product_name/i);
-  assert.match(listPage, /Cliente, telefono o producto/i);
+  assert.match(listPage, /Cliente, teléfono o producto/i);
 });
 
 test("WhatsApp links are normalized safely", () => {
