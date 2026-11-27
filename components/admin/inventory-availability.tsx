@@ -4,6 +4,7 @@ import { getStockCoverage } from "@/services/commercial-history";
 import { availabilityRows, LOW_STOCK_LIMIT, stockAdjustmentHref } from "@/lib/admin/catalog-review";
 import { coverageDaysLabel, STOCK_RISK_DAYS, type StockCoverage } from "@/lib/admin/stock-health";
 import { GetNavigationForm, GetNavigationSubmitButton } from "@/components/admin/get-navigation-form";
+import { internalInventoryHref } from "@/lib/admin/internal-inventory";
 
 function CoverageNote({ coverage, stock }: { coverage?: StockCoverage; stock: number }) {
   if (!coverage) return null;
@@ -29,11 +30,19 @@ export async function InventoryAvailability({ search, stock }: { search: string;
     </GetNavigationForm>
     {result.error ? <p role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{result.error}</p> : <>
       <p className="mt-5 text-sm">{rows.length} publicaciones coincidentes. Los combos comparten componentes; sus cantidades no se suman al stock físico.</p>
-      {!rows.length ? <p className="mt-5">No hay productos con estos filtros.</p> : <div className="mt-5 grid gap-2">{rows.map(product => <article key={product.id} className="grid min-w-0 gap-3 rounded-xl border border-[#8B5E3C]/20 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+      {!rows.length ? <p className="mt-5">No hay productos con estos filtros. Para abrir una ficha interna, buscá el producto en <Link className="underline" href="/admin/productos?availability=historical">Identidades históricas</Link>.</p> : <div className="mt-5 grid gap-2">{rows.map(product => {
+        const internalHref = internalInventoryHref(product);
+        return <article key={product.id} className="grid min-w-0 gap-3 rounded-xl border border-[#8B5E3C]/20 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
         <div className="min-w-0"><h2 className="break-words font-semibold">{product.name}</h2><p className="break-words text-xs text-black/60">{product.sku || "Sin SKU"} · {product.status}{product.component_offer ? " · Combo por componentes" : ""}</p></div>
         <div className="grid gap-1"><p className="font-semibold">{product.stock <= 0 ? "Sin stock" : `${product.stock} disponibles`}</p>{product.component_offer ? null : <CoverageNote coverage={coverage?.get(product.id)} stock={product.stock} />}</div>
-        <div className="flex flex-wrap gap-3 text-sm font-semibold"><Link className="inline-flex min-h-11 items-center underline" href={`/admin/productos/${product.id}/editar`}>Revisar</Link>{!product.component_offer ? <Link className="inline-flex min-h-11 items-center underline" href={stockAdjustmentHref(product)}>Ajustar stock</Link> : null}{!product.component_offer ? <Link className="inline-flex min-h-11 items-center underline" href={`/admin/inventario?view=movements&product=${encodeURIComponent(product.id)}`}>Movimientos</Link> : null}</div>
-      </article>)}</div>}
+        <div className="flex flex-wrap gap-3 text-sm font-semibold">
+          {internalHref ? <Link className="inline-flex min-h-11 items-center underline" href={internalHref}>Inventario interno</Link> : <>
+            <Link className="inline-flex min-h-11 items-center underline" href={`/admin/productos/${product.id}/editar`}>Revisar</Link>
+            {!product.component_offer ? <Link className="inline-flex min-h-11 items-center underline" href={stockAdjustmentHref(product)}>Ajustar stock</Link> : null}
+          </>}
+          {!product.component_offer ? <Link className="inline-flex min-h-11 items-center underline" href={`/admin/inventario?view=movements&product=${encodeURIComponent(product.id)}`}>Movimientos</Link> : null}
+        </div>
+      </article>})}</div>}
     </>}
     <Link href="/admin/compras/nueva" className="mt-6 inline-flex min-h-11 items-center rounded-full border border-[#556B2F]/30 px-5 font-semibold text-[#465826]">Cargar una compra</Link>
   </>;
