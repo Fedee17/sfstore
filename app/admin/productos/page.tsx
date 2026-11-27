@@ -230,7 +230,6 @@ export default async function AdminProductsPage({
     view: getParam(params,"view")==="details"?"details":"",
     review: getParam(params,"review")==="incomplete"?"incomplete":"",
   };
-  const productsPath = buildProductsUrl(selectedFilters);
   const productsFilters: AdminProductFilters = {
     requireComplete: true,
     search: selectedFilters.search || undefined,
@@ -256,6 +255,8 @@ export default async function AdminProductsPage({
   const rawPage=Number(getParam(params,"page")||1);
   const page=Number.isSafeInteger(rawPage)&&rawPage>0&&rawPage<=1000000?rawPage:1;
   const pageProducts=products.slice((page-1)*40,page*40);
+  // Featured/archive return to this page and scroll back to the product (owner review 27/11).
+  const productsPath = buildProductsUrl({ ...selectedFilters, page: page > 1 ? String(page) : "" });
   const categories = categoriesResult.data ?? [];
   const isFiltered = hasActiveFilters(productsFilters) || Boolean(selectedFilters.review || selectedFilters.availability);
 
@@ -467,7 +468,8 @@ export default async function AdminProductsPage({
               return (
                 <article
                   key={product.id}
-                  className="min-w-0 overflow-hidden rounded-[1.75rem] border border-[#8B5E3C]/15 bg-white/70 p-5 text-sm shadow-sm"
+                  id={`producto-${product.id}`}
+                  className="min-w-0 scroll-mt-4 overflow-hidden rounded-[1.75rem] border border-[#8B5E3C]/15 bg-white/70 p-5 text-sm shadow-sm"
                 >
                   <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.9fr)] xl:items-start">
                     <div className="min-w-0">
@@ -570,7 +572,7 @@ export default async function AdminProductsPage({
                             name="featured"
                             value={product.featured ? "false" : "true"}
                           />
-                          <input type="hidden" name="returnTo" value={productsPath} />
+                          <input type="hidden" name="returnTo" value={`${productsPath}#producto-${product.id}`} />
                           <PendingSubmitButton
                             pendingLabel="Procesando..."
                             className={
@@ -599,10 +601,11 @@ export default async function AdminProductsPage({
                             <input
                               type="hidden"
                               name="returnTo"
-                              value={productsPath}
+                              value={`${productsPath}#producto-${product.id}`}
                             />
                             <PendingSubmitButton
                               pendingLabel="Archivando..."
+                              confirmMessage={`¿Archivar «${product.name}»? Deja de verse en la web y en la venta nueva.`}
                               className="h-11 w-full min-w-0 rounded-2xl border border-[#1F1F1F]/15 px-4 text-xs font-semibold text-[#1F1F1F]/65 transition hover:border-[#8B5E3C] hover:text-[#8B5E3C] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Archivar

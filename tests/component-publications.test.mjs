@@ -1,3 +1,4 @@
+import * as moneyInput from '../lib/money-input.ts';
 import * as productPresentation from '../lib/catalog/product-presentation.ts';
 import { loadProductDetailUi } from './fixtures/product-detail-render.mjs';
 import * as checkoutFeedback from '../lib/checkout/feedback.ts';
@@ -155,7 +156,7 @@ test('counter search exposes both virtual presentations without redundant fixed 
  let state=0;
  const hooks={useActionState:()=>[{status:'idle',message:''},()=>{}],useState:init=>{const n=state++;return [n===1?'cargador completo':n===2?true:typeof init==='function'?init():init,()=>{}];},useMemo:fn=>fn(),useRef:()=>({current:{}})};
  const recipe={id:rid,name:'SYNTHETIC',head_product:'head',cable_cc_product:'cc',cable_lightning_product:'lightning',presentation_product:id,prices_approved:true,combo_list_price:30666.67,combo_price_version:'v1'};
- const {StoreSaleForm}=load('components/admin/sales/store-sale-form.tsx',{'@/lib/commercial-reporting/periods':{commercialDate:()=> '2026-11-08'},'@/components/admin/unsaved-changes-guard':{UnsavedChangesGuard:()=>null},'next/navigation':{useRouter:()=>({refresh(){}})},'react':hooks,'react/jsx-runtime':jsx,'next/link':{default:({children,...props})=>React.createElement('a',props,children)},'@/app/admin/ventas/actions':{createStoreSaleAction:()=>{}},'@/components/admin/pending-submit-button':{PendingSubmitButton:({children,pendingLabel,...props})=>React.createElement('button',{...props,'aria-label':pendingLabel},children)},'@/lib/store-sales':pricing,'@/lib/products/component-combos':combo});
+ const {StoreSaleForm}=load('components/admin/sales/store-sale-form.tsx',{'@/lib/commercial-reporting/periods':{commercialDate:()=> '2026-11-08'},'@/components/admin/unsaved-changes-guard':{UnsavedChangesGuard:()=>null},'next/navigation':{useRouter:()=>({refresh(){}})},'react':hooks,'react/jsx-runtime':jsx,'next/link':{default:({children,...props})=>React.createElement('a',props,children)},'@/app/admin/ventas/actions':{createStoreSaleAction:()=>{}},'@/components/admin/pending-submit-button':{PendingSubmitButton:({children,pendingLabel,...props})=>React.createElement('button',{...props,'aria-label':pendingLabel},children)},'@/lib/store-sales':pricing,'@/lib/money-input':moneyInput,'@/lib/products/component-combos':combo});
  const html=renderToStaticMarkup(React.createElement(StoreSaleForm,{products:physical,recipes:[recipe]}));
  assert.doesNotMatch(html,/<legend[^>]*>Cargadores completos/);
  assert.match(html,/<span class="block font-semibold">Cargador completo USB-C a USB-C/);assert.match(html,/<span class="block font-semibold">Cargador completo USB-C a Lightning/);

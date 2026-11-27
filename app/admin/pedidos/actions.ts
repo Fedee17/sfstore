@@ -3,6 +3,7 @@
 import { revalidateAfterWrite } from "@/lib/catalog/public-catalog-revalidation";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
+import { parseMoneyInputCents } from "@/lib/money-input";
 import {
   CUSTOMER_ORDER_STATUSES,
   validateCustomerOrderItems,
@@ -23,9 +24,9 @@ export type CustomerOrderActionState = {
 };
 
 function amount(value: FormDataEntryValue | null) {
-  const parsed = Number(String(value ?? "").trim().replace(",", "."));
-  if (!Number.isFinite(parsed)) throw new Error("El importe no es valido.");
-  return parsed;
+  const cents = parseMoneyInputCents(String(value ?? ""));
+  if (cents === null) throw new Error("El importe no es valido. Escribilo como 15000 o 15.000,50.");
+  return Number(cents) / 100;
 }
 
 function readItems(formData: FormData) {

@@ -199,7 +199,7 @@ test("atomic RPCs are invoker-security and service-role only", () => {
 test("payment parser preserves numeric precision and rejects unsafe values", () => {
   assert.equal(model.parseStoreSalePaymentAmount("100"), 100);
   assert.equal(model.parseStoreSalePaymentAmount("100,25"), 100.25);
-  for (const value of ["", "0", "-1", "10.001", "NaN", "10000000000.00"]) {
+  for (const value of ["", "0", "-1", "10.0001", "NaN", "10000000000.00"]) {
     assert.throws(() => model.parseStoreSalePaymentAmount(value));
   }
 });

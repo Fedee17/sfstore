@@ -1,3 +1,5 @@
+import { parseMoneyInputCents } from "../money-input.ts";
+
 export const MAX_MONEY_CENTS = 999_999_999_999;
 export const MAX_PURCHASE_QUANTITY = 1_000_000;
 
@@ -37,15 +39,11 @@ function roundDivision(numerator: bigint, denominator: bigint) {
 }
 
 export function parseMoneyToCents(value: string, fieldName = "Importe") {
-  const normalized = value.trim().replace(",", ".");
+  const cents = parseMoneyInputCents(value);
 
-  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
-    throw new Error(`${fieldName} debe ser un importe positivo con hasta 2 decimales.`);
+  if (cents === null) {
+    throw new Error(`${fieldName} debe ser un importe positivo como 15000 o 15.000,50, con hasta 2 decimales.`);
   }
-
-  const [wholePart, decimalPart = ""] = normalized.split(".");
-  const cents =
-    BigInt(wholePart) * BigInt(100) + BigInt(decimalPart.padEnd(2, "0"));
 
   if (cents > BigInt(MAX_MONEY_CENTS)) {
     throw new Error(`${fieldName} supera el maximo permitido.`);

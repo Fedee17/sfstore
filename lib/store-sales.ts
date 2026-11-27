@@ -1,4 +1,6 @@
-export const STORE_SALE_PAYMENT_METHODS = ["cash", "transfer", "debit", "credit", "qr", "other"] as const;
+import { parseMoneyInputCents } from "./money-input.ts";
+
+export const STORE_SALE_PAYMENT_METHODS =["cash", "transfer", "debit", "credit", "qr", "other"] as const;
 export type StoreSalePaymentMethod = (typeof STORE_SALE_PAYMENT_METHODS)[number];
 
 // Preview only: PostgreSQL re-reads and locks products before authorizing a sale.
@@ -73,41 +75,26 @@ export function matchesStoreSaleProduct(
   );
 }
 
-export function parseStoreSaleUnitPrice(value: string) {
-  const normalized = value.trim().replace(",", ".");
-  const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(normalized);
-  if (!match) throw new Error("El precio unitario debe tener como maximo 2 decimales.");
-
-  const cents =
-    BigInt(match[1]) * BigInt(100) +
-    BigInt((match[2] ?? "").padEnd(2, "0"));
+function parsePositiveStoreSaleMoney(value: string, label: string) {
+  const cents = parseMoneyInputCents(value);
+  if (cents === null) {
+    throw new Error(`${label} debe escribirse como 15000 o 15.000,50, con 2 decimales como máximo.`);
+  }
   if (cents <= BigInt(0)) {
-    throw new Error("El precio unitario debe ser mayor que cero.");
+    throw new Error(`${label} debe ser mayor que cero.`);
   }
   if (cents > BigInt(MAX_STORE_SALE_MONEY_CENTS)) {
-    throw new Error("El precio unitario supera el maximo permitido.");
+    throw new Error(`${label} supera el maximo permitido.`);
   }
   return Number(cents) / 100;
 }
 
+export function parseStoreSaleUnitPrice(value: string) {
+  return parsePositiveStoreSaleMoney(value, "El precio unitario");
+}
+
 export function parseStoreSalePaymentAmount(value: string) {
-  const normalized = value.trim().replace(",", ".");
-  const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(normalized);
-  if (!match) {
-    throw new Error("El importe del pago debe tener como maximo 2 decimales.");
-  }
-
-  const cents =
-    BigInt(match[1]) * BigInt(100) +
-    BigInt((match[2] ?? "").padEnd(2, "0"));
-  if (cents <= BigInt(0)) {
-    throw new Error("El importe del pago debe ser mayor que cero.");
-  }
-  if (cents > BigInt(MAX_STORE_SALE_MONEY_CENTS)) {
-    throw new Error("El importe del pago supera el maximo permitido.");
-  }
-
-  return Number(cents) / 100;
+  return parsePositiveStoreSaleMoney(value, "El importe del pago");
 }
 
 export function getStoreSaleDisplayName(

@@ -310,6 +310,7 @@ function DeleteProductImageForm({
       {connector ? <input type="hidden" name="connector" value={connector} /> : null}
       <PendingSubmitButton
         pendingLabel="Eliminando..."
+        confirmMessage="¿Eliminar esta foto del producto? No se puede deshacer desde el admin."
         disabled={isPending || state.status === "success"}
         className="w-full rounded-full border border-[#8B5E3C]/35 px-4 py-2 text-sm font-semibold text-[#8B5E3C] transition hover:border-[#8B5E3C] hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-60"
       >
@@ -711,7 +712,7 @@ export function ProductForm({
         className={calculatePriceEnabled ? "mt-4 rounded-2xl bg-white p-4 sm:mt-5 sm:rounded-[2rem] sm:px-8 sm:py-7"
           : "mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-6 shadow-sm"}
       >
-        <UnsavedChangesGuard enabled={actionState.status!=="success"}/>
+        <UnsavedChangesGuard savedRevision={actionState.status === "success" ? actionState.submissionId : undefined} />
         {product ? <input type="hidden" name="productId" value={product.id} /> : null}
         {connector ? <input type="hidden" name="connector" value={connector} /> : null}
 
@@ -1045,8 +1046,10 @@ export function ProductForm({
             Cancelar
           </Link>
         </div>
-        {actionState.message ? (
+        {/* A fresh key per save re-announces the same success text; hiding it while saving shows that a new save ran. */}
+        {actionState.message && !isSubmitting ? (
           <p
+            key={actionState.submissionId ?? actionState.status}
             role={actionState.status === "error" ? "alert" : "status"}
             className={`mt-4 text-sm font-semibold ${
               actionState.status === "error" ? "text-red-700" : "text-[#556B2F]"

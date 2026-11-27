@@ -4,16 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 /** Keeps draft data only in the mounted form; never persists customer or price data. */
-export function UnsavedChangesGuard({ enabled = true, dirty = false, revision }: { enabled?: boolean; dirty?: boolean; revision?: string }) {
+// savedRevision: forms that stay mounted after saving pass the id of their last successful save, so only edits made
+// after it count as unsaved (owner review 27/11: after the first save, leaving without saving stopped warning).
+export function UnsavedChangesGuard({ enabled = true, dirty = false, revision, savedRevision }: { enabled?: boolean; dirty?: boolean; revision?: string; savedRevision?: string }) {
   const marker = useRef<HTMLSpanElement>(null);
+  const savedRef = useRef(savedRevision);
   const [initialRevision] = useState(revision);
-  const [changed, setChanged] = useState(false);
+  // null: no edits yet; otherwise the saved revision that was current when the last edit happened.
+  const [changedSince, setChangedSince] = useState<string | undefined | null>(null);
   const { pending } = useFormStatus();
+  const changed = changedSince !== null && changedSince === savedRevision;
   const warn = enabled && !pending && (dirty || changed || revision !== initialRevision);
+
+  useEffect(() => { savedRef.current = savedRevision; }, [savedRevision]);
 
   useEffect(() => {
     const form = marker.current?.closest("form");
-    const change = () => setChanged(true);
+    const change = () => setChangedSince(savedRef.current);
     form?.addEventListener("input", change);
     form?.addEventListener("change", change);
     return () => { form?.removeEventListener("input", change); form?.removeEventListener("change", change); };

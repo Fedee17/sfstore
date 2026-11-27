@@ -1,18 +1,13 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const testDirectory = dirname(fileURLToPath(import.meta.url));
 
+// Imported from disk so relative imports (lib/money-input.ts) resolve.
 async function loadModule(...segments) {
-  const source = readFileSync(join(testDirectory, "..", ...segments), "utf8");
-  const compiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-  }).outputText;
-  return import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+  return import(pathToFileURL(join(testDirectory, "..", ...segments)).href);
 }
 
 const {
@@ -43,7 +38,7 @@ test("money is parsed as integer cents without floating point arithmetic", () =>
 });
 
 test("money rejects negatives, extra decimals and non numeric values", () => {
-  for (const value of ["-1", "1.001", "NaN", "Infinity", ""]) {
+  for (const value of ["-1", "1.0001", "NaN", "Infinity", ""]) {
     assert.throws(() => parseMoneyToCents(value));
   }
 });
