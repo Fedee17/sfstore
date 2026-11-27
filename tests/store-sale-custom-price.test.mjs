@@ -125,8 +125,9 @@ test("search ignores accents and case", () => {
   assert.equal(model.matchesStoreSaleProduct({ name: "Edición Cinceláda", sku: null }, "EDICION CINCELADA"), true);
 });
 
-test("product loading intentionally exposes only active products without stock filtering", () => {
-  assert.match(service, /\.eq\("status", "active"\)/i);
+test("product loading retains unavailable results and delegates eligibility to the admin rule", () => {
+  assert.match(service, /adminProductAvailability\(/);
+  assert.doesNotMatch(service, /\.eq\("status", "active"\)/i);
   assert.doesNotMatch(service, /\.gt\("stock"|\.gte\("stock"/i);
 });
 

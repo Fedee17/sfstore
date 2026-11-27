@@ -12,7 +12,8 @@ export default async function NewStoreSalePage({searchParams}:{searchParams?:Pro
   const products = await listStoreSaleProducts();
   const recipes = await listComponentRecipes();
   const requested = (await searchParams)?.product;
-  const initialProductId = products.find(product => product.id === requested && product.stock > 0 && Number(product.price) > 0)?.id;
+  const requestedProduct = products.find(product => product.id === requested);
+  const initialProductId = requestedProduct?.unavailableReason === null ? requestedProduct.id : undefined;
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -21,7 +22,7 @@ export default async function NewStoreSalePage({searchParams}:{searchParams?:Pro
         <Link href="/admin/ventas" className="text-sm font-semibold text-[#8B5E3C]">Volver a ventas</Link>
         <h1 className="mt-4 text-4xl font-semibold">Nueva venta local</h1>
         <p className="mt-2 text-sm text-[#1F1F1F]/60">El stock se descuenta recien cuando el pago queda completo.</p>
-        {requested && !initialProductId ? <p role="alert" className="mt-4 text-sm text-[#8B5E3C]">Ese producto no está disponible para vender. Revisá el catálogo actualizado.</p> : null}
+        {requested && !initialProductId ? <p role="alert" className="mt-4 text-sm text-[#8B5E3C]">{requestedProduct ? `${requestedProduct.name} · ${requestedProduct.unavailableReason}` : "No se encontró ese producto."}</p> : null}
         <StoreSaleForm products={products} recipes={recipes} initialProductId={initialProductId} initialSaleDate={commercialDate(new Date().toISOString())} />
       </section>
     </main>

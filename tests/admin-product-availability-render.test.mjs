@@ -8,6 +8,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as availabilityRule from "../lib/products/product-availability.ts";
 import * as prices from "../lib/web-transfer-pricing.ts";
+import * as catalogReview from "../lib/admin/catalog-review.ts";
 
 const require = createRequire(import.meta.url);
 function load(file, modules = {}) {
@@ -98,6 +99,32 @@ test("historical identities can be consulted read-only, without edit, stock, fea
     assert.doesNotMatch(html, /\/admin\/productos\/historico\/editar/);
     assert.doesNotMatch(html, /AJUSTE:historico|Archivar|Destacar/);
   }
+});
+
+test("inventory reuses availability and keeps historical and archived stock available for consultation", async () => {
+  const archived = [product("archivado", { status: "archived" })];
+  const { InventoryAvailability } = load("components/admin/inventory-availability.tsx", {
+    "next/link": { __esModule: true, default: ({ href, children: content }) => h("a", { href }, content) },
+    "@/lib/admin/catalog-review": catalogReview,
+    "@/components/admin/get-navigation-form": { GetNavigationForm: ({ children: content }) => h("form", null, content), GetNavigationSubmitButton: children },
+    "@/components/admin/products/product-availability-summary": summary,
+    "@/lib/products/product-availability": availabilityRule,
+    "@/services/admin": {
+      getAdminProductPublications: async ({ historical: history, status }) => ({ data: history ? historical : status === "archived" ? archived : operational }),
+    },
+  });
+  const render = async (scope) => renderToStaticMarkup(await InventoryAvailability({ scope, search: "", stock: "" }));
+  const normal = await render("");
+  assert.match(normal, /2 en inventario/);
+  assert.match(normal, /Bloqueado para nuevas ventas/);
+  assert.match(normal, /Oculto en la web/);
+  const history = await render("historical");
+  assert.match(history, /Producto historico/);
+  assert.match(history, /view=movements&amp;product=historico/);
+  assert.doesNotMatch(history, /\/admin\/productos\/historico\/editar/);
+  const archive = await render("archived");
+  assert.match(archive, /Producto archivado/);
+  assert.doesNotMatch(archive, /Producto historico/);
 });
 
 test("the details view keeps the operational actions for operational products", async () => {

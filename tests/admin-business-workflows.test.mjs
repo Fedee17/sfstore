@@ -24,6 +24,7 @@ test('stock review preserves quantities, separates combos and does not invent a 
   const before=structuredClone(rows);
   assert.deepEqual(availabilityRows(rows,'low').map(row=>row.id),[id(4),id(3)]);
   assert.deepEqual(availabilityRows(rows,'out').map(row=>row.id),[id(2)]);
+  assert.deepEqual(availabilityRows(rows.filter(row=>row.status==='archived'),'out',{includeArchived:true}).map(row=>row.id),[id(5)]);
   assert.deepEqual(catalogIssues(rows[1]),['Sin foto']);assert.deepEqual(catalogIssues(rows[2]),['Sin costo válido']);assert.deepEqual(catalogIssues(rows[3]),[]);
   assert.deepEqual(catalogIssues({...base,price:NaN,cost:-1,product_images:[]}),['Sin foto','Sin precio válido','Sin costo válido']);
   assert.deepEqual(rows,before);

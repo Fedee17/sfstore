@@ -3,7 +3,7 @@ import { getEffectiveCashPrice } from "@/lib/web-transfer-pricing";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { commercialDayBounds, validateStoreSaleDate } from "@/lib/store-sale-date";
 import { type StoreSalePaymentMethod, getStoreSaleDisplayName } from "@/lib/store-sales";
-import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
+import { adminProductAvailability } from "@/lib/products/product-availability";
 import type {
   OrderPayment,
   OrderPaymentStatus,
@@ -21,6 +21,7 @@ export type StoreSaleProduct = {
   stock: number;
   status: string;
   categories: { name: string } | null;
+  unavailableReason: string | null;
 };
 
 export type StoreSaleLine = {
@@ -116,25 +117,38 @@ function paymentSummary(total: number, payments: OrderPayment[]) {
 }
 
 export async function listStoreSaleProducts() {
-  const { data, error } = await getSupabaseAdminClient()
-    .from("products")
-    .select("id, name, commercial_label, slug, sku, price, transfer_price, cash_price_approved_at, stock, status, categories(name)")
-    .eq("historical_identity", false)
-    .neq("id", YARA_ROSA.archivedId)
-    .eq("status", "active")
-    .eq("commercial_blocked", false)
-    .order("name", { ascending: true });
+  const db = getSupabaseAdminClient();
+  const products: StoreSaleProduct[] = [];
+  const batchSize = 500;
 
-  if (error) {
-    throw new Error("No se pudieron cargar los productos para la venta.");
+  for (let offset = 0; ; offset += batchSize) {
+    const { data, error } = await db.from("products")
+      .select("id, name, commercial_label, slug, sku, price, transfer_price, cash_price_approved_at, stock, status, web_visible, commercial_blocked, historical_identity, categories(name, slug, is_active)")
+      .order("name", { ascending: true })
+      .order("id", { ascending: true })
+      .range(offset, offset + batchSize - 1);
+    if (error || !data) throw new Error("No se pudieron cargar los productos para la venta.");
+
+    for (const product of data) {
+      const categories = firstRelation(product.categories);
+      const price = Number(product.price);
+      const { newSale } = adminProductAvailability({ ...product, price, categories });
+      products.push({
+        id: product.id,
+        name: product.commercial_label ?? product.name,
+        slug: product.slug,
+        sku: product.sku,
+        price,
+        transfer_price: product.transfer_price,
+        cash_price: newSale.allowed ? getEffectiveCashPrice(product) : undefined,
+        stock: product.stock,
+        status: product.status,
+        categories,
+        unavailableReason: newSale.allowed ? null : newSale.reasons.join(" · "),
+      });
+    }
+    if (data.length < batchSize) return products;
   }
-
-  return (data ?? []).map((product) => ({
-    ...product,
-    cash_price: getEffectiveCashPrice(product),
-    name: product.commercial_label ?? product.name,
-    categories: firstRelation(product.categories),
-  })) as StoreSaleProduct[];
 }
 
 export async function createStoreSale(input: {

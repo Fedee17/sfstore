@@ -8,9 +8,10 @@ import { test } from 'node:test';
 import ts from 'typescript';
 const require=createRequire(import.meta.url), root=resolve(import.meta.dirname,'..');
 
-test('real physical-sale React form: split payments, list/25% repricing, complete payment and retry feedback',
+test('real physical-sale React form: explains unavailable products, then supports split payments and retries',
  {skip:!process.env.SFSTORE_TEST_PLAYWRIGHT_MODULE},async()=>{
-  const dir=mkdtempSync(join(tmpdir(),'sfstore-sales-ui-'));let server,browser;
+  const fixturePrefix=join(resolve(process.env.SFSTORE_TEST_TMP_DIR||tmpdir()),'sfstore-sales-ui-');
+  const dir=mkdtempSync(fixturePrefix);let server,browser;
   try{
     const transpile=(source,target)=>writeFileSync(join(dir,target),ts.transpileModule(readFileSync(join(root,source),'utf8'),{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2020}}).outputText);
     transpile('components/admin/sales/store-sale-form.tsx','form.js');transpile('components/admin/pending-submit-button.tsx','pending.js');transpile('lib/store-sales.ts','model.js');
@@ -19,20 +20,34 @@ test('real physical-sale React form: split payments, list/25% repricing, complet
     writeFileSync(join(dir,'navigation.js'),`export function useRouter(){return {refresh(){window.refreshes=(window.refreshes||0)+1}};}`);
     writeFileSync(join(dir,'action.js'),`export async function createStoreSaleAction(state,form){ window.submitted.push(Object.fromEntries(form)); window.lastItems=form.getAll('unitPrice'); window.lastMethods=form.getAll('paymentMethod'); return window.rejectSynthetic ? {status:'error',message:'Precio actualizado: revisá el total.'} : {status:'success',orderId:'synthetic',paymentStatus:'paid',message:'Venta confirmada sintética'}; }`);
     writeFileSync(join(dir,'link.js'),`import React from 'react';export default function Link({href,children,...rest}){return React.createElement('a',{href,...rest},children);}`);
-    writeFileSync(join(dir,'entry.js'),`import React from 'react';import{createRoot}from'react-dom/client';import{StoreSaleForm}from'./form.js';window.submitted=[];window.rejectSynthetic=true;createRoot(document.getElementById('root')).render(React.createElement(StoreSaleForm,{initialProductId:window.location.search.includes("prefill")?"11111111-1111-4111-8111-111111111111":undefined,products:[{id:'11111111-1111-4111-8111-111111111111',name:'SYNTHETIC PRODUCT',slug:'synthetic',sku:'TEST-100',price:100,transfer_price:1,stock:2,status:'active',categories:null}]}));`);
+    writeFileSync(join(dir,'entry.js'),`import React from 'react';import{createRoot}from'react-dom/client';import{StoreSaleForm}from'./form.js';
+      const product={id:'11111111-1111-4111-8111-111111111111',name:'SYNTHETIC PRODUCT',slug:'synthetic',sku:'TEST-100',price:100,transfer_price:1,stock:2,status:'active',categories:null,unavailableReason:null};
+      window.submitted=[];window.rejectSynthetic=true;
+      createRoot(document.getElementById('root')).render(React.createElement(StoreSaleForm,{
+        initialProductId:window.location.search.includes("blocked")?"blocked":window.location.search.includes("prefill")?product.id:undefined,
+        products:[product,
+          {...product,id:'blocked',name:'Restringido sintético',sku:'TEST-BLOCKED',unavailableReason:'Bloqueado para nuevas ventas'},
+          {...product,id:'historical',name:'Histórico sintético',sku:'TEST-HISTORY',unavailableReason:'Identidad histórica: sólo conserva registros'},
+        ]
+      }));`);
     const webpack=require('next/dist/compiled/webpack/webpack').webpack;
     const compiler=webpack({mode:'development',target:'web',entry:join(dir,'entry.js'),devtool:false,output:{path:join(dir,'out'),filename:'bundle.js'},resolve:{modules:[join(root,'node_modules')],alias:{'@/lib/commercial-reporting/periods':join(dir,'periods.js'),'@/components/admin/unsaved-changes-guard':join(dir,'guard.js'),'@/app/admin/ventas/actions':join(dir,'action.js'),'@/components/admin/pending-submit-button':join(dir,'pending.js'),'@/lib/store-sales':join(dir,'model.js'),'@/lib/products/component-combos':join(dir,'combos.js'),'next/navigation':join(dir,'navigation.js'),'next/link':join(dir,'link.js')}},performance:{hints:false}});
     await new Promise((resolve,reject)=>compiler.run((err,stats)=>err?reject(err):stats.hasErrors()?reject(new Error(stats.toString({all:false,errors:true}))):resolve()));
     await new Promise((resolve,reject)=>compiler.close(err=>err?reject(err):resolve()));
-    const chunks=join(root,'.next/static/chunks');
-    const css=existsSync(chunks)?readdirSync(chunks).filter(name=>name.endsWith('.css')).map(name=>readFileSync(join(chunks,name),'utf8')).join('\n'):'';
+    const staticDir=join(root,'.next/static');
+    const css=existsSync(staticDir)?readdirSync(staticDir,{recursive:true}).filter(name=>name.endsWith('.css')).map(name=>readFileSync(join(staticDir,name),'utf8')).join('\n'):'';
     server=createServer((req,res)=>{res.setHeader('Content-Type',req.url==='/bundle.js'?'text/javascript; charset=utf-8':req.url==='/styles.css'?'text/css':'text/html; charset=utf-8');res.end(req.url==='/bundle.js'?readFileSync(join(dir,'out','bundle.js')):req.url==='/styles.css'?css:'<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/styles.css"><div id="root" style="max-width:1100px;margin:auto;padding:16px;font-family:Arial,sans-serif"></div><script src="/bundle.js"></script>');});
     await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}`;
     const {chromium}=require(process.env.SFSTORE_TEST_PLAYWRIGHT_MODULE);browser=await chromium.launch({headless:true,channel:process.env.SFSTORE_TEST_BROWSER_CHANNEL||'msedge'});
-    for(const viewport of [{width:390,height:844},{width:648,height:572},{width:1366,height:768}]){
+    for(const viewport of [{width:320,height:640},{width:390,height:844},{width:648,height:572},{width:1366,height:768}]){
       const context=await browser.newContext({viewport});await context.route('**/*',route=>new URL(route.request().url()).origin===base?route.continue():route.abort());
-      const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
-      const search=page.getByRole('searchbox');await search.fill('TEST-100');await page.getByRole('button',{name:/SYNTHETIC PRODUCT/}).click();
+      const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/?blocked');
+      const search=page.getByRole('searchbox');
+      await search.fill('TEST-BLOCKED');const blocked=page.getByRole('button',{name:/Restringido sintético.*Bloqueado para nuevas ventas/});await blocked.waitFor();assert.equal(await blocked.isDisabled(),true);
+      await search.fill('TEST-HISTORY');const historical=page.getByRole('button',{name:/Histórico sintético.*Identidad histórica/});await historical.waitFor();assert.equal(await historical.isDisabled(),true);
+      assert.equal(await page.locator('input[name="productId"]').count(),0);
+      await search.fill('TEST-100');await page.getByRole('button',{name:/SYNTHETIC PRODUCT/}).click();
+      await page.locator('input[name="quantity"]:focus').waitFor();
       await page.evaluate(()=>{const link=document.createElement('a');link.href='/discard';link.id='leave-draft';link.textContent='Salir del borrador';document.body.append(link);});
       const dismissed=page.waitForEvent('dialog').then(async dialog=>{assert.match(dialog.message(),/cambios sin guardar/);await dialog.dismiss();});
       await page.locator('#leave-draft').click();await dismissed;assert.equal(new URL(page.url()).pathname,'/');
@@ -55,6 +70,7 @@ test('real physical-sale React form: split payments, list/25% repricing, complet
       assert.notEqual(await page.locator('input[name="idempotencyKey"]').inputValue(),key);
       assert.equal(await page.locator('input[name="productId"]').count(),0);
       await search.fill('TEST-100');await page.getByRole('button',{name:/SYNTHETIC PRODUCT/}).click();
+      await page.locator('input[name="quantity"]:focus').waitFor();
       await page.locator('input[name="saleUnitPrice"]').fill('125');
       await page.locator('input[name="paymentAmount"]').fill('125');
       assert.equal(await submit.isEnabled(),true);
@@ -71,5 +87,5 @@ test('real physical-sale React form: split payments, list/25% repricing, complet
     const prefilled=await browser.newPage({viewport:{width:390,height:844}});await prefilled.goto(base+'?prefill=1');
     assert.equal(await prefilled.locator('input[name="productId"]').inputValue(),'11111111-1111-4111-8111-111111111111');
     assert.equal(await prefilled.locator('input[name="quantity"]').inputValue(),'1');await prefilled.close();
-  } finally{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));assert.ok(dir.startsWith(join(tmpdir(),'sfstore-sales-ui-')));rmSync(dir,{recursive:true,force:true});}
+  } finally{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));assert.ok(dir.startsWith(fixturePrefix));rmSync(dir,{recursive:true,force:true});}
 });

@@ -14,6 +14,7 @@ export type ProductAvailabilityInput = {
   categorySlug: string | null | undefined;
   categoryIsActive: boolean;
   stock: number;
+  price?: number;
 };
 
 export type ProductAvailability = {
@@ -35,6 +36,9 @@ export function describeProductAvailability(product: ProductAvailabilityInput): 
 
   const newSale = [...shared];
   if (!(product.stock > 0)) newSale.push("Sin stock");
+  if (product.price !== undefined && (!Number.isFinite(product.price) || product.price <= 0)) {
+    newSale.push("Sin precio de lista válido");
+  }
 
   const web = [...shared];
   if (!product.webVisible) web.push("Oculto en la web");
@@ -54,6 +58,7 @@ type AdminProductAvailabilityRow = {
   slug?: string;
   status: string;
   stock: number;
+  price?: number;
   web_visible?: boolean;
   commercial_blocked?: boolean;
   historical_identity?: boolean | null;
@@ -73,5 +78,6 @@ export function adminProductAvailability(product: AdminProductAvailabilityRow) {
     categorySlug: product.categories?.slug,
     categoryIsActive: product.categories?.is_active === true,
     stock: product.stock,
+    price: product.price,
   });
 }

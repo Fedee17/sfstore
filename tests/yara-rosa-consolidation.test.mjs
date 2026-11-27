@@ -88,6 +88,7 @@ function fakeClient(rows, error = null) {
       in(key,values) { selected=selected.filter(row=>values.includes(row[key]));return query; },
       neq(key, value) { selected = selected.filter((row) => key.startsWith("categories.") ? row.categories?.[key.slice(11)] !== value : row[key] !== value); return query; },
       order() { return query; }, limit() { return query; },
+      range(from, to) { selected = selected.slice(from, to + 1); return query; },
       maybeSingle() { single = true; return query; },
       then(resolve, reject) { return Promise.resolve({ data: single ? selected[0] ?? null : selected, error }).then(resolve, reject); },
     };
@@ -138,17 +139,27 @@ const saleService = await import(moduleUrl(source("services/store-sales.ts").rep
   .replace("@/services/commercial-history-guards", mutationGuardUrl)
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/store-sales", moduleUrl(source("lib/store-sales.ts")))
-  .replace("@/lib/products/yara-rosa-consolidation", identityUrl)));
+  .replace("@/lib/products/product-availability", new URL("../lib/products/product-availability.ts", import.meta.url).href)));
 const orderService = await import(moduleUrl(source("services/customer-orders.ts")
   .replace("@/lib/supabase/server", mockUrl)
   .replace("@/lib/orders/workflow", moduleUrl(source("lib/orders/workflow.ts")))
   .replace("@/services/order-payments", paymentServiceUrl)
   .replace("@/lib/products/yara-rosa-consolidation", identityUrl)));
 
-for (const [label, listProducts] of [
-  ["store sales", saleService.listStoreSaleProducts],
-  ["customer orders", orderService.listCustomerOrderProducts],
-]) {
+test("store sales explains all unavailable identities and keeps a web-hidden eligible SKU selectable", async () => {
+  const hidden = { ...a, id: "synthetic-hidden", slug: "synthetic-hidden", stock: 2, web_visible: false };
+  const rows = [hidden, b, { ...hidden, id: "draft", status: "draft" },
+    { ...hidden, id: "blocked", commercial_blocked: true }, { ...hidden, id: "no-price", price: 0 },
+    { ...hidden, id: "unknown-identity", historical_identity: null }];
+  globalThis.__yaraReadOnlyClient = fakeClient(rows.map(publicRow));
+  const result = await saleService.listStoreSaleProducts();
+  assert.deepEqual(result.map(row => row.unavailableReason), [
+    null, "Identidad histórica: sólo conserva registros", "En borrador", "Bloqueado para nuevas ventas",
+    "Sin precio de lista válido", "Identidad histórica: sólo conserva registros",
+  ]);
+});
+
+for (const [label, listProducts] of [["customer orders", orderService.listCustomerOrderProducts]]) {
   test(`${label}: A remains available and active B is explicitly excluded before apply`, async () => {
     globalThis.__yaraReadOnlyClient = fakeClient([publicRow(a), publicRow(b)]);
     const before = structuredClone([a, b]);
@@ -186,7 +197,7 @@ test("normal admin mutations cannot reactivate B and preview preserves duplicate
 test("operational selectors and admin searches retain their guards", () => {
   assert.match(source("services/admin.ts"), /neq\("id", YARA_ROSA.archivedId\)/);
   assert.match(source("services/purchases.ts"), /neq\("id", YARA_ROSA.archivedId\)/);
-  for (const path of ["services/store-sales.ts", "services/customer-orders.ts", "services/purchases.ts"]) {
+  for (const path of ["services/customer-orders.ts", "services/purchases.ts"]) {
     assert.match(source(path), /eq\("historical_identity", false\)/);
     if (path === "services/purchases.ts") {
       assert.match(source(path), /\.or\("status\.eq\.active,and\(status\.eq\.draft,family_id\.not\.is\.null\)"\)/);

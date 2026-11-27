@@ -111,9 +111,15 @@ test("admin rows map their columns onto the shared rule", () => {
 test("the sale rule mirrors the products offered by the store sale form", () => {
   const storeSales = source("services", "store-sales.ts");
   const list = storeSales.slice(storeSales.indexOf("export async function listStoreSaleProducts"), storeSales.indexOf("export async function createStoreSale"));
-  assert.match(list, /\.eq\("historical_identity", false\)/);
-  assert.match(list, /\.eq\("status", "active"\)/);
-  assert.match(list, /\.eq\("commercial_blocked", false\)/);
+  assert.match(list, /adminProductAvailability\(/);
+  assert.match(list, /unavailableReason: newSale\.allowed \? null : newSale\.reasons/);
+});
+
+test("a product without a valid list price still appears in the web status but cannot be added to a new sale", () => {
+  const product = { ...sellable, price: 0 };
+  const availability = describeProductAvailability(product);
+  assert.equal(availability.web.visible, true);
+  assert.deepEqual(availability.newSale, { allowed: false, reasons: ["Sin precio de lista válido"] });
 });
 
 test("the admin product list reads the commercial columns and can query historical identities", () => {

@@ -78,7 +78,7 @@ export default async function AdminInventoryPage({
   const type = isMovementType(typeParam) ? typeParam : undefined;
   const view = getParam(params, "view") === "movements" || Boolean(product || type || from || to) ? "movements" : "availability";
   const tabs = <nav aria-label="Inventario" className="mt-6 flex flex-wrap gap-3">{[["availability","Disponibilidad y reposición"],["movements","Movimientos"]].map(([key,label])=><Link key={key} href={key==="movements"?"/admin/inventario?view=movements":"/admin/inventario"} aria-current={view===key?"page":undefined} className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold ${view===key?"bg-[#556B2F] text-white":"bg-white"}`}>{label}</Link>)}</nav>;
-  if (view === "availability") return <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]"><AdminNav/><section className="mx-auto max-w-7xl px-5 py-10 sm:px-8"><h1 className="text-3xl font-semibold sm:text-4xl">Inventario</h1>{tabs}<InventoryAvailability search={search} stock={getParam(params,"stock")}/></section></main>;
+  if (view === "availability") return <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]"><AdminNav/><section className="mx-auto max-w-7xl px-5 py-10 sm:px-8"><h1 className="text-3xl font-semibold sm:text-4xl">Inventario</h1>{tabs}<InventoryAvailability search={search} stock={getParam(params,"stock")} scope={getParam(params,"scope")}/></section></main>;
   const rawPage=Number(getParam(params,"page")||1);
   const page=Number.isSafeInteger(rawPage)&&rawPage>0&&rawPage<=1000000?rawPage:1;
   const result = await listInventoryMovements({

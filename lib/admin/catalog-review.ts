@@ -9,8 +9,8 @@ export function catalogIssues(product: AdminProduct): string[] {
   return issues;
 }
 
-export function availabilityRows(products: AdminProduct[], filter: string) {
-  const rows = products.filter(product => product.status !== "archived");
+export function availabilityRows(products: AdminProduct[], filter: string, { includeArchived = false } = {}) {
+  const rows = includeArchived ? products : products.filter(product => product.status !== "archived");
   return rows.filter(product => filter === "out" ? product.stock <= 0 : filter === "low" ? product.stock > 0 && product.stock <= LOW_STOCK_LIMIT : true)
     .sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name, "es-AR"));
 }
