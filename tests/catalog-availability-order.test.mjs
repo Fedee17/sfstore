@@ -83,6 +83,7 @@ function loadPage(file, products) {
     ...catalogFrameStubs,
     '@/components/catalog/mobile-catalog-filters': { MobileCatalogFilters: () => null },
     '@/components/catalog/catalog-sidebar': { CatalogSidebar: () => null },
+    '@/components/catalog/catalog-sort-control': { CatalogSortControl: ({ basePath, order, params }) => React.createElement('form', { 'data-sort': order ?? '', 'data-base': basePath, 'data-params': JSON.stringify(params) }) },
     '@/components/analytics-view': { AnalyticsView: () => null },
     '@/lib/catalog/availability-order': ordering,
     '@/lib/seo/share-image': { shareImage: { url: '/logo-sfstore.png', alt: 'SFSTORE Importados' }, brandLogoPath: '/logo-sfstore.png' },
@@ -108,13 +109,16 @@ function loadPage(file, products) {
 }
 
 for (const route of ['perfumes', 'mates', 'accesorios', 'buscar']) {
-  test(`${route}: page orders complete results, retains exhausted links and adds no sorting controls`, async () => {
+  test(`${route}: page orders complete results by default and retains exhausted links`, async () => {
     const products = [item('out', 'Alfa agotado', 0, { category: route, featured: true }), item('in', 'Zeta disponible', 1, { category: route })];
     const before = structuredClone(products);
     const { html, products: result } = await loadPage(`app/${route}/page.tsx`, products).run();
     assert.deepEqual(ids(result), ['in', 'out']);
     assert.match(html, /href="\/producto\/synthetic-out"/);
     assert.doesNotMatch(html, /Disponibles primero/);
+    // I3: only Perfumes and Mates offer the price order; Accesorios and search keep the recommended order alone.
+    if (route === 'perfumes' || route === 'mates') assert.match(html, new RegExp('data-sort="" data-base="/' + route + '"'));
+    else assert.doesNotMatch(html, /data-sort/);
     assert.deepEqual(products, before);
   });
 }
@@ -152,4 +156,70 @@ test('sorting the same publications leaves the shared catalog order available to
   const ordered = ordering.availableFirst(shared);
   assert.equal(publicationAvailable(ordered[0]), true);
   assert.deepEqual(shared, original);
+});
+
+test('I3: price order only accepts the two public values; anything else keeps the recommended order', () => {
+  assert.equal(ordering.parseCatalogOrder('menor-precio'), 'menor-precio');
+  assert.equal(ordering.parseCatalogOrder('mayor-precio'), 'mayor-precio');
+  for (const value of [undefined, '', 'precio', 'MENOR-PRECIO', '__proto__', ['menor-precio']]) assert.equal(ordering.parseCatalogOrder(value), null);
+  const input = [item('z', 'Zeta', 0, { featured: true }), item('b', 'Ámbar', 2), item('f', 'Zeta', 1, { featured: true })];
+  assert.deepEqual(ids(ordering.orderCatalog(input, null)), ids(ordering.availableFirst(input)));
+});
+
+test('I3: the compared amount is the one the card highlights: cash price when valid, otherwise list, none without a valid list', () => {
+  assert.equal(ordering.catalogCardPrice({ price: 100000, transferPrice: 75000 }), 75000);
+  assert.equal(ordering.catalogCardPrice({ price: 100000, transferPrice: null }), 100000);
+  assert.equal(ordering.catalogCardPrice({ price: 100000, transferPrice: 120000 }), 100000);
+  assert.equal(ordering.catalogCardPrice({ price: 0, transferPrice: 50 }), null);
+});
+
+test('I3: price order keeps available products first and prices on request after priced ones, without mutating the input', () => {
+  const input = [
+    item('soldout-cheap', 'Agotado barato', 0, { price: 10000, transferPrice: 7500 }),
+    item('expensive', 'Caro', 1, { price: 200000, transferPrice: 150000 }),
+    item('on-request', 'Consultar', 1, { price: 0, transferPrice: null }),
+    item('cheap', 'Barato', 3, { price: 40000, transferPrice: 30000 }),
+    item('list-only', 'Solo lista', 1, { price: 60000, transferPrice: null }),
+    item('family', 'Familia', 0, { kind: 'family', price: 90000, transferPrice: 50000, variants: [item('v1', 'Negro', 1), item('v2', 'Gris', 0)] }),
+    item('soldout-expensive', 'Agotado caro', 0, { price: 300000, transferPrice: 225000 }),
+  ];
+  const before = ids(input);
+  assert.deepEqual(ids(ordering.orderCatalog(input, 'menor-precio')), ['cheap', 'family', 'list-only', 'expensive', 'on-request', 'soldout-cheap', 'soldout-expensive']);
+  assert.deepEqual(ids(ordering.orderCatalog(input, 'mayor-precio')), ['expensive', 'list-only', 'family', 'cheap', 'on-request', 'soldout-expensive', 'soldout-cheap']);
+  assert.deepEqual(ids(input), before);
+});
+
+test('I3: equal prices fall back to the recommended order (featured, Spanish name, ID)', () => {
+  const input = [item('b', 'Beta', 1, { price: 100, transferPrice: 75 }), item('a', 'Alfa', 1, { price: 100, transferPrice: 75 }), item('f', 'Zeta', 1, { price: 100, transferPrice: 75, featured: true })];
+  assert.deepEqual(ids(ordering.orderCatalog(input, 'menor-precio')), ['f', 'a', 'b']);
+  assert.deepEqual(ids(ordering.orderCatalog(input, 'mayor-precio')), ['f', 'a', 'b']);
+});
+
+test('I3: perfumes and mates read ?orden and order the filtered grid with it', () => {
+  for (const page of ['app/perfumes/page.tsx', 'app/mates/page.tsx']) {
+    const source = readFileSync(new URL('../' + page, import.meta.url), 'utf8');
+    assert.match(source, /parseCatalogOrder\(params\.orden\)/, page);
+    assert.match(source, /orderCatalog\(filteredProducts, order\)/, page);
+    assert.doesNotMatch(source, /availableFirst\(filteredProducts\)/, page);
+    assert.match(source, /<CatalogSortControl /, page);
+  }
+});
+
+test('I3: ?orden reaches the grid and the control on both catalogs, and an unknown value falls back to recommended', async () => {
+  for (const route of ['perfumes', 'mates']) {
+    const products = [item('expensive', 'Alfa caro', 1, { category: route, price: 200, transferPrice: 150, featured: true }), item('cheap', 'Zeta barato', 1, { category: route, price: 100, transferPrice: 75 })];
+    const page = loadPage('app/' + route + '/page.tsx', products);
+    const cheapFirst = await page.run({ orden: 'menor-precio' });
+    assert.deepEqual(ids(cheapFirst.products), ['cheap', 'expensive']);
+    assert.match(cheapFirst.html, /data-sort="menor-precio"/);
+    assert.deepEqual(ids((await page.run({ orden: 'mayor-precio' })).products), ['expensive', 'cheap']);
+    const unknown = await page.run({ orden: 'barato' });
+    assert.deepEqual(ids(unknown.products), ['expensive', 'cheap']);
+    assert.match(unknown.html, /data-sort=""/);
+  }
+});
+
+test('I3: a single result shows no order control', async () => {
+  const html = (await loadPage('app/perfumes/page.tsx', [item('only', 'Único', 1, { price: 100, transferPrice: 75 })]).run()).html;
+  assert.doesNotMatch(html, /data-sort/);
 });

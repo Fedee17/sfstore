@@ -17,7 +17,8 @@ import {
   type CatalogAttributeKey,
 } from "@/lib/catalog/attribute-config";
 import { getProductsByCategorySlug } from "@/services/products";
-import { availableFirst } from "@/lib/catalog/availability-order";
+import { orderCatalog, parseCatalogOrder } from "@/lib/catalog/availability-order";
+import { CatalogSortControl } from "@/components/catalog/catalog-sort-control";
 
 export const metadata: Metadata = {
   title: "Perfumes importados y árabes",
@@ -45,6 +46,7 @@ type PerfumesSearchParams = {
   momento?: string;
   genero?: string;
   contenido?: string;
+  orden?: string;
   estilo?: string;
   para?: string;
   presupuesto?: string;
@@ -95,6 +97,7 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
     (entry): entry is [CatalogAttributeKey, string] => Boolean(entry[1]),
   );
   const filtersByCategory = perfumeFiltersByCategory(products);
+  const order = parseCatalogOrder(params.orden);
   const filteredProducts = activeAttributeFilters.length > 0
     ? products.filter((product) =>
         activeAttributeFilters.every(([key, value]) =>
@@ -138,8 +141,10 @@ export default async function PerfumesPage({ searchParams }: PerfumesPageProps) 
               </h2>
             </div> : null}
 
+            {filteredProducts.length > 1 ? <div className="mt-3"><CatalogSortControl basePath="/perfumes" params={params} order={order} /></div> : null}
+
             {filteredProducts.length > 0 ? (
-              <ProductGrid products={availableFirst(filteredProducts)} label="Perfume" presentation="catalog" />
+              <ProductGrid products={orderCatalog(filteredProducts, order)} label="Perfume" presentation="catalog" />
             ) : (
               <CatalogEmptyState title="No encontramos productos con esa combinación." text="Probá sacando algún filtro o volvé a ver toda la categoría." href="/perfumes" action="Limpiar filtros" titleAs={isArabicCatalog ? "h2" : "h3"} />
             )}
