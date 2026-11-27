@@ -63,11 +63,11 @@ export function planBulkPrice(rows: BulkPriceRow[], bp: number, presentationIds:
       const moved = move(cents(row.transfer_price!), bp);
       if (moved.toCents <= 0 || moved.toCents > list.toCents) { skip("El precio especial quedaría mayor que la lista o en $0"); continue; }
       special = { approved: true, ...moved };
-      plan.roundingCents += moved.roundingCents;
     } else {
       special = { approved: false, fromCents: Math.round(getWebTransferPrice(Number(row.price)) * 100), toCents: Math.round(getWebTransferPrice(list.toCents / 100) * 100) };
     }
-    plan.roundingCents += list.roundingCents;
+    if (list.toCents === list.fromCents && (!special.approved || special.toCents === special.fromCents)) { skip("Con el redondeo el precio queda igual"); continue; }
+    plan.roundingCents += list.roundingCents + (special.approved ? special.roundingCents : 0);
     plan.change.push({ row, list, special });
   }
   plan.tooMany = plan.change.length > BULK_PRICE_LIMIT;
