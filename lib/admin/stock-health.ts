@@ -69,11 +69,11 @@ export function buildStockHealth(sales: readonly SaleFact[], snapshot: StockSnap
       retainedCents:verifiedCost===null?null:sumCents([verifiedCost*product.available]),
       recent:commercialDate(product.created_at)>=window.from});
   }
-  const risk=rows.filter(row=>row.soldUnits>0 && row.coverageDays!<STOCK_RISK_DAYS)
+  const risk=rows.filter(isStockRisk)
     .sort((a,b)=>a.coverageDays!-b.coverageDays! || b.soldUnits-a.soldUnits || a.id.localeCompare(b.id));
   const idle=rows.filter(row=>row.available>0 && row.soldUnits60===0 && !row.recent && !uncertainDemand.has(row.id))
     .sort((a,b)=>(a.retainedCents===null?1:0)-(b.retainedCents===null?1:0) || (b.retainedCents??0)-(a.retainedCents??0) || a.id.localeCompare(b.id));
-  return {asOf:snapshot.asOf,...window,risk,idle,
+  return {asOf:snapshot.asOf,...window,rows,risk,idle,
     retainedCents:sumCents(idle.flatMap(row=>row.retainedCents===null?[]:[row.retainedCents])),
     unknownCostItems:idle.filter(row=>row.retainedCents===null).length,
     recentExcluded:rows.filter(row=>row.available>0 && row.soldUnits60===0 && row.recent).length,
@@ -81,3 +81,16 @@ export function buildStockHealth(sales: readonly SaleFact[], snapshot: StockSnap
     unverifiedHistoricalSales,unidentifiedLines};
 }
 export type StockHealth = ReturnType<typeof buildStockHealth>;
+export type StockCoverage = { coverageDays: number | null; soldUnits: number; risk: boolean };
+
+function isStockRisk(row: StockHealthRow) {
+  return row.soldUnits>0 && row.coverageDays!<STOCK_RISK_DAYS;
+}
+/** Every SKU's days of stock at the last 30 days' pace; null days means no sales to estimate from. */
+export function stockCoverageById(health: StockHealth): Map<string,StockCoverage> {
+  return new Map(health.rows.map(row=>[row.id,{coverageDays:row.coverageDays,soldUnits:row.soldUnits,risk:isStockRisk(row)}]));
+}
+const coverageFormat=new Intl.NumberFormat('es-AR',{style:'unit',unit:'day',unitDisplay:'long',maximumFractionDigits:1,roundingMode:'floor'});
+export function coverageDaysLabel(days: number) {
+  return days<0.1?'menos de 0,1 días':coverageFormat.format(days);
+}
