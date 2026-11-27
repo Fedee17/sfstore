@@ -8,6 +8,7 @@ import {
   getCatalogAttributeValues,
 } from "@/lib/catalog/attribute-config";
 import { getQuickCatalogPrimaryImage } from "@/lib/admin/quick-catalog";
+import { stockAdjustmentHref } from "@/lib/admin/catalog-review";
 import { getPerfumeRecommendationReasons } from "@/lib/admin/perfume-recommendation-reasons";
 import type { QuickCatalogProduct } from "@/lib/admin/quick-catalog";
 import type { PerfumeRecommendation } from "@/lib/catalog/perfume-recommendation";
@@ -227,6 +228,14 @@ export function ConsultationProductCard({
           >
             Editar
           </Link>
+          <div className="flex flex-wrap justify-center gap-x-4 text-sm font-semibold text-[#465826]">
+            <Link href={stockAdjustmentHref(product)} className="inline-flex min-h-11 items-center underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]">
+              Ajustar stock
+            </Link>
+            <Link href={`/admin/inventario?view=movements&product=${encodeURIComponent(product.id)}`} className="inline-flex min-h-11 items-center underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F]">
+              Ver movimientos
+            </Link>
+          </div>
         </div>
       </div>
     </article>
