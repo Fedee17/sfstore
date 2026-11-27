@@ -321,6 +321,12 @@
       "stagingFile": "staging/supabase/migrations/202611290005_historical_sale_costs.sql",
       "sourceSha256": "a800014528a39eb2fa5130248dd95b619ac6094d2e231dddbceab64c99a58fad",
       "stagingSha256": "a800014528a39eb2fa5130248dd95b619ac6094d2e231dddbceab64c99a58fad"
+    },
+    {
+      "source": "supabase/migrations/202611290006_historical_payment_dates.sql",
+      "stagingFile": "staging/supabase/migrations/202611290006_historical_payment_dates.sql",
+      "sourceSha256": "d2e1246e7c3d4a51dac2b4afc55746eff53e1325ac6da1610d98843d83ac452a",
+      "stagingSha256": "d2e1246e7c3d4a51dac2b4afc55746eff53e1325ac6da1610d98843d83ac452a"
     }
   ]
 }
