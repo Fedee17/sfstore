@@ -111,3 +111,13 @@ test('the action re-plans after the session guard and sends what the preview sho
   assert.match(page, /action=\{applyBulkPrice\}/);
   assert.match(read('app/admin/productos/page.tsx'), /href="\/admin\/productos\/precios"/);
 });
+
+test('a product whose prices round back to the same amounts is skipped, not "changed"', () => {
+  const plan = planBulkPrice([
+    row('same', 100),
+    row('specialOnly', 100000, { transfer_price: 74950, cash_price_approved_at: '2026-11-26T10:00:00+00:00' }),
+  ], 1, new Set());
+  assert.deepEqual(plan.skip.map(s => [s.row.id, s.reason]), [['same', 'Con el redondeo el precio queda igual']]);
+  assert.deepEqual(plan.change.map(c => c.row.id), ['specialOnly'], 'the approved special still moves to $75.000');
+  assert.equal(plan.roundingCents, plan.change[0].list.roundingCents + plan.change[0].special.roundingCents);
+});
