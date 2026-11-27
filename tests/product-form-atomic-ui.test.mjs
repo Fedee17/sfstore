@@ -187,3 +187,10 @@ test("real pricing editor: preserve manual prices, explicit apply, cost-only cha
     }
   } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
 });
+
+test("catalog attribute selects keep their height beside taller attribute groups", () => {
+  const source = readFileSync(new URL("../components/admin/products/product-form.tsx", import.meta.url), "utf8");
+  const selectBranch = source.slice(source.indexOf('if (field.input === "select")'), source.indexOf("<select", source.indexOf('if (field.input === "select")')));
+  // The label is a stretched grid item: without content-start its rows absorb the row height and stretch the select.
+  assert.match(selectBranch, /<label className="[^"]*\bcontent-start\b[^"]*">/);
+});

@@ -199,7 +199,7 @@ function CatalogAttributeControl({
 
   if (field.input === "select") {
     return (
-      <label className="grid gap-2">
+      <label className="grid content-start gap-2">
         <span className="text-sm font-semibold text-[#1F1F1F]/75">
           {field.label}
         </span>
