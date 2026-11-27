@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
-import { searchProducts, normalizeSearch } from "@/lib/catalog/search";
+import { PUBLIC_CATALOG_CACHE_TAG } from "@/lib/catalog/public-catalog-revalidation";
+import { searchProductsWithRecovery, normalizeSearch } from "@/lib/catalog/search";
 import { getCatalogPublications } from "@/services/products";
 
 const readSuggestionCatalog = unstable_cache(async () => {
@@ -10,14 +11,14 @@ const readSuggestionCatalog = unstable_cache(async () => {
     variants: variants?.map(({ name, variantLabel }) => ({ name, variantLabel })),
     attributes: attributes?.map(({ name, value }) => ({ name, value })),
   }));
-}, ["public-catalog-suggestions-v2"], { revalidate: 60 });
+}, ["public-catalog-suggestions-v2"], { tags: [PUBLIC_CATALOG_CACHE_TAG], revalidate: 60 });
 
 export async function GET(request: Request) {
   const query = (new URL(request.url).searchParams.get("q") ?? "").trim();
   if (query.length < 2 || query.length > 80) return Response.json([]);
 
   try {
-    const products = searchProducts(await readSuggestionCatalog(), query);
+    const { products } = searchProductsWithRecovery(await readSuggestionCatalog(), query);
     const term = normalizeSearch(query);
     const direct = products.filter((product) => normalizeSearch(product.name).includes(term));
     const related = products.filter((product) => !normalizeSearch(product.name).includes(term));

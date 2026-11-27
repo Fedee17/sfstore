@@ -25,7 +25,7 @@ Rama `codex/mercadopago-20261126`. Este documento no autoriza push, merge, despl
 2. **Base:** `checkout_payment_settings.mercadopago_enabled`. Habilita Mercado Pago en un pago.
 3. **Base:** `checkout_payment_settings.mercadopago_installments_enabled`. Habilita las cuotas y requiere también el interruptor 2. Activarlo solo cuando la cuenta financie 2 y 3 cuotas sin interés para el comprador.
 
-Para apagar todo de inmediato, poner el interruptor 2 en `false`, sin desplegar nada. Los pedidos ya creados conservan su modalidad.
+Para detener nuevas operaciones, poner el interruptor 2 en `false`, sin desplegar nada. Los pedidos ya creados conservan su modalidad. El interruptor también corta la confirmación automática en la base, pero no vence por sí solo los links ya emitidos en Mercado Pago. Si hay preferencias abiertas o pagos en tránsito, identificar esos pedidos, gestionar el vencimiento de los links y conciliar el estado directamente con el proveedor antes de cerrar la reversión. No reactivar el interruptor como sustituto de esa conciliación.
 
 ## Variables de entorno (Vercel, Production)
 
@@ -57,7 +57,7 @@ Respuestas:
 | 204 | Tópico ignorado |
 | 503 | Error temporal; Mercado Pago reintenta y el procesamiento es idempotente |
 
-**Verificación obligatoria antes de activar:** «Simular notificación» de ambos tópicos no debe responder 401. Un 401 indica que el secreto o el formato de la firma no coinciden. Con el id ficticio de la simulación, lo esperable es 503, porque el pago no existe en Mercado Pago. La prueba definitiva es la notificación del primer pago real (paso 4), que debe confirmar el pedido sin intervención. Para ids `ORD…`, el manifiesto se firma con el id en minúsculas, y eso todavía no se verificó con una notificación real.
+Con los cobros deshabilitados, las simulaciones oficiales ya validadas responden 503 ante firmas válidas y 401 ante firmas inválidas. El manifiesto conserva la capitalización del ID que envió Mercado Pago. La recepción de la notificación de una compra de prueba sigue pendiente y se verifica en un entorno aislado.
 
 ## Migración
 
@@ -72,13 +72,20 @@ Respuestas:
 - En producción se aplica solo dentro del corte autorizado (ver [production-checklist](production-checklist.md)), con respaldo previo y antes del despliegue del código.
 - No modifica precios, stock ni pedidos existentes.
 
-## Orden de activación
+## Activación por etapas
 
-1. Configuración comercial de la cuenta: acreditación a 35 días, 2 y 3 cuotas sin interés para el comprador, costos reales confirmados en la calculadora.
-2. Migración productiva y despliegue del código con los tres interruptores apagados.
-3. Variables productivas y webhooks; pasar la simulación de notificaciones.
-4. Interruptores 1 y 2: un pago real de bajo importe con Checkout Pro. Verificar el pedido confirmado, el link vencido y la devolución manual desde Mercado Pago.
-5. Interruptor 3: una compra real en 2 cuotas. Verificar que el comprador pague el precio de lista sin interés adicional.
+### Etapa A · Checkout Pro en un pago
+
+1. Validar primero en un entorno aislado con la Public Key y el Access Token de **Prueba** de «Sf Store», un comprador de prueba si lo requiere la modalidad del panel y tarjetas de prueba. Usar datos sintéticos, un secreto de webhook independiente y Supabase aislado. La versión de este PR bloquea cobros en Vercel Preview.
+2. Comprobar que la preferencia admite un único pago y cobra exactamente el total de contado. Verificar una aprobación, un pago pendiente y un rechazo, incluida la consulta del estado al proveedor y la confirmación del pedido sólo al aprobarse. [Pruebas oficiales para Checkout Pro con preferencias](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-preferences/integration-test/test-purchases).
+3. Con autorización productiva, confirmar que esté aplicada `202611270001` y que los tres interruptores estén apagados antes del corte. Activar los interruptores 1 y 2 únicamente; dejar el 3 apagado. Checkout Pro no invoca los RPC de `202611270002`.
+4. Confirmar que el estado ofrezca contado y que la API siga denegando las cuotas. Si hay inconvenientes, desactivar el interruptor 2 y gestionar las preferencias y pagos pendientes según la reversión indicada arriba. Cada prueba con dinero real requiere autorización específica.
+
+### Etapa B · Checkout API en cuotas
+
+1. Validar Card Payment Brick y Orders en modo manual con credenciales de prueba, incluyendo la recuperación de una respuesta incierta y la conciliación del importe efectivamente pagado. [Modelo de integración de Orders](https://www.mercadopago.com.ar/developers/es/docs/checkout-api-orders/integration-model).
+2. Antes de procesar una orden, acreditar del lado servidor que la oferta corresponde a la tarjeta tokenizada y que la cantidad de cuotas, el interés cero y el total coinciden con el pedido. Las consultas de BIN sólo prueban la oferta para los BIN consultados. La verificación previa vinculada al token sigue pendiente.
+3. Aplicar `202611270002` y habilitar el interruptor 3 únicamente después de esas pruebas y con autorización productiva. Si hay un inconveniente, apagar el interruptor 3 y conciliar los intentos en curso; la etapa A conserva su propio interruptor.
 
 ## Costos y calculadora
 

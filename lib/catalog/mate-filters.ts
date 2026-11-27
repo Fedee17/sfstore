@@ -9,41 +9,11 @@ import {
   MATE_USE_CASE_OPTIONS,
 } from "@/lib/catalog/attribute-config";
 import { normalizeTaxonomyValue } from "@/lib/product-taxonomy";
+import { MATERO_SUBCATEGORIES } from "@/lib/catalog/matero-taxonomy";
 
-export const MATE_CATALOG_CATEGORIES: CatalogCategoryOption[] = [
-  { label: "Mates", hrefValue: "mates", matchValue: "mates" },
-  { label: "Termos", hrefValue: "termos", matchValue: "termos" },
-  { label: "Bombillas", hrefValue: "bombillas", matchValue: "bombillas" },
-  { label: "Bombillones", hrefValue: "bombillones", matchValue: "bombillones" },
-  { label: "Materas", hrefValue: "materas", matchValue: "materas" },
-  { label: "Yerbas", hrefValue: "yerbas", matchValue: "yerbas" },
-  {
-    label: "Latas de yerba",
-    hrefValue: "latas-yerba",
-    matchValue: "latas-de-yerba",
-  },
-  {
-    label: "Dispenser de yerba",
-    hrefValue: "dispenser-yerba",
-    matchValue: "dispenser-de-yerba",
-  },
-  {
-    label: "Despolvilladores",
-    hrefValue: "despolvilladores",
-    matchValue: "despolvilladores",
-  },
-  { label: "Portamate", hrefValue: "porta-mate", matchValue: "porta-mate" },
-  {
-    label: "Combos materos",
-    hrefValue: "combos-materos",
-    matchValue: "combos-materos",
-  },
-  {
-    label: "Regalos materos",
-    hrefValue: "box-regalos-materos",
-    matchValue: "box-regalos-materos",
-  },
-];
+// Menu entries come from the shared matero taxonomy, in its order.
+export const MATE_CATALOG_CATEGORIES: CatalogCategoryOption[] = MATERO_SUBCATEGORIES.flatMap(({ slug, menu }) =>
+  menu ? [{ label: menu.label, hrefValue: menu.hrefValue, matchValue: slug }] : []);
 
 export const MATE_FILTERS_BY_CATEGORY: Record<string, CatalogFilterGroup[]> = {
   mates: [

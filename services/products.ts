@@ -11,6 +11,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { isSupersededYaraRosa } from "@/lib/products/yara-rosa-consolidation";
 import type { Product } from "@/types/product";
 import {publicProductName} from '@/lib/catalog/product-presentation';
+import { selectRelatedProducts } from "@/lib/catalog/related-products";
 
 type SupportedPublicCategory = PublicCatalogSection;
 
@@ -236,10 +237,12 @@ export async function getProductBySlug(slug:string):Promise<PublicProduct|null> 
   return rows[0]??null;
  }catch{return demoProducts().find(p=>p.slug===slug)??null;}
 }
-export async function getRelatedProducts(categoryId:string|undefined,currentProductId:string) {
- if(!categoryId)return [];
- return (await getCatalogPublications()).filter(p=>p.categoryId===categoryId&&p.id!==currentProductId).slice(0,4);
+export async function getRelatedProducts(product:PublicProduct|null|undefined) {
+ if(!product)return [];
+ return selectRelatedProducts(product,await getCatalogPublications());
 }
+/** For the sitemap: a failed catalog read must not be cached as an empty list. */
+export const getCatalogPublicationsOrThrow = readCatalogPublications;
 export async function getCatalogPublications():Promise<PublicProduct[]> {
  try{return await readCatalogPublications();}catch{return [];}
 }

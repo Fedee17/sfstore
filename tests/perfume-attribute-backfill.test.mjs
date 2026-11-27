@@ -93,7 +93,8 @@ function databaseProduct(overrides = {}) {
 }
 
 test("accepts every value from the central configuration", () => {
-  for (const field of configModule.PERFUME_ATTRIBUTE_FIELDS) {
+  // Volume is not part of the approved five-attribute backfill.
+  for (const field of configModule.PERFUME_ATTRIBUTE_FIELDS.filter((item) => item.key !== "contenido")) {
     if (field.multiple) {
       const validation = validatePerfumeBackfillDocument(
         document([

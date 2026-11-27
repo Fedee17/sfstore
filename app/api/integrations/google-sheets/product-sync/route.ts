@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { isSupportedProductSheet } from "@/lib/product-import/core";
 import type { ProductSyncInputRow } from "@/lib/product-import/types";
 import { syncImportedProductRows } from "@/services/product-import";
+import { revalidateProducts } from "@/lib/catalog/public-catalog-revalidation";
 
 export const runtime = "nodejs";
 
@@ -90,6 +91,9 @@ export async function POST(request: Request) {
     console.error("[Google Sheets sync] Batch failed", error instanceof Error ? error.message : "unknown");
     return json({ ok: false, error: "No se pudo procesar la sincronización." }, 500);
   }
+  // One batch for every written product; the sync does not report categories, so every public section is refreshed.
+  const written = result.results.flatMap(row => (row.status === "created" || row.status === "updated") && row.slug ? [{ slug: row.slug }] : []);
+  if (written.length) revalidateProducts("sincronización", written);
   const successful = result.created + result.updated + result.unchanged;
   const responseStatus = successful === 0 && result.errors > 0
     ? 500

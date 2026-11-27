@@ -93,8 +93,8 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const categoryLabel = categoryLabels[product.category];
   const categoryPath = categoryPaths[product.category];
   const relatedLabel = "Más en " + categoryLabel;
-  const relatedProducts = (await getRelatedProducts(product.categoryId, product.id))
-    .filter(related => related.category === product.category && related.id !== product.id && related.primaryImageUrl?.trim());
+  // Section, compatibility, photo and the product on screen are decided once, by selectRelatedProducts.
+  const relatedProducts = await getRelatedProducts(product);
   const showShippingPreview = process.env.NODE_ENV === "development" && product.stock > 0
     && product.category === "perfumes" && product.kind !== "combo"
     && isDecantProduct({ id: product.id, name: product.name, slug: product.slug, attributes: product.attributes });

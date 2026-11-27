@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidateAfterWrite } from "@/lib/catalog/public-catalog-revalidation";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import { slugifyProductValue } from "@/lib/products/slug";
 import { readVariantMoney, variantErrorMessage, type VariantActionState } from "@/lib/products/variants";
@@ -11,7 +11,7 @@ async function run(f: FormData, build:()=>Promise<string>):Promise<VariantAction
   try {
     if([...f.entries()].length>40 || [...f.values()].some(v=>typeof v!=="string" || v.length>2000)) throw new Error("INVALID_FORM");
     const id=await build();
-    for(const path of ["/admin/productos/familias",`/admin/productos/familias/${id}`,"/admin/productos","/","/mates","/perfumes","/buscar","/sitemap.xml"]) revalidatePath(path);
+    revalidateAfterWrite("familia", ["/admin/productos/familias",`/admin/productos/familias/${id}`,"/admin/productos","/","/mates","/perfumes","/buscar","/sitemap.xml"], { publicCatalog: true });
     return {ok:true,message:"Cambios guardados. No se modificó el stock.",familyId:id};
   } catch(error) { return {ok:false,message:variantErrorMessage(error)}; }
 }

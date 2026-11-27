@@ -15,6 +15,7 @@ import * as pricing from '../lib/web-transfer-pricing.ts';
 import * as visibility from '../lib/catalog/public-product-visibility.ts';
 import * as yara from '../lib/products/yara-rosa-consolidation.ts';
 import * as availability from '../lib/catalog/availability-order.ts';
+import * as related from '../lib/catalog/related-products.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
 import { catalogFrameStubs } from './fixtures/catalog-frame-stubs.mjs';
 import { publicRows, publicOffers, invalidRows, filterFixtureRows, fixtureCashPrice } from './fixtures/search-public-catalog.mjs';
@@ -48,22 +49,22 @@ function harness({ rows = publicRows, offers = publicOffers, fail = false } = {}
   const service = load('services/products.ts', {
     '@/lib/products/component-publications': publications, '@/lib/products/component-combos': combos,
     '@/lib/products/public-families': families, '@/lib/web-transfer-pricing': pricing,
-    '@/lib/catalog/public-product-visibility': visibility, '@/lib/products/yara-rosa-consolidation': yara,
+    '@/lib/catalog/public-product-visibility': visibility, '@/lib/products/yara-rosa-consolidation': yara, '@/lib/catalog/related-products': related,
     '@/data/products': { products: [] }, '@/lib/supabase/client': { getSupabaseClient: () => db },
   });
-  let result;
+  let result, alternatives;
   const Page = load('app/buscar/page.tsx', {
     ...analyticsRenderStubs,
     ...catalogFrameStubs,
     'react/jsx-runtime': jsx, 'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
     '@/components/site-header': { SiteHeader: () => null }, '@/lib/catalog/search': search, '@/services/products': service,
     '@/lib/catalog/availability-order': availability,
-    '@/components/product-grid': { ProductGrid: ({ products }) => { result = products; return React.createElement('div', null, ...products.map(p => React.createElement('a', { key: p.id, href: '/producto/' + p.slug }, p.name))); } },
+    '@/components/product-grid': { ProductGrid: ({ products, label }) => { if (label === 'Sugerido') alternatives = products; else result = products; return React.createElement('div', null, ...products.map(p => React.createElement('a', { key: p.id, href: '/producto/' + p.slug }, p.name))); } },
   }).default;
   return { calls, service, async query(buscar) {
-    result = [];
+    result = []; alternatives = [];
     const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ buscar }) }));
-    return { html, products: result };
+    return { html, products: result, alternatives };
   }};
 }
 
@@ -153,4 +154,20 @@ test('search orders the complete paginated result including combos, without hidi
     'Cable USB-C a USB-C PRUEBA', 'Cargador completo USB-C a USB-C',
   ]);
   assert.equal(products.length, 4);
+});
+
+// CONV-02 (26/11): typos are recovered on the page and an empty search offers available products with a photo.
+test("a typo shows the matching product with a notice; no results offer available alternatives", async () => {
+  const typo = await harness().query("imperail");
+  assert.deepEqual(typo.products.map(p => p.slug), ["mate-imperial-prueba"]);
+  assert.match(typo.html, /No hubo coincidencias exactas/);
+  assert.doesNotMatch((await harness().query("imperial")).html, /No hubo coincidencias exactas/);
+  const photo = (n, url) => ({ product_images: [{ url, alt: null, sort_order: 0, is_primary: true }] });
+  const rows = publicRows.map(row => row.slug === "mate-imperial-prueba" ? { ...row, ...photo(2, "https://example.test/mate.jpg") }
+    : row.slug === "termo-acero-prueba" ? { ...row, stock: 0, ...photo(3, "https://example.test/termo.jpg") } : row);
+  const empty = await harness({ rows }).query("xyzqwerty");
+  assert.deepEqual(empty.products, []);
+  assert.match(empty.html, /No encontramos/);
+  assert.match(empty.html, /Te pueden interesar/);
+  assert.deepEqual(empty.alternatives.map(p => p.slug), ["mate-imperial-prueba"], "only available products with a photo");
 });

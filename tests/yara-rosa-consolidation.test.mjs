@@ -95,13 +95,13 @@ function fakeClient(rows, error = null) {
   } };
 }
 const mockUrl = moduleUrl("export const getSupabaseClient = () => globalThis.__yaraReadOnlyClient; export const getSupabaseAdminClient = getSupabaseClient;");
-const publicService = await import(moduleUrl(source("services/products.ts").replace("@/lib/catalog/product-presentation", new URL("../lib/catalog/product-presentation.ts", import.meta.url).href)
+const publicService = await import(moduleUrl(source("services/products.ts").replace("@/lib/catalog/product-presentation", new URL("../lib/catalog/product-presentation.ts", import.meta.url).href).replace("@/lib/catalog/related-products", new URL("../lib/catalog/related-products.ts", import.meta.url).href)
   .replace("@/lib/products/component-publications", new URL("../lib/products/component-publications.ts", import.meta.url).href)
   .replace("@/lib/products/component-combos", new URL("../lib/products/component-combos.ts", import.meta.url).href)
   .replace("@/lib/products/public-families", moduleUrl(source("lib/products/public-families.ts")))
   .replace("@/lib/web-transfer-pricing", moduleUrl(source("lib/web-transfer-pricing.ts")))
   .replace("@/lib/products/yara-rosa-consolidation", identityUrl)
-  .replace("@/lib/catalog/public-product-visibility", moduleUrl(source("lib/catalog/public-product-visibility.ts")))
+  .replace("@/lib/catalog/public-product-visibility", moduleUrl(source("lib/catalog/public-product-visibility.ts").replace("./matero-taxonomy.ts",new URL('../lib/catalog/matero-taxonomy.ts',import.meta.url).href)))
   .replace("@/data/products", moduleUrl(source("data/products.ts")))
   .replace("@/lib/supabase/client", mockUrl)));
 globalThis.__sfstoreCatalogService=publicService;
@@ -119,7 +119,7 @@ test("Supabase failure never revives phantom Yara fallback", async () => {
 });
 test("real sitemap filters B and keeps A", async () => {
   globalThis.__yaraReadOnlyClient = fakeClient([publicRow(a), publicRow(b)]);
-  const sitemap = await import(moduleUrl(source("app/sitemap.ts").replace("@/services/products",moduleUrl("export const getCatalogPublications=()=>globalThis.__sfstoreCatalogService.getCatalogPublications();")).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/client", mockUrl)));
+  const sitemap = await import(moduleUrl(source("app/sitemap.ts").replace("@/services/products",moduleUrl("export const getCatalogPublicationsOrThrow=()=>globalThis.__sfstoreCatalogService.getCatalogPublicationsOrThrow();")).replace("@/lib/products/yara-rosa-consolidation", identityUrl).replace("@/lib/supabase/client", mockUrl)));
   const urls = (await sitemap.default()).map((entry) => entry.url);
   assert.ok(urls.some((url) => url.endsWith(`/producto/${a.slug}`)));
   assert.ok(!urls.some((url) => url.endsWith(`/producto/${b.slug}`)));
@@ -218,7 +218,7 @@ test("variant visibility excludes hidden and commercially blocked SKU from publi
   assert.deepEqual((await publicService.getProductsByCategorySlug("perfumes")).map(p=>p.id),[a.id]);
   assert.equal(await publicService.getProductBySlug(hidden.slug),null);
   assert.equal(await publicService.getProductBySlug(blocked.slug),null);
-  const sitemap=await import(moduleUrl(source("app/sitemap.ts").replace("@/services/products",moduleUrl("export const getCatalogPublications=()=>globalThis.__sfstoreCatalogService.getCatalogPublications();")).replace("@/lib/products/yara-rosa-consolidation",identityUrl).replace("@/lib/supabase/client",mockUrl)));
+  const sitemap=await import(moduleUrl(source("app/sitemap.ts").replace("@/services/products",moduleUrl("export const getCatalogPublicationsOrThrow=()=>globalThis.__sfstoreCatalogService.getCatalogPublicationsOrThrow();")).replace("@/lib/products/yara-rosa-consolidation",identityUrl).replace("@/lib/supabase/client",mockUrl)));
   const urls=(await sitemap.default()).map(v=>v.url);
   assert.ok(!urls.some(u=>u.includes("hidden-variant")||u.includes("blocked-variant")));
 });

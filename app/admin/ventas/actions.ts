@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateAfterWrite } from "@/lib/catalog/public-catalog-revalidation";
 
 import { requireAdminActionSession } from "@/lib/admin-session";
 import { validateStoreSaleDate } from "@/lib/store-sale-date";
@@ -86,13 +86,9 @@ function readPayments(formData: FormData) {
     });
 }
 
+// A store sale lowers stock read by the cart.
 function revalidateStoreSale(orderId: string) {
-  revalidatePath("/admin/ventas");
-  revalidatePath("/admin/ventas/nueva");
-  revalidatePath(`/admin/ventas/${orderId}`);
-  revalidatePath("/admin/productos");
-  revalidatePath("/admin/inventario");
-  revalidatePath("/admin/consulta");
+  revalidateAfterWrite("venta", ["/admin/ventas", "/admin/ventas/nueva", `/admin/ventas/${orderId}`, "/admin/productos", "/admin/inventario", "/admin/consulta"], { publicCatalog: true });
 }
 
 export async function createStoreSaleAction(

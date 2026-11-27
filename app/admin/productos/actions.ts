@@ -2,12 +2,14 @@
 
 import { assertPerfumePricePolicy, supportsPerfumePricePolicy } from "@/lib/products/perfume-price-policy";
 import { assertUploadFormData } from "@/lib/uploads/limits";
-import { revalidatePath } from "next/cache";
+import { revalidateAfterWrite, revalidateProducts } from "@/lib/catalog/public-catalog-revalidation";
 import { redirect } from "next/navigation";
 import { requireAdminActionSession } from "@/lib/admin-session";
 import {
+  CATALOG_ATTRIBUTE_KEYS,
   getAllowedValuesForField,
   getAttributeFieldsForCategory,
+  getCatalogAttributeFieldMarker,
   getCatalogAttributeInputName,
 } from "@/lib/catalog/attribute-config";
 import { PRODUCT_ATTRIBUTE_NAMES } from "@/lib/product-taxonomy";
@@ -201,44 +203,6 @@ function buildProductAttributes(
   return rows;
 }
 
-function revalidateProductPaths({
-  productId,
-  slug,
-  previousSlug,
-  categorySlugs,
-}: {
-  productId: string;
-  slug: string;
-  previousSlug?: string;
-  categorySlugs: Array<string | null | undefined>;
-}) {
-  const paths = new Set([
-    "/admin/productos",
-    `/admin/productos/${productId}/editar`,
-    "/admin/consulta",
-    "/",
-    "/sitemap.xml",
-    `/producto/${slug}`,
-  ]);
-
-  if (previousSlug && previousSlug !== slug) {
-    paths.add(`/producto/${previousSlug}`);
-  }
-
-  for (const categorySlug of categorySlugs) {
-    if (!categorySlug) {
-      continue;
-    }
-
-    paths.add("/accesorios");
-    paths.add(categorySlug === "perfumes" ? "/perfumes" : "/mates");
-  }
-
-  for (const path of paths) {
-    revalidatePath(path);
-  }
-}
-
 function getProductImageFiles(formData: FormData) {
   assertUploadFormData(formData);
   const files = [
@@ -306,7 +270,8 @@ async function assertOperationalProduct(productId: string) {
     throw new Error("El producto no existe.");
   }
 
-  if (data.historical_identity) {
+  // An unknown identity is never treated as operational.
+  if (data.historical_identity !== false) {
     throw new Error("Las identidades historicas no admiten modificaciones operativas.");
   }
 
@@ -333,15 +298,17 @@ function persistedProductState(row: {
   };
 }
 
+// Runs after the write is committed: if the category cannot be read, every section is refreshed instead of failing.
 async function revalidateOperationalProductPaths(
   product: OperationalProductSnapshot,
+  extraPaths: string[] = [],
 ) {
-  const category = await getProductCategoryInfo(product.category_id);
-  revalidateProductPaths({
+  const category = await getProductCategoryInfo(product.category_id).catch(() => null);
+  revalidateProducts("producto", [{
     productId: product.id,
     slug: product.slug,
-    categorySlugs: [category?.slug],
-  });
+    categorySlugs: category ? [category.slug] : undefined,
+  }], extraPaths);
 }
 
 async function saveProductForm(formData: FormData, operationType: "create_product" | "update_product"): Promise<ProductFormActionState> {
@@ -381,7 +348,13 @@ async function saveProductForm(formData: FormData, operationType: "create_produc
       const cash = described.transfer_price;
       if (cash === null || cash <= 0 || cash > described.price) throw new Error("Ingresá un precio de contado mayor que cero y no superior al de lista.");
     }
-    const product = cashApproved ? { ...described, cash_price_approved: true as const } : described;
+    // Only an editor that rendered the volume field replaces it; a save without the field keeps the stored volume.
+    const volumeManaged = formData.has(getCatalogAttributeFieldMarker(CATALOG_ATTRIBUTE_KEYS.volume));
+    const product = {
+      ...described,
+      ...(cashApproved ? { cash_price_approved: true as const } : {}),
+      ...(volumeManaged ? { volume_managed: true as const } : {}),
+    };
     const category = await getProductCategoryInfo(product.category_id);
     const previousCategory = existing && existing.category_id !== product.category_id
       ? await getProductCategoryInfo(existing.category_id) : null;
@@ -409,12 +382,8 @@ async function saveProductForm(formData: FormData, operationType: "create_produc
     };
   });
   const persisted = result.product;
-  // Cache invalidation is post-commit: a failure must not turn a committed save into an error.
-  try {
-    revalidateProductPaths({ productId, slug: persisted.slug, previousSlug: plan.previousSlug, categorySlugs: plan.categorySlugs });
-  } catch {
-    console.warn("[product-save] Guardado confirmado; no se pudo actualizar la cache", { operationKey, productId });
-  }
+  // Post-commit and failure-safe: a cache failure never turns a committed save into an error.
+  revalidateProducts("producto", [{ productId, slug: persisted.slug, previousSlug: plan.previousSlug, categorySlugs: plan.categorySlugs }]);
   return {
     status: "success",
     message: operationType === "create_product" ? "Producto creado correctamente." : "Producto actualizado correctamente.",
@@ -474,7 +443,7 @@ export async function updateComponentGallery(_state: ProductFormActionState, for
 }
 
 function revalidateComponentGallery(productId: string) {
-  for (const path of ["/", "/accesorios", "/buscar", "/carrito", `/admin/productos/${productId}/editar`, ...(["cc","lightning"] as const).map(c => `/producto/combo-${productId}-${c}`)]) revalidatePath(path);
+  revalidateAfterWrite("galería de componentes", ["/", "/accesorios", "/buscar", "/carrito", `/admin/productos/${productId}/editar`, ...(["cc","lightning"] as const).map(c => `/producto/combo-${productId}-${c}`)], { publicCatalog: true });
 }
 
 async function editComponentImage(form: FormData, action: "primary" | "previous" | "next" | "delete") {
@@ -511,13 +480,21 @@ export async function archiveProduct(formData: FormData) {
   });
 
   const supabase = getSupabaseAdminClient();
-  const { error } = await supabase
+  // The write repeats the historical guard: an identity that became historical after the check is never archived.
+  const { data: archived, error } = await supabase
     .from("products")
     .update({ status: "archived" })
-    .eq("id", productId);
+    .eq("id", productId)
+    .eq("historical_identity", false)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (!archived) {
+    throw new Error("El producto no se archivó: ya no es una identidad operativa.");
   }
 
   await revalidateOperationalProductPaths(existingProduct);
@@ -585,8 +562,7 @@ export async function updateProductStock(
       createdBy: user.id,
     });
 
-    await revalidateOperationalProductPaths(existingProduct);
-    revalidatePath("/admin/inventario");
+    await revalidateOperationalProductPaths(existingProduct, ["/admin/inventario"]);
 
     if (result.status === "no_change") {
       return {

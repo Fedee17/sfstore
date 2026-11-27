@@ -9,6 +9,8 @@ import {
 } from "@/components/admin/get-navigation-form";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { InventoryAdjustmentForm } from "@/components/admin/products/inventory-adjustment-form";
+import { ProductAvailabilitySummary } from "@/components/admin/products/product-availability-summary";
+import { adminProductAvailability } from "@/lib/products/product-availability";
 import { requireAdminSession } from "@/lib/admin-session";
 import {
   getAdminCategories,
@@ -22,6 +24,25 @@ import {
 } from "./actions";
 
 const PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
+const STATUS_LABELS = { draft: "Borrador", active: "Activo", archived: "Archivado" } as const;
+// "historical" reads the read-only historical identities; the others filter the operational catalog in memory.
+const AVAILABILITY_FILTERS = [
+  ["sellable", "Habilitados para venta nueva"],
+  ["unavailable", "No habilitados para venta nueva"],
+  ["hidden", "No visibles en la web"],
+  ["historical", "Identidades históricas"],
+] as const;
+type AvailabilityFilter = (typeof AVAILABILITY_FILTERS)[number][0];
+
+function matchesAvailability(product: AdminProduct, filter: AvailabilityFilter | "") {
+  if (!filter || filter === "historical") return true;
+  // Component combos follow their components' rules, not a single product row.
+  if (product.component_offer) return false;
+  const availability = adminProductAvailability(product);
+  if (filter === "sellable") return availability.newSale.allowed;
+  if (filter === "unavailable") return !availability.newSale.allowed;
+  return !availability.web.visible;
+}
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -46,6 +67,7 @@ function buildProductsUrl(params: {
   status: string;
   stock: string;
   featured: string;
+  availability?: string;
   view?: string;
   review?: string;
   page?: string;
@@ -204,6 +226,7 @@ export default async function AdminProductsPage({
     status: getParam(params, "status").trim(),
     stock: getParam(params, "stock").trim(),
     featured: getParam(params, "featured").trim(),
+    availability: (AVAILABILITY_FILTERS.find(([value]) => value === getParam(params, "availability"))?.[0] ?? "") as AvailabilityFilter | "",
     view: getParam(params,"view")==="details"?"details":"",
     review: getParam(params,"review")==="incomplete"?"incomplete":"",
   };
@@ -222,18 +245,19 @@ export default async function AdminProductsPage({
         ? selectedFilters.stock
         : undefined,
     featured: selectedFilters.featured === "true" ? true : undefined,
+    historical: selectedFilters.availability === "historical" || undefined,
   };
 
   const [productsResult, categoriesResult] = await Promise.all([
     getAdminProductPublications(productsFilters),
     getAdminCategories(),
   ]);
-  const products = (productsResult.data ?? []).filter(product=>!selectedFilters.review || catalogIssues(product).length>0);
+  const products = (productsResult.data ?? []).filter(product=>(!selectedFilters.review || catalogIssues(product).length>0) && matchesAvailability(product, selectedFilters.availability));
   const rawPage=Number(getParam(params,"page")||1);
   const page=Number.isSafeInteger(rawPage)&&rawPage>0&&rawPage<=1000000?rawPage:1;
   const pageProducts=products.slice((page-1)*40,page*40);
   const categories = categoriesResult.data ?? [];
-  const isFiltered = hasActiveFilters(productsFilters) || Boolean(selectedFilters.review);
+  const isFiltered = hasActiveFilters(productsFilters) || Boolean(selectedFilters.review || selectedFilters.availability);
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -309,7 +333,7 @@ export default async function AdminProductsPage({
             </div>
           </div>
 
-          <div className="mt-4 grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-4 grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-5">
             <label className="grid min-w-0 gap-2">
               <span className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
                 Categoria
@@ -340,7 +364,25 @@ export default async function AdminProductsPage({
                 <option value="">Todos</option>
                 {PRODUCT_STATUSES.map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {STATUS_LABELS[status]}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid min-w-0 gap-2">
+              <span className="break-words text-xs font-semibold uppercase tracking-[0.12em] text-[#8B5E3C]">
+                Venta y web
+              </span>
+              <select
+                name="availability"
+                defaultValue={selectedFilters.availability}
+                className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 text-sm outline-none transition focus:border-[#556B2F]"
+              >
+                <option value="">Todos</option>
+                {AVAILABILITY_FILTERS.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
                   </option>
                 ))}
               </select>
@@ -409,16 +451,18 @@ export default async function AdminProductsPage({
                 : "Todavía no hay productos disponibles en este listado."}
             </p>
           </div>
-        ) : selectedFilters.view!=="details" ? <div className="mt-6 grid gap-2">{pageProducts.map(product=><article key={product.id} className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
-          <div className="flex min-w-0 items-center gap-3"><ProductThumbnail product={product}/><div className="min-w-0"><h2 className="break-words font-semibold">{product.name}</h2><p className="break-words text-xs text-black/60">{product.sku||"Sin SKU"} · {product.status}{product.component_offer?" · Combo":""}</p>{catalogIssues(product).length?<p className="mt-1 text-xs font-semibold text-[#8B5E3C]">{catalogIssues(product).join(" · ")}</p>:null}</div></div>
+        ) : selectedFilters.view!=="details" ? <div className="mt-6 grid gap-2">{pageProducts.map(product=>{const availability=product.component_offer?null:adminProductAvailability(product);const readOnly=availability?.historical===true;return <article key={product.id} className="grid min-w-0 gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+          <div className="flex min-w-0 items-center gap-3"><ProductThumbnail product={product}/><div className="min-w-0"><h2 className="break-words font-semibold">{product.name}</h2><p className="break-words text-xs text-black/60">{product.sku||"Sin SKU"}{product.component_offer?" · Combo":""}</p>{availability?<ProductAvailabilitySummary availability={availability} className="mt-1"/>:null}{catalogIssues(product).length?<p className="mt-1 text-xs font-semibold text-[#8B5E3C]">{catalogIssues(product).join(" · ")}</p>:null}</div></div>
           <div className="text-sm"><p>Lista: <strong>{formatMoney(product.price)}</strong></p><p>{product.component_offer?"Disponible":"Stock"}: <strong>{product.stock}</strong></p></div>
-          <Link href={`/admin/productos/${product.id}/editar`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#556B2F]/30 px-4 text-sm font-semibold text-[#465826]">Editar</Link>
-        </article>)}</div> : (
+          {readOnly?<span className="inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold text-[#1F1F1F]/60">Sólo lectura</span>:<Link href={`/admin/productos/${product.id}/editar`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#556B2F]/30 px-4 text-sm font-semibold text-[#465826]">Editar</Link>}
+        </article>})}</div> : (
           <div className="mt-8 grid min-w-0 gap-4">
             {pageProducts.map((product) => {
               const stockState = getStockState(product.stock);
               const chargedCash = getEffectiveCashPrice({ price: product.price, transfer_price: product.transfer_price ?? null, cash_price_approved_at: product.cash_price_approved_at });
               const marginBasePrice = chargedCash;
+              const availability = product.component_offer ? null : adminProductAvailability(product);
+              const readOnly = availability?.historical === true;
 
               return (
                 <article
@@ -449,12 +493,13 @@ export default async function AdminProductsPage({
                             >
                               SKU: {product.sku || "-"}
                             </p>
+                            {availability ? <ProductAvailabilitySummary availability={availability} className="mt-2" /> : null}
                           </div>
                         </div>
 
                         <div className="flex min-w-0 flex-wrap gap-2 sm:justify-end">
                           <span className="max-w-full break-words rounded-full border border-[#8B5E3C]/20 px-3 py-1 text-xs font-semibold text-[#1F1F1F]/70">
-                            {product.status}
+                            {availability?.statusLabel ?? STATUS_LABELS[product.status as keyof typeof STATUS_LABELS] ?? product.status}
                           </span>
                           {product.featured ? (
                             <span className="max-w-full break-words rounded-full bg-[#556B2F] px-3 py-1 text-xs font-semibold text-[#F7F4ED]">
@@ -506,7 +551,7 @@ export default async function AdminProductsPage({
                         </span>
                       </div>
 
-                      <div className="grid min-w-0 gap-2">
+                      {readOnly ? <p className="break-words text-xs text-[#1F1F1F]/60">Identidad histórica: se conserva para pedidos, compras y movimientos; no admite edición, ajustes ni ventas nuevas.</p> : <div className="grid min-w-0 gap-2">
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8B5E3C]">
                           Acciones
                         </p>
@@ -565,7 +610,7 @@ export default async function AdminProductsPage({
                           </form>
                         ) : null}
                         </> : null}
-                      </div>
+                      </div>}
                     </div>
                   </div>
                 </article>
