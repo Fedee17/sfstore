@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { headers } from "next/headers";
+import { after } from "next/server";
+import { isLikelyBot, searchDemandOutcome, searchDemandTerm } from "@/lib/catalog/search-demand";
+import { recordSearchDemand } from "@/services/search-demand";
 import { ProductGrid } from "@/components/product-grid";
 import { CatalogFrame, catalogStyles } from "@/components/catalog/catalog-frame";
 import { searchProductsWithRecovery } from "@/lib/catalog/search";
@@ -19,6 +23,14 @@ export default async function SearchPage({ searchParams }: {
   const { products, recovered } = searchProductsWithRecovery(catalog, query);
   // CONV-02: a search with no results still offers a way on: available products with a photo, featured first.
   const alternatives = products.length ? [] : availableWithPhoto(catalog, alternativesLimit);
+  // Unmet demand: normalized term only, recorded after the response; crawlers and router prefetches are skipped.
+  const demandTerm = query ? searchDemandTerm(query) : null;
+  const outcome = searchDemandOutcome(products.length, recovered);
+  if (demandTerm && outcome) {
+    const request = await headers();
+    const prefetch = request.get("next-router-prefetch") !== null || request.get("purpose") === "prefetch";
+    if (!prefetch && !isLikelyBot(request.get("user-agent"))) after(() => recordSearchDemand(demandTerm, outcome));
+  }
 
   return (
     <CatalogFrame searchQuery={query}>

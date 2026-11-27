@@ -12,6 +12,7 @@ import * as attributes from '../lib/catalog/attribute-config.ts';
 import * as search from '../lib/catalog/search.ts';
 import * as materoTaxonomy from '../lib/catalog/matero-taxonomy.ts';
 import { catalogFrameStubs } from './fixtures/catalog-frame-stubs.mjs';
+import { searchDemandStubs } from './fixtures/search-demand-stubs.mjs';
 
 const require = createRequire(import.meta.url);
 function loadFilters(file, modules) {
@@ -78,7 +79,7 @@ function loadPage(file, products) {
   const modules = {
     'react/jsx-runtime': jsx,
     'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
-    'next/server': { connection: async () => {} },
+    ...searchDemandStubs,
     '@/components/site-header': { SiteHeader: () => null },
     ...catalogFrameStubs,
     '@/components/catalog/mobile-catalog-filters': { MobileCatalogFilters: () => null },

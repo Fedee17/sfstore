@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { SearchDemand, SearchDemandFallback } from "@/components/admin/search-demand";
 import { adminMoneyFromCents } from "@/lib/admin/money";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { requireAdminSession } from "@/lib/admin-session";
@@ -43,6 +45,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       {analytics && <Dashboard data={analytics} />}
       {analytics && <Rotation data={analytics.rotation} error={analytics.rotationError} />}
       {analytics && <Heatmap data={analytics.heatmap} />}
+      <Suspense fallback={<SearchDemandFallback />}><SearchDemand /></Suspense>
     </section>
   </main>;
 }
