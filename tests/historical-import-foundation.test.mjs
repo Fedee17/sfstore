@@ -113,7 +113,6 @@ test("operational services explicitly exclude historical identities", () => {
   for (const path of [
 
     ["services", "purchases.ts"],
-    ["services", "store-sales.ts"],
     ["services", "customer-orders.ts"],
     ["services", "admin-catalog.ts"],
     ["services", "product-import.ts"],

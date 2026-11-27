@@ -4,7 +4,7 @@ import { commercialDate } from "@/lib/commercial-reporting/periods";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import {
   createStoreSaleAction,
@@ -72,21 +72,23 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [lines, setLines] = useState<SaleLine[]>(()=>{
-    const product=products.find(product=>product.id===initialProductId&&product.stock>0&&Number(product.price)>0);
+    const product=products.find(product=>product.id===initialProductId&&product.unavailableReason===null);
     return product?[{product,quantity:1}]:[];
   });
   const [componentError, setComponentError] = useState("");
   const [payments, setPayments] = useState<PaymentLine[]>([newPayment()]);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
-  const quantityRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const today = initialSaleDate ?? commercialDate(new Date().toISOString());
   const [saleDate, setSaleDate] = useState(today);
 
   const choices = useMemo(() => [...products, ...recipes.flatMap(recipe => (["cc", "lightning"] as const).map(connector => {
     const parts = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
     if (parts.some(p => !p) || !recipe.prices_approved || !recipe.combo_price_version || !recipe.combo_list_price) return null;
+    const unavailablePart = parts.find(p => p?.unavailableReason);
     return { ...parts[0]!, id: `${recipe.presentation_product}:${connector}`, name: componentPublicationName(connector),
-      sku: null, price: recipe.combo_list_price, cash_price: undefined, stock: Math.min(...parts.map(p => p!.stock)), comboRecipe: recipe, comboConnector: connector };
+      sku: null, price: recipe.combo_list_price, cash_price: undefined, stock: Math.min(...parts.map(p => p!.stock)),
+      unavailableReason: unavailablePart ? `${unavailablePart.name} · ${unavailablePart.unavailableReason}` : null,
+      comboRecipe: recipe, comboConnector: connector };
   }).filter((p): p is NonNullable<typeof p> => p !== null))], [products, recipes]);
   const matches = useMemo(() => {
     return choices
@@ -95,7 +97,6 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
   }, [choices, query]);
 
   const previewMethods = payments.map((payment) => payment.method);
-  const previewPrices = new Map(matches.map((product) => [product.id, suggestedUnitPrice(product, previewMethods)]));
   const suggestedPricing = calculateStoreSalePricing(
     lines.map((line) => ({ price: Number(line.product.price), cashPrice: line.product.cash_price, quantity: line.quantity })),
     payments.map((payment) => payment.method),
@@ -127,13 +128,14 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
     setLines(next); setComponentError("");
   }
   function selectProduct(product: StoreSaleProduct & { comboRecipe?: ComponentRecipe; comboConnector?: CableConnector }) {
+    if (product.unavailableReason !== null) return;
     if (product.comboRecipe && product.comboConnector) {
       selectCombo(product.comboRecipe, product.comboConnector); setSearchOpen(false); setQuery(""); return;
     }
     setSearchOpen(false); setQuery("");
     const existing = lines.find(line => !line.comboConnector && line.product.id === product.id);
     applyLines(existing ? lines.map(line => !line.comboConnector && line.product.id === product.id ? { ...line, quantity: line.quantity + 1 } : line) : [...lines, { product, quantity: 1 }]);
-    requestAnimationFrame(() => quantityRefs.current[product.id]?.focus());
+    requestAnimationFrame(() => document.getElementById(`store-sale-quantity-${product.id}`)?.focus());
   }
   function updateQuantity(key: string, quantity: number) {
     applyLines(lines.map(line => saleLineKey(line) === key ? { ...line, quantity: Math.max(1, Math.trunc(quantity) || 1) } : line));
@@ -142,7 +144,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
   function selectCombo(recipe: ComponentRecipe, connector: CableConnector) {
     try {
       const selection = componentIds(recipe, connector).map(id => products.find(p => p.id === id));
-      if (selection.some(p => !p || Number(p.price) <= 0)) throw new Error("Falta aprobar un precio o habilitar un componente. No se agregó el conjunto.");
+      if (selection.some(p => p?.unavailableReason !== null)) throw new Error("Hay un componente que no está disponible para vender.");
       if (!recipe.prices_approved || !recipe.combo_list_price || !recipe.combo_price_version) throw new Error("El conjunto no tiene precio aprobado.");
       const components = (selection as StoreSaleProduct[]).map(p => ({ productId: p.id, stock: p.stock }));
       const key = commercialLineKey(recipe.presentation_product, connector);
@@ -201,14 +203,14 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                   <button
                     key={product.id}
                     type="button"
-                    disabled={product.stock < 1}
+                    disabled={product.unavailableReason !== null}
                     onClick={() => selectProduct(product)}
-                    className="min-h-12 rounded-xl px-3 py-2 text-left transition hover:bg-[#556B2F]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F] disabled:cursor-not-allowed disabled:opacity-45"
+                    className="min-h-12 rounded-xl px-3 py-2 text-left transition hover:bg-[#556B2F]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#556B2F] disabled:cursor-not-allowed disabled:bg-[#F7F4ED]"
                   >
                     <span className="block font-semibold">{product.name}</span>
-                    <span className="text-xs text-[#1F1F1F]/55">
+                    <span className="text-xs text-[#1F1F1F]/75">
                       {product.sku ? `SKU ${product.sku} · ` : ""}
-                      Stock {product.stock} · {currencyFormatter.format(previewPrices.get(product.id)!)}
+                      Stock {product.stock} · {product.unavailableReason === null ? currencyFormatter.format(suggestedUnitPrice(product, previewMethods)) : product.unavailableReason ?? "Disponibilidad sin verificar"}
                     </span>
                   </button>
                 ))
@@ -245,9 +247,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                   <label className="grid gap-2 text-sm font-semibold">
                     Cantidad
                     <input
-                      ref={(element) => {
-                        quantityRefs.current[saleLineKey(line)] = element;
-                      }}
+                      id={`store-sale-quantity-${saleLineKey(line)}`}
                       name="quantity"
                       type="number"
                       min="1"

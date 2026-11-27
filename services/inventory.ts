@@ -122,7 +122,6 @@ export async function listInventoryMovements(filters: {
       const { data: products, error: productsError, count: productCount } = await supabase
         .from("products")
         .select("id", {count:"exact"})
-        .eq("historical_identity", false)
         .or(`name.ilike.%${escaped}%,slug.ilike.%${escaped}%,sku.ilike.%${escaped}%`);
 
       if (productsError) {
