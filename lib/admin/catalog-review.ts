@@ -3,9 +3,9 @@ import type { AdminProduct } from "../../services/admin.ts";
 export const LOW_STOCK_LIMIT = 3;
 
 // The audited stock adjustment lives in the products list ("Detalle y ajustes"); other screens link there and land
-// on the product's card.
-export function stockAdjustmentHref(product: { id: string; slug: string }) {
-  return `/admin/productos?search=${encodeURIComponent(product.slug)}&status=all&view=details#producto-${product.id}`;
+// on the product's card. Family SKUs come without slug; their unique SKU finds the same card.
+export function stockAdjustmentHref(product: { id: string; slug?: string; sku?: string | null }) {
+  return `/admin/productos?search=${encodeURIComponent(product.slug ?? product.sku ?? "")}&status=all&view=details#producto-${product.id}`;
 }
 export function catalogIssues(product: AdminProduct): string[] {
   const issues: string[] = [];

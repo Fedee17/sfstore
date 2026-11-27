@@ -4,6 +4,7 @@ import Link from "next/link";
 import { saveFamily,addOption,addValue,saveVariant } from "@/app/admin/productos/familias/actions";
 import { initialVariantState,variantAvailability,type Family,type FamilyOption,type Variant } from "@/lib/products/variants";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
+import { stockAdjustmentHref } from "@/lib/admin/catalog-review";
 const input="w-full rounded-xl border border-[#8B5E3C]/25 bg-white p-3 text-sm";
 const box="grid gap-4 rounded-3xl border border-[#8B5E3C]/20 bg-white/70 p-5";
 function Feedback({state}:{state:typeof initialVariantState}) {return state.message?<p role={state.ok?"status":"alert"} className="text-sm font-semibold">{state.message}{state.ok&&state.familyId?<> <Link className="underline" href={`/admin/productos/familias/${state.familyId}`}>Ver familia actualizada</Link></>:null}</p>:null;}
@@ -36,7 +37,8 @@ export function VariantForm({family,options,variant,id,candidate=false}:{family:
  <input type="hidden" name="familyId" value={family.id}/><input type="hidden" name="productId" value={id}/><input type="hidden" name="version" value={variant?.version??""}/><input type="hidden" name="new" value={variant?"no":"yes"}/>
  {variant?<><p>SKU: {variant.sku} · Estado: {variant.status} · Stock: {variant.stock} · Precio lista: ${Number(variant.price).toFixed(2)} · Costo: {variant.cost===null?"Costo no disponible":`$${Number(variant.cost).toFixed(2)}`}</p>
  <p className="text-sm">{variantAvailability(variant.web_visible,variant.commercial_blocked)}</p>
- <Link className="font-semibold underline" href={`/admin/productos/${id}/editar`}>Editar fotografías y datos del SKU</Link></>:<>
+ <Link className="font-semibold underline" href={`/admin/productos/${id}/editar`}>Editar fotografías y datos del SKU</Link>
+ {candidate?null:<p className="flex flex-wrap gap-4"><Link className="font-semibold underline" href={stockAdjustmentHref(variant)}>Ajustar stock</Link><Link className="font-semibold underline" href={`/admin/inventario?view=movements&product=${encodeURIComponent(id)}`}>Ver movimientos</Link></p>}</>:<>
  <label>Nombre específico<input className={input} name="name" required maxLength={160} placeholder={`${family.name} — Negro`}/></label>
  <label>SKU único<input className={input} name="sku" required maxLength={100}/></label><label>Slug<input className={input} name="slug" maxLength={160}/></label>
  <p className="text-sm">Se crea como borrador, sin stock y sin costo asignado. Las imágenes se administran en el editor existente.</p></>}

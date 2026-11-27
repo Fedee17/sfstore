@@ -40,7 +40,7 @@ export async function findSimpleFamilyProducts(categoryId: string, search: strin
   const term=search.trim().replace(/[%_,().\\]/g," ").slice(0,80).trim();
   if(term.length<2) return [];
   const {data,error}=await getSupabaseAdminClient().from("products").select("id,name,sku,price,stock")
-    .is("family_id",null).eq("historical_identity",false).eq("category_id",categoryId).not("sku","is",null)
+    .is("family_id",null).eq("historical_identity",false).eq("category_id",categoryId)
     .or(`name.ilike.%${term}%,sku.ilike.%${term}%`).order("name").order("id").limit(21);
   if(error) throw new Error("No se pudieron buscar los productos simples.");
   return data ?? [];
