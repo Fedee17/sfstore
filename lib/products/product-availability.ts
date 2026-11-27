@@ -1,4 +1,5 @@
 import { resolvePublicCatalogSection } from "../catalog/public-product-visibility.ts";
+import { isSupersededYaraRosa } from "./yara-rosa-consolidation.ts";
 
 /**
  * One reading of the four independent product dimensions for the admin: administrative status, web visibility,
@@ -49,19 +50,24 @@ export function describeProductAvailability(product: ProductAvailabilityInput): 
 }
 
 type AdminProductAvailabilityRow = {
+  id?: string;
+  slug?: string;
   status: string;
   stock: number;
   web_visible?: boolean;
   commercial_blocked?: boolean;
-  historical_identity?: boolean;
+  historical_identity?: boolean | null;
   categories: { slug: string; is_active?: boolean } | null;
 };
 
-/** Admin rows: a column that was not read counts as blocked and hidden, never as enabled. */
+/**
+ * Admin rows: a column that was not read counts as blocked, hidden and historical (read-only), never as enabled.
+ * The superseded Yara Rosa identity is kept only for traceability, so it reads as historical too.
+ */
 export function adminProductAvailability(product: AdminProductAvailabilityRow) {
   return describeProductAvailability({
     status: product.status,
-    historicalIdentity: product.historical_identity === true,
+    historicalIdentity: product.historical_identity !== false || isSupersededYaraRosa(product),
     webVisible: product.web_visible === true,
     commercialBlocked: product.commercial_blocked !== false,
     categorySlug: product.categories?.slug,

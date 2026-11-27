@@ -122,7 +122,7 @@ test("the admin product list reads the commercial columns and can query historic
   for (const column of ["web_visible", "commercial_blocked", "historical_identity", "is_active"]) {
     assert.match(list, new RegExp(`\\b${column}\\b`), column);
   }
-  assert.match(list, /\.eq\("historical_identity", filters\.historical === true\)/);
+  assert.match(list, /\.eq\("historical_identity", false\)\.neq\("id", YARA_ROSA\.archivedId\)/);
   assert.match(list, /if \(filters\.historical\) return products\.data/);
 });
 

@@ -268,7 +268,8 @@ async function assertOperationalProduct(productId: string) {
     throw new Error("El producto no existe.");
   }
 
-  if (data.historical_identity) {
+  // An unknown identity is never treated as operational.
+  if (data.historical_identity !== false) {
     throw new Error("Las identidades historicas no admiten modificaciones operativas.");
   }
 

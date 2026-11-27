@@ -308,9 +308,13 @@ export async function getAdminProducts(
         )
       `, filters.requireComplete ? { count: "exact" } : undefined,
       )
-      .eq("historical_identity", filters.historical === true)
-      .neq("id", YARA_ROSA.archivedId)
       .order("created_at", { ascending: false });
+
+    // Historical records also hold the superseded Yara Rosa identity (kept for traceability, read-only);
+    // the operational list never shows either.
+    query = filters.historical
+      ? query.or(`historical_identity.eq.true,id.eq.${YARA_ROSA.archivedId}`)
+      : query.eq("historical_identity", false).neq("id", YARA_ROSA.archivedId);
 
     const search = filters.search?.trim();
 
@@ -427,6 +431,7 @@ export async function getAdminProductById(
             featured,
             web_visible,
             commercial_blocked,
+            historical_identity,
             categories (
               name,
               slug,
