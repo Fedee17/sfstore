@@ -16,6 +16,22 @@ export function catalogIssues(product: AdminProduct): string[] {
   return issues;
 }
 
+export const LISTING_MIN_DESCRIPTION = 80;
+/** Public listing completeness, 25 points per check. Combos take their presentation from components: not scored. */
+export function listingQuality(product: AdminProduct): { score: number; missing: string[] } | null {
+  if (product.component_offer) return null;
+  const images = (product.product_images ?? []).filter(image => image.url?.trim());
+  const description = [product.description, product.short_description].some(text => (text?.trim().length ?? 0) >= LISTING_MIN_DESCRIPTION);
+  const checks: [string, boolean][] = [
+    ["Foto", images.length > 0],
+    ["Texto alternativo", images.length > 0 && images.every(image => image.alt?.trim())],
+    ["Descripción", description],
+    ["Atributos", (product.product_attributes ?? []).some(attribute => attribute.value?.trim())],
+  ];
+  const missing = checks.filter(([, ok]) => !ok).map(([label]) => label);
+  return { score: (checks.length - missing.length) * 25, missing };
+}
+
 export function availabilityRows(products: AdminProduct[], filter: string, coverage?: ReadonlyMap<string, StockCoverage> | null) {
   const rows = products.filter(product => product.status !== "archived");
   // "risk" fails closed: without sales coverage nothing is claimed to run out.
