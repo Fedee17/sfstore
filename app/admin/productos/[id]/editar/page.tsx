@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { ProductHistory, ProductHistoryFallback } from "@/components/admin/products/product-history";
 import { notFound, redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { ProductForm } from "@/components/admin/products/product-form";
@@ -89,6 +91,11 @@ export default async function EditProductPage({
             product={product}
             submitLabel="Guardar cambios"
           />
+        ) : null}
+        {product && !connector ? (
+          <Suspense fallback={<ProductHistoryFallback />}>
+            <ProductHistory productId={product.id} />
+          </Suspense>
         ) : null}
       </section>
     </main>
