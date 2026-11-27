@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { adminMoney } from "@/lib/admin/money";
 import { useActionState, useMemo, useRef, useState } from "react";
 
 import {
@@ -16,11 +17,6 @@ import type {
   CustomerOrderProduct,
 } from "@/services/customer-orders";
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 2,
-});
 const initialState: CustomerOrderActionState = { status: "idle", message: "" };
 
 type OrderLine = {
@@ -139,7 +135,7 @@ export function CustomerOrderForm({
               {matches.length ? matches.map((product) => (
                 <button key={product.id} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => selectProduct(product)} className="min-h-12 rounded-xl px-3 py-2 text-left hover:bg-[#556B2F]/10 focus-visible:outline-2 focus-visible:outline-[#556B2F]">
                   <span className="block font-semibold">{product.name}</span>
-                  <span className="text-xs text-[#1F1F1F]/55">Stock {product.stock} · Precio sugerido {currencyFormatter.format(defaultPrice(product))}</span>
+                  <span className="text-xs text-[#1F1F1F]/55">Stock {product.stock} · Precio sugerido {adminMoney(defaultPrice(product))}</span>
                 </button>
               )) : <p className="px-3 py-3 text-sm text-[#1F1F1F]/60">No se encontraron productos. El alta rápida no está disponible en esta fase.</p>}
             </div>
@@ -156,7 +152,7 @@ export function CustomerOrderForm({
               </div>
               <label className="grid gap-2 text-sm font-semibold">Cantidad<input ref={(element) => { quantityRefs.current[line.product.id] = element; }} name="quantity" type="number" min="1" step="1" required value={line.quantity} disabled={completed} onChange={(event) => updateLine(line.product.id, { quantity: Math.max(1, Math.trunc(Number(event.target.value)) || 1) })} className="h-11 min-w-0 rounded-xl border border-[#8B5E3C]/20 bg-white px-3" /></label>
               <label className="grid gap-2 text-sm font-semibold">Precio acordado<input name="unitPrice" inputMode="decimal" required value={line.unitPrice} disabled={completed} onChange={(event) => updateLine(line.product.id, { unitPrice: event.target.value })} className="h-11 min-w-0 rounded-xl border border-[#8B5E3C]/20 bg-white px-3" /></label>
-              <div className="text-sm"><span className="block text-xs text-[#1F1F1F]/55">Subtotal</span><strong>{currencyFormatter.format(line.quantity * parseMoney(line.unitPrice))}</strong></div>
+              <div className="text-sm"><span className="block text-xs text-[#1F1F1F]/55">Subtotal</span><strong>{adminMoney(line.quantity * parseMoney(line.unitPrice))}</strong></div>
               <button type="button" disabled={completed} onClick={() => setLines((current) => current.filter((item) => item.product.id !== line.product.id))} className="h-11 rounded-xl border border-[#8B5E3C]/30 px-4 text-sm font-semibold text-[#8B5E3C] hover:bg-[#8B5E3C]/10">Quitar</button>
             </article>
           ))}
@@ -164,7 +160,7 @@ export function CustomerOrderForm({
       </section>
 
       <section className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5">
-        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total pedido</span><strong className="mt-1 block text-2xl">{currencyFormatter.format(total)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total pedido</span><strong className="mt-1 block text-2xl">{adminMoney(total)}</strong></div>
         <p className="max-w-xl text-sm text-[#1F1F1F]/65">Los pedidos no reservan stock aunque tengan pago. La salida física ocurre al entregar.</p>
       </section>
 

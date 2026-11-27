@@ -1,12 +1,12 @@
 import Link from "next/link";
+import { adminMoney } from "@/lib/admin/money";
 import { AdminNav } from "@/components/admin/admin-nav";
 import {historyListHref,safeHistoryReturnPath} from "@/lib/admin/history-navigation";
 import type { DateQuality, Money, PurchaseFact, SaleFact } from "@/lib/commercial-reporting/contracts";
 import type { CommercialListOptions } from "@/lib/commercial-reporting/list-reader";
 
-const currency=new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",minimumFractionDigits:2});
-export const displayMoney=(value:Money|null|undefined)=>value==null?"Costo no disponible":currency.format(Number(value));
-export const displayCents=(value:number)=>currency.format(value/100);
+export const displayMoney=(value:Money|null|undefined)=>value==null?"Costo no disponible":adminMoney(Number(value));
+export const displayCents=(value:number)=>adminMoney(value/100);
 export function displayDate(value:string){return new Intl.DateTimeFormat("es-AR",{timeZone:"UTC"}).format(new Date(value+"T00:00:00Z"));}
 export const paymentLabels:Record<string,string>={pending:"Pendiente",partial:"Pago parcial",paid:"Pagada",approved:"Aprobado",refunded:"Reintegrada",rejected:"Rechazado"};
 const methodLabels:Record<string,string>={cash:"Efectivo",transfer:"Transferencia",card:"Tarjeta (sin especificar)",debit:"Débito",credit:"Crédito",qr:"QR",other:"Otro",mercadopago:"Mercado Pago"};

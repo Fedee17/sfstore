@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { adminMoney } from "@/lib/admin/money";
 import { notFound } from "next/navigation";
 
 import { AdminNav } from "@/components/admin/admin-nav";
@@ -9,11 +10,6 @@ import {
   getSupplierPurchaseSummary,
 } from "@/services/suppliers";
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 2,
-});
 const dateFormatter = new Intl.DateTimeFormat("es-AR", { timeZone: "UTC" });
 const dateTimeFormatter = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "medium",
@@ -75,7 +71,7 @@ export default async function SupplierDetailPage({ params }: SupplierDetailPageP
         <section className="mt-6 grid gap-4 sm:grid-cols-4">
           <Metric label="Compras registradas" value={String(purchaseData.summary.purchaseCount)} />
           <Metric label="Compras confirmadas" value={String(purchaseData.summary.confirmedPurchaseCount)} />
-          <Metric label="Total confirmado" value={currencyFormatter.format(purchaseData.summary.totalPurchased)} />
+          <Metric label="Total confirmado" value={adminMoney(purchaseData.summary.totalPurchased)} />
           <Metric label="Unidades confirmadas" value={String(purchaseData.summary.totalUnits)} />
         </section>
 
@@ -99,7 +95,7 @@ export default async function SupplierDetailPage({ params }: SupplierDetailPageP
                       <span className="rounded-full bg-[#556B2F]/10 px-3 py-1 text-xs font-semibold text-[#556B2F]">{statusLabels[purchase.status]}</span>
                       <span className="text-xs text-[#1F1F1F]/50">{dateFormatter.format(new Date(`${purchase.purchase_date}T00:00:00Z`))}</span>
                     </div>
-                    <p className="mt-2 text-sm text-[#1F1F1F]/70">Subtotal {currencyFormatter.format(Number(purchase.supplier_subtotal))} · Envio {currencyFormatter.format(Number(purchase.shipping_cost))} · Total {currencyFormatter.format(Number(purchase.total_cost))} · {purchase.total_units} unidades</p>
+                    <p className="mt-2 text-sm text-[#1F1F1F]/70">Subtotal {adminMoney(Number(purchase.supplier_subtotal))} · Envio {adminMoney(Number(purchase.shipping_cost))} · Total {adminMoney(Number(purchase.total_cost))} · {purchase.total_units} unidades</p>
                     <p className="mt-1 text-xs text-[#1F1F1F]/45">Nombre registrado: {purchase.supplier_name_snapshot}</p>
                   </div>
                   <Link href={`/admin/compras/${purchase.id}`} className="rounded-full border border-[#8B5E3C]/30 px-5 py-3 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#556B2F] hover:text-[#556B2F]">Ver compra</Link>

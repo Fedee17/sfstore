@@ -82,7 +82,7 @@ test("same supplier split can contain half cents; conservation uses line totals"
 });
 const require=createRequire(import.meta.url);
 const source=readFileSync(new URL("../components/admin/purchases/charger-components-preview.tsx",import.meta.url),"utf8");
-const js=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext}}).outputText.replace('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve("react/jsx-runtime")).href));
+const js=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext}}).outputText.replace('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve("react/jsx-runtime")).href)).replace('"@/lib/admin/money"',JSON.stringify(new URL("../lib/admin/money.ts",import.meta.url).href));
 const {ChargerComponentsPreview}=await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`);
 test("preview shows pending prices, reclassification and residuals, with no apply control",()=>{
   const html=renderToStaticMarkup(React.createElement(ChargerComponentsPreview,{plan:plan()}));

@@ -1,11 +1,11 @@
 import Link from "next/link";
+import { adminMoney } from "@/lib/admin/money";
 
 import { AdminNav } from "@/components/admin/admin-nav";
 import { requireAdminSession } from "@/lib/admin-session";
 import { CUSTOMER_ORDER_STATUSES, CUSTOMER_ORDER_STATUS_LABELS } from "@/lib/orders/workflow";
 import { listCustomerOrders } from "@/services/customer-orders";
 
-const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", minimumFractionDigits: 2 });
 const shortDate = new Intl.DateTimeFormat("es-AR", { dateStyle: "short" });
 const paymentLabels: Record<string, string> = { pending: "Pendiente", partial: "Parcial", paid: "Pagado", refunded: "Reintegrado" };
 
@@ -34,7 +34,7 @@ export default async function AdminOrdersPage({ searchParams }: OrdersPageProps)
         <button className="h-11 rounded-xl border border-[#556B2F]/30 px-5 text-sm font-semibold text-[#556B2F] hover:bg-[#556B2F]/10 md:col-start-5">Filtrar</button>
       </form>
       {orders.length === 0 ? <div className="mt-8 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-8 text-center shadow-sm"><h2 className="text-2xl font-semibold">No hay pedidos para este filtro</h2></div> : <div className="mt-8 grid gap-4">{orders.map((order) => <article key={order.id} className="grid gap-4 rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <div className="min-w-0"><div className="flex flex-wrap gap-2 text-xs font-semibold"><span className="rounded-full bg-[#556B2F]/10 px-3 py-1 text-[#556B2F]">{CUSTOMER_ORDER_STATUS_LABELS[order.status]}</span><span className="rounded-full bg-[#8B5E3C]/10 px-3 py-1 text-[#8B5E3C]">Pago {paymentLabels[order.payment_status] ?? order.payment_status}</span></div><h2 className="mt-3 break-words text-xl font-semibold">{order.customer_name} · {order.displayName}</h2><p className="mt-1 text-xs text-[#1F1F1F]/50">Pedido {order.order_number} · {shortDate.format(new Date(order.created_at))}</p><p className="mt-2 text-sm text-[#1F1F1F]/60">Total {money.format(Number(order.total))} · Pagado {money.format(order.totalPaid)} · Saldo {money.format(order.remainingAmount)}{order.estimated_date ? ` · Estimado ${shortDate.format(new Date(`${order.estimated_date}T12:00:00`))}` : ""}</p></div>
+        <div className="min-w-0"><div className="flex flex-wrap gap-2 text-xs font-semibold"><span className="rounded-full bg-[#556B2F]/10 px-3 py-1 text-[#556B2F]">{CUSTOMER_ORDER_STATUS_LABELS[order.status]}</span><span className="rounded-full bg-[#8B5E3C]/10 px-3 py-1 text-[#8B5E3C]">Pago {paymentLabels[order.payment_status] ?? order.payment_status}</span></div><h2 className="mt-3 break-words text-xl font-semibold">{order.customer_name} · {order.displayName}</h2><p className="mt-1 text-xs text-[#1F1F1F]/50">Pedido {order.order_number} · {shortDate.format(new Date(order.created_at))}</p><p className="mt-2 text-sm text-[#1F1F1F]/60">Total {adminMoney(Number(order.total))} · Pagado {adminMoney(order.totalPaid)} · Saldo {adminMoney(order.remainingAmount)}{order.estimated_date ? ` · Estimado ${shortDate.format(new Date(`${order.estimated_date}T12:00:00`))}` : ""}</p></div>
         <Link href={`/admin/pedidos/${order.id}`} className="rounded-full border border-[#8B5E3C]/30 px-5 py-3 text-center text-sm font-semibold text-[#8B5E3C] hover:border-[#556B2F] hover:text-[#556B2F]">Ver pedido</Link>
       </article>)}</div>}
     </section>

@@ -1,5 +1,6 @@
 "use client";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { adminMoney } from "@/lib/admin/money";
 import { commercialDate } from "@/lib/commercial-reporting/periods";
 
 import Link from "next/link";
@@ -22,11 +23,6 @@ import {
 import type { StoreSaleProduct } from "@/services/store-sales";
 import { commercialLineKey, fitsComponentInventory, componentIds, componentPublicationName, type ComponentRecipe, type CableConnector } from "@/lib/products/component-combos";
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 2,
-});
 
 const initialState: StoreSaleActionState = { status: "idle", message: "" };
 
@@ -220,7 +216,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                     <span className="block font-semibold">{product.name}</span>
                     <span className="text-xs text-[#1F1F1F]/55">
                       {product.sku ? `SKU ${product.sku} · ` : ""}
-                      Stock {product.stock} · {currencyFormatter.format(previewPrices.get(product.id)!)}
+                      Stock {product.stock} · {adminMoney(previewPrices.get(product.id)!)}
                     </span>
                   </button>
                 ))
@@ -280,11 +276,11 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                       value={line.saleUnitPrice ?? unitPrice.toFixed(2)}
                       onChange={event => setLines(current => current.map(item => saleLineKey(item) === saleLineKey(line) ? { ...item, saleUnitPrice: event.target.value } : item))}
                       className="h-12 min-w-0 w-full rounded-xl border border-[#8B5E3C]/20 bg-white px-3 outline-none focus:border-[#556B2F] disabled:opacity-60" />
-                    <span className="text-xs font-normal text-[#1F1F1F]/60">Sugerido: {currencyFormatter.format(suggestedPricing.items[index].unitPrice)}</span>
+                    <span className="text-xs font-normal text-[#1F1F1F]/60">Sugerido: {adminMoney(suggestedPricing.items[index].unitPrice)}</span>
                   </label>
                   <div className="text-sm">
                     <span className="block text-xs text-[#1F1F1F]/55">Subtotal</span>
-                    <strong>{currencyFormatter.format(unitPrice * line.quantity)}</strong>
+                    <strong>{adminMoney(unitPrice * line.quantity)}</strong>
                   </div>
                   <button
                     type="button"
@@ -361,7 +357,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                     onClick={() => fillRemaining(payment.key)}
                     className="min-h-11 justify-self-start rounded-full border border-[#556B2F]/30 px-4 text-xs font-semibold text-[#556B2F] transition hover:bg-[#556B2F]/10"
                   >
-                    Completar con el saldo ({currencyFormatter.format(remaining)})
+                    Completar con el saldo ({adminMoney(remaining)})
                   </button>
                 ) : null}
               </div>
@@ -379,11 +375,11 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
       </section>
 
       <section className="grid gap-4 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 sm:grid-cols-3">
-        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Subtotal</span><strong className="mt-1 block text-xl">{currencyFormatter.format(pricing.subtotal)}</strong></div>
-        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Descuento</span><strong className="mt-1 block text-xl">{currencyFormatter.format(pricing.discount)}</strong></div>
-        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total</span><strong className="mt-1 block text-xl">{currencyFormatter.format(total)}</strong></div>
-        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Pagado</span><strong className="mt-1 block text-xl">{currencyFormatter.format(paid)}</strong></div>
-        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Saldo</span><strong className="mt-1 block text-xl">{currencyFormatter.format(remaining)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Subtotal</span><strong className="mt-1 block text-xl">{adminMoney(pricing.subtotal)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Descuento</span><strong className="mt-1 block text-xl">{adminMoney(pricing.discount)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Total</span><strong className="mt-1 block text-xl">{adminMoney(total)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Pagado</span><strong className="mt-1 block text-xl">{adminMoney(paid)}</strong></div>
+        <div><span className="text-xs uppercase text-[#1F1F1F]/55">Saldo</span><strong className="mt-1 block text-xl">{adminMoney(remaining)}</strong></div>
         {paid > 0 && remaining > 0 ? <p className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Falta completar el pago. No se registrará la venta ni se descontará stock.</p> : null}
         {invalidPayment ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">Escribí el importe como 15000 o 15.000,50.</p> : null}
         {priceError ? <p role="alert" className="text-sm font-semibold text-[#8B5E3C] sm:col-span-3">{priceError}</p> : null}

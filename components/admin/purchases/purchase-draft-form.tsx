@@ -1,5 +1,6 @@
 "use client";
 import { UnsavedChangesGuard } from "@/components/admin/unsaved-changes-guard";
+import { adminMoney } from "@/lib/admin/money";
 
 import { useMemo, useRef, useState, useTransition } from "react";
 
@@ -25,11 +26,6 @@ type DraftLine = {
   unitPurchaseCost: string;
 };
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 2,
-});
 
 function moneyInput(value: number | string | null | undefined) {
   return value === null || value === undefined ? "0.00" : Number(value).toFixed(2);
@@ -384,7 +380,7 @@ export function PurchaseDraftForm({
 
                 {previewLine ? (
                   <p className="text-xs text-[#1F1F1F]/60 lg:col-span-4">
-                    Subtotal {currencyFormatter.format(previewLine.supplierLineTotalCents / 100)} · Envio {currencyFormatter.format(previewLine.allocatedShippingTotalCents / 100)} · Costo efectivo unitario {currencyFormatter.format(previewLine.effectiveUnitCostCents / 100)} · Total efectivo {currencyFormatter.format(previewLine.effectiveLineTotalCents / 100)}
+                    Subtotal {adminMoney(previewLine.supplierLineTotalCents / 100)} · Envio {adminMoney(previewLine.allocatedShippingTotalCents / 100)} · Costo efectivo unitario {adminMoney(previewLine.effectiveUnitCostCents / 100)} · Total efectivo {adminMoney(previewLine.effectiveLineTotalCents / 100)}
                   </p>
                 ) : null}
 
@@ -490,8 +486,8 @@ export function PurchaseDraftForm({
           {preview.calculation ? (
             <>
               <p>Unidades: <strong>{preview.calculation.totalUnits}</strong></p>
-              <p>Subtotal proveedor: <strong>{currencyFormatter.format(preview.calculation.supplierSubtotalCents / 100)}</strong></p>
-              <p className="text-lg">Total: <strong>{currencyFormatter.format(preview.calculation.totalCostCents / 100)}</strong></p>
+              <p>Subtotal proveedor: <strong>{adminMoney(preview.calculation.supplierSubtotalCents / 100)}</strong></p>
+              <p className="text-lg">Total: <strong>{adminMoney(preview.calculation.totalCostCents / 100)}</strong></p>
             </>
           ) : (
             <p role="alert" className="text-[#8B5E3C]">{preview.error}</p>

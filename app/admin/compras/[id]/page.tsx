@@ -1,4 +1,5 @@
 import { HistoricalDetail } from "@/components/admin/commercial-history-ui";
+import { adminMoney } from "@/lib/admin/money";
 import { getHistoricalCommercialRecord } from "@/services/commercial-history";
 import Link from "next/link";
 import {safeHistoryReturnPath} from "@/lib/admin/history-navigation";
@@ -13,11 +14,6 @@ import { getPurchaseById } from "@/services/purchases";
 import { getPurchaseComposition, getComponentReceipt, listComponentRecipes } from "@/services/component-inventory";
 import { ComponentCompositionForm } from "@/components/admin/purchases/component-composition-form";
 
-const currencyFormatter = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  minimumFractionDigits: 2,
-});
 const dateTimeFormatter = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "medium",
   timeStyle: "short",
@@ -78,7 +74,7 @@ export default async function PurchaseDetailPage({ params, searchParams }: Purch
         {componentReceipt ? <section className="mt-6 grid gap-2 rounded-2xl border border-[#556B2F]/30 bg-white p-5 text-sm">
           <h2 className="text-xl font-semibold">Componentes recibidos · {componentReceipt.plan.physical_pieces} piezas físicas</h2>
           <p>La compra y los importes que figuran debajo conservan el registro original. El envío fue reclasificado entre las piezas; no se cobró nuevamente.</p>
-          {componentReceipt.plan.allocations.map(a => <p key={a.key}>{a.key === "head" ? "Cabezales" : a.key === "cable-c-c" ? "Cables USB-C a USB-C" : a.key === "cable-c-lightning" ? "Cables USB-C a Lightning" : "Otros artículos de la compra"}: {a.quantity} · costo total del lote {currencyFormatter.format(a.total_cents / 100)} · residual de redondeo {currencyFormatter.format(a.residual_cents / 100)}</p>)}
+          {componentReceipt.plan.allocations.map(a => <p key={a.key}>{a.key === "head" ? "Cabezales" : a.key === "cable-c-c" ? "Cables USB-C a USB-C" : a.key === "cable-c-lightning" ? "Cables USB-C a Lightning" : "Otros artículos de la compra"}: {a.quantity} · costo total del lote {adminMoney(a.total_cents / 100)} · residual de redondeo {adminMoney(a.residual_cents / 100)}</p>)}
           <p className="break-all text-xs">Operación auditable: {componentReceipt.operation_key}</p>
         </section> : null}
         <div className="mt-8 grid gap-4">
@@ -89,11 +85,11 @@ export default async function PurchaseDetailPage({ params, searchParams }: Purch
                 <p className="mt-1 text-sm text-[#1F1F1F]/60">{item.sku_snapshot ?? item.product_slug_snapshot} · {item.quantity} unidades</p>
               </div>
               <div className="text-sm md:text-right">
-                <p>Costo proveedor unitario: <strong>{currencyFormatter.format(Number(item.unit_purchase_cost))}</strong></p>
-                <p>Subtotal proveedor: <strong>{currencyFormatter.format(Number(item.supplier_line_total))}</strong></p>
-                <p>Envio asignado: <strong>{currencyFormatter.format(Number(item.allocated_shipping_total))}</strong></p>
-                <p>Costo efectivo unitario: <strong>{currencyFormatter.format(Number(item.effective_unit_cost))}</strong></p>
-                <p>Total efectivo: <strong>{currencyFormatter.format(Number(item.effective_line_total))}</strong></p>
+                <p>Costo proveedor unitario: <strong>{adminMoney(Number(item.unit_purchase_cost))}</strong></p>
+                <p>Subtotal proveedor: <strong>{adminMoney(Number(item.supplier_line_total))}</strong></p>
+                <p>Envio asignado: <strong>{adminMoney(Number(item.allocated_shipping_total))}</strong></p>
+                <p>Costo efectivo unitario: <strong>{adminMoney(Number(item.effective_unit_cost))}</strong></p>
+                <p>Total efectivo: <strong>{adminMoney(Number(item.effective_line_total))}</strong></p>
                 {purchase.status === "confirmed" && purchase.total_units === 29 && purchase.purchase_items?.length === 2 && item.quantity === 20 && /cargador/i.test(item.product_name_snapshot) && purchase.purchase_items.some(other => other.id !== item.id && other.quantity === 9 && /vape/i.test(other.product_name_snapshot)) ? <Link className="mt-3 inline-block min-h-11 py-3 font-semibold text-[#556B2F] underline" href={`/admin/compras/${purchase.id}/componentes?line=${item.id}`}>Simular desglose de cargadores · solo lectura</Link> : null}
               </div>
             </article>
@@ -102,9 +98,9 @@ export default async function PurchaseDetailPage({ params, searchParams }: Purch
 
         <section className="mt-6 grid gap-2 rounded-[2rem] border border-[#556B2F]/20 bg-[#556B2F]/5 p-5 text-sm sm:grid-cols-2">
           <p>Unidades: <strong>{purchase.total_units}</strong></p>
-          <p>Subtotal proveedor: <strong>{currencyFormatter.format(Number(purchase.supplier_subtotal))}</strong></p>
-          <p>Envio: <strong>{currencyFormatter.format(Number(purchase.shipping_cost))}</strong></p>
-          <p className="text-lg">Total: <strong>{currencyFormatter.format(Number(purchase.total_cost))}</strong></p>
+          <p>Subtotal proveedor: <strong>{adminMoney(Number(purchase.supplier_subtotal))}</strong></p>
+          <p>Envio: <strong>{adminMoney(Number(purchase.shipping_cost))}</strong></p>
+          <p className="text-lg">Total: <strong>{adminMoney(Number(purchase.total_cost))}</strong></p>
           {purchase.notes ? <p className="sm:col-span-2">Notas: {purchase.notes}</p> : null}
         </section>
       </section>
