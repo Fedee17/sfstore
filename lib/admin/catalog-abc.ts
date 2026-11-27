@@ -48,7 +48,7 @@ export function buildCatalogAbc(sales: readonly SaleFact[], snapshot: StockSnaps
       acc.units += line.quantity;
       if (!Number.isSafeInteger(acc.units)) throw new Error('CATALOG_ABC_QUANTITY_OVERFLOW');
       acc.revenueCents = sumCents([acc.revenueCents, revenue]);
-      acc.marginCents = acc.marginCents === null || cost?.evidence !== 'stored_positive_snapshot' || cost.unitCostCents === null
+      acc.marginCents = acc.marginCents === null || (cost?.evidence !== 'stored_positive_snapshot' && cost?.evidence !== 'owner_confirmed_zero') || cost.unitCostCents === null
         ? null : sumCents([acc.marginCents, revenue - cost.unitCostCents * line.quantity]);
       sold.set(line.product_id, acc);
     }

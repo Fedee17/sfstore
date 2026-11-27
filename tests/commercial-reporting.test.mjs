@@ -198,3 +198,13 @@ test("SDK adapter sanitizes database errors and makes no retry writes",async()=>
 test("expired read budget produces no partial report",async()=>{
  await assert.rejects(()=>readCompleteSnapshot(async()=>{await new Promise(r=>setTimeout(r,15));return [];},{maxDurationMs:1}),/TIMEOUT_NO_PARTIAL_REPORT/);
 });
+test("a zero cost counts only when the owner confirmed it (a gift), and then the whole price is margin",()=>{
+ const d=fixture();d.saleLines=[line({id:"gift",subtotal:75,unit_cost_snapshot:0})];
+ assert.equal(report(d).sales[0].partialGrossMarginCents,null);
+ assert.equal(report(d).sales[0].lineCosts[0].evidence,"zero_requires_evidence");
+ d.orders[0].cost_zero_reason="owner_confirmed_gift";
+ const r=report(d).sales[0];
+ assert.equal(r.partialGrossMarginCents,7500);assert.equal(r.lineCosts[0].evidence,"owner_confirmed_zero");
+ d.orders[0].cost_zero_reason="something_else";assert.equal(report(d).sales[0].partialGrossMarginCents,null);
+ assert.ok(READ_TABLES.orders.columns.includes("cost_zero_reason:metadata->>cost_zero_reason"));
+});
