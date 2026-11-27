@@ -88,3 +88,22 @@ Las filas `contenido` cargadas se conservan. Si además hubiera que retirarlas, 
   - La pendiente `202611270002_mercadopago_card_attempts.sql` (rama de Codex `codex/mercadopago-activation-readiness`, commit `16ee39a`) sólo crea `checkout_mercadopago_card_attempts` con RLS.
 - **Prueba de orden** en PostgreSQL aislado, sobre el manifest completo: las dos migraciones aplican en ambos órdenes (MP → I5 e I5 → MP), con la función de guardado parcheada y la tabla de MP creada.
 - **Conclusión**: el orden entre ellas es indistinto, y las dos versiones no se superponen (`202611270002` < `202611280001`).
+
+## Resultado de la publicación (27/11/2026, ~09:00 Argentina)
+
+Autorizada expresamente por el propietario. Ejecutada en el orden del procedimiento.
+
+| Paso | Resultado |
+|---|---|
+| 1. Verificación previa | `stored_cash_ok=true`, `ya_aplicada=false`, `huella_previa=057d51689264c550e92bff0cc78ff0b2`, 0 filas `contenido` (coincide con la lectura previa del propietario) |
+| 2. Migración | Texto cargado en el SQL Editor con sha256 comprobado en el propio editor (`c4590dd2…ec2008`); ejecutada una vez: «Success. No rows returned» |
+| Registro | `supabase_migrations.schema_migrations` no existe en el proyecto; no hay registro que actualizar, igual que en las migraciones anteriores aplicadas desde el SQL Editor |
+| 3. Comprobación | `ya_aplicada`, lista `contenido` y guarda `PRODUCT_INVALID_ATTRIBUTE` presentes; `cash_price_approved` intacto; huella nueva `5eb4539184a10a9eb877d80af9a69cbd`; 0 filas `contenido` |
+| 4. Integración | PR #37 squash `92d9a38` sobre el head revisado `56c87c0`; deployment de Production Ready |
+| 5. Verificación | `/perfumes` y `/perfumes?categoria=arabe` sin errores y sin filtro «Contenido»; `?contenido=100-ml` devuelve 0 productos (código nuevo activo); ficha de Club de Nuit Iconic igual que antes |
+
+Sin verificar: el editor del admin, porque requiere la sesión del propietario.
+
+No se hizo: carga de volúmenes, cambios de precios o stock, migraciones de Mercado Pago.
+
+Para la reversión, `huella_previa` es `057d51689264c550e92bff0cc78ff0b2`.
