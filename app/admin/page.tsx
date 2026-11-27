@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { adminMoneyFromCents } from "@/lib/admin/money";
+import { HomeInbox } from "@/components/admin/home-inbox";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { requireAdminSession } from "@/lib/admin-session";
 import { getAdminDashboardData } from "@/services/admin";
@@ -39,8 +41,10 @@ export default async function AdminPage() {
         </section>
       </>}
       <section className="mt-8">
-        <h2 className="text-xl font-semibold">Para revisar</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <h2 className="text-xl font-semibold">Para hacer hoy</h2>
+        <Suspense fallback={<InboxFallback/>}><HomeInbox/></Suspense>
+        <h3 className="mt-6 text-sm font-semibold text-[#8B5E3C]">También revisá</h3>
+        <div className="mt-3 grid gap-4 sm:grid-cols-3">
           <Task href="/admin/checkout?view=payments" title="Pagos de la web" detail="Revisar avisos y acreditaciones." />
           <Task href="/admin/checkout?view=quotes" title="Cotizaciones de envío" detail="Resolver solicitudes pendientes." />
           <Task href="/admin/pedidos" title="Encargos y entregas" detail="Consultar saldos y próximas entregas." />
@@ -48,6 +52,9 @@ export default async function AdminPage() {
       </section>
     </section>
   </main>;
+}
+function InboxFallback() {
+  return <p role="status" className={panel+" mt-4 text-sm text-black/65"}>Revisando encargos, stock y fichas…</p>;
 }
 function Metric({label,value,detail}:{label:string;value:string;detail:string}) {
   return <section className={panel}><h2 className="text-sm font-semibold text-[#8B5E3C]">{label}</h2><p className="mt-3 break-words text-2xl font-semibold">{value}</p><p className="mt-2 text-xs text-black/65">{detail}</p></section>;
