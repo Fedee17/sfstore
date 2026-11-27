@@ -315,6 +315,12 @@
       "stagingFile": "staging/supabase/migrations/202611290004_bulk_family_price_adjustment.sql",
       "sourceSha256": "5a4949a32621f5ed629155844855a17ca06734337f13495cf37150f89be168fb",
       "stagingSha256": "5a4949a32621f5ed629155844855a17ca06734337f13495cf37150f89be168fb"
+    },
+    {
+      "source": "supabase/migrations/202611290005_historical_sale_costs.sql",
+      "stagingFile": "staging/supabase/migrations/202611290005_historical_sale_costs.sql",
+      "sourceSha256": "a800014528a39eb2fa5130248dd95b619ac6094d2e231dddbceab64c99a58fad",
+      "stagingSha256": "a800014528a39eb2fa5130248dd95b619ac6094d2e231dddbceab64c99a58fad"
     }
   ]
 }

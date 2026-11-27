@@ -99,8 +99,10 @@ export function buildCommercialFacts(input: CommercialSnapshot, policy: Evidence
     const linesNet = sumCents(lines.map(l => moneyCents(l.subtotal)));
     if (linesNet + shipping !== totalCents) issues.push("LINES_HEADER_NET_NOT_RECONCILED");
     if (order.historical_import && order.affects_inventory) throw new Error("COMMERCIAL_HISTORICAL_INVENTORY_CONTRACT_VIOLATION");
-    const verifiedLines = lines.filter(l => l.unit_cost_snapshot !== null &&
-      moneyCents(l.unit_cost_snapshot) > 0 && order.cost_snapshot_policy === "current_product_cost_at_sale_v1");
+    // A zero cost is real only when the owner confirmed it (a gift); otherwise it is treated as unknown.
+    const zeroConfirmed = order.cost_zero_reason === "owner_confirmed_gift";
+    const verifiedLines = lines.filter(l => l.unit_cost_snapshot !== null && order.cost_snapshot_policy === "current_product_cost_at_sale_v1" &&
+      (moneyCents(l.unit_cost_snapshot) > 0 || (zeroConfirmed && moneyCents(l.unit_cost_snapshot) === 0)));
     const verifiedCostCents = sumCents(verifiedLines.map(l => moneyCents(l.unit_cost_snapshot!) * l.quantity));
     const revenueWithVerifiedCostCents = sumCents(verifiedLines.map(l => moneyCents(l.subtotal)));
     const confirmed = !cancelled && totalCents > 0 && claimedPaid && approvedCents === totalCents &&
@@ -113,7 +115,7 @@ export function buildCommercialFacts(input: CommercialSnapshot, policy: Evidence
       lineCosts: lines.map(l => ({
         lineId: l.id, unitCostCents: l.unit_cost_snapshot === null ? null : moneyCents(l.unit_cost_snapshot),
         evidence: l.unit_cost_snapshot === null ? "unknown" as const
-          : moneyCents(l.unit_cost_snapshot) === 0 ? "zero_requires_evidence" as const
+          : moneyCents(l.unit_cost_snapshot) === 0 ? (verifiedLines.includes(l) ? "owner_confirmed_zero" as const : "zero_requires_evidence" as const)
           : verifiedLines.includes(l) ? "stored_positive_snapshot" as const : "unverified_snapshot" as const,
       })),
       linesWithVerifiedCost: verifiedLines.length, linesWithUnknownCost: lines.length - verifiedLines.length,

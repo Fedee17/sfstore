@@ -9,6 +9,8 @@ export type OrderRow = {
   affects_inventory: boolean; created_at: string;
   subtotal: Money; discount: Money; shipping_cost: Money; total: Money;
   cost_snapshot_policy: string | null;
+  /** "owner_confirmed_gift": a stored zero cost is real (the owner received the item for free). */
+  cost_zero_reason?: string | null;
 };
 export type SaleLineRow = {
   family_id_snapshot?: string | null; family_name_snapshot?: string | null; sku_snapshot?: string | null; variant_options_snapshot?: Record<string,string> | null;
@@ -56,7 +58,7 @@ export type SaleFact = {
   registered: boolean; confirmed: boolean;
   totalCents: number; approvedCents: number; pendingCents: number;
   lineCosts: { lineId: string; unitCostCents: number | null;
-    evidence: "stored_positive_snapshot" | "unknown" | "zero_requires_evidence" | "unverified_snapshot" }[];
+    evidence: "stored_positive_snapshot" | "owner_confirmed_zero" | "unknown" | "zero_requires_evidence" | "unverified_snapshot" }[];
   linesWithVerifiedCost: number; linesWithUnknownCost: number;
   verifiedCostCents: number; revenueWithVerifiedCostCents: number;
   partialGrossMarginCents: number | null;
