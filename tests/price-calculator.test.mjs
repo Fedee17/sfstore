@@ -22,9 +22,17 @@ function load(file) {
 }
 const pricing = load(resolve(root, 'lib/products/commercial-pricing.ts'));
 const model = load(resolve(root, 'components/admin/products/price-preview-model.ts'));
+const { usdCostInArs } = load(resolve(root, 'lib/admin/internal-usd-cost.ts'));
 const { PriceCalculatorPreview } = load(resolve(root, 'components/admin/products/price-calculator-preview.tsx'));
 const B = BigInt;
 const text = html => html.replace(/<[^>]+>/g, ' ').replace(/ /g, ' ').replace(/\s+/g, ' ');
+
+test('la sugerencia de contado cambia con el dólar sin cambiar el costo en USD ni el margen', () => {
+  const cost = 11;
+  const profit = 40;
+  assert.equal(model.suggestedCashPrice(usdCostInArs(cost, { rate: 1661.9 }), profit), 2_610_000n);
+  assert.equal(model.suggestedCashPrice(usdCostInArs(cost, { rate: 1700 }), profit), 2_670_000n);
+});
 
 test('without an explicit profit the calculator keeps the 50% rule for existing callers', () => {
   const r = pricing.calculateCommercialPrices({ cost: '10000', fixedCost: '0', sellingCostPpm: B(0) });

@@ -107,3 +107,8 @@ export function makePricePreview(input: PaymentInputs, { base, fixed }: ReturnTy
 }
 
 export type PricePreview = ReturnType<typeof makePricePreview>;
+
+export function suggestedCashPrice(base: bigint, targetProfitPercent: number) {
+  const profit = profitTarget(base, { unit: "percent", value: String(targetProfitPercent) });
+  return makePricePreview({ transferRate: "", overrides: {} }, { base, fixed: zero, total: base }, profit.cents).cash.suggestion;
+}

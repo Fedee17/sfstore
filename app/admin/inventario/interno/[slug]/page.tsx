@@ -2,10 +2,12 @@ import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { InternalUsdCostForm } from "@/components/admin/products/internal-usd-cost-form";
 import { InventoryAdjustmentForm } from "@/components/admin/products/inventory-adjustment-form";
 import { requireAdminSession } from "@/lib/admin-session";
 import { canonicalHistoricalSlug, internalInventoryHref } from "@/lib/admin/internal-inventory";
 import { getInternalInventory } from "@/services/internal-inventory";
+import { getInternalUsdCost } from "@/services/internal-usd-cost";
 import { InternalInventoryForm } from "./inventory-form";
 
 export default async function InternalInventoryPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -18,6 +20,7 @@ export default async function InternalInventoryPage({ params }: { params: Promis
   if (!href) notFound();
   if (canonicalHistoricalSlug(slug) !== slug) redirect(href);
   const { product, source } = inventory;
+  const usdCost = await getInternalUsdCost(source.id).catch(() => undefined);
   const panel = "min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-white p-5";
 
   return <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -37,6 +40,11 @@ export default async function InternalInventoryPage({ params }: { params: Promis
           <p className="mb-3 mt-1 text-sm">Usá esta opción si la unidad vendida ya está contemplada en el saldo físico.</p>
           <InternalInventoryForm slug={slug} href={href} request={randomUUID()} />
         </section> : null}
+        <section className={`${panel} md:col-span-2`}>
+          <h2 className="mb-3 text-xl font-semibold">Costo en dólares</h2>
+          {usdCost === undefined ? <p className="text-sm">No se pudo consultar el costo en USD.</p>
+            : <InternalUsdCostForm slug={slug} initialCost={usdCost} />}
+        </section>
       </div>
     </section>
   </main>;
