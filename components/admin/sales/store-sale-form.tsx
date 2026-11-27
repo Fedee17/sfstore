@@ -202,7 +202,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
                 setQuery(event.target.value);
                 setSearchOpen(true);
               }}
-              placeholder="Escribi para buscar"
+              placeholder="Escribí para buscar"
               className="h-12 min-w-0 rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 outline-none focus:border-[#556B2F] disabled:opacity-60"
             />
           </label>
@@ -236,7 +236,7 @@ function StoreSaleEntryForm({ products, recipes, onNextSale, initialProductId, i
         <div className="mt-5 grid gap-3">
           {lines.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-[#8B5E3C]/25 p-5 text-center text-sm text-[#1F1F1F]/55">
-              Agrega al menos un producto para registrar la venta.
+              Agregá al menos un producto para registrar la venta.
             </p>
           ) : (
             lines.map((line, index) => {

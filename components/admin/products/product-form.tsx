@@ -23,6 +23,7 @@ import {
   type ProductImageActionState,
 } from "@/app/admin/productos/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
+import { stockAdjustmentHref } from "@/lib/admin/catalog-review";
 import {
   CATALOG_ATTRIBUTE_KEYS,
   getAttributeFieldsForCategory,
@@ -872,9 +873,17 @@ export function ProductForm({
             <span className="font-semibold">{product?.stock ?? 0}</span>
             <span className="text-xs leading-5 text-[#1F1F1F]/55">
               {product
-                ? "El saldo se modifica mediante un ajuste auditable desde Productos."
-                : "El producto se creara con stock inicial 0."}
+                ? "El saldo se modifica mediante un ajuste auditable."
+                : "El producto se creará con stock inicial 0."}
             </span>
+            {product && !product.historical_identity ? (
+              <Link
+                href={stockAdjustmentHref(product)}
+                className="text-xs font-semibold text-[#556B2F] underline-offset-4 hover:underline"
+              >
+                Ajustar stock
+              </Link>
+            ) : null}
             {product ? (
               <Link
                 href={`/admin/inventario?product=${product.id}`}

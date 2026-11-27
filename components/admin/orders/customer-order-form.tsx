@@ -9,6 +9,8 @@ import {
 } from "@/app/admin/pedidos/actions";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { parseMoneyInputCents } from "@/lib/money-input";
+import { getEffectiveCashPrice } from "@/lib/web-transfer-pricing";
+import { matchesStoreSaleProduct } from "@/lib/store-sales";
 import type {
   CustomerOrder,
   CustomerOrderProduct,
@@ -27,16 +29,13 @@ type OrderLine = {
   unitPrice: string;
 };
 
-function normalize(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
 function parseMoney(value: string) {
   return Number(parseMoneyInputCents(value) ?? BigInt(0)) / 100;
 }
 
+// Same cash price as the web, the local sale and the quick lookup (approved calculator price, else list × 0,75).
 function defaultPrice(product: CustomerOrderProduct) {
-  return Number(product.transfer_price ?? product.price);
+  return getEffectiveCashPrice(product);
 }
 
 function initialLines(order: CustomerOrder | null, products: CustomerOrderProduct[]) {
@@ -49,6 +48,7 @@ function initialLines(order: CustomerOrder | null, products: CustomerOrderProduc
       sku: null,
       price: Number(item.unit_price),
       transfer_price: null,
+      cash_price_approved_at: null,
       stock: 0,
       status: "active",
       categories: item.category_name ? { name: item.category_name } : null,
@@ -73,11 +73,10 @@ export function CustomerOrderForm({
   const quantityRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const completed = state.status === "success";
 
-  const matches = useMemo(() => {
-    const needle = normalize(query);
-    if (!needle) return [];
-    return products.filter((product) => normalize(`${product.name} ${product.sku ?? ""}`).includes(needle)).slice(0, 10);
-  }, [products, query]);
+  const matches = useMemo(
+    () => products.filter((product) => matchesStoreSaleProduct(product, query)).slice(0, 10),
+    [products, query],
+  );
 
   const total = lines.reduce(
     (sum, line) => sum + line.quantity * parseMoney(line.unitPrice),
@@ -148,7 +147,7 @@ export function CustomerOrderForm({
         </div>
 
         <div className="mt-5 grid gap-3">
-          {lines.length === 0 ? <p className="rounded-2xl border border-dashed border-[#8B5E3C]/25 p-5 text-center text-sm text-[#1F1F1F]/55">Agrega al menos un producto.</p> : lines.map((line) => (
+          {lines.length === 0 ? <p className="rounded-2xl border border-dashed border-[#8B5E3C]/25 p-5 text-center text-sm text-[#1F1F1F]/55">Agregá al menos un producto.</p> : lines.map((line) => (
             <article key={line.product.id} className="grid gap-3 rounded-2xl border border-[#8B5E3C]/15 bg-[#F7F4ED] p-4 md:grid-cols-[minmax(0,1.7fr)_7rem_9rem_9rem_auto] md:items-end">
               <div className="min-w-0">
                 <input type="hidden" name="productId" value={line.product.id} />

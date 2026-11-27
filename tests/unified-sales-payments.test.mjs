@@ -16,7 +16,6 @@ const paymentService = source("services", "order-payments.ts");
 const checkoutService = source("services", "orders.ts");
 const webhook = source("lib", "payments", "legacy-mercadopago", "webhook.ts");
 const inventoryService = source("services", "inventory.ts");
-const adminOrders = source("services", "admin.ts");
 const adminActions = source("app", "admin", "pedidos", "actions.ts");
 const adminOrdersPage = source("app", "admin", "pedidos", "page.tsx");
 const paymentModel = await import(
@@ -26,7 +25,7 @@ const paymentModel = await import(
 test("existing checkout orders remain web orders", () => {
   assert.match(migration, /channel text not null default 'web'/i);
   assert.match(readFileSync(new URL("../supabase/migrations/202610110002_pay01_atomic_checkout.sql", import.meta.url), "utf8"), /values\(order_id,customer_id,order_number,'web'/i);
-  assert.match(adminOrders, /channel,/i);
+  // The legacy services/admin.ts order reader that selected `channel` was removed on 27/11 (no callers).
 });
 
 test("only supported sales channels pass the database constraint", () => {

@@ -38,11 +38,11 @@ const purchaseFixtures = [
   { id: "historical-purchase", historical_import: true, total_cost: 600 },
 ];
 
-test("legacy operational readers exclude historical rows and the daily dashboard reuses the commercial contract", () => {
-  const getAdminOrders = functionBlock(adminService, "getAdminOrders", "getAdminDashboardData");
-  assert.match(getAdminOrders, /\.from\("orders"\)[\s\S]+\.eq\("historical_import", false\)/);
-  assert.match(functionBlock(adminService,"getAdminDashboardData","isRealSale"), /getCommercialDay/);
-  assert.match(adminService, /getAdminAnalyticsData[\s\S]+getAdminOrders\(\)/);
+// The legacy order readers (getAdminOrders, getAdminAnalyticsData) had no callers and were removed on 27/11; the
+// dashboard and analytics read the commercial contract, which already excludes historical imports.
+test("the daily dashboard reuses the commercial contract and operational totals exclude historical rows", () => {
+  assert.match(functionBlock(adminService, "getAdminDashboardData"), /getCommercialDay/);
+  assert.doesNotMatch(adminService, /\.from\("orders"\)/);
 
   const orders = operational(orderFixtures);
   assert.equal(orders.length, 1);

@@ -3,50 +3,7 @@ import { readVersionedProduct } from "@/lib/products/atomic-save";
 import {mergeAdminProductPublications,type AdminComponentOffer} from "@/lib/products/admin-component-publications";
 
 import { YARA_ROSA } from "@/lib/products/yara-rosa-consolidation";
-
-export type AdminCustomer = {
-  id: string;
-  full_name: string;
-  phone: string;
-  email: string | null;
-  province: string | null;
-  city: string | null;
-  address: string | null;
-  postal_code: string | null;
-};
-
-export type AdminOrderItem = {
-  id: string;
-  product_name: string;
-  product_slug: string;
-  category_name: string | null;
-  unit_price: number;
-  quantity: number;
-  subtotal: number;
-};
-
-export type AdminOrder = {
-  id: string;
-  order_number: string;
-  channel: "web" | "store" | "order";
-  status: string;
-  payment_method: string | null;
-  payment_status: string;
-  shipping_method: string | null;
-  shipping_carrier: string | null;
-  shipping_province: string | null;
-  shipping_city: string | null;
-  shipping_address: string | null;
-  shipping_postal_code: string | null;
-  subtotal: number;
-  discount: number;
-  shipping_cost: number;
-  total: number;
-  notes: string | null;
-  created_at: string;
-  customers: AdminCustomer | null;
-  order_items?: AdminOrderItem[];
-};
+import { LOW_STOCK_LIMIT } from "@/lib/admin/catalog-review";
 
 export type AdminProduct = {
   component_offer?: boolean;
@@ -102,6 +59,8 @@ export type AdminProductFilters = {
   requireComplete?: boolean;
   /** Historical identities only (read-only records); otherwise they are excluded. */
   historical?: boolean;
+  /** Products list default: hide archived rows unless a status is chosen. */
+  excludeArchived?: boolean;
   search?: string;
   category?: string;
   status?: string;
@@ -114,49 +73,7 @@ export type AdminResult<T> = {
   error: string | null;
 };
 
-export type AdminAnalyticsData = {
-  totalSales: number;
-  currentMonthSales: number;
-  totalOrders: number;
-  pendingOrders: number;
-  paidOrders: number;
-  averageTicket: number;
-  topProducts: {
-    productName: string;
-    productSlug: string;
-    quantity: number;
-    total: number;
-  }[];
-  lowStockProducts: {
-    id: string;
-    name: string;
-    slug: string;
-    stock: number;
-    status: string;
-  }[];
-  outOfStockProducts: {
-    id: string;
-    name: string;
-    slug: string;
-    stock: number;
-    status: string;
-  }[];
-  salesByPaymentMethod: {
-    method: string;
-    orders: number;
-    total: number;
-  }[];
-  ordersByStatus: {
-    status: string;
-    orders: number;
-  }[];
-};
-
 type RelationOne<T> = T | T[] | null;
-
-type AdminOrderRow = Omit<AdminOrder, "customers"> & {
-  customers: RelationOne<AdminCustomer>;
-};
 
 type AdminProductCategory = {
   name: string;
@@ -180,13 +97,6 @@ function firstRelation<T>(relation: RelationOne<T>) {
   return Array.isArray(relation) ? relation[0] ?? null : relation;
 }
 
-function normalizeAdminOrder(row: AdminOrderRow): AdminOrder {
-  return {
-    ...row,
-    customers: firstRelation(row.customers),
-  };
-}
-
 function normalizeAdminProduct(row: AdminProductRow): AdminProduct {
   return {
     ...row,
@@ -208,63 +118,6 @@ async function safeRead<T>(read: () => Promise<T>): Promise<AdminResult<T>> {
           : "No se pudieron leer los datos de Supabase.",
     };
   }
-}
-
-export async function getAdminOrders(): Promise<AdminResult<AdminOrder[]>> {
-  return safeRead(async () => {
-    const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from("orders")
-      .select(
-        `
-        id,
-        order_number,
-        channel,
-        status,
-        payment_method,
-        payment_status,
-        shipping_method,
-        shipping_carrier,
-        shipping_province,
-        shipping_city,
-        shipping_address,
-        shipping_postal_code,
-        subtotal,
-        discount,
-        shipping_cost,
-        total,
-        notes,
-        created_at,
-        customers (
-          id,
-          full_name,
-          phone,
-          email,
-          province,
-          city,
-          address,
-          postal_code
-        ),
-        order_items (
-          id,
-          product_name,
-          product_slug,
-          category_name,
-          unit_price,
-          quantity,
-          subtotal
-        )
-      `,
-      )
-      .eq("historical_import", false)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return ((data ?? []) as unknown as AdminOrderRow[]).map(normalizeAdminOrder);
-  });
 }
 
 export async function getAdminProducts(
@@ -331,6 +184,8 @@ export async function getAdminProducts(
 
     if (filters.status) {
       query = query.eq("status", filters.status);
+    } else if (filters.excludeArchived) {
+      query = query.neq("status", "archived");
     }
 
     if (filters.stock === "out") {
@@ -338,7 +193,7 @@ export async function getAdminProducts(
     }
 
     if (filters.stock === "low") {
-      query = query.gt("stock", 0).lte("stock", 3);
+      query = query.gt("stock", 0).lte("stock", LOW_STOCK_LIMIT);
     }
 
     if (filters.featured) {
@@ -473,167 +328,4 @@ export async function getAdminProductById(
 export async function getAdminDashboardData() {
   const { getCommercialDay } = await import("@/services/commercial-history");
   return getCommercialDay();
-}
-
-function isRealSale(order: AdminOrder) {
-  if (order.status === "cancelled") {
-    return false;
-  }
-
-  return (
-    order.payment_status === "approved" ||
-    order.payment_status === "paid" ||
-    order.status === "paid" ||
-    order.status === "completed"
-  );
-}
-
-function isSameCurrentMonth(dateValue: string, currentDate = new Date()) {
-  const date = new Date(dateValue);
-
-  return (
-    date.getFullYear() === currentDate.getFullYear() &&
-    date.getMonth() === currentDate.getMonth()
-  );
-}
-
-function addToGroupedTotal<T extends string>(
-  grouped: Map<T, { orders: number; total: number }>,
-  key: T,
-  total: number,
-) {
-  const current = grouped.get(key) ?? { orders: 0, total: 0 };
-  grouped.set(key, {
-    orders: current.orders + 1,
-    total: current.total + total,
-  });
-}
-
-export async function getAdminAnalyticsData(): Promise<
-  AdminResult<AdminAnalyticsData>
-> {
-  return safeRead(async () => {
-    const [ordersResult, productsResult] = await Promise.all([
-      getAdminOrders(),
-      getAdminProducts(),
-    ]);
-
-    if (ordersResult.error) {
-      throw new Error(ordersResult.error);
-    }
-
-    if (productsResult.error) {
-      throw new Error(productsResult.error);
-    }
-
-    const orders = ordersResult.data ?? [];
-    const products = productsResult.data ?? [];
-    const realSalesOrders = orders.filter(isRealSale);
-    const totalSales = realSalesOrders.reduce(
-      (total, order) => total + order.total,
-      0,
-    );
-    const currentMonthSales = realSalesOrders
-      .filter((order) => isSameCurrentMonth(order.created_at))
-      .reduce((total, order) => total + order.total, 0);
-    const pendingOrders = orders.filter((order) => order.status === "pending")
-      .length;
-    const paidOrders = realSalesOrders.length;
-    const productSales = new Map<
-      string,
-      {
-        productName: string;
-        productSlug: string;
-        quantity: number;
-        total: number;
-      }
-    >();
-    const salesByPaymentMethod = new Map<
-      string,
-      { orders: number; total: number }
-    >();
-    const ordersByStatus = new Map<string, { orders: number }>();
-
-    for (const order of orders) {
-      const statusCount = ordersByStatus.get(order.status) ?? { orders: 0 };
-      ordersByStatus.set(order.status, { orders: statusCount.orders + 1 });
-
-      if (!isRealSale(order)) {
-        continue;
-      }
-
-      addToGroupedTotal(
-        salesByPaymentMethod,
-        order.payment_method ?? "other",
-        order.total,
-      );
-
-      for (const item of order.order_items ?? []) {
-        const key = item.product_slug || item.product_name;
-        const current = productSales.get(key) ?? {
-          productName: item.product_name,
-          productSlug: item.product_slug,
-          quantity: 0,
-          total: 0,
-        };
-
-        productSales.set(key, {
-          ...current,
-          quantity: current.quantity + item.quantity,
-          total: current.total + item.subtotal,
-        });
-      }
-    }
-
-    const stockProducts = products.filter(
-      (product) => product.status !== "archived",
-    );
-
-    return {
-      totalSales,
-      currentMonthSales,
-      totalOrders: orders.length,
-      pendingOrders,
-      paidOrders,
-      averageTicket: paidOrders > 0 ? totalSales / paidOrders : 0,
-      topProducts: Array.from(productSales.values())
-        .sort((left, right) => right.quantity - left.quantity)
-        .slice(0, 8),
-      lowStockProducts: stockProducts
-        .filter((product) => product.stock > 0 && product.stock <= 3)
-        .sort((left, right) => left.stock - right.stock)
-        .slice(0, 8)
-        .map((product) => ({
-          id: product.id,
-          name: product.name,
-          slug: product.slug,
-          stock: product.stock,
-          status: product.status,
-        })),
-      outOfStockProducts: stockProducts
-        .filter((product) => product.stock === 0)
-        .sort((left, right) => left.name.localeCompare(right.name))
-        .slice(0, 8)
-        .map((product) => ({
-          id: product.id,
-          name: product.name,
-          slug: product.slug,
-          stock: product.stock,
-          status: product.status,
-        })),
-      salesByPaymentMethod: Array.from(salesByPaymentMethod.entries()).map(
-        ([method, data]) => ({
-          method,
-          orders: data.orders,
-          total: data.total,
-        }),
-      ),
-      ordersByStatus: Array.from(ordersByStatus.entries()).map(
-        ([status, data]) => ({
-          status,
-          orders: data.orders,
-        }),
-      ),
-    };
-  });
 }
