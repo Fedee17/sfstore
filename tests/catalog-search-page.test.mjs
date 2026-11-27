@@ -17,6 +17,7 @@ import * as yara from '../lib/products/yara-rosa-consolidation.ts';
 import * as availability from '../lib/catalog/availability-order.ts';
 import * as related from '../lib/catalog/related-products.ts';
 import { analyticsRenderStubs } from './fixtures/analytics-render-stubs.mjs';
+import { recordedSearchDemand, searchDemandStubs } from './fixtures/search-demand-stubs.mjs';
 import { catalogFrameStubs } from './fixtures/catalog-frame-stubs.mjs';
 import { publicRows, publicOffers, invalidRows, filterFixtureRows, fixtureCashPrice } from './fixtures/search-public-catalog.mjs';
 
@@ -55,6 +56,7 @@ function harness({ rows = publicRows, offers = publicOffers, fail = false } = {}
   let result, alternatives;
   const Page = load('app/buscar/page.tsx', {
     ...analyticsRenderStubs,
+    ...searchDemandStubs,
     ...catalogFrameStubs,
     'react/jsx-runtime': jsx, 'next/link': { default: ({ children, ...props }) => React.createElement('a', props, children) },
     '@/components/site-header': { SiteHeader: () => null }, '@/lib/catalog/search': search, '@/services/products': service,
@@ -170,4 +172,13 @@ test("a typo shows the matching product with a notice; no results offer availabl
   assert.match(empty.html, /No encontramos/);
   assert.match(empty.html, /Te pueden interesar/);
   assert.deepEqual(empty.alternatives.map(p => p.slug), ["mate-imperial-prueba"], "only available products with a photo");
+});
+
+test("only unmet searches are recorded, normalized and without personal data", async () => {
+  recordedSearchDemand.length = 0;
+  await harness().query("imperial");
+  await harness().query("  IMPERAIL ");
+  await harness().query("xyzqwerty");
+  await harness().query("juan@mail.com");
+  assert.deepEqual(recordedSearchDemand, [["imperail", "approximate"], ["xyzqwerty", "none"]]);
 });

@@ -297,6 +297,12 @@
       "stagingFile": "staging/supabase/migrations/202611290001_product_change_history.sql",
       "sourceSha256": "17c733900641e946778e12e2d30fcf7566eb241f42e965913eebe2f1dd549e0b",
       "stagingSha256": "17c733900641e946778e12e2d30fcf7566eb241f42e965913eebe2f1dd549e0b"
+    },
+    {
+      "source": "supabase/migrations/202611290002_search_demand.sql",
+      "stagingFile": "staging/supabase/migrations/202611290002_search_demand.sql",
+      "sourceSha256": "6b2df475b39f37b9b4f30eacad8de290e79c4b8a92259f50ae4a46ab6a1cc4d5",
+      "stagingSha256": "6b2df475b39f37b9b4f30eacad8de290e79c4b8a92259f50ae4a46ab6a1cc4d5"
     }
   ]
 }
