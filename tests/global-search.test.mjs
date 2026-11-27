@@ -57,3 +57,20 @@ test('the shortcut opens search from any admin screen and the page guards the se
   const service=source('services/global-search.ts');
   assert.ok(service.indexOf('requireAdminSession()')<service.indexOf('Promise.allSettled'));
 });
+
+test('stock detail uses singular for one unit',()=>{
+  const r=buildGlobalSearch('mate',{products:ok([{id:'a',name:'A',sku:'A',stock:1,status:'active'},{id:'b',name:'B',sku:'B',stock:3,status:'active'}]),orders:ok([]),sales:ok([]),purchases:ok([]),suppliers:ok([])});
+  assert.match(r.groups[0].items[0].detail,/· 1 disponible$/);
+  assert.match(r.groups[0].items[1].detail,/· 3 disponibles$/);
+});
+
+test('purchase without supplier is named by what was bought',()=>{
+  const line=(name)=>({product_name_snapshot:name});
+  const r=buildGlobalSearch('lata',{products:ok([]),orders:ok([]),sales:ok([]),suppliers:ok([]),purchases:ok([
+    {id:'c1',occurredOn:'2026-01-22',original:{supplier_name_snapshot:null,total_cost:'100'},lines:[line('Lata Matera Negra')]},
+    {id:'c2',occurredOn:'2026-01-22',original:{supplier_name_snapshot:'',total_cost:'100'},lines:[line('Lata Matera Roja'),line('Bombilla')]},
+    {id:'c3',occurredOn:'2026-01-22',original:{supplier_name_snapshot:null,total_cost:'100'},lines:[]},
+  ])});
+  assert.deepEqual(r.groups[0].items.map(i=>i.title),['Lata Matera Negra','Lata Matera Roja y 1 producto más','Compra sin detalle']);
+  assert.match(r.groups[0].items[0].detail,/^Sin proveedor · /);
+});
