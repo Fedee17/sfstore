@@ -298,6 +298,12 @@ export default async function AdminProductsPage({
               Importar productos
             </Link>
             <Link
+              href="/admin/productos/masivo"
+              className="w-full rounded-full border border-[#8B5E3C]/30 px-6 py-3 text-center text-sm font-semibold text-[#8B5E3C] transition hover:border-[#556B2F] hover:text-[#556B2F] sm:w-auto"
+            >
+              Cambiar estado en lote
+            </Link>
+            <Link
               href="/admin/productos/nuevo"
               className="w-full rounded-full bg-[#556B2F] px-6 py-3 text-center text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826] sm:w-auto"
             >
