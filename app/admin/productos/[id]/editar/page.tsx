@@ -4,6 +4,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { ProductForm } from "@/components/admin/products/product-form";
 import { ProductAvailabilitySummary } from "@/components/admin/products/product-availability-summary";
 import { adminProductAvailability } from "@/lib/products/product-availability";
+import { stockAdjustmentHref } from "@/lib/admin/catalog-review";
 import { requireAdminSession } from "@/lib/admin-session";
 import { getAdminCategories, getAdminProductById } from "@/services/admin";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
@@ -41,6 +42,9 @@ export default async function EditProductPage({
   }
 
   const categories = categoriesResult.data ?? [];
+  // Approved mockup 27/11: stock and its audited adjustment visible at the top, except historical identities,
+  // component galleries and family variants (their stock is managed elsewhere).
+  const showStockShortcut = Boolean(product && !connector && !product.family_id && !adminProductAvailability(product).historical);
 
   return (
     <main className="min-h-screen bg-[#F7F4ED] text-[#1F1F1F]">
@@ -56,7 +60,25 @@ export default async function EditProductPage({
           </div>
         ) : null}
         {connector ? <p className="mt-4 text-xl font-semibold">{product?.name}</p> : null}
-        {product && !connector ? <ProductAvailabilitySummary availability={adminProductAvailability(product)} className="mt-5 rounded-xl border border-[#8B5E3C]/20 bg-white/70 p-4 text-sm" /> : null}
+        {product && !connector ? <ProductAvailabilitySummary availability={adminProductAvailability(product)} className="mt-5 rounded-xl border border-[#8B5E3C]/20 bg-white/70 p-4 text-sm">
+          {showStockShortcut && product ? (
+            <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-[#8B5E3C]/15 pt-3 text-sm">
+              <p><span className="font-semibold">Stock:</span> {product.stock} {product.stock === 1 ? "unidad" : "unidades"}</p>
+              <Link
+                href={stockAdjustmentHref(product)}
+                className="inline-flex min-h-11 items-center rounded-full bg-[#556B2F] px-5 text-sm font-semibold text-[#F7F4ED] transition hover:bg-[#465826]"
+              >
+                Ajustar stock
+              </Link>
+              <Link
+                href={`/admin/inventario?view=movements&product=${encodeURIComponent(product.id)}`}
+                className="inline-flex min-h-11 items-center rounded-full border border-[#556B2F]/30 px-5 text-sm font-semibold text-[#465826] transition hover:bg-[#556B2F]/10"
+              >
+                Ver movimientos
+              </Link>
+            </div>
+          ) : null}
+        </ProductAvailabilitySummary> : null}
         {product?.family_id ? <p className="mt-5 rounded-xl border border-[#8B5E3C]/20 p-4">El precio y la combinación se administran en <Link className="underline" href={`/admin/productos/familias/${product.family_id}`}>la familia del SKU</Link>. El precio y SKU no se editan aquí; podés administrar sus fotografías y otros datos.</p> : null}
         {product ? (
           <ProductForm
