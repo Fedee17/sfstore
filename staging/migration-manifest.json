@@ -331,8 +331,8 @@
     {
       "source": "supabase/migrations/202611290007_store_sale_missing_costs.sql",
       "stagingFile": "staging/supabase/migrations/202611290007_store_sale_missing_costs.sql",
-      "sourceSha256": "b1dbed060185dcbfba6e4cbe633a8ba89e70ca88504aaabeea734b6ddf34d6a7",
-      "stagingSha256": "b1dbed060185dcbfba6e4cbe633a8ba89e70ca88504aaabeea734b6ddf34d6a7"
+      "sourceSha256": "3662be7d3234b640166fc2c27f33f7b201af3691698a57df39f35ce6fec7fe69",
+      "stagingSha256": "3662be7d3234b640166fc2c27f33f7b201af3691698a57df39f35ce6fec7fe69"
     }
   ]
 }

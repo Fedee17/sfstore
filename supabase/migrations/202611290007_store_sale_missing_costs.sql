@@ -2,7 +2,8 @@
 -- Owner decision 27/11/2026: use the cost each product has today. Values are fixed here (not read at run time):
 --   18/09 Al Haramain Amber Oud Gold Edition $78.432,90 · 05/10 Lattafa Asad Bourbon $58.500 ·
 --   05/10 Yara Elixir 100 ml $54.500 · 07/10 Cabezal iPhone Pata argentina $3.340,89 · 07/10 Cable 20W iPhone $3.650 ·
---   17/10 Fakhar Rose Gold $54.000.
+--   Fakhar Rose Gold $54.000 (loaded late on 09/11: its line already holds that same cost under the late-entry policy,
+--   which the margin does not accept; it keeps the cost and only gets the owner policy).
 -- Only order_items.unit_cost_snapshot and the order's cost metadata change (the previous cost policy is kept for the
 -- rollback). Every line is checked first (same sale, product, quantity and subtotal, still without cost) or nothing runs.
 -- Rollback: reports/store-sale-missing-costs-rollback.sql.
@@ -23,7 +24,8 @@ insert into store_sale_missing_costs (order_id, product_id, expected_subtotal, u
   ('bca0a91e-3611-4b8d-89d8-fa72be39cee1', 'c7659a2a-4bb5-439c-ba18-a62d2dd0c121', 81000.00, 54000.00);
 
 create temp table store_sale_missing_cost_targets on commit drop as
-select c.order_id, c.unit_cost, i.id as item_id, i.quantity, i.subtotal, c.expected_subtotal, i.unit_cost_snapshot, o.historical_import
+select c.order_id, c.unit_cost, i.id as item_id, i.quantity, i.subtotal, c.expected_subtotal, i.unit_cost_snapshot, o.historical_import,
+  o.metadata->>'cost_snapshot_policy' as policy
 from store_sale_missing_costs c
 join public.orders o on o.id = c.order_id
 join public.order_items i on i.order_id = c.order_id and i.product_id = c.product_id;
@@ -34,7 +36,9 @@ begin
     raise exception 'MISSING_COSTS_LINES_DO_NOT_MATCH';
   end if;
   if exists (select 1 from store_sale_missing_cost_targets
-      where historical_import or quantity <> 1 or subtotal <> expected_subtotal or unit_cost_snapshot is not null) then
+      where historical_import or quantity <> 1 or subtotal <> expected_subtotal
+        or (unit_cost_snapshot is null and policy is not null)
+        or (unit_cost_snapshot is not null and not (unit_cost_snapshot = unit_cost and policy = 'current_product_cost_at_late_entry_v1'))) then
     raise exception 'MISSING_COSTS_BASE_CHANGED';
   end if;
   -- The other lines of these sales must already have a cost, or their margin would still be partial.
@@ -46,7 +50,7 @@ end;
 $preflight$;
 
 update public.order_items i set unit_cost_snapshot = t.unit_cost
-from store_sale_missing_cost_targets t where i.id = t.item_id;
+from store_sale_missing_cost_targets t where i.id = t.item_id and t.unit_cost_snapshot is null;
 update public.orders o set metadata = o.metadata
   || jsonb_build_object('cost_snapshot_policy', 'current_product_cost_at_sale_v1', 'cost_source', 'owner_current_cost_20261127',
     'cost_policy_before_owner_fix', coalesce(o.metadata->>'cost_snapshot_policy', 'none'))

@@ -32,3 +32,11 @@ test('only costs and cost metadata change, after a preflight, with a postcheck a
   assert.ok(entry); assert.equal(bytes.includes(13), false);
   assert.equal(createHash('sha256').update(bytes).digest('hex'), entry.sourceSha256);
 });
+
+test('Fakhar Rose Gold was entered late with its cost already saved: it keeps $54.000 and only gets the owner policy', () => {
+  const code = sql.replace(/^--.*$/gm, '');
+  assert.ok(code.includes("unit_cost_snapshot is not null and not (unit_cost_snapshot = unit_cost and policy = 'current_product_cost_at_late_entry_v1')"));
+  assert.ok(code.includes('set unit_cost_snapshot = t.unit_cost\nfrom store_sale_missing_cost_targets t where i.id = t.item_id and t.unit_cost_snapshot is null;'));
+  const rollback = read('reports/store-sale-missing-costs-rollback.sql').replace(/^--.*$/gm, '');
+  assert.doesNotMatch(rollback, /c7659a2a-4bb5-439c-ba18-a62d2dd0c121/, 'the rollback must not erase the late-entry cost');
+});
