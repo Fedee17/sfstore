@@ -28,6 +28,8 @@ export const CATALOG_ATTRIBUTE_KEYS = {
   material: "material",
   color: "color",
   useCase: "use_case",
+  // Perfume volume. Stored as "contenido", a name the public attribute boundary already exposes.
+  volume: "contenido",
 } as const;
 
 export type CatalogAttributeKey =
@@ -114,6 +116,11 @@ export const MATE_USE_CASE_OPTIONS = [
   option("premium", "Premium"),
 ] as const;
 
+// Bottle or decant volume as sold. Only what the product's presentation confirms: never inferred from its name.
+export const PERFUME_VOLUME_OPTIONS = [
+  2, 3, 5, 8, 10, 12, 15, 20, 25, 30, 35, 50, 55, 60, 65, 75, 80, 85, 90, 100, 105, 110, 115, 120, 125, 150, 200, 250,
+].map((ml) => option(`${ml}-ml`, `${ml} ml`));
+
 export const PERFUME_ATTRIBUTE_FIELDS: readonly CatalogAttributeField[] = [
   {
     key: CATALOG_ATTRIBUTE_KEYS.commercialCategory,
@@ -149,6 +156,13 @@ export const PERFUME_ATTRIBUTE_FIELDS: readonly CatalogAttributeField[] = [
     multiple: false,
     input: "select",
     options: PERFUME_GENDER_OPTIONS,
+  },
+  {
+    key: CATALOG_ATTRIBUTE_KEYS.volume,
+    label: "Contenido",
+    multiple: false,
+    input: "select",
+    options: PERFUME_VOLUME_OPTIONS,
   },
 ];
 
@@ -231,6 +245,12 @@ const ATTRIBUTE_NAME_ALIASES: Record<CatalogAttributeKey, readonly string[]> = {
     CATALOG_ATTRIBUTE_KEYS.useCase,
     "Uso",
   ],
+  [CATALOG_ATTRIBUTE_KEYS.volume]: [
+    CATALOG_ATTRIBUTE_KEYS.volume,
+    "Contenido",
+    "Volumen",
+    "Capacidad",
+  ],
 };
 
 const legacyCommercialCategoryValues = new Map(
@@ -246,6 +266,8 @@ export function getCatalogAttributeInputName(key: CatalogAttributeKey) {
 
 export function normalizeCatalogAttributeValue(value: string) {
   return value
+    // "100ml", "100 ML" and "100 ml" are one volume value.
+    .replace(/(\d)\s*ml\b/giu, "$1 ml")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()

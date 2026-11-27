@@ -27,6 +27,7 @@ export const RELEVANT_COLUMNS: Record<SupportedProductSheet, readonly string[]> 
     "Intensidad",
     "Momento",
     "Género",
+    "Contenido",
     "Disponible como decant",
   ],
   "Termos y Mates": [
@@ -62,6 +63,7 @@ const ATTRIBUTE_COLUMNS: readonly AttributeColumn[] = [
   { key: CATALOG_ATTRIBUTE_KEYS.intensity, label: "Intensidad", categorySlug: "perfumes", aliases: ["Intensidad"] },
   { key: CATALOG_ATTRIBUTE_KEYS.occasion, label: "Momento", categorySlug: "perfumes", aliases: ["Momento", "Ocasión", "Ocasion"] },
   { key: CATALOG_ATTRIBUTE_KEYS.gender, label: "Género", categorySlug: "perfumes", aliases: ["Género", "Genero"] },
+  { key: CATALOG_ATTRIBUTE_KEYS.volume, label: "Contenido", categorySlug: "perfumes", aliases: ["Contenido", "Volumen", "Capacidad"] },
   { key: CATALOG_ATTRIBUTE_KEYS.decantAvailable, label: "Disponible como decant", categorySlug: "perfumes", aliases: ["Disponible como decant", "Decant", "Decant disponible"] },
   { key: CATALOG_ATTRIBUTE_KEYS.mateType, label: "Tipo de mate", categorySlug: "mates", aliases: ["Tipo de mate", "Tipo Mate"] },
   { key: CATALOG_ATTRIBUTE_KEYS.material, label: "Material", categorySlug: "mates", aliases: ["Material"] },

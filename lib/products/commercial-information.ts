@@ -1,6 +1,7 @@
 import {
   CATALOG_ATTRIBUTE_KEYS,
   getCatalogAttributeField,
+  getCatalogAttributeNameAliases,
   getCatalogAttributeOptionLabel,
   getCatalogAttributeValues,
   type CatalogAttribute,
@@ -99,7 +100,10 @@ export function getProductCommercialInformation(product: InformationInput) {
     addManaged("Perfil olfativo", CATALOG_ATTRIBUTE_KEYS.olfactoryFamily);
     addManaged("Intensidad orientativa", CATALOG_ATTRIBUTE_KEYS.intensity);
     addManaged("Ocasiones sugeridas", CATALOG_ATTRIBUTE_KEYS.occasion);
-    addRegistered("Contenido", ["Contenido", "Volumen", "Capacidad"]);
+    // Managed volume first; a registered value outside the managed list is still shown as written.
+    const volumeFields = fields.length;
+    addManaged("Contenido", CATALOG_ATTRIBUTE_KEYS.volume);
+    if (fields.length === volumeFields) addRegistered("Contenido", getCatalogAttributeNameAliases(CATALOG_ATTRIBUTE_KEYS.volume));
     addRegistered("Presentación", ["Presentación", "Presentacion", "Concentración", "Concentracion"]);
     if (editorial) {
       fields.push(...editorial.notes);

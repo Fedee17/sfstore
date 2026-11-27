@@ -285,6 +285,12 @@
       "stagingFile": "staging/supabase/migrations/202611270001_mercadopago_checkout.sql",
       "sourceSha256": "e279da1b1fbd2f5806e509dfbd0717183e8da65d4fd8f9e7c3dc59e9c174c9c5",
       "stagingSha256": "e279da1b1fbd2f5806e509dfbd0717183e8da65d4fd8f9e7c3dc59e9c174c9c5"
+    },
+    {
+      "source": "supabase/migrations/202611280001_perfume_volume_attribute.sql",
+      "stagingFile": "staging/supabase/migrations/202611280001_perfume_volume_attribute.sql",
+      "sourceSha256": "90a8486b86954e0b6bb6db091043d57c4d3c4466d9dc3013fa04a76bbaa6c9b0",
+      "stagingSha256": "90a8486b86954e0b6bb6db091043d57c4d3c4466d9dc3013fa04a76bbaa6c9b0"
     }
   ]
 }
