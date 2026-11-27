@@ -36,7 +36,8 @@ test("imputed purchases keep stored dates and are not cash outflows",()=>{
 });
 test("Argentina boundary, dated receipts of earlier sales and trend remain separate",()=>{
  const f=fixture();f.sale("oct",{created_at:"2026-11-01T02:59:59Z"});f.sale("nov",{created_at:"2026-11-01T03:00:00Z"});f.sale("sep",{created_at:"2026-09-30T12:00:00Z"});
- const r=f.run();assert.equal(r.report.sales.length,1);assert.equal(r.report.sales[0].id,"oct");assert.equal(r.report.totals.datedReceiptsCents,22500);assert.equal(r.trend.at(-2).confirmedSalesCents,7500);assert.equal(r.trend.at(-1).confirmedSalesCents,7500);assert.equal(r.comparison.sales.differenceCents,0);assert.equal(r.comparison.sales.percent,0);
+ const r=f.run();assert.equal(r.report.sales.length,1);assert.equal(r.report.sales[0].id,"oct");assert.equal(r.report.totals.datedReceiptsCents,22500);assert.equal(r.trend.at(-2).confirmedSalesCents,7500);assert.equal(r.trend.at(-1).confirmedSalesCents,7500);const closed=f.run("2026-10","2026-11-15T12:00:00Z").comparison;assert.equal(closed.sales.differenceCents,0);assert.equal(closed.sales.percent,0);
+ assert.equal(r.comparison.sales.previousCents,0,"open month: September 1-17 had no sales");
 });
 test("unknown and zero costs do not invent a zero gross margin",()=>{
  const f=fixture();f.sale("null");f.sale("zero",{},75,0);const r=f.run();assert.equal(r.margin.grossMarginCents,null);assert.equal(r.margin.coveragePercent,0);assert.equal(r.margin.unknownRevenueCents,15000);assert.equal(f.input.saleLines[0].unit_cost_snapshot,null);
@@ -65,4 +66,20 @@ test("missing product identities with the same name are not automatically reconc
 });
 test("analytics server guard precedes privileged client and snapshot read occurs once",()=>{
  const s=readFileSync(new URL("../services/commercial-history.ts",import.meta.url),"utf8").split("export async function getCommercialAnalytics")[1].split("export async function getSalesWorkspace")[0];assert.ok(s.indexOf("requireAdminSession()")<s.indexOf("getSupabaseAdminClient()"));assert.equal((s.match(/await readCompleteSnapshot/g)??[]).length,1);assert.ok(s.indexOf("analyticsMonths(month)")<s.indexOf("getSupabaseAdminClient()"));
+});
+test("an open month is compared with the same days of the previous month",()=>{
+ const f=fixture();
+ f.sale("sepEarly",{created_at:"2026-09-10T12:00:00Z"},100);f.input.payments.at(-1).paid_at="2026-09-10T12:01:00Z";
+ f.sale("sepLate",{created_at:"2026-09-25T12:00:00Z"},200);f.input.payments.at(-1).paid_at="2026-09-25T12:01:00Z";
+ f.sale("oct",{},75);
+ const open=f.run("2026-10","2026-10-17T12:00:00Z").comparison;
+ assert.equal(open.throughDay,17);assert.equal(open.sales.previousCents,10000);assert.equal(open.sales.differenceCents,-2500);
+ const closed=f.run("2026-10","2026-11-02T12:00:00Z").comparison;
+ assert.equal(closed.throughDay,null);assert.equal(closed.sales.previousCents,30000);
+});
+test("money received in the month is split by the month of its sale",()=>{
+ const f=fixture();f.sale("sep",{created_at:"2026-09-20T12:00:00Z"},100);f.input.payments.at(-1).paid_at="2026-10-02T12:00:00Z";f.sale("oct",{},75);
+ const r=f.run();
+ assert.deepEqual(r.cashIn,{totalCents:17500,fromMonthSalesCents:7500,fromOtherSalesCents:10000});
+ assert.deepEqual(r.paymentMethods,[{method:"cash",forSalesCents:7500,receivedCents:17500}]);
 });
