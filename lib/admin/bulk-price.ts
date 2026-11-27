@@ -33,12 +33,12 @@ export function roundTo100(cents: number) {
   return Math.floor((cents + STEP_CENTS / 2) / STEP_CENTS) * STEP_CENTS;
 }
 
-function move(fromCents: number, bp: number): PriceMove {
+export function movePrice(fromCents: number, bp: number): PriceMove {
   const exactCents = Number((BigInt(fromCents) * BigInt(10000 + bp) + BigInt(5000)) / BigInt(10000));
   const toCents = roundTo100(exactCents);
   return { fromCents, exactCents, toCents, roundingCents: toCents - exactCents };
 }
-const cents = (value: number | string) => moneyCents(typeof value === "number" ? value.toFixed(2) : value);
+export const priceCents = (value: number | string) => moneyCents(typeof value === "number" ? value.toFixed(2) : value);
 
 /** The same rules decide the preview and, re-read from the database, the write. */
 export function planBulkPrice(rows: BulkPriceRow[], bp: number, presentationIds: ReadonlySet<string>): BulkPricePlan {
@@ -49,18 +49,18 @@ export function planBulkPrice(rows: BulkPriceRow[], bp: number, presentationIds:
     if (isSupersededYaraRosa(row)) { skip("Se conserva sólo para trazabilidad"); continue; }
     if (row.family_id) { skip("Variante de familia: el precio se ajusta en la familia"); continue; }
     if (presentationIds.has(row.id)) { skip("Combo de cargador: el precio sale de sus componentes"); continue; }
-    const listFrom = cents(row.price);
+    const listFrom = priceCents(row.price);
     if (listFrom <= 0) { skip("Sin precio de lista"); continue; }
-    const list = move(listFrom, bp);
+    const list = movePrice(listFrom, bp);
     if (list.toCents <= 0) { skip("El precio quedaría en $0 al redondear"); continue; }
-    if (row.compare_at_price !== null && cents(row.compare_at_price) > 0 && list.toCents >= cents(row.compare_at_price)) {
+    if (row.compare_at_price !== null && priceCents(row.compare_at_price) > 0 && list.toCents >= priceCents(row.compare_at_price)) {
       skip("El precio tachado quedaría menor o igual a la lista"); continue;
     }
     const approved = row.cash_price_approved_at !== null && row.transfer_price !== null
       && getEffectiveCashPrice({ price: row.price, transfer_price: row.transfer_price, cash_price_approved_at: row.cash_price_approved_at }) === Number(row.transfer_price);
     let special: BulkPriceChange["special"];
     if (approved) {
-      const moved = move(cents(row.transfer_price!), bp);
+      const moved = movePrice(priceCents(row.transfer_price!), bp);
       if (moved.toCents <= 0 || moved.toCents > list.toCents) { skip("El precio especial quedaría mayor que la lista o en $0"); continue; }
       special = { approved: true, ...moved };
     } else {
