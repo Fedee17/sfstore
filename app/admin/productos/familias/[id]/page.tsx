@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { FamilyForm,OptionForm,ValueForm,VariantForm } from "@/components/admin/products/family-forms";
 import { requireAdminSession } from "@/lib/admin-session";
+import { checkoutMoney } from "@/lib/admin/checkout-presentation";
 import { getProductFamily,findSimpleFamilyProducts,getSimpleFamilyCandidate } from "@/services/product-families";
 import { getAdminCategories } from "@/services/admin";
 export default async function FamilyPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{page?:string;search?:string;candidate?:string}>}) {
@@ -19,7 +20,7 @@ export default async function FamilyPage({params,searchParams}:{params:Promise<{
  <section className="space-y-4 rounded-3xl border border-[#8B5E3C]/20 p-5"><h2 className="text-xl font-semibold">Asociar un producto simple existente</h2>
  <p>Buscá por nombre o SKU en esta categoría. No se modifica su stock ni se distribuyen unidades. Debe tener un SKU asignado.</p>
  <form method="get" className="flex flex-wrap gap-3"><label>Nombre o SKU<input name="search" minLength={2} maxLength={80} defaultValue={q.search} className="ml-3 rounded-xl border p-3" required/></label><button className="rounded-xl border px-5 py-3">Buscar</button></form>
- {matches.slice(0,20).map(p=>p.sku?<Link key={p.id} href={`?candidate=${p.id}`} className="block underline">{p.name} · SKU {p.sku} · Lista ${Number(p.price).toFixed(2)} · Stock {p.stock}</Link>:<p key={p.id}>{p.name} · Sin SKU, todavía no se puede asociar. <Link className="font-semibold underline" href={`/admin/productos/${p.id}/editar`}>Asignarle un SKU</Link></p>)}
+ {matches.slice(0,20).map(p=>p.sku?<Link key={p.id} href={`?candidate=${p.id}`} className="block underline">{p.name} · SKU {p.sku} · Lista {checkoutMoney(Number(p.price))} · Stock {p.stock}</Link>:<p key={p.id}>{p.name} · Sin SKU, todavía no se puede asociar. <Link className="font-semibold underline" href={`/admin/productos/${p.id}/editar`}>Asignarle un SKU</Link></p>)}
  {matches.length>20?<p>Hay más resultados. Refiná la búsqueda para elegir el producto correcto.</p>:q.search&&!matches.length?<p>Sin coincidencias elegibles.</p>:null}
  {candidate?<VariantForm id={candidate.id} candidate family={data.family} options={data.options} variant={candidate}/>:null}
  </section>

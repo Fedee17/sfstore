@@ -26,6 +26,10 @@ export type ProductAvailability = {
 const STATUS_LABELS: Record<string, string> = { draft: "Borrador", active: "Activo", archived: "Archivado" };
 const STATUS_REASONS: Record<string, string> = { draft: "En borrador", archived: "Archivado" };
 
+export function productStatusLabel(status: string) {
+  return STATUS_LABELS[status] ?? "Estado desconocido";
+}
+
 export function describeProductAvailability(product: ProductAvailabilityInput): ProductAvailability {
   // Reasons shared by both channels, in the order an admin resolves them.
   const shared: string[] = [];
@@ -42,7 +46,7 @@ export function describeProductAvailability(product: ProductAvailabilityInput): 
   else if (!product.categoryIsActive) web.push("Categoría inactiva");
 
   return {
-    statusLabel: STATUS_LABELS[product.status] ?? "Estado desconocido",
+    statusLabel: productStatusLabel(product.status),
     historical: product.historicalIdentity,
     web: { visible: web.length === 0 && resolvePublicCatalogSection(product) !== null, reasons: web },
     newSale: { allowed: newSale.length === 0, reasons: newSale },
