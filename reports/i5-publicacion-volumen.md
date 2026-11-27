@@ -107,3 +107,14 @@ Sin verificar: el editor del admin, porque requiere la sesión del propietario.
 No se hizo: carga de volúmenes, cambios de precios o stock, migraciones de Mercado Pago.
 
 Para la reversión, `huella_previa` es `057d51689264c550e92bff0cc78ff0b2`.
+
+## Carga de volúmenes (27/11/2026)
+
+Autorizada expresamente por el propietario para los 9 valores confirmados o de certeza alta. Se hizo desde el SQL Editor, porque el editor del admin requiere la sesión del propietario. Las filas son las mismas que escribe el editor: `name='contenido'`, `sort_order=150`.
+
+- **Antes** (solo lectura): los 9 slugs existen, el prefijo de ID coincide con el informe y son perfumes activos con stock 1. Ninguno tenía `contenido`, `Contenido`, `Volumen` ni `Capacidad`.
+- **Escritura**: una transacción que vuelve a comprobar los 9 productos y la ausencia de filas previas, inserta 9 filas y exige que sean exactamente 9.
+- **Después**: 9 filas `contenido` en total (100-ml ×6, 105-ml ×1, 90-ml ×2). Precio y stock sin cambios.
+- **Producción**: el filtro «Contenido» ofrece 90, 100 y 105 ml. `?contenido=100-ml` devuelve Rome Pour Femme, Hawas For Him, 9 PM Elixir, Hawas Fire, Asad y Eclaire; `105-ml` devuelve Club de Nuit Sillage; `90-ml` devuelve Qaed Al Fursan y Untamed. En la ficha de Sillage, «105 ml» aparece bajo el título y en «Contenido».
+
+Para retirar solo estos valores (es una eliminación de datos y requiere autorización): `delete from public.product_attributes where name = 'contenido' and sort_order = 150 and product_id in (…9 ids…)`.
