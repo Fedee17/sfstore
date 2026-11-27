@@ -39,8 +39,20 @@ export async function getCommercialAnalytics(month: string) {
   const { analyticsMonths, buildCommercialAnalytics } = await import("@/lib/commercial-reporting/analytics");
   analyticsMonths(month); // Validate before constructing a client or issuing queries.
   const { readCompleteSnapshot } = await import("@/lib/commercial-reporting/reader");
-  const snapshot = await readCompleteSnapshot(createCommercialPageReader(getSupabaseAdminClient()));
-  return buildCommercialAnalytics(snapshot, month, COMMERCIAL_EVIDENCE);
+  const client = getSupabaseAdminClient();
+  const stockRead = import("@/lib/admin/stock-health-reader").then(({ readStockSnapshot }) => readStockSnapshot(client)).catch(() => null);
+  const snapshot = await readCompleteSnapshot(createCommercialPageReader(client));
+  const stockSnapshot = await stockRead;
+  const analytics = buildCommercialAnalytics(snapshot, month, COMMERCIAL_EVIDENCE);
+  // Catalog rotation is advisory and independent of the month: its failure must not hide the monthly report.
+  let rotation = null;
+  if (stockSnapshot) {
+    try {
+      const [{ buildCommercialFacts }, { buildCatalogAbc }] = await Promise.all([import("@/lib/commercial-reporting/model"), import("@/lib/admin/catalog-abc")]);
+      rotation = buildCatalogAbc(buildCommercialFacts(snapshot, COMMERCIAL_EVIDENCE).sales, stockSnapshot, COMMERCIAL_EVIDENCE);
+    } catch { rotation = null; }
+  }
+  return { ...analytics, rotation };
 }
 
 /** Days of stock per SKU for the availability screen; same sales evidence and snapshot as the sales dashboard. */

@@ -4,6 +4,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { requireAdminSession } from "@/lib/admin-session";
 import { commercialDate } from "@/lib/commercial-reporting/periods";
 import type { CommercialAnalytics } from "@/lib/commercial-reporting/analytics";
+import { ABC_A_SHARE, ABC_B_SHARE, ABC_WINDOW_DAYS, type AbcClass, type CatalogAbc } from "@/lib/admin/catalog-abc";
 import { getCommercialAnalytics } from "@/services/commercial-history";
 
 const monthLabel = (month: string) => new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${month}-01T12:00:00Z`));
@@ -16,7 +17,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const query = await searchParams;
   const requested = query.month;
   const month = requested === undefined ? commercialDate(new Date().toISOString()).slice(0, 7) : typeof requested === "string" ? requested : "";
-  let analytics: CommercialAnalytics | null = null;
+  let analytics: Awaited<ReturnType<typeof getCommercialAnalytics>> | null = null;
   let error: string | null = null;
   try { analytics = await getCommercialAnalytics(month); }
   catch (cause) {
@@ -39,6 +40,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       </header>
       {error && <div role="alert" className="mt-8 rounded-2xl border border-red-300 bg-white p-5 text-red-900">{error}</div>}
       {analytics && <Dashboard data={analytics} />}
+      {analytics && <Rotation data={analytics.rotation} />}
     </section>
   </main>;
 }
@@ -110,6 +112,31 @@ function Dashboard({ data: a }: { data: CommercialAnalytics }) {
       <p className="mt-4 text-sm leading-6 text-black/65">Las fechas imputadas se conservan y no representan comprobantes fechados. Las exclusiones usan identificadores exactos de ensayos conocidos; no certifican que se hayan identificado todos los ensayos posibles. La lectura es paginada y completa dentro de su presupuesto, pero reúne varias consultas y no constituye un snapshot transaccional global. Ante un fallo no se publican cifras parciales.</p>
     </Panel>
   </div>;
+}
+const classLabel: Record<AbcClass, string> = { A: "A · concentran la facturación", B: "B · regulares", C: "C · baja rotación" };
+const classTone: Record<AbcClass, string> = { A: "bg-[#556B2F] text-white", B: "bg-[#E6EBD9] text-[#465826]", C: "bg-amber-100 text-amber-900" };
+const percent = (share: number) => `${(share * 100).toLocaleString("es-AR", { maximumFractionDigits: 1 })}%`;
+const day = (value: string) => value.split("-").reverse().join("/");
+function Rotation({ data }: { data: CatalogAbc | null }) {
+  const title = <h2 className="text-xl font-semibold">Rotación del catálogo · últimos {ABC_WINDOW_DAYS} días</h2>;
+  if (!data) return <section className={`${panel} mt-6`}>{title}<p role="alert" className="mt-4 text-sm text-amber-900">No pudimos calcular la rotación del catálogo. El resumen mensual no se ve afectado; recargá para reintentar.</p></section>;
+  return <section className={`${panel} mt-6 space-y-5`} aria-label="Rotación del catálogo">
+    <div>{title}<p className="mt-2 max-w-3xl text-sm leading-6 text-black/65">Del {day(data.from)} al {day(data.to)}, independiente del mes elegido. Clasificación por facturación de líneas confirmadas, sin envío: A suma hasta el {percent(ABC_A_SHARE)} del total, B hasta el {percent(ABC_B_SHARE)} y C el resto.</p></div>
+    <div className="flex flex-wrap gap-2">{(["A", "B", "C"] as const).map(k => <span key={k} className={`rounded-full px-3 py-1 text-sm font-semibold ${classTone[k]}`}>{data.counts[k]} {classLabel[k]}</span>)}<span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900">{data.idle.length} con stock y sin ventas</span></div>
+    {data.rows.length ? <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><caption className="sr-only">Clasificación ABC de productos por facturación de los últimos {ABC_WINDOW_DAYS} días</caption>
+      <thead><tr>{["Clase", "Producto", "Unidades", "Facturación", "% acumulado", "Margen bruto", "Stock"].map(h => <th key={h} scope="col" className="border-b border-black/15 p-3">{h}</th>)}</tr></thead>
+      <tbody>{data.rows.map(row => <tr key={row.id} className="border-b border-black/5">
+        <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${classTone[row.abcClass]}`}>{row.abcClass}</span></td>
+        <th scope="row" className="p-3 font-normal"><Link className="font-semibold underline-offset-4 hover:underline" href={`/admin/productos/${row.id}/editar`}>{row.name}</Link>{row.variant_label ? <span className="block text-xs text-black/60">{row.variant_label}</span> : null}</th>
+        <td className="p-3 tabular-nums">{row.units}</td><td className="p-3 tabular-nums">{adminMoneyFromCents(row.revenueCents)}</td><td className="p-3 tabular-nums">{percent(row.cumulativeShare)}</td>
+        <td className="p-3 tabular-nums">{row.marginCents === null ? "Costo incompleto" : adminMoneyFromCents(row.marginCents)}</td><td className="p-3 tabular-nums">{row.available}</td>
+      </tr>)}</tbody></table></div> : <p className="text-sm text-black/65">No hay ventas confirmadas con producto identificado en este período.</p>}
+    <div><h3 className="font-semibold">Clase C con stock y sin ventas en {ABC_WINDOW_DAYS} días</h3>
+      <p className="mt-1 text-sm text-black/65">Candidatos a liquidar, armar un combo o dejar de reponer. Mercadería a costo vigente: {adminMoneyFromCents(data.idleRetainedCents)}{data.idle.some(row => row.retainedCents === null) ? `; ${data.idle.filter(row => row.retainedCents === null).length} sin costo cargado, fuera del total` : ""}.{data.recentExcluded ? ` No incluye ${data.recentExcluded} productos incorporados en los últimos ${ABC_WINDOW_DAYS} días.` : ""}</p>
+      {data.idle.length ? <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-[#465826]">Ver los {data.idle.length} productos</summary><ul className="mt-3 grid gap-2">{data.idle.map(row => <li key={row.id}><Row label={`${row.name}${row.variant_label ? ` · ${row.variant_label}` : ""}`} value={`${row.available} u · ${row.retainedCents === null ? "Sin costo" : adminMoneyFromCents(row.retainedCents)}`} /></li>)}</ul></details> : <p className="mt-3 text-sm text-black/65">Todos los productos con stock tuvieron ventas en el período.</p>}
+    </div>
+    {data.uncertainSales || data.unidentifiedLines ? <p className="text-sm text-amber-900">Fuera del cálculo: {data.uncertainSales} ventas con fecha sin corroborar o líneas sin conciliar y {data.unidentifiedLines} líneas sin vínculo a un producto actual. La falta de ventas registradas no prueba ausencia de ventas reales.</p> : null}
+  </section>;
 }
 function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className={panel}><h2 className="text-xl font-semibold">{title}</h2><div className="mt-4 space-y-2">{children}</div></section>; }
 function Metric({ label, value, detail }: { label: string; value: string; detail: string }) { return <section className={panel}><h3 className="text-sm font-semibold text-[#8B5E3C]">{label}</h3><p className="mt-3 break-words text-3xl font-semibold">{value}</p><p className="mt-3 text-sm leading-6 text-black/65">{detail}</p></section>; }
