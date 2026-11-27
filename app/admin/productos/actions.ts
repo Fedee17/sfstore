@@ -627,15 +627,8 @@ export async function setPrimaryProductImage(formData: FormData) {
     throw new Error("La imagen no pertenece a este producto.");
   }
 
-  const { error: resetError } = await supabase
-    .from("product_images")
-    .update({ is_primary: false })
-    .eq("product_id", productId);
-
-  if (resetError) {
-    throw new Error(resetError.message);
-  }
-
+  // Mark the chosen photo first and clear the others after: if the second write fails the product keeps a main
+  // photo (two marked ones still show the first by order) instead of none (admin review 27/11).
   const { error: updateError } = await supabase
     .from("product_images")
     .update({ is_primary: true })
@@ -644,6 +637,16 @@ export async function setPrimaryProductImage(formData: FormData) {
 
   if (updateError) {
     throw new Error(updateError.message);
+  }
+
+  const { error: resetError } = await supabase
+    .from("product_images")
+    .update({ is_primary: false })
+    .eq("product_id", productId)
+    .neq("id", imageId);
+
+  if (resetError) {
+    throw new Error(resetError.message);
   }
 
   await revalidateOperationalProductPaths(existingProduct);

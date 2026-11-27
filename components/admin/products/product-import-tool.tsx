@@ -254,6 +254,11 @@ function ImportConfirmationForm({
   );
 }
 
+// Phone layout of the import preview: each row becomes a card and every value carries its column name.
+function MobileLabel({ children }: { children: string }) {
+  return <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[#8B5E3C] md:hidden">{children}</span>;
+}
+
 export function ProductImportTool({
   resultMessage,
   automaticSyncConfigured = false,
@@ -460,8 +465,8 @@ export function ProductImportTool({
 
           <div className="overflow-hidden rounded-[2rem] border border-[#8B5E3C]/15 bg-white/70 shadow-sm">
             <div className="overflow-x-auto">
-              <table className="min-w-[1120px] w-full border-collapse text-left text-sm">
-                <thead className="bg-[#F7F4ED] text-xs uppercase tracking-[0.08em] text-[#8B5E3C]">
+              <table className="block w-full border-collapse text-left text-sm md:table md:min-w-[1120px]">
+                <thead className="hidden md:table-header-group bg-[#F7F4ED] text-xs uppercase tracking-[0.08em] text-[#8B5E3C]">
                   <tr>
                     <th className="px-4 py-4 font-semibold">Estado</th>
                     <th className="px-4 py-4 font-semibold">Producto</th>
@@ -473,16 +478,16 @@ export function ProductImportTool({
                     <th className="px-4 py-4 font-semibold">Avisos</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#8B5E3C]/10">
+                <tbody className="block md:table-row-group divide-y divide-[#8B5E3C]/10">
                   {previewState.rows.map((row) => (
-                    <tr key={row.key} className="align-top">
-                      <td className="px-4 py-4">
+                    <tr key={row.key} className="block space-y-3 p-4 align-top md:table-row md:space-y-0 md:p-0">
+                      <td className="block md:table-cell md:px-4 md:py-4">
                         <StatusBadge row={row} />
                         <p className="mt-2 text-xs text-[#1F1F1F]/45">
                           Fila {row.rowNumber}
                         </p>
                       </td>
-                      <td className="min-w-0 px-4 py-4">
+                      <td className="block min-w-0 md:table-cell md:px-4 md:py-4">
                         <p className="max-w-xs break-words font-semibold text-[#1F1F1F]">
                           {row.name}
                         </p>
@@ -495,20 +500,20 @@ export function ProductImportTool({
                           </p>
                         ) : null}
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="block md:table-cell md:px-4 md:py-4"><MobileLabel>Categoría</MobileLabel>
                         <p className="break-words font-semibold">{row.categoryName}</p>
                         <p className="mt-1 break-all text-xs text-[#1F1F1F]/45">
                           {row.categorySlug}
                         </p>
                       </td>
-                      <td className="px-4 py-4 font-semibold">
+                      <td className="block md:table-cell md:px-4 md:py-4 font-semibold"><MobileLabel>Precio lista</MobileLabel>
                         {formatMoney(row.price)}
                       </td>
-                      <td className="px-4 py-4 font-semibold text-[#556B2F]">
+                      <td className="block md:table-cell md:px-4 md:py-4 font-semibold text-[#556B2F]"><MobileLabel>Efectivo/transferencia</MobileLabel>
                         {formatMoney(row.transferPrice)}
                       </td>
-                      <td className="px-4 py-4">{formatMoney(row.cost)}</td>
-                      <td className="px-4 py-4">
+                      <td className="block md:table-cell md:px-4 md:py-4"><MobileLabel>Costo</MobileLabel>{formatMoney(row.cost)}</td>
+                      <td className="block md:table-cell md:px-4 md:py-4"><MobileLabel>Cambios efectivos</MobileLabel>
                         <div className="grid max-w-xs gap-1.5 text-xs text-[#1F1F1F]/65">
                           {row.diffs.length > 0 ? (
                             row.diffs.map((diff) => (
@@ -527,7 +532,7 @@ export function ProductImportTool({
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="block md:table-cell md:px-4 md:py-4"><MobileLabel>Avisos</MobileLabel>
                         <div className="grid max-w-sm gap-2">
                           {row.errors.map((error) => (
                             <p
