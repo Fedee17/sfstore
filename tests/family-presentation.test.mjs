@@ -136,3 +136,10 @@ test('the detail rounds displayed prices while keeping the selected SKU price ex
  assert.match(html,/data-testid="variant-transfer-price"[^>]*>[^<]*97\.001<\/span>/);
  assert.match(html,/data-cart-price="129333\.67"/);
 });
+test('approved Lata Matera cover is the Cromado catalog photo of its own SKU',()=>{
+ const url='https://xspvoicelbxlmtqoiolc.supabase.co/storage/v1/object/public/product-images/products/b8a90822-19d2-4ade-b6f9-ce834a2a68a9/e8ce5502cef7f135e3986239e2340900.webp';
+ const cromado={...grey,id:'b8a90822-19d2-4ade-b6f9-ce834a2a68a9',variantOptions:{Color:'Cromado'},images:[{...image,url}]};
+ const f={...family,id:'06635cf0-f4ac-4e84-9539-17b7a277f9d8',variants:[black,cromado]};
+ assert.deepEqual(getFamilyRepresentativeImage(f),{image:cromado.images[0],label:'Cromado'});
+ assert.equal(getFamilyRepresentativeImage({...f,variants:[black]}),null);
+});
