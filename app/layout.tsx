@@ -30,7 +30,6 @@ export const metadata: Metadata = {
   keywords: [
     "perfumes importados",
     "perfumes árabes",
-    "decants",
     "mates",
     "termos",
     "regalos",
