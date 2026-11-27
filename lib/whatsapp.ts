@@ -47,7 +47,7 @@ function productWhatsAppMessage(product: Product) {
         `Hola SFSTORE, quiero consultar por ${product.name}.`,
         `Lo vi en la web y me interesa el precio por transferencia de ${transferPrice}.`,
         listPrice ? `Precio lista: ${listPrice}.` : null,
-        "¿Me ayudás a saber si va con mis gustos o si me conviene probar un decant?",
+        "¿Me ayudás a saber si va con mis gustos?",
       ]
         .filter(Boolean)
         .join("\n");

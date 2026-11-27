@@ -38,3 +38,13 @@ test('contextual WhatsApp includes actual variant and SKU without mutating the p
  assert.match(message,/Termo de prueba/);assert.match(message,/Color: Negro/);assert.match(message,/SKU: SYNTHETIC-NEG/);
  assert.equal(decodeURIComponent(exports.getProductWhatsAppLink(p).split('?text=')[1]),message);assert.deepEqual(p,before);
 });
+test('storefront never offers decants: perfume WhatsApp copy and site keywords',()=>{
+ const source=readFileSync(new URL('../lib/whatsapp.ts',import.meta.url),'utf8'),exports={};
+ const modules={'@/lib/brand':{brand:{whatsapp:'000'}},'@/lib/web-transfer-pricing':prices,'@/lib/pricing':pricing};
+ new Function('require','exports',ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(n=>modules[n],exports);
+ for(const p of [{name:'Perfume de prueba',price:100000,transferPrice:75000,stock:1,category:'perfumes'},{name:'Perfume de prueba',price:100000,stock:1,category:'perfumes'}]){
+  const message=exports.buildProductWhatsAppMessage(p);
+  assert.match(message,/Perfume de prueba/);assert.match(message,/gustos/);assert.doesNotMatch(message,/decant/i);
+ }
+ assert.doesNotMatch(readFileSync(new URL('../app/layout.tsx',import.meta.url),'utf8'),/decant/i);
+});
