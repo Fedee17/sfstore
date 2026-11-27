@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { publicationAvailable } from "@/lib/products/public-families";
 import { getSavingsPercent } from "@/lib/pricing";
-import { formatWebPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
+import { cardCashPrice, formatWebPrice, hasValidWebPrice } from "@/lib/web-transfer-pricing";
 import { getProductWhatsAppLink } from "@/lib/whatsapp";
 import type { PublicProduct } from "@/services/products";
 import { AddToCartButton } from "@/components/add-to-cart-button";
@@ -79,7 +79,7 @@ export function ProductCard({ product, label, featured = false, directPurchase =
 }) {
   const available = publicationAvailable(product);
   const validPrice = hasValidWebPrice(product.price);
-  const transfer = validPrice && hasValidWebPrice(product.transferPrice) && product.transferPrice <= product.price ? product.transferPrice : null;
+  const transfer = cardCashPrice(product);
   const pricing = featured ? featuredPricing : transfer === null ? null : {
     list: product.price,
     special: transfer,

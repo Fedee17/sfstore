@@ -5,6 +5,13 @@ export function hasValidWebPrice(price: unknown): price is number {
   try { return getWebTransferPrice(price) > 0; } catch { return false; }
 }
 
+// Cash price a catalog card highlights: only a valid amount that does not exceed the valid list price.
+export function cardCashPrice(product: { price: unknown; transferPrice?: unknown }): number | null {
+  return hasValidWebPrice(product.price) && hasValidWebPrice(product.transferPrice) && product.transferPrice <= product.price
+    ? product.transferPrice
+    : null;
+}
+
 // Match PostgreSQL round(price * 0.75, 2) for nonnegative NUMERIC(12,2) prices.
 export function getWebTransferPrice(price: number): number {
   const cents = Math.round(price * 100);

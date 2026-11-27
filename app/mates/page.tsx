@@ -15,7 +15,8 @@ import {
   type CatalogAttributeKey,
 } from "@/lib/catalog/attribute-config";
 import { getProductsByCategorySlug } from "@/services/products";
-import { availableFirst } from "@/lib/catalog/availability-order";
+import { orderCatalog, parseCatalogOrder } from "@/lib/catalog/availability-order";
+import { CatalogSortControl } from "@/components/catalog/catalog-sort-control";
 
 export const metadata: Metadata = {
   title: "Mates, termos y accesorios",
@@ -51,6 +52,7 @@ type MatesSearchParams = {
   peso?: string;
   tamano?: string;
   personalizacion?: string;
+  orden?: string;
   [key: string]: string | undefined;
 };
 
@@ -66,6 +68,7 @@ export default async function MatesPage({ searchParams }: MatesPageProps) {
   );
   const showSidebar = !selectedCategoryItem || Boolean(MATE_FILTERS_BY_CATEGORY[selectedCategoryItem.matchValue]?.length);
   const products = await getProductsByCategorySlug("mates");
+  const order = parseCatalogOrder(params.orden);
   const candidateAttributeFilters: [CatalogAttributeKey, string | undefined][] =
     selectedCategory === "mates"
       ? [
@@ -119,8 +122,10 @@ export default async function MatesPage({ searchParams }: MatesPageProps) {
           </aside> : null}
 
           <div className="min-w-0">
+            {filteredProducts.length > 1 ? <div className="mb-3"><CatalogSortControl basePath="/mates" params={params} order={order} /></div> : null}
+
             {filteredProducts.length > 0 ? (
-              <ProductGrid products={availableFirst(filteredProducts)} label="Mate" priceMode="compact" presentation="catalog" />
+              <ProductGrid products={orderCatalog(filteredProducts, order)} label="Mate" priceMode="compact" presentation="catalog" />
             ) : (
               <CatalogEmptyState title="No encontramos productos con esa combinación." text="Probá sacando algún filtro o volvé a ver toda la categoría." href="/mates" action="Limpiar filtros" />
             )}
