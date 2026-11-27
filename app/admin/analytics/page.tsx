@@ -119,6 +119,7 @@ const classLabel: Record<AbcClass, string> = { A: "A · concentran la facturaci�
 const classTone: Record<AbcClass, string> = { A: "bg-[#556B2F] text-white", B: "bg-[#E6EBD9] text-[#465826]", C: "bg-amber-100 text-amber-900" };
 const percent = (share: number) => `${(share * 100).toLocaleString("es-AR", { maximumFractionDigits: 1 })}%`;
 const day = (value: string) => value.split("-").reverse().join("/");
+const salesCount = (count: number) => `${count} ${count === 1 ? "venta" : "ventas"}`;
 const hourLabel = (hour: number) => `${String(hour).padStart(2, "0")} h`;
 function Heatmap({ data }: { data: SalesHeatmap | null }) {
   const title = <h2 className="text-xl font-semibold">Días y horarios de venta · últimos {HEATMAP_WINDOW_DAYS} días</h2>;
@@ -127,14 +128,14 @@ function Heatmap({ data }: { data: SalesHeatmap | null }) {
   const hours = active.length ? Array.from({ length: Math.max(...active) - Math.min(...active) + 1 }, (_, i) => Math.min(...active) + i) : [];
   const max = Math.max(1, ...data.cells.flat().map(cell => cell.sales));
   return <section className={`${panel} mt-6 space-y-4`} aria-label="Días y horarios de venta">
-    <div>{title}<p className="mt-2 max-w-3xl text-sm leading-6 text-black/65">Ventas confirmadas del {day(data.from)} al {day(data.to)} por día y hora de Argentina. {data.peak ? `El momento con más ventas es el ${WEEKDAYS[data.peak.weekday].toLowerCase()} de ${hourLabel(data.peak.hour)} a ${hourLabel(data.peak.hour + 1)} (${data.peak.sales} ${data.peak.sales === 1 ? "venta" : "ventas"}).` : ""} Sirve para elegir horarios de atención y de publicación.</p></div>
+    <div>{title}<p className="mt-2 max-w-3xl text-sm leading-6 text-black/65">Ventas confirmadas del {day(data.from)} al {day(data.to)} por día y hora de Argentina. {data.peak ? `El momento con más ventas es el ${WEEKDAYS[data.peak.weekday].toLowerCase()} de ${hourLabel(data.peak.hour)} a ${hourLabel(data.peak.hour + 1)} (${salesCount(data.peak.sales)}).` : ""} Sirve para elegir horarios de atención y de publicación.</p></div>
     {data.totalSales ? <div className="overflow-x-auto"><table className="border-separate border-spacing-1 text-center text-xs"><caption className="sr-only">Ventas confirmadas por día de la semana y hora, últimos {HEATMAP_WINDOW_DAYS} días</caption>
       <thead><tr><th scope="col" className="p-1 text-left">Día</th>{hours.map(hour => <th key={hour} scope="col" className="p-1 font-normal text-black/60">{String(hour).padStart(2, "0")}</th>)}</tr></thead>
       <tbody>{data.cells.map((row, weekday) => <tr key={weekday}><th scope="row" className="p-1 pr-2 text-left font-semibold">{WEEKDAYS[weekday]}</th>{hours.map(hour => {
         const cell = row[hour], ratio = cell.sales / max;
         return <td key={hour} title={`${WEEKDAYS[weekday]} ${hourLabel(hour)}: ${cell.sales} ventas · ${adminMoneyFromCents(cell.amountCents)}`} className={`size-8 min-w-8 rounded-md tabular-nums ${ratio > 0.5 ? "text-white" : "text-[#1F1F1F]"}`} style={{ backgroundColor: cell.sales ? `rgba(85,107,47,${(0.15 + 0.85 * ratio).toFixed(2)})` : "#F7F4ED" }}>{cell.sales || ""}</td>;
       })}</tr>)}</tbody></table></div> : <p className="text-sm text-black/65">No hay ventas confirmadas con hora confiable en este período.</p>}
-    <p className="text-sm text-black/65">{data.totalSales} ventas con hora registrada.{data.skippedLateEntry ? ` ${data.skippedLateEntry} ventas cargadas otro día quedan fuera, porque su hora no es la de la venta.` : ""}{data.skippedHistorical ? ` ${data.skippedHistorical} ventas históricas importadas no tienen hora.` : ""}</p>
+    <p className="text-sm text-black/65">{salesCount(data.totalSales)} con hora registrada.{data.skippedLateEntry ? ` ${data.skippedLateEntry === 1 ? "1 venta cargada otro día queda fuera, porque su hora no es" : `${data.skippedLateEntry} ventas cargadas otro día quedan fuera, porque su hora no es`} la de la venta.` : ""}{data.skippedHistorical ? ` ${data.skippedHistorical === 1 ? "1 venta histórica importada no tiene" : `${data.skippedHistorical} ventas históricas importadas no tienen`} hora.` : ""}</p>
   </section>;
 }
 function Rotation({ data, error }: { data: CatalogAbc | null; error: string | null }) {
