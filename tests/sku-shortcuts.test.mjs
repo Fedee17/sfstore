@@ -12,7 +12,7 @@ test('quick consultation card links every SKU to its stock adjustment and moveme
 });
 
 test('heatmap footer uses singular and plural correctly',()=>{
-  const page=source('app/admin/analytics/page.tsx');
+  const page=source('components/admin/analytics/sales-heatmap-view.tsx');
   assert.match(page,/\{salesCount\(data\.totalSales\)\} con hora registrada/);
   assert.match(page,/const salesCount = \(count: number\) => `\$\{count\} \$\{count === 1 \? "venta" : "ventas"\}`;/);
   assert.match(page,/data\.skippedLateEntry === 1 \? "1 venta cargada otro día queda fuera/);

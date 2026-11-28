@@ -9,13 +9,20 @@ export type HeatmapCell = { sales: number; amountCents: number };
 const clock = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Argentina/Buenos_Aires', weekday: 'short', hour: '2-digit', hourCycle: 'h23' });
 const weekdayIndex: Record<string, number> = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
 
-/** Confirmed sales of the last 90 days by Argentine weekday and hour. Only sales registered on the day they happened
- * carry a real hour: historical imports and late store entries are left out and counted apart. */
-export function buildSalesHeatmap(sales: readonly SaleFact[], now = new Date()) {
+/** Paid sales by Argentine weekday and hour, over the last `windowDays` days or, with null, the whole history. Only
+ * sales registered on the day they happened carry a real hour: historical imports and late store entries are left out
+ * and counted apart. */
+export function buildSalesHeatmap(sales: readonly SaleFact[], now = new Date(), windowDays: number | null = HEATMAP_WINDOW_DAYS) {
   const to = commercialDate(now.toISOString());
-  const start = new Date(sourceDate(to) + 'T12:00:00Z');
-  start.setUTCDate(start.getUTCDate() + 1 - HEATMAP_WINDOW_DAYS);
-  const from = start.toISOString().slice(0, 10);
+  let from: string;
+  if (windowDays === null) {
+    const dates = sales.filter(sale => !sale.excluded && sale.confirmed && sale.occurredOn <= to).map(sale => sale.occurredOn);
+    from = dates.length ? dates.reduce((a, b) => a < b ? a : b) : to;
+  } else {
+    const start = new Date(sourceDate(to) + 'T12:00:00Z');
+    start.setUTCDate(start.getUTCDate() + 1 - windowDays);
+    from = start.toISOString().slice(0, 10);
+  }
   const cells: HeatmapCell[][] = WEEKDAYS.map(() => Array.from({ length: 24 }, () => ({ sales: 0, amountCents: 0 })));
   let totalSales = 0, skippedLateEntry = 0, skippedHistorical = 0;
   for (const sale of sales) {
@@ -32,6 +39,6 @@ export function buildSalesHeatmap(sales: readonly SaleFact[], now = new Date()) 
   cells.forEach((row, weekday) => row.forEach((cell, hour) => {
     if (cell.sales && (!peak || cell.sales > peak.sales)) peak = { weekday, hour, sales: cell.sales };
   }));
-  return { from, to, cells, totalSales, peak: peak as { weekday: number; hour: number; sales: number } | null, skippedLateEntry, skippedHistorical };
+  return { windowDays, from, to, cells, totalSales, peak: peak as { weekday: number; hour: number; sales: number } | null, skippedLateEntry, skippedHistorical };
 }
 export type SalesHeatmap = ReturnType<typeof buildSalesHeatmap>;
