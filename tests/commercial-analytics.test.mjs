@@ -77,9 +77,18 @@ test("an open month is compared with the same days of the previous month",()=>{
  const closed=f.run("2026-10","2026-11-02T12:00:00Z").comparison;
  assert.equal(closed.throughDay,null);assert.equal(closed.sales.previousCents,30000);
 });
-test("money received in the month is split by the month of its sale",()=>{
+test("payment methods describe only the month's paid sales, never money from other months' sales",()=>{
  const f=fixture();f.sale("sep",{created_at:"2026-09-20T12:00:00Z"},100);f.input.payments.at(-1).paid_at="2026-10-02T12:00:00Z";f.sale("oct",{},75);
  const r=f.run();
- assert.deepEqual(r.cashIn,{totalCents:17500,fromMonthSalesCents:7500,fromOtherSalesCents:10000});
- assert.deepEqual(r.paymentMethods,[{method:"cash",forSalesCents:7500,receivedCents:17500}]);
+ assert.equal(r.cashIn,undefined);
+ assert.deepEqual(r.paymentMethods.map(x=>[x.method,x.amountCents]),[["cash",7500]]);
+});
+
+test("unpaid orders are counted apart and never as sales; the trend carries each month's gross margin",()=>{
+ const f=fixture();f.sale("paid",{},75,30);f.sale("unpaid",{status:"pending",payment_status:"pending"},50);
+ const r=f.run();
+ assert.equal(r.counts.confirmed,1);assert.equal(r.report.totals.confirmedSalesCents,7500);
+ assert.deepEqual(r.unpaidOrders,{count:1,amountCents:5000});
+ assert.equal(r.trend.at(-1).grossMarginCents,r.margin.grossMarginCents);
+ assert.ok(r.trend.every(x=>!("datedReceiptsCents" in x)));
 });

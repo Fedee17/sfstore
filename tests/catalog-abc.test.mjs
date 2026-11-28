@@ -69,7 +69,7 @@ test('analytics shows the rotation section and isolates its failure',()=>{
   const page=source('app/admin/analytics/page.tsx');
   assert.match(page,/Rotación del catálogo · últimos \{ABC_WINDOW_DAYS\} días/);
   assert.match(page,/No pudimos calcular la rotación del catálogo/);
-  assert.match(page,/Clase C con stock/);
+  assert.match(page,/Con stock y sin ventas/);
   const service=source('services/commercial-history.ts').split('export async function getCommercialAnalytics')[1].split('export async function')[0];
   assert.match(service,/buildCatalogAbc\(/);
   assert.match(service,/rotation = null/);

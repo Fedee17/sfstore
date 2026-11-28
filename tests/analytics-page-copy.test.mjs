@@ -6,10 +6,26 @@ import { test } from 'node:test';
 const page = readFileSync(new URL('../app/admin/analytics/page.tsx', import.meta.url), 'utf8');
 const visible = page.replace(/^\s*\/\/.*$/gm, '').replace(/className="[^"]*"/g, '');
 
-test('one vocabulary for sales, money received, pending money, purchases and margin', () => {
-  for (const label of ['Ventas confirmadas', 'Por cobrar', 'Cobrado en el mes', 'Margen bruto', 'Compras', 'Cómo se cobró', 'Últimos seis meses', 'Notas sobre los datos']) {
+test('a sale is a sale only once paid: no «ventas confirmadas», «por cobrar» or money-in-the-month mixing', () => {
+  for (const label of ['"Ventas"', 'Margen bruto', 'Compras', 'Cómo se pagaron las ventas', 'Últimos seis meses', 'Notas sobre los datos', 'pedidos sin pagar', 'No cuentan como venta hasta que se paguen']) {
     assert.ok(visible.includes(label), label);
   }
+  for (const gone of ['Ventas confirmadas', 'Por cobrar', 'Cobrado en el mes', 'de ventas de otros meses', 'cashIn']) assert.ok(!visible.includes(gone), gone);
+});
+
+test('six months and what sold are interactive charts, each with its values as text', () => {
+  assert.match(page, /<TrendChart /);
+  assert.match(page, /Ver como tabla/);
+  assert.ok(page.includes('<SalesBreakdownChart views={views} />'));
+  const trend = readFileSync(new URL('../components/admin/analytics/trend-chart.tsx', import.meta.url), 'utf8');
+  for (const hook of ['onPointerEnter', 'onFocus', 'tabIndex={0}', 'router.push']) assert.ok(trend.includes(hook), hook);
+  const breakdown = readFileSync(new URL('../components/admin/analytics/sales-breakdown-chart.tsx', import.meta.url), 'utf8');
+  for (const label of ['Productos', 'Categorías', 'Canales', 'Facturación']) assert.ok(page.includes(label) || breakdown.includes(label), label);
+});
+
+test('rotation is three plain groups, never ABC letters mixed in one table', () => {
+  for (const label of ['Los que más venden', 'Venden poco', 'Con stock y sin ventas', 'Parte del total', 'Mercadería parada']) assert.ok(visible.includes(label), label);
+  assert.doesNotMatch(visible, /concentran la facturación|% acumulado|baja rotación|"Clase"/);
 });
 
 test('no technical jargon or English reaches the screen', () => {
