@@ -56,9 +56,9 @@ export async function getCommercialAnalytics(month: string) {
     try { rotation = buildCatalogAbc(facts.sales, stockResult.stock, COMMERCIAL_EVIDENCE); }
     catch (cause) { rotation = null; rotationError = failureCode(cause); }
   }
-  // Advisory too: a failure hides only the heatmap.
+  // Advisory too: a failure hides only the heatmap. Last 90 days and the whole history, to switch on screen.
   let heatmap = null;
-  try { heatmap = buildSalesHeatmap(facts.sales); } catch { heatmap = null; }
+  try { heatmap = { recent: buildSalesHeatmap(facts.sales), all: buildSalesHeatmap(facts.sales, new Date(), null) }; } catch { heatmap = null; }
   return { ...analytics, rotation, rotationError, heatmap };
 }
 

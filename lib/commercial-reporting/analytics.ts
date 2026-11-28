@@ -37,16 +37,29 @@ function rankings(sales: SaleFact[], category: boolean, family = false): Ranking
   return [...groups.values()].sort((a, b) => b.quantity - a.quantity || a.key.localeCompare(b.key));
 }
 
-/** Financial projection only; no database writes, current prices or current product costs. */
-export function buildCommercialAnalytics(input: CommercialSnapshot, month: string, policy: EvidencePolicy, now = new Date()) {
-  const months = analyticsMonths(month), facts = buildCommercialFacts(input, policy);
-  const reports = months.map(m => buildCommercialMonthFromFacts(facts, m, policy));
-  const report = reports[reports.length - 1], previous = reports.at(-2) ?? null;
+type MonthReport = ReturnType<typeof buildCommercialMonthFromFacts>;
+/** Gross margin of a month's paid sales, only over lines whose cost at sale is known. */
+function monthMargin(report: MonthReport) {
   const confirmed = report.sales.filter(s => !s.excluded && s.confirmed);
   const costEligible = confirmed.filter(s => s.partialGrossMarginCents !== null);
   const coveredRevenueCents = sumCents(costEligible.map(s => s.revenueWithVerifiedCostCents));
   const merchandiseRevenueCents = sumCents(confirmed.map(s => Math.max(0, s.totalCents - moneyCents(s.original.shipping_cost))));
   const verifiedCostCents = sumCents(costEligible.map(s => s.verifiedCostCents));
+  return { grossMarginCents: costEligible.length ? coveredRevenueCents - verifiedCostCents : null,
+    coveredRevenueCents, verifiedCostCents, merchandiseRevenueCents,
+    coveragePercent: merchandiseRevenueCents > 0 ? coveredRevenueCents / merchandiseRevenueCents * 100 : null,
+    unknownRevenueCents: Math.max(0, merchandiseRevenueCents - coveredRevenueCents),
+    unknownCostLines: confirmed.reduce((n, s) => n + s.linesWithUnknownCost, 0),
+    unreconciledSales: confirmed.filter(s => s.issues.includes("LINES_HEADER_NET_NOT_RECONCILED")).length };
+}
+
+/** Financial projection only; no database writes, current prices or current product costs.
+ * Owner decision 27/11/2026: a sale is a sale only once it is paid; unpaid orders are shown apart, never as sales. */
+export function buildCommercialAnalytics(input: CommercialSnapshot, month: string, policy: EvidencePolicy, now = new Date()) {
+  const months = analyticsMonths(month), facts = buildCommercialFacts(input, policy);
+  const reports = months.map(m => buildCommercialMonthFromFacts(facts, m, policy));
+  const report = reports[reports.length - 1], previous = reports.at(-2) ?? null;
+  const confirmed = report.sales.filter(s => !s.excluded && s.confirmed);
   const channels = ["physical", "online", "other"].map(channel => {
     const selected = confirmed.filter(s => channel === "physical" ? s.origin.startsWith("physical_") : s.origin === channel);
     return { channel, orders: selected.length, amountCents: sumCents(selected.map(s => s.totalCents)) };
@@ -57,16 +70,12 @@ export function buildCommercialAnalytics(input: CommercialSnapshot, month: strin
   const upTo = <T extends { occurredOn: string }>(rows: T[]) => throughDay === null ? rows : rows.filter(row => Number(row.occurredOn.slice(8, 10)) <= throughDay);
   const previousSales = previous ? sumCents(upTo(previous.sales.filter(s => !s.excluded && s.confirmed)).map(s => s.totalCents)) : null;
   const previousPurchases = previous ? sumCents(upTo(previous.purchases.filter(p => !p.excluded && p.recognized)).map(p => p.totalCents)) : null;
-  const monthSaleIds = new Set(report.sales.filter(s => !s.excluded).map(s => s.id));
-  const fromMonthSalesCents = sumCents(report.datedReceipts.filter(p => monthSaleIds.has(p.orderId)).map(p => p.amountCents));
-  const methods = new Map<string, { method: string; forSalesCents: number; receivedCents: number }>();
-  const method = (key: string) => methods.get(key) ?? methods.set(key, { method: key, forSalesCents: 0, receivedCents: 0 }).get(key)!;
-  for (const row of report.paymentMethodsForSales) method(row.method).forSalesCents = row.amountCents;
-  for (const row of report.paymentMethodsForDatedReceipts) method(row.method).receivedCents = row.amountCents;
+  const unpaid = report.sales.filter(s => !s.excluded && s.registered && !s.confirmed);
   return {
     report,
-    cashIn: { totalCents: report.totals.datedReceiptsCents, fromMonthSalesCents, fromOtherSalesCents: report.totals.datedReceiptsCents - fromMonthSalesCents },
-    paymentMethods: [...methods.values()].sort((a, b) => b.receivedCents - a.receivedCents || b.forSalesCents - a.forSalesCents || a.method.localeCompare(b.method)),
+    // How the month's sales were paid (whenever the money came in). A sale paid with two methods appears in both.
+    paymentMethods: [...report.paymentMethodsForSales].sort((a, b) => b.amountCents - a.amountCents || a.method.localeCompare(b.method)),
+    unpaidOrders: { count: unpaid.length, amountCents: sumCents(unpaid.map(s => s.totalCents)) },
     comparison: {
       previousMonth: previous?.month ?? null,
       throughDay,
@@ -76,16 +85,10 @@ export function buildCommercialAnalytics(input: CommercialSnapshot, month: strin
       previousMonthNotClosed: previous !== null && previous.month >= currentMonth,
     },
     trend: reports.map(r => ({ month: r.month, confirmedSalesCents: r.totals.confirmedSalesCents,
-      purchasesCents: r.totals.purchasesCents, datedReceiptsCents: r.totals.datedReceiptsCents,
-      undatedApprovedForSalesCents: r.totals.undatedApprovedForSalesCents })),
+      purchasesCents: r.totals.purchasesCents, grossMarginCents: monthMargin(r).grossMarginCents })),
     channels,
     families: rankings(confirmed, false, true), products: rankings(confirmed, false), categories: rankings(confirmed, true),
-    margin: { grossMarginCents: costEligible.length ? coveredRevenueCents - verifiedCostCents : null,
-      coveredRevenueCents, verifiedCostCents, merchandiseRevenueCents,
-      coveragePercent: merchandiseRevenueCents > 0 ? coveredRevenueCents / merchandiseRevenueCents * 100 : null,
-      unknownRevenueCents: Math.max(0, merchandiseRevenueCents - coveredRevenueCents),
-      unknownCostLines: confirmed.reduce((n, s) => n + s.linesWithUnknownCost, 0),
-      unreconciledSales: confirmed.filter(s => s.issues.includes("LINES_HEADER_NET_NOT_RECONCILED")).length },
+    margin: monthMargin(report),
     counts: { confirmed: confirmed.length,
       registered: report.sales.filter(s => !s.excluded && s.registered).length,
       historical: confirmed.filter(s => s.origin === "physical_historical").length,
