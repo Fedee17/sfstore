@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { getAnalytics, track } from "@/lib/analytics/client";
+import { countFunnelStep } from "@/lib/catalog/purchase-funnel-client";
+
+const funnelSteps = { view_item: "product", begin_checkout: "checkout" } as const;
 
 // Views are counted when the existing content is actually visible, not prefetched.
 export function AnalyticsView({ event, params, identity }: { event: "view_item" | "view_item_list" | "catalog_search" | "begin_checkout"; params: Record<string, unknown>; identity: string }) {
@@ -9,6 +12,10 @@ export function AnalyticsView({ event, params, identity }: { event: "view_item" 
   const analytics = getAnalytics();
   const revision = useSyncExternalStore(analytics.subscribe, analytics.snapshot, () => 0);
   const serialized = JSON.stringify(params);
+  // Own funnel: one anonymous count per tab, no identifier, so it does not wait for the analytics consent.
+  useEffect(() => {
+    if (event === "view_item" || event === "begin_checkout") countFunnelStep(funnelSteps[event]);
+  }, [event]);
   useEffect(() => {
     if (!analytics.active() || !marker.current) return;
     const observer = new IntersectionObserver(entries => {

@@ -4,6 +4,7 @@ import { SearchDemand, SearchDemandFallback } from "@/components/admin/search-de
 import { SalesBreakdownChart, type BreakdownView } from "@/components/admin/analytics/sales-breakdown-chart";
 import { SalesHeatmapView } from "@/components/admin/analytics/sales-heatmap-view";
 import { TrendChart } from "@/components/admin/analytics/trend-chart";
+import { PurchaseFunnel, PurchaseFunnelFallback } from "@/components/admin/purchase-funnel";
 import { adminMoneyFromCents } from "@/lib/admin/money";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { requireAdminSession } from "@/lib/admin-session";
@@ -56,9 +57,10 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       {analytics && <Dashboard data={analytics} />}
       <section className="mt-12 border-t border-[#8B5E3C]/20 pt-8" aria-labelledby="recent-title">
         <h2 id="recent-title" className="text-2xl font-semibold">Últimos días</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-black/65">La rotación mira los últimos {ABC_WINDOW_DAYS} días y las búsquedas los últimos 30, hasta hoy. Los horarios se pueden ver de los últimos {ABC_WINDOW_DAYS} días o de todo el historial. No cambian con el mes elegido arriba.</p>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-black/65">La rotación mira los últimos {ABC_WINDOW_DAYS} días; el embudo y las búsquedas, los últimos 30, hasta hoy. Los horarios se pueden ver de los últimos {ABC_WINDOW_DAYS} días o de todo el historial. No cambian con el mes elegido arriba.</p>
         {analytics && <Rotation data={analytics.rotation} error={analytics.rotationError} />}
         {analytics && <Heatmap data={analytics.heatmap} />}
+        <Suspense fallback={<PurchaseFunnelFallback />}><PurchaseFunnel /></Suspense>
         <Suspense fallback={<SearchDemandFallback />}><SearchDemand /></Suspense>
       </section>
     </section>

@@ -333,6 +333,12 @@
       "stagingFile": "staging/supabase/migrations/202611290007_store_sale_missing_costs.sql",
       "sourceSha256": "3662be7d3234b640166fc2c27f33f7b201af3691698a57df39f35ce6fec7fe69",
       "stagingSha256": "3662be7d3234b640166fc2c27f33f7b201af3691698a57df39f35ce6fec7fe69"
+    },
+    {
+      "source": "supabase/migrations/202611290008_purchase_funnel.sql",
+      "stagingFile": "staging/supabase/migrations/202611290008_purchase_funnel.sql",
+      "sourceSha256": "07a78e0f49dc905374198fc3f0e1c6c071169b66b4b1c659b87f9683b5be7067",
+      "stagingSha256": "07a78e0f49dc905374198fc3f0e1c6c071169b66b4b1c659b87f9683b5be7067"
     }
   ]
 }
