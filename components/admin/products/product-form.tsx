@@ -550,6 +550,20 @@ export function ProductForm({
   let perfumeSuggestion: ReturnType<typeof calculatePerfumePricePolicy> | null = null;
   try { if (perfumePolicyEligible && costInput.trim()) perfumeSuggestion = calculatePerfumePricePolicy(costInput); }
   catch { /* No suggestion until a valid cost is entered; the server validates again on save. */ }
+  // Owner decision 27/11/2026: in full perfumes a new cost moves the prices to cost + 40%. Opening the editor or an
+  // invalid cost never touches them, and other products keep their prices.
+  function changeCost(value: string) {
+    setCostInput(value);
+    setPerfumePriceApplied(false);
+    if (!perfumePolicyEligible) return;
+    try {
+      const prices = calculatePerfumePricePolicy(value);
+      setSpecialInput(prices.specialText);
+      setListInput(prices.listText);
+      setListPriceApplied(true);
+      setPerfumePriceApplied(true);
+    } catch { /* Keep the last prices until the cost is valid. */ }
+  }
 
 
   useEffect(() => {
@@ -719,7 +733,7 @@ export function ProductForm({
         {calculatePriceEnabled && (
           // Approved calculator (Codex, 26/11/2026). «Aplicar precios» only fills the list and cash fields below;
           // saving the product stays the separate submit button. The legacy list/perfume validations do not apply.
-          <PriceCalculatorPreview purchase={costInput} onPurchaseChange={value => { setCostInput(value); setPerfumePriceApplied(false); }}
+          <PriceCalculatorPreview purchase={costInput} onPurchaseChange={changeCost}
             current={product ? {
               list: parseAdminMoneyCents(String(product.price)),
               cash: parseAdminMoneyCents(chargedCash),
@@ -856,7 +870,7 @@ export function ProductForm({
                 <p className="text-xs leading-5">Redondea el especial hacia arriba a $1.000. Revisá ambos importes antes de guardar.</p>
               </> : null}
               {product ? <>
-                <p className="text-xs leading-5">La lista existente se conserva hasta aplicar el cálculo. Modificar el costo no cambia los precios.</p>
+                <p className="text-xs leading-5">{perfumePolicyEligible ? "Al cambiar el costo, los precios se recalculan con el 40%. Revisalos antes de guardar." : "La lista existente se conserva hasta aplicar el cálculo. Modificar el costo no cambia los precios."}</p>
                 <button type="button" disabled={!proposedList || isSubmitting} onClick={() => {
                   if (proposedList) { setListInput(proposedList.listText); setListPriceApplied(true); setPerfumePriceApplied(false); }
                 }} className="min-h-11 justify-self-start rounded-full border border-[#556B2F]/30 px-4 py-2 text-sm font-semibold text-[#556B2F] disabled:opacity-50">Aplicar precio de lista</button>
@@ -893,7 +907,7 @@ export function ProductForm({
               min="0"
               step="0.01"
               value={costInput}
-              onChange={(event) => { setCostInput(event.target.value); setPerfumePriceApplied(false); }}
+              onChange={(event) => changeCost(event.target.value)}
               className="rounded-2xl border border-[#8B5E3C]/20 bg-[#F7F4ED] px-4 py-3 outline-none transition focus:border-[#556B2F]"
             />
           </label>
